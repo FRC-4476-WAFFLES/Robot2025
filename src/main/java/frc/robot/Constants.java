@@ -15,7 +15,13 @@ package frc.robot;
 public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
+    public static final int leftJoystick = 1;
+    public static final int rightJoystick = 2;
   }
 
   public static final int CANdle = 1; // CAN ID for the CANdle device
+
+    // PWM outputs
+    public static final int addressableLEDS = 3; //Light Strip
+    public static final int lightsBlinkin = 4; // REV Blinkin
 }

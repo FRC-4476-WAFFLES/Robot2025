@@ -8,7 +8,9 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.ExampleSubsystem;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -23,13 +25,17 @@ public class RobotContainer {
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
+ private final CommandJoystick leftJoystick = new CommandJoystick(OperatorConstants.leftJoystick);
+  private final CommandJoystick rightJoystick = new CommandJoystick(OperatorConstants.rightJoystick);
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.kDriverControllerPort);
-
+  public double rightTriggerStrength = 1;
+  public double leftTriggerStrength = 1;     
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
+    setAllianceColor();
   }
 
   /**
@@ -59,5 +65,28 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
     return Autos.exampleAuto(m_exampleSubsystem);
+  }
+  private static boolean gotAlliance = false;
+  public static void setAllianceColor(){
+    if(gotAlliance) return;
+    var alliance = DriverStation.getAlliance();
+    if (alliance.isPresent()) {
+      
+    //driveSubsystem and operatorController don't exist yet 
+      /*if (alliance.get() == DriverStation.Alliance.Blue){
+        driveSubsystem.setDefaultCommand(containerRobot.driveTeleopBlue);
+        operatorController.povLeft().whileTrue(containerRobot.allignWithNoteBlue);
+      }
+      else if (alliance.get() == DriverStation.Alliance.Red){
+        driveSubsystem.setDefaultCommand(containerRobot.driveTeleopRed);
+        operatorController.povLeft().whileTrue(containerRobot.allignWithNoteRed);
+      }*/
+      gotAlliance = true;
+
+    }
+    
+  }
+  public static void resetAlliance() {
+    gotAlliance = false;
   }
 }
