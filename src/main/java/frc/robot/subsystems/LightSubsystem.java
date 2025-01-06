@@ -4,9 +4,9 @@
 
 package frc.robot.subsystems;
 
-import static frc.robot.RobotContainer.anglerSubsystem;
+/*import static frc.robot.RobotContainer.anglerSubsystem;
 import static frc.robot.RobotContainer.elevatorSubsystem;
-import static frc.robot.RobotContainer.shooterSubsystem;
+import static frc.robot.RobotContainer.shooterSubsystem;*/
 
 import com.ctre.phoenix.led.Animation;
 import com.ctre.phoenix.led.CANdle;
@@ -147,7 +147,10 @@ public class LightSubsystem extends SubsystemBase {
    */
   @Override
   public void periodic() {
+    
     if(DriverStation.isDisabled()){
+      setLEDRangeGroup(LedRange.RIGHT_SIDE_BOTTOM, LightColours.GREEN, LightColours.GREEN, false);
+      /* 
       LedAnimation currentAnimation = getLedAnimation();
       if (shooterSubsystem.isNote()){
         setLEDRangeGroup(LedRange.RIGHT_SIDE_BOTTOM, LightColours.GREEN, LightColours.GREEN, false);
@@ -162,7 +165,7 @@ public class LightSubsystem extends SubsystemBase {
         setLEDRangeGroup(LedRange.MIDDLE_FULL, LightColours.YELLOW, LightColours.GREEN, false);
       } else {
         setLEDRangeGroup(LedRange.MIDDLE_FULL, LightColours.GREEN, LightColours.GREEN, false);
-      }
+      }*/
       updateBlinkTimer();
       updateLedRanges();
       candle.animate(null);
@@ -180,14 +183,16 @@ public class LightSubsystem extends SubsystemBase {
    * @return The LedAnimation to be displayed
    */
   private LedAnimation getLedAnimation() {
+    /* 
     if (elevatorSubsystem.getElevatorPosition() < -0.5 || anglerSubsystem.getAnglerDegrees() < -30.0) {
         return LedAnimation.STROBE;
     } else if (Math.abs(elevatorSubsystem.getElevatorPosition()) > 0.5 
                || Math.abs(anglerSubsystem.getAnglerDegrees()) > 1) {
         return LedAnimation.LARSON;
     } else {
-        return LedAnimation.COLOR_FLOW;
-    }
+        
+    }*/
+    return LedAnimation.COLOR_FLOW;
   }
 
   /**
