@@ -4,10 +4,6 @@
 
 package frc.robot.subsystems;
 
-/*import static frc.robot.RobotContainer.anglerSubsystem;
-import static frc.robot.RobotContainer.elevatorSubsystem;
-import static frc.robot.RobotContainer.shooterSubsystem;*/
-
 import com.ctre.phoenix.led.Animation;
 import com.ctre.phoenix.led.CANdle;
 import com.ctre.phoenix.led.CANdle.LEDStripType;
