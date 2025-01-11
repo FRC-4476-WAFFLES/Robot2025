@@ -12,6 +12,7 @@ package frc.robot;
  * <p>It is advised to statically import this class (or one of its inner classes) wherever the
  * constants are needed, to reduce verbosity.
  */
+import edu.wpi.first.math.util.Units;
 public final class Constants {
   public static final int intakeMotor=5;
   public static final int alignmentMotor = 16;
@@ -31,13 +32,15 @@ public final class Constants {
   public static final int elevator2 = 10; // Kraken X60
   public static final int climberLeader = 11;
   public static final int climberFollower = 12;
+  public static final int climberAllignment=16;
   // Sensors
   
   public static final int frontLeftAbsoluteEncoder = 11; // CANcoder
   public static final int frontRightAbsoluteEncoder = 12; // CANcoder
   public static final int backLeftAbsoluteEncoder = 13; // CANcoder
   public static final int backRightAbsoluteEncoder = 14; // CANcoder
-  
+  public static final int climberAbsoluteEncoder=19;
+  public static final int climberEncoderOffset=0;
   public static final int pidgeon = 15;
 
   public static class OperatorConstants {
