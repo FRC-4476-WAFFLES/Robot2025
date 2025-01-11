@@ -14,6 +14,7 @@ package frc.robot;
  */
 public final class Constants {
   public static final int intakeMotor=5;
+  public static final int alignmentMotor = 16;
 
   // CAN IDs
 
@@ -28,6 +29,8 @@ public final class Constants {
   public static final int drivingBackRight = 8; 
   public static final int elevator1 = 9; // Kraken X60
   public static final int elevator2 = 10; // Kraken X60
+  public static final int climberLeader = 11;
+  public static final int climberFollower = 12;
   // Sensors
   
   public static final int frontLeftAbsoluteEncoder = 11; // CANcoder
