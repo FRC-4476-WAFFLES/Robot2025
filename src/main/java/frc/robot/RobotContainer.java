@@ -25,8 +25,8 @@ import frc.robot.commands.RunIntake;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   public static final CoralIntake coralIntake = new CoralIntake();
+  public static final ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
   public static final CoralIntake coralPivot = new CoralIntake();
-
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandJoystick leftJoystick = new CommandJoystick(OperatorConstants.leftJoystick);
   private final CommandJoystick rightJoystick = new CommandJoystick(OperatorConstants.rightJoystick);
