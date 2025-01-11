@@ -6,8 +6,9 @@ package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
-import frc.robot.subsystems.ElevatorSubsystem;
-import frc.robot.subsystems.test.CoralIntake;
+import frc.robot.commands.ExampleCommand;
+import frc.robot.subsystems.CoralIntake;
+import frc.robot.subsystems.ExampleSubsystem;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
@@ -25,6 +26,7 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   public static final CoralIntake coralIntake = new CoralIntake();
   public static final ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
+  public static final CoralIntake coralPivot = new CoralIntake();
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandJoystick leftJoystick = new CommandJoystick(OperatorConstants.leftJoystick);
   private final CommandJoystick rightJoystick = new CommandJoystick(OperatorConstants.rightJoystick);
