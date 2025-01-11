@@ -13,7 +13,6 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  public static final int intakeMotor=5;
 
   // CAN IDs
 
@@ -26,8 +25,13 @@ public final class Constants {
   public static final int drivingBackLeft = 6; 
   public static final int steeringBackRight = 7; 
   public static final int drivingBackRight = 8; 
+
+  // Other Motors
   public static final int elevator1 = 9; // Kraken X60
   public static final int elevator2 = 10; // Kraken X60
+  public static final int intakeMotor=11;
+  public static final int pivotMotor=12;
+  
   // Sensors
   
   public static final int frontLeftAbsoluteEncoder = 11; // CANcoder
