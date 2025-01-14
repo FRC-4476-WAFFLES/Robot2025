@@ -5,7 +5,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants;
+import frc.robot.data.Constants;
 import frc.robot.subsystems.CoralManipulator;
 
 import static frc.robot.RobotContainer.coralIntake;

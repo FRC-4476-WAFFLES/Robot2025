@@ -9,8 +9,9 @@ import static frc.robot.RobotContainer.coralPivot;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.data.Constants;
 import frc.robot.subsystems.CoralManipulator;
-import frc.robot.Constants;
+
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;

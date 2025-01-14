@@ -18,7 +18,7 @@ import com.ctre.phoenix.led.RainbowAnimation;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
+import frc.robot.data.Constants;
 
 import java.util.ArrayList;
 import java.util.Arrays;
