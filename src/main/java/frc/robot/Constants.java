@@ -17,6 +17,7 @@ public final class Constants {
   public static final int intakeMotor=5;
   public static final int alignmentMotor = 16;
 
+
   // CAN IDs
 
   // Drive Motors
@@ -28,11 +29,19 @@ public final class Constants {
   public static final int drivingBackLeft = 6; 
   public static final int steeringBackRight = 7; 
   public static final int drivingBackRight = 8; 
+
+  // Other Motors
   public static final int elevator1 = 9; // Kraken X60
   public static final int elevator2 = 10; // Kraken X60
-  public static final int climberLeader = 11;
-  public static final int climberFollower = 12;
+  public static final int climberLeader = 18;
+  public static final int climberFollower = 17;
   public static final int climberAllignment=16;
+  public static final int coralGrabMotor=11;
+  public static final int coralPivotMotor=12;
+  public static final int algaeIntakeMotor=13;
+  public static final int algaePivotMotor=14;
+  public static final int coralIntakeMotor=15;
+  
   // Sensors
   
   public static final int frontLeftAbsoluteEncoder = 11; // CANcoder

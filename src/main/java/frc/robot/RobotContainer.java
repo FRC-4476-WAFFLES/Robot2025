@@ -7,15 +7,21 @@ package frc.robot;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
+import frc.robot.subsystems.AlgaeManipulator;
+import frc.robot.subsystems.CoralIntake;
+
+import frc.robot.subsystems.CoralManipulator;
+import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.test.CoralIntake;
+import frc.robot.subsystems.LightSubsystem;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.RunIntake;
+import frc.robot.commands.Grab;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -25,8 +31,13 @@ import frc.robot.commands.RunIntake;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
+  public static final CoralManipulator coralGrab = new CoralManipulator();
+  public static final ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
+  public static final CoralManipulator coralPivot = new CoralManipulator();
   public static final CoralIntake coralIntake = new CoralIntake();
   public static final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+  public static final AlgaeManipulator algaeIntake = new AlgaeManipulator();
+  public static final AlgaeManipulator algaePivot = new AlgaeManipulator();
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandJoystick leftJoystick = new CommandJoystick(OperatorConstants.leftJoystick);
   private final CommandJoystick rightJoystick = new CommandJoystick(OperatorConstants.rightJoystick);
@@ -35,7 +46,7 @@ public class RobotContainer {
   public double rightTriggerStrength = 1;
   public double leftTriggerStrength = 1;     
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
-  final RunIntake runIntake = new RunIntake();
+  final Grab runIntake = new Grab();
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
