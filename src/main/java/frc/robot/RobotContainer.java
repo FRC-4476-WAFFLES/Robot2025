@@ -53,7 +53,7 @@ public class RobotContainer {
   final IntakeCoral runIntake = new IntakeCoral();
 
   /* Global Robot State */
-  private final Telemetry logger = new Telemetry(PhysicalConstants.maxSpeed);
+  private final Telemetry telemetry = new Telemetry(PhysicalConstants.maxSpeed);
   private final SendableChooser<Command> autoChooser;
 
 
@@ -63,7 +63,7 @@ public class RobotContainer {
     configureBindings();
 
     // Swerve telemetry from odometry thread
-    driveSubsystem.registerTelemetry(logger::telemeterize);
+    driveSubsystem.registerTelemetry(telemetry::telemeterize);
     driveSubsystem.setDefaultCommand(new DriveTeleop(
       Controls::getDriveX,
       Controls::getDriveY,
@@ -72,6 +72,9 @@ public class RobotContainer {
 
     // Register commands to be used by pathplanner autos
     registerNamedCommands();
+
+    // Publish build info once to networktables
+    telemetry.publishBuildInfo();
 
     // Build an auto chooser. This will use Commands.none() as the default option.
     autoChooser = AutoBuilder.buildAutoChooser();
