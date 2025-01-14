@@ -13,6 +13,8 @@ import frc.robot.subsystems.CoralIntake;
 import frc.robot.subsystems.CoralManipulator;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ExampleSubsystem;
+import frc.robot.subsystems.ClimberSubsystem;
+import frc.robot.subsystems.test.CoralIntake;
 import frc.robot.subsystems.LightSubsystem;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -33,6 +35,7 @@ public class RobotContainer {
   public static final ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
   public static final CoralManipulator coralPivot = new CoralManipulator();
   public static final CoralIntake coralIntake = new CoralIntake();
+  public static final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
   public static final AlgaeManipulator algaeIntake = new AlgaeManipulator();
   public static final AlgaeManipulator algaePivot = new AlgaeManipulator();
   // Replace with CommandPS4Controller or CommandJoystick if needed
