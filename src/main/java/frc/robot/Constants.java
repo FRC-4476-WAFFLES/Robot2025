@@ -29,8 +29,11 @@ public final class Constants {
   // Other Motors
   public static final int elevator1 = 9; // Kraken X60
   public static final int elevator2 = 10; // Kraken X60
-  public static final int intakeMotor=11;
-  public static final int pivotMotor=12;
+  public static final int coralGrabMotor=11;
+  public static final int coralPivotMotor=12;
+  public static final int algaeIntakeMotor=13;
+  public static final int algaePivotMotor=14;
+  public static final int coralIntakeMotor=15;
   
   // Sensors
   

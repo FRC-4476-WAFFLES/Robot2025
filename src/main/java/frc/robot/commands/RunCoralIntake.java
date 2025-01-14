@@ -4,35 +4,34 @@
 
 package frc.robot.commands;
 
-import static frc.robot.RobotContainer.coralIntake;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CoralIntake;
 import frc.robot.Constants;
+import static frc.robot.RobotContainer.coralIntake;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class RunPivot extends Command {
-  /** Creates a new RunPivot. */
-  public RunPivot() {
+public class RunCoralIntake extends Command {
+  /** Creates a new RunCoralIntake. */
+  public RunCoralIntake() {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(coralIntake);
+    
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {
-  }
+  public void initialize() {}
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    coralIntake.setCoralPivotSpeed(1);
+    coralIntake.setCoralIntakeSpeed(1);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    coralIntake.setCoralPivotSpeed(0);
+    coralIntake.setCoralIntakeSpeed(0);
   }
 
   // Returns true when the command should end.
