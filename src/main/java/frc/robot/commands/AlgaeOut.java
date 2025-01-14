@@ -8,24 +8,24 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.subsystems.AlgaeManipulator;
 import static frc.robot.RobotContainer.algaeIntake;
+
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class RunAlgaeIntake extends Command {
-  /** Creates a new RunAlgaeIntake. */
-  public RunAlgaeIntake() {
-    // Use addRequirements() here to declare subsystem dependencies.
+public class AlgaeOut extends Command {
+  /** Creates a new AlgaeOut. */
+  public AlgaeOut() {
     addRequirements(algaeIntake);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    //nothing yet
+
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    algaeIntake.setAlgaeIntakeSpeed(1);
+    algaeIntake.setAlgaeIntakeSpeed(-1);
   }
 
   // Called once the command ends or is interrupted.
