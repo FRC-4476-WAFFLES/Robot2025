@@ -3,8 +3,6 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.subsystems;
-
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -21,10 +19,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   /** Creates a new ExampleSubsystem. */
   public final TalonFX Elevator1;
     private final TalonFX Elevator2;
-
     public boolean isClimbing = false;
-
-    private final DigitalInput coastSwitch;
    
     private double elevatorTargetPosition = 0;
 
@@ -58,16 +53,12 @@ public class ElevatorSubsystem extends SubsystemBase {
   public ElevatorSubsystem() {
     Elevator1 = new TalonFX(Constants.elevator1);
     Elevator2 = new TalonFX(Constants.elevator2);
-    coastSwitch = new DigitalInput(Constants.coastModeSwitch);
     Elevator2.setControl(new Follower(Constants.elevator1, true));
 
     TalonFXConfiguration elevatorConfig = new TalonFXConfiguration();
     elevatorCurrentLimits.StatorCurrentLimitEnable = true;
     elevatorConfig.CurrentLimits = elevatorCurrentLimits;
     elevatorConfig.CurrentLimits = elevatorCurrentLimits;
-
-    // in init function
-    TalonFXConfiguration talonFXConfigs = new TalonFXConfiguration();
 
     // set slot 0 gains
     var slot0Configs = new Slot0Configs();
@@ -94,6 +85,7 @@ public class ElevatorSubsystem extends SubsystemBase {
    */
   @Override
   public void periodic() {
+    executeElevatorMotionMagic();
   }
     /**
    * Executes motion profiling for the elevator.
@@ -115,27 +107,6 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
   }
 
-  /**
-   * Gets the current elevator position in meters.
-   * @return The current elevator position in meters.
-   */
-  public double getElevatorPositionMeters(){
-    return rotationsToInches(Elevator1.getPosition().getValueAsDouble())*0.0254;
-  }
-
-  /**
-   * Converts rotations to meters.
-   * @param rotations Number of rotations.
-   * @return Equivalent distance in meters.
-   */
-  public double rotationsToMeters(double rotations){
-    return rotationsToInches(rotations)*0.0254;
-  }
-
-  /**
-   * Gets the current elevator position in rotations.
-   * @return The current elevator position in rotations.
-   */
   public double getElevatorPosition(){
     return Elevator1.getPosition().getValueAsDouble();
   }
@@ -146,24 +117,6 @@ public class ElevatorSubsystem extends SubsystemBase {
    */
   public double getElevatorTargetPosition(){
     return elevatorTargetPosition;
-  }
-
-  /**
-   * Converts rotations to inches.
-   * @param rotations Number of rotations.
-   * @return Equivalent distance in inches.
-   */
-  public double rotationsToInches(double rotations){
-   return (rotations/19.0625)*(1.625*Math.PI);
-  }
-
-  /**
-   * Converts inches to rotations.
-   * @param inches Distance in inches.
-   * @return Equivalent number of rotations.
-   */
-  public double inchesToRotations (double inches){
-    return (inches*19.0625)/(1.625/Math.PI);
   }
 
   /**
