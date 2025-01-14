@@ -14,7 +14,6 @@ import frc.robot.subsystems.CoralManipulator;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
-import frc.robot.subsystems.test.CoralIntake;
 import frc.robot.subsystems.LightSubsystem;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
