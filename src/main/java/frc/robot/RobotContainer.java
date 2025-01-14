@@ -8,7 +8,7 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.AlgaeManipulator;
-import frc.robot.subsystems.CoralIntake;
+import frc.robot.subsystems.Funnel;
 
 import frc.robot.subsystems.CoralManipulator;
 import frc.robot.subsystems.ElevatorSubsystem;
@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.Grab;
+import frc.robot.commands.IntakeCoral;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -30,10 +30,10 @@ import frc.robot.commands.Grab;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  public static final CoralManipulator coralGrab = new CoralManipulator();
+  public static final CoralManipulator coralIntake = new CoralManipulator();
   public static final ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
   public static final CoralManipulator coralPivot = new CoralManipulator();
-  public static final CoralIntake coralIntake = new CoralIntake();
+  public static final Funnel funnel = new Funnel();
   public static final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
   public static final AlgaeManipulator algaeIntake = new AlgaeManipulator();
   public static final AlgaeManipulator algaePivot = new AlgaeManipulator();
@@ -45,7 +45,7 @@ public class RobotContainer {
   public double rightTriggerStrength = 1;
   public double leftTriggerStrength = 1;     
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
-  final Grab runIntake = new Grab();
+  final IntakeCoral runIntake = new IntakeCoral();
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();

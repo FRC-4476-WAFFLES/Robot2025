@@ -8,6 +8,8 @@ import edu.wpi.first.wpilibj.DutyCycle;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
+import static frc.robot.RobotContainer.funnel;
+
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
@@ -22,30 +24,30 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 
-public class CoralIntake extends SubsystemBase {
+public class Funnel extends SubsystemBase {
   /** Creates a new CoralIntake. */
-  private TalonFX coralIntake;
-  private final CurrentLimitsConfigs coralIntakeCurrentLimit= new CurrentLimitsConfigs();
-  private double coralIntakeSpeed = 0;
+  private TalonFX funnel;
+  private final CurrentLimitsConfigs funnelCurrentLimit= new CurrentLimitsConfigs();
+  private double funnelSpeed = 0;
 
-  public CoralIntake() {
+  public Funnel() {
     // talonFX configs
-    coralIntake=new TalonFX(Constants.coralIntakeMotor);
-    TalonFXConfiguration coralIntakeConfigs = new TalonFXConfiguration();
-    coralIntakeCurrentLimit.StatorCurrentLimit=60;
-    coralIntakeCurrentLimit.StatorCurrentLimitEnable=true;
-    coralIntakeConfigs.CurrentLimits=coralIntakeCurrentLimit;
-    coralIntake.getConfigurator().apply(coralIntakeConfigs);
+    funnel=new TalonFX(Constants.funnelMotor);
+    TalonFXConfiguration funnelConfigs = new TalonFXConfiguration();
+    funnelCurrentLimit.StatorCurrentLimit=60;
+    funnelCurrentLimit.StatorCurrentLimitEnable=true;
+    funnelConfigs.CurrentLimits=funnelCurrentLimit;
+    funnel.getConfigurator().apply(funnelConfigs);
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    final DutyCycleOut coralIntakeDutyCycle = new DutyCycleOut(0);
-    coralIntake.setControl(coralIntakeDutyCycle.withOutput(coralIntakeSpeed));
+    final DutyCycleOut funnelDutyCycle = new DutyCycleOut(0);
+    funnel.setControl(funnelDutyCycle.withOutput(funnelSpeed));
   }
-  public void setCoralIntakeSpeed(double coralIntakeSpeed){
-    this.coralIntakeSpeed=coralIntakeSpeed;
+  public void setFunnelSpeed(double funnelSpeed){
+    this.funnelSpeed=funnelSpeed;
   }
   
 }

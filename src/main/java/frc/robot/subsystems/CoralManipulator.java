@@ -24,26 +24,26 @@ import com.ctre.phoenix6.configs.MotionMagicConfigs;
 
 public class CoralManipulator extends SubsystemBase {
   /** Creates a new CoralIntake. */
-  private TalonFX coralGrab;
+  private TalonFX coralIntake;
   private TalonFX coralPivot;
-  private final CurrentLimitsConfigs coralGrabCurrentLimit= new CurrentLimitsConfigs();
+  private final CurrentLimitsConfigs coralIntakeCurrentLimit= new CurrentLimitsConfigs();
   private final CurrentLimitsConfigs coralPivotCurrentLimit= new CurrentLimitsConfigs();
-  private double coralGrabSpeed = 0;
+  private double coralIntakeSpeed = 0;
   private double coralPivotSpeed = 0;
 
   public CoralManipulator() {
     // talonFX configs
-    coralGrab=new TalonFX(Constants.coralGrabMotor);
+    coralIntake=new TalonFX(Constants.coralIntakeMotor);
     coralPivot=new TalonFX(Constants.coralPivotMotor);
-    TalonFXConfiguration coralGrabConfigs = new TalonFXConfiguration();
+    TalonFXConfiguration coralIntakeConfigs = new TalonFXConfiguration();
     TalonFXConfiguration coralPivotConfigs = new TalonFXConfiguration();
-    coralGrabCurrentLimit.StatorCurrentLimit=60;
+    coralIntakeCurrentLimit.StatorCurrentLimit=60;
     coralPivotCurrentLimit.StatorCurrentLimit=60;
-    coralGrabCurrentLimit.StatorCurrentLimitEnable=true;
+    coralIntakeCurrentLimit.StatorCurrentLimitEnable=true;
     coralPivotCurrentLimit.StatorCurrentLimitEnable=true;
-    coralGrabConfigs.CurrentLimits=coralGrabCurrentLimit;
+    coralIntakeConfigs.CurrentLimits=coralIntakeCurrentLimit;
     coralPivotConfigs.CurrentLimits=coralPivotCurrentLimit;
-    coralGrab.getConfigurator().apply(coralGrabConfigs);
+    coralIntake.getConfigurator().apply(coralIntakeConfigs);
     coralPivot.getConfigurator().apply(coralPivotConfigs);
     // motion magic setup (from Elevator subsystem) -- not used yet in coral manipulator code, ADD IF NECESSARY
     MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
@@ -55,15 +55,15 @@ public class CoralManipulator extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    final DutyCycleOut coralGrabDutyCycle = new DutyCycleOut(0);
-    coralGrab.setControl(coralGrabDutyCycle.withOutput(coralGrabSpeed));
+    final DutyCycleOut coralIntakeDutyCycle = new DutyCycleOut(0);
+    coralIntake.setControl(coralIntakeDutyCycle.withOutput(coralIntakeSpeed));
 
     final DutyCycleOut coralPivotDutyCycle = new DutyCycleOut(0);
     coralPivot.setControl(coralPivotDutyCycle.withOutput(coralPivotSpeed));
   }
 
-  public void setCoralGrabSpeed(double coralGrabSpeed){
-    this.coralGrabSpeed=coralGrabSpeed;
+  public void setCoralIntakeSpeed(double coralIntakeSpeed){
+    this.coralIntakeSpeed=coralIntakeSpeed;
   }
   public void setCoralPivotSpeed(double coralPivotSpeed){
     this.coralPivotSpeed=coralPivotSpeed;
