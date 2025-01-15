@@ -5,8 +5,9 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.data.Constants;
 import frc.robot.subsystems.Funnel;
-import frc.robot.Constants;
+
 import static frc.robot.RobotContainer.funnel;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */

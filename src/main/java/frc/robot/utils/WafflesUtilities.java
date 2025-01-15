@@ -23,4 +23,32 @@ public class WafflesUtilities {
     public static boolean isOverThreshold(TalonFX talonFX, double currentThreshold) {
         return talonFX.getStatorCurrent().getValueAsDouble() > currentThreshold;
     }
+
+    /**
+     * Clamps a number between two others. For some reasons this was only
+     * added by default in Java 21 (We use Java 17)
+     */
+    public static double Clamp(double val, double min, double max){
+        if (val > max) {
+            return max;
+        }
+        if (val < min) {
+            return min;
+        }
+        return val;
+    }
+
+    /**
+     * Again, for some reason there's no lerp in Java
+     */
+    public static double Lerp(double num1, double num2, double t){
+        return num1 + ((num2 - num1) * t);
+    }
+
+    /**
+     * Again, for some reason there's no inverse lerp in Java
+     */
+    public static double InvLerp(double num1, double num2, double t){
+        return (t - num1)/(num2 - num1);
+    }
 } 

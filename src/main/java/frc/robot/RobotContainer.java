@@ -4,23 +4,37 @@
 
 package frc.robot;
 
-import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
+import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.AlgaeManipulator;
 import frc.robot.subsystems.Funnel;
 
 import frc.robot.subsystems.CoralManipulator;
+import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.DynamicPathingSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
-import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.LightSubsystem;
+import frc.robot.utils.Telemetry;
+
+import java.util.Arrays;
+import java.util.HashSet;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.IntakeCoral;
+import frc.robot.data.TunerConstants;
+import frc.robot.data.Constants.PhysicalConstants;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -30,6 +44,10 @@ import frc.robot.commands.IntakeCoral;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
+
+  /* Subsystems */
+  public static final DriveSubsystem driveSubsystem = TunerConstants.createDrivetrain();
+  public static final DynamicPathingSubsystem dynamicPathingSubsystem = new DynamicPathingSubsystem();
   public static final CoralManipulator coralIntake = new CoralManipulator();
   public static final ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
   public static final CoralManipulator coralPivot = new CoralManipulator();
@@ -37,20 +55,37 @@ public class RobotContainer {
   public static final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
   public static final AlgaeManipulator algaeIntake = new AlgaeManipulator();
   public static final AlgaeManipulator algaePivot = new AlgaeManipulator();
-  // Replace with CommandPS4Controller or CommandJoystick if needed
-  private final CommandJoystick leftJoystick = new CommandJoystick(OperatorConstants.leftJoystick);
-  private final CommandJoystick rightJoystick = new CommandJoystick(OperatorConstants.rightJoystick);
-  private final CommandXboxController m_driverController =
-      new CommandXboxController(OperatorConstants.kDriverControllerPort);
-  public double rightTriggerStrength = 1;
-  public double leftTriggerStrength = 1;     
-  /** The container for the robot. Contains subsystems, OI devices, and commands. */
+
+  /* Commands */
   final IntakeCoral runIntake = new IntakeCoral();
+
+  /* Global Robot State */
+  private final Telemetry telemetry = new Telemetry(PhysicalConstants.maxSpeed);
+  private final SendableChooser<Command> autoChooser;
+
+
+  /** The static entry point for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
-    setAllianceColor();
-    
+
+    // Swerve telemetry from odometry thread
+    driveSubsystem.registerTelemetry(telemetry::telemeterize);
+    driveSubsystem.setDefaultCommand(new DriveTeleop(
+      Controls::getDriveX,
+      Controls::getDriveY,
+      Controls::getDriveRotation
+    ));
+
+    // Register commands to be used by pathplanner autos
+    registerNamedCommands();
+
+    // Publish build info once to networktables
+    telemetry.publishBuildInfo();
+
+    // Build an auto chooser. This will use Commands.none() as the default option.
+    autoChooser = AutoBuilder.buildAutoChooser();
+    SmartDashboard.putData("Auto Chooser", autoChooser);
   }
 
   /**
@@ -69,7 +104,34 @@ public class RobotContainer {
 
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
     // cancelling on release.
-    m_driverController.b().whileTrue(runIntake);
+    Controls.operatorController.b().whileTrue(runIntake);
+
+    // Dynamic path to coral scoring
+    Controls.leftJoystick.button(1).whileTrue(Commands.defer(
+      () -> dynamicPathingSubsystem.getCoralPathCommand(), new HashSet<>(Arrays.asList(driveSubsystem))
+    ));
+
+    // Switch coral scoring sides
+    Controls.operatorController.povRight().onTrue(
+      new InstantCommand(
+        () -> {dynamicPathingSubsystem.setCoralScoringSide(true);}
+      )
+    );
+    Controls.operatorController.povLeft().onTrue(
+      new InstantCommand(
+        () -> {dynamicPathingSubsystem.setCoralScoringSide(false);}
+      )
+    );
+  }
+
+  /**
+   * Use this method to define name->command mappings. Names will be used by PathPlanner to 
+   * call commands in full autos. 
+   */
+  private void registerNamedCommands() {
+    // Register Named Commands
+    // Add other commands to be able to run them in autos
+    // NamedCommands.registerCommand("exampleCommand", exampleCommand);
   }
 
   /**
@@ -77,31 +139,7 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  /*public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
-    return Autos.exampleAuto(m_exampleSubsystem);
-  }*/
-  private static boolean gotAlliance = false;
-  public static void setAllianceColor(){
-    if(gotAlliance) return;
-    var alliance = DriverStation.getAlliance();
-    if (alliance.isPresent()) {
-      
-    //driveSubsystem and operatorController don't exist yet 
-      /*if (alliance.get() == DriverStation.Alliance.Blue){
-        driveSubsystem.setDefaultCommand(containerRobot.driveTeleopBlue);
-        operatorController.povLeft().whileTrue(containerRobot.allignWithNoteBlue);
-      }
-      else if (alliance.get() == DriverStation.Alliance.Red){
-        driveSubsystem.setDefaultCommand(containerRobot.driveTeleopRed);
-        operatorController.povLeft().whileTrue(containerRobot.allignWithNoteRed);
-      }*/
-      gotAlliance = true;
-
-    }
-    
-  }
-  public static void resetAlliance() {
-    gotAlliance = false;
+  public Command getAutonomousCommand() {
+    return autoChooser.getSelected();
   }
 }

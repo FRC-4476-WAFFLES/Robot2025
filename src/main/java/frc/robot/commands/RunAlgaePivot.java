@@ -5,8 +5,9 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.data.Constants;
 import frc.robot.subsystems.AlgaeManipulator;
-import frc.robot.Constants;
+
 import static frc.robot.RobotContainer.algaePivot;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
