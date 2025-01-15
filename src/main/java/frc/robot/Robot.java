@@ -25,10 +25,6 @@ public class Robot extends TimedRobot {
 
   private final RobotContainer m_robotContainer;
 
-  AddressableLED m_led = new AddressableLED(Constants.addressableLEDS);
- 
-  AddressableLEDBuffer m_ledBuffer = new AddressableLEDBuffer(14);
-
   Timer m_gcTimer = new Timer();
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -39,22 +35,11 @@ public class Robot extends TimedRobot {
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
 
-    m_led.setLength(m_ledBuffer.getLength());
-
-    for(var i=0;i<m_ledBuffer.getLength();i++){
-      m_ledBuffer.setRGB(i, 0, 255, 0);
-    }
-
-    m_led.setData(m_ledBuffer);
-    m_led.start();
-
      // Initialize DataLog
     DataLogManager.start();
 
-
     // Enable logging of both DS control and joystick data
     DriverStation.startDataLog(DataLogManager.getLog());
-
   }
 
   /**
@@ -86,21 +71,18 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledPeriodic() {
-    for (var i = 0; i < m_ledBuffer.getLength(); i++) {
-      // Sets the specified LED to the RGB values for red
-      m_ledBuffer.setRGB(i, 255, 0, 0);
-    }
+
   }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    /*m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
-    }*/
+    }
   }
 
   /** This function is called periodically during autonomous. */
@@ -139,36 +121,4 @@ public class Robot extends TimedRobot {
   /** This function is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {}
-
-  public enum LightRGBColors{
-
-    RED(255, 0, 0),
-    GREEN(0, 255, 0),
-    BLUE(0, 0, 255),
-    YELLOW(255, 255, 0),
-    WHITE(255, 255, 255),
-    BLACK(0, 0, 0);
-
-    private int r;
-    private int g;
-    private int b;
-
-    LightRGBColors(int r, int g, int b){
-      this.r = r;
-      this.g = g;
-      this.b = b;
-    }
-
-    public int getR(){
-      return r;
-    }
-
-    public int getG(){
-      return g;
-    }
-
-    public int getB(){
-      return b;
-    }
-  }
 }
