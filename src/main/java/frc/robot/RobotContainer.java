@@ -12,10 +12,14 @@ import frc.robot.subsystems.Funnel;
 
 import frc.robot.subsystems.CoralManipulator;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.DynamicPathingSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.LightSubsystem;
 import frc.robot.utils.Telemetry;
+
+import java.util.Arrays;
+import java.util.HashSet;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -24,6 +28,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.IntakeCoral;
@@ -41,6 +47,7 @@ public class RobotContainer {
 
   /* Subsystems */
   public static final DriveSubsystem driveSubsystem = TunerConstants.createDrivetrain();
+  public static final DynamicPathingSubsystem dynamicPathingSubsystem = new DynamicPathingSubsystem();
   public static final CoralManipulator coralIntake = new CoralManipulator();
   public static final ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
   public static final CoralManipulator coralPivot = new CoralManipulator();
@@ -98,6 +105,23 @@ public class RobotContainer {
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
     // cancelling on release.
     Controls.operatorController.b().whileTrue(runIntake);
+
+    // Dynamic path to coral scoring
+    Controls.leftJoystick.button(1).whileTrue(Commands.defer(
+      () -> dynamicPathingSubsystem.getCoralPathCommand(), new HashSet<>(Arrays.asList(driveSubsystem))
+    ));
+
+    // Switch coral scoring sides
+    Controls.operatorController.povRight().onTrue(
+      new InstantCommand(
+        () -> {dynamicPathingSubsystem.setCoralScoringSide(true);}
+      )
+    );
+    Controls.operatorController.povLeft().onTrue(
+      new InstantCommand(
+        () -> {dynamicPathingSubsystem.setCoralScoringSide(false);}
+      )
+    );
   }
 
   /**
