@@ -181,7 +181,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         // Create a list of waypoints from poses. Each pose represents one waypoint.
         // The rotation component of the pose should be the direction of travel. Do not use holonomic rotation.
         List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(
-            new Pose2d(startingPose.getTranslation(), Rotation2d.fromDegrees(angleBetweenPoses).plus(Rotation2d.k180deg)),
+            new Pose2d(startingPose.getTranslation(), Rotation2d.fromDegrees(angleBetweenPoses)),
             new Pose2d(endingPose.getTranslation(), Rotation2d.fromDegrees(angleBetweenPoses))
         );
 

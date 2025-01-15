@@ -68,6 +68,9 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
     /* Swerve request used for autos */
     private final SwerveRequest.ApplyRobotSpeeds autoRequest = new SwerveRequest.ApplyRobotSpeeds()
             .withDriveRequestType(DriveRequestType.Velocity);
+
+    /* Information about the physical capabilities of the drivetrain, used by Pathplanner */
+    public RobotConfig PathPlannerConfig;
     
     /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
@@ -353,7 +356,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
      */
     private void configurePathPlanner() {
         try {
-            var config = RobotConfig.fromGUISettings();
+            PathPlannerConfig = RobotConfig.fromGUISettings();
             AutoBuilder.configure(
                 this::getRobotPose, // Supplier of current robot pose
                 this::resetPose, // Consumer for seeding pose against auto
@@ -364,7 +367,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
                     new PIDConstants(4.7, 0, 0.1),
                     new PIDConstants(6.1, 0, 0.1)
                 ),
-                config,
+                PathPlannerConfig,
                 () -> {
                     // Boolean supplier that controls when the path will be mirrored for the red
                     // alliance
