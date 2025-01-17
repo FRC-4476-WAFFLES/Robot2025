@@ -35,7 +35,7 @@ public class ClimberSubsystem extends SubsystemBase {
   private double climberTargetPositionRotations = 0;
   private double climberTargetPositionDegrees = 0;
   private double previousTargetPosition = climberTargetPositionRotations;
-  private static final double OVERALL_REDUCTION=3535;//PLEASE CHANGE ONCE DESIGN IS FINALLZED
+
   private final CurrentLimitsConfigs climberCurrentLimits = new CurrentLimitsConfigs();
   private final CurrentLimitsConfigs alignmentCurrentLimit= new CurrentLimitsConfigs();
 
@@ -129,7 +129,7 @@ public class ClimberSubsystem extends SubsystemBase {
   public void setClimberTargetPosition(double angle){
     if (Math.abs(angle - this.climberTargetPositionDegrees) > 0.05){
       this.climberTargetPositionDegrees = MathUtil.clamp(angle,0,90);
-      this.climberTargetPositionRotations = climberTargetPositionDegrees* (OVERALL_REDUCTION / 360);
+      this.climberTargetPositionRotations = climberTargetPositionDegrees* (Constants.PhysicalConstants.OVERALL_REDUCTION / 360);
       if(this.climberTargetPositionRotations != this.previousTargetPosition){
         this.previousTargetPosition = this.climberTargetPositionRotations;
       }
@@ -141,7 +141,7 @@ public class ClimberSubsystem extends SubsystemBase {
      * @return The current angle in degrees.
      */
     public double getClimberDegrees() {
-      return climberMotorLeader.getPosition().getValueAsDouble() * 360*OVERALL_REDUCTION;
+      return climberMotorLeader.getPosition().getValueAsDouble() * 360*Constants.PhysicalConstants.OVERALL_REDUCTION;
     }
 
     public boolean isClimberRightPosition(){

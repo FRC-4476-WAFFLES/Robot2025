@@ -77,5 +77,6 @@ public final class Constants {
     // Placeholder values. Tune.
     public static final double maxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
     public static final double maxAngularSpeed = 6; // Max Rad/s
+    public static final double OVERALL_REDUCTION=3535;//PLEASE CHANGE ONCE DESIGN IS FINALLZED
   }
 }
