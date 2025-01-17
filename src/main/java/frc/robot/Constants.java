@@ -49,7 +49,9 @@ public final class Constants {
   public static final int backLeftAbsoluteEncoder = 13; // CANcoder
   public static final int backRightAbsoluteEncoder = 14; // CANcoder
   public static final int climberAbsoluteEncoder=19;
+  public static final int pivotAbsoluteEncoder=20;
   public static final int climberEncoderOffset=0;
+  public static final int pivotAbsoluteEncoderOffset=0;
   public static final int pidgeon = 15;
 
   public static class OperatorConstants {
