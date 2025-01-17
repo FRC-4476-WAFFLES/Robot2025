@@ -361,7 +361,10 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
                 this::getRobotPose, // Supplier of current robot pose
                 this::resetPose, // Consumer for seeding pose against auto
                 this::getCurrentRobotChassisSpeeds,
-                (speeds, feedforwards) -> setControl(autoRequest.withSpeeds(speeds)), // Consumer of ChassisSpeeds to drive the
+                (speeds, feedforwards) -> setControl(autoRequest.withSpeeds(speeds)
+                    .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+                    .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
+                ), // Consumer of ChassisSpeeds to drive the
                                                                                 // robot
                 new PPHolonomicDriveController(
                     new PIDConstants(4.7, 0, 0.1),
