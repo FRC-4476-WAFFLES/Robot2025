@@ -55,6 +55,9 @@ public final class Constants {
   public static final int climberEncoderOffset = 0;
   public static final int coralPivotAbsoluteEncoder = 24;
   public static final int coralPivotAbsoluteEncoderOffset = 0;
+
+  public static final int pivotAbsoluteEncoderOffset=27;
+  public static final int pivotAbsoluteEncoder=28;
   
   public static final int pidgeon = 25;
 
