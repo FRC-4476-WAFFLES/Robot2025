@@ -5,6 +5,8 @@
 package frc.robot;
 
 import frc.robot.commands.Autos;
+import frc.robot.commands.ClimberIn;
+import frc.robot.commands.ClimberOut;
 import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.AlgaeManipulator;
@@ -35,7 +37,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.IntakeCoral;
 import frc.robot.data.TunerConstants;
 import frc.robot.data.Constants.PhysicalConstants;
-
+import frc.robot.subsystems.ElevatorSubsystem;
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
  * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
@@ -56,13 +58,16 @@ public class RobotContainer {
   public static final AlgaeManipulator algeManipulator = new AlgaeManipulator();
 
   /* Commands */
-  final IntakeCoral runIntake = new IntakeCoral();
-
+  private final IntakeCoral runIntake = new IntakeCoral();
+  //final ElevatorCommand setElevatorLevel = new ElevatorCommand();
+  private final ClimberIn climberIn = new ClimberIn();
+  private final ClimberOut climberOut = new ClimberOut();
   /* Global Robot State */
   private final Telemetry telemetry = new Telemetry(PhysicalConstants.maxSpeed);
   private final SendableChooser<Command> autoChooser;
-
-
+  public boolean isOverride = false;
+  public boolean isHeld = false;
+  public static double rightAxis = (Controls.operatorController.getRightY() * 2); //CHANGE THIS NUMBER
   /** The static entry point for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the trigger bindings
@@ -97,20 +102,26 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-    /*new Trigger(m_exampleSubsystem::exampleCondition)
-        .onTrue(new ExampleCommand(m_exampleSubsystem));*/
 
-    // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
-    // cancelling on release.
-    Controls.operatorController.b().whileTrue(runIntake);
+    Controls.operatorController.leftTrigger().onTrue(
+      new InstantCommand(
+        () -> {isOverride = !isOverride;}
+      )
+    );
+    //Controls.operatorController.a().onTrue(elevator command for setting L0);
+    //Controls.operatorController.b().onTrue(elevator command for setting L1);
+    //Controls.operatorController.x().onTrue(elevator command for setting L2);
+    //Controls.operatorController.y().onTrue(elevator command for setting L3);
+    Controls.operatorController.povUp().whileTrue(runIntake);
+    //Controls.operatorController.povDown().whileTrue(runOuttake);
+    Controls.operatorController.rightStick().onTrue(climberIn);
+    Controls.operatorController.leftStick().onTrue(climberOut);
+    //Controls.operatorController.leftBumper().onTrue(pivot L0 command);
+    //Controls.operatorController.rightBumper().onTrue(pivot L1-2 command);
+    //Controls.operatorController.rightTrigger().onTrue(pivot command for L3); 
 
-    // Dynamic path to coral scoring
-    Controls.leftJoystick.button(1).whileTrue(Commands.defer(
-      () -> dynamicPathingSubsystem.getCoralPathCommand(), new HashSet<>(Arrays.asList(driveSubsystem))
-    ));
-
-    // Switch coral scoring sides
+    // Switch coral scoring sides IF OVERRIDE IS NOT ON
+    if (isOverride == false) {
     Controls.operatorController.povRight().onTrue(
       new InstantCommand(
         () -> {dynamicPathingSubsystem.setCoralScoringSide(true);}
@@ -120,7 +131,17 @@ public class RobotContainer {
       new InstantCommand(
         () -> {dynamicPathingSubsystem.setCoralScoringSide(false);}
       )
-    );
+    );  
+    // Dynamic path to coral scoring
+    Controls.leftJoystick.button(1).whileTrue(Commands.defer(
+      () -> dynamicPathingSubsystem.getCoralPathCommand(), new HashSet<>(Arrays.asList(driveSubsystem))
+    ));
+    }
+    if (isOverride == true){
+      elevatorSubsystem.adjustTargetPosition(rightAxis);
+    }
+    
+
   }
 
   /**

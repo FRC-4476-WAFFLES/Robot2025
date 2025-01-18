@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Controls;
 import frc.robot.data.Constants;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -117,7 +118,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   public double getElevatorTargetPosition(){
     return elevatorTargetPosition;
   }
-
+  
   /**
    * Checks if the elevator is at the desired position.
    * @return true if elevator is at desired position, false otherwise.
@@ -169,6 +170,4 @@ public class ElevatorSubsystem extends SubsystemBase {
   public elevatorLevel getElevatorMode(){
     return currentLevel;
   }
-
-
 }
