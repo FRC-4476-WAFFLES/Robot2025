@@ -31,7 +31,6 @@ public class ElevatorSubsystem extends SubsystemBase {
     private boolean previousEnabled = false;
     private double previousTargetPosition = elevatorTargetPosition;
 
-
     public enum elevatorLevel {
       L3(50.0),
       L2(27.0),

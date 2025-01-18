@@ -43,8 +43,13 @@ public class RunCoralPivot extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    coralPivot.setCoralPivotSpeed(1);
+    executeCoralPivotMotionMagic();
   }
+
+  private void executeCoralPivotMotionMagic() {
+    motionMagicRequest.Position = coralPivotTargetPositionRotations;
+    motionMagicRequest.Slot = 0; // Use the Slot0 gains
+    coralPivot.setControl(motionMagicRequest);
 
   // Called once the command ends or is interrupted.
   @Override
