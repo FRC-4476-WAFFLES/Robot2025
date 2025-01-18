@@ -53,9 +53,12 @@ public final class Constants {
   public static final int backRightAbsoluteEncoder = 22; // CANcoder
   public static final int climberAbsoluteEncoder = 23;
   public static final int climberEncoderOffset = 0;
-  public static final int pidgeon = 24;
+  public static final int coralPivotAbsoluteEncoder = 24;
+  public static final int coralPivotAbsoluteEncoderOffset = 0;
+  
+  public static final int pidgeon = 25;
 
-  public static final int CANdle = 25; // CAN ID for the CANdle device
+  public static final int CANdle = 26; // CAN ID for the CANdle device
 
   /* PWM Outputs */
   

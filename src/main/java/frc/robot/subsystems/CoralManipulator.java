@@ -4,7 +4,9 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DutyCycle;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.data.Constants;
 
@@ -24,17 +26,40 @@ import com.ctre.phoenix6.configs.MotionMagicConfigs;
 
 public class CoralManipulator extends SubsystemBase {
   /** Creates a new CoralIntake. */
+  private final DutyCycleEncoder coralPivotAbsoluteEncoder;
   private TalonFX coralIntake;
   private TalonFX coralPivot;
   private final CurrentLimitsConfigs coralIntakeCurrentLimit= new CurrentLimitsConfigs();
   private final CurrentLimitsConfigs coralPivotCurrentLimit= new CurrentLimitsConfigs();
   private double coralIntakeSpeed = 0;
   private double coralPivotSpeed = 0;
+  private double pivotTargetPositionRotations = 0;
+  private double previousTargetPosition = 0;
+  private double pivotTargetPositonDegrees = 0;
+  private static final double OVERALL_REDUCTION=3535;//PLEASE CHANGE ONCE DESIGN IS FINALLZED
+  private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
+  public enum manipulatorPosition {
+   L3(180),
+   L2(120),
+   L1(60),
+   L0(0);
+   private double position;
+   
+  
+   manipulatorPosition(double position) {
+     this.position = position;
+   }
 
+   public double getPosition() {
+     return position;
+   }
+  }
+  private final double PIVOT_DEAD_ZONE = 1; //DEADZONE MEASURED IN ROTATIONS
   public CoralManipulator() {
     // talonFX configs
     coralIntake=new TalonFX(Constants.coralIntakeMotor);
     coralPivot=new TalonFX(Constants.coralPivotMotor);
+    coralPivotAbsoluteEncoder = new DutyCycleEncoder(Constants.coralPivotAbsoluteEncoder);
     TalonFXConfiguration coralIntakeConfigs = new TalonFXConfiguration();
     TalonFXConfiguration coralPivotConfigs = new TalonFXConfiguration();
     coralIntakeCurrentLimit.StatorCurrentLimit=60;
@@ -50,6 +75,7 @@ public class CoralManipulator extends SubsystemBase {
     motionMagicConfigs.MotionMagicCruiseVelocity = 110; // Using the existing velocity value
     motionMagicConfigs.MotionMagicAcceleration = 190; // Using the existing acceleration value
     motionMagicConfigs.MotionMagicJerk = 1900; // Setting jerk to 10x acceleration as a starting point
+    coralPivot.setPosition(coralPivotAbsoluteEncoder.get()+Constants.coralPivotAbsoluteEncoderOffset);
   }
 
   @Override
@@ -57,15 +83,34 @@ public class CoralManipulator extends SubsystemBase {
     // This method will be called once per scheduler run
     final DutyCycleOut coralIntakeDutyCycle = new DutyCycleOut(0);
     coralIntake.setControl(coralIntakeDutyCycle.withOutput(coralIntakeSpeed));
-
-    final DutyCycleOut coralPivotDutyCycle = new DutyCycleOut(0);
-    coralPivot.setControl(coralPivotDutyCycle.withOutput(coralPivotSpeed));
+    executeCoralPivotMotionMagic();
+  }
+  
+  private void executeCoralPivotMotionMagic() {
+    motionMagicRequest.Position = pivotTargetPositionRotations;
+    motionMagicRequest.Slot = 0; // Use the Slot0 gains
+    coralPivot.setControl(motionMagicRequest);
   }
 
+  public void setPivotTargetPosition(double angle){
+    if (Math.abs(angle - this.pivotTargetPositonDegrees) > 0.05){
+      this.pivotTargetPositonDegrees = MathUtil.clamp(angle,0,180);
+      this.pivotTargetPositionRotations = pivotTargetPositonDegrees* (OVERALL_REDUCTION / 360);
+      if(this.pivotTargetPositionRotations != this.previousTargetPosition){
+        this.previousTargetPosition = this.pivotTargetPositionRotations;
+      }
+    }
+  }
   public void setCoralIntakeSpeed(double coralIntakeSpeed){
     this.coralIntakeSpeed=coralIntakeSpeed;
   }
-  public void setCoralPivotSpeed(double coralPivotSpeed){
-    this.coralPivotSpeed=coralPivotSpeed;
+
+  public boolean isCoralCurrentDetection() {
+    return coralIntake.getStatorCurrent().getValueAsDouble() > 34;//change the current threshold
   }
+  
+  public boolean isGoodPivotPosition() {
+    return Math.abs(coralPivot.getPosition().getValueAsDouble() - pivotTargetPositionRotations) < PIVOT_DEAD_ZONE;
+  }
+  
 }
