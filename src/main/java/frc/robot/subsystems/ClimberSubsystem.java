@@ -39,6 +39,7 @@ public class ClimberSubsystem extends SubsystemBase {
   private final CurrentLimitsConfigs climberCurrentLimits = new CurrentLimitsConfigs();
   private final CurrentLimitsConfigs alignmentCurrentLimit= new CurrentLimitsConfigs();
 
+  private final double CLIMBER_DEAD_ZONE = 1;
   private double rotationPosition;
   
   /** Creates a new ClimberSubsystem. */
@@ -145,7 +146,7 @@ public class ClimberSubsystem extends SubsystemBase {
     }
 
     public boolean isClimberRightPosition(){
-      return climberTargetPositionRotations==climberMotorLeader.getPosition().getValueAsDouble();
+      return Math.abs(climberTargetPositionRotations-climberMotorLeader.getPosition().getValueAsDouble())<CLIMBER_DEAD_ZONE;
     }
 
 }
