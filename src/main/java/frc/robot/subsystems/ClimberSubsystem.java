@@ -33,12 +33,13 @@ public class ClimberSubsystem extends SubsystemBase {
 
   private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
   private double climberTargetPositionRotations = 0;
-  private double climberTargetPositonDegrees = 0;
+  private double climberTargetPositionDegrees = 0;
   private double previousTargetPosition = climberTargetPositionRotations;
-  private static final double OVERALL_REDUCTION=3535;//PLEASE CHANGE ONCE DESIGN IS FINALLZED
+
   private final CurrentLimitsConfigs climberCurrentLimits = new CurrentLimitsConfigs();
   private final CurrentLimitsConfigs alignmentCurrentLimit= new CurrentLimitsConfigs();
 
+  private final double CLIMBER_DEAD_ZONE = 1;
   private double rotationPosition;
   
   /** Creates a new ClimberSubsystem. */
@@ -57,7 +58,7 @@ public class ClimberSubsystem extends SubsystemBase {
     
     //climber configs:
     // current limits
-    climberCurrentLimits.StatorCurrentLimit = 40;
+    climberCurrentLimits.StatorCurrentLimit = 60;
     climberCurrentLimits.StatorCurrentLimitEnable = true;
     
     // apply the configuration to the climber motor
@@ -104,6 +105,7 @@ public class ClimberSubsystem extends SubsystemBase {
   public void periodic()
   {
     // This method will be called once per scheduler run
+
     executeClimberMotionMagic();
     
   }
@@ -126,9 +128,9 @@ public class ClimberSubsystem extends SubsystemBase {
    * @param position Target position in rotations.
    */
   public void setClimberTargetPosition(double angle){
-    if (Math.abs(angle - this.climberTargetPositonDegrees) > 0.05){
-      this.climberTargetPositonDegrees = MathUtil.clamp(angle,0,90);
-      this.climberTargetPositionRotations = climberTargetPositonDegrees* (OVERALL_REDUCTION / 360);
+    if (Math.abs(angle - this.climberTargetPositionDegrees) > 0.05){
+      this.climberTargetPositionDegrees = MathUtil.clamp(angle,0,90);
+      this.climberTargetPositionRotations = climberTargetPositionDegrees* (Constants.PhysicalConstants.OVERALL_REDUCTION / 360);
       if(this.climberTargetPositionRotations != this.previousTargetPosition){
         this.previousTargetPosition = this.climberTargetPositionRotations;
       }
@@ -140,6 +142,11 @@ public class ClimberSubsystem extends SubsystemBase {
      * @return The current angle in degrees.
      */
     public double getClimberDegrees() {
-      return climberMotorLeader.getPosition().getValueAsDouble() * 360*OVERALL_REDUCTION;
+      return climberMotorLeader.getPosition().getValueAsDouble() * 360*Constants.PhysicalConstants.OVERALL_REDUCTION;
     }
+
+    public boolean isClimberRightPosition(){
+      return Math.abs(climberTargetPositionRotations-climberMotorLeader.getPosition().getValueAsDouble())<CLIMBER_DEAD_ZONE;
+    }
+
 }
