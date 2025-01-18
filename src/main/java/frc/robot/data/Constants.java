@@ -59,6 +59,8 @@ public final class Constants {
   public static final int pivotAbsoluteEncoderOffset=27;
   public static final int pivotAbsoluteEncoder=28;
   
+  public static final int laserCanCamera=29;
+
   public static final int pidgeon = 25;
 
   public static final int CANdle = 26; // CAN ID for the CANdle device
