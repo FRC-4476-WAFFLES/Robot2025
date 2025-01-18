@@ -21,8 +21,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Controls;
 import frc.robot.Robot;
 import frc.robot.RobotContainer;
+import frc.robot.commands.DriveTeleop;
 
 /**
  * All units are meters unless otherwise stated. The origin is on the blue alliance side, and coordinates are returned relative to the blue alliance
@@ -30,12 +32,33 @@ import frc.robot.RobotContainer;
 public class DynamicPathingSubsystem extends SubsystemBase {
     /* Offset from the edge of the reef to score from  */
     public static final double REEF_SCORING_POSITION_OFFSET = 1;
+
+    /* Distances around various points */
     public static final double REEF_MIN_SCORING_DISTANCE = 2;
+    public static final double PROCCESSOR_MIN_SCORING_DISTANCE = 1.5;
+    public static final double HUMAN_PLAYER_MIN_PICKUP_DISTANCE = 2;
+
+    /* Net AABB bounds */
+    public static final double NET_MIN_SCORING_X = Units.inchesToMeters(200);
+    public static final double NET_MIN_SCORING_Y = Units.inchesToMeters(158.50);
+
+    public static final double NET_MAX_SCORING_X = Units.inchesToMeters(245);
+    public static final double NET_MAX_SCORING_Y = Units.inchesToMeters(317);
 
     /* Reef physical parameters */
     public static final Translation2d REEF_CENTER_BLUE = new Translation2d(Units.inchesToMeters(176.745), Units.inchesToMeters(158.50)); 
     public static final double REEF_INRADIUS = 0.81901;
     public static final double REEF_PIPE_CENTER_OFFSET = Units.inchesToMeters(6.5);
+
+    /* Human player station physical parameters */
+    public static final Translation2d HUMAN_PLAYER_STATION_LEFT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(25.80));  
+    public static final Translation2d HUMAN_PLAYER_STATION_RIGHT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(291.20));  
+
+    /* Processor physical parameters */
+    public static final Translation2d PROCCESSOR_BLUE = new Translation2d(Units.inchesToMeters(235.73), Units.inchesToMeters(0.0));  
+
+    /* Net physical parameters */
+    public static final double NET_LINE_X_BLUE = Units.inchesToMeters(204.0);
 
     /* Path following parameters */
     public static final double MAX_SPEED = 1.0f;
@@ -47,37 +70,162 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     
     private boolean coralScoringRightSide = false;
 
+    enum DynamicPathingSituation {
+        NONE, // None of the conditions for other situations are met
+        REEF_CORAL, // Scoring coral -> has coral loaded and in range of reef
+        REEF_ALGEA, // Picking up algea -> has no coral or algea and is in range of reef
+        NET, // Scoring algea in net -> has algea and is in range of net
+        PROCESSOR, // Scoring algea in processor -> has algea and is in range of processor
+        HUMAN_PICKUP // Picking up coral from human player -> has no coral and in range of human player
+    }
 
-    /**
-     * Returns a command that paths to the nearest coral scoring position
-     * @return A pathplanner command that drives to the nearest coral scoring position
-     */
-    public Command getCoralPathCommand() {
-        Pose2d targetPose = getNearestScoringLocation();
-        // System.out.println("Trying");
-
-        SmartDashboard.putNumberArray("TargetPose Coral", new double[] {
-            targetPose.getX(),
-            targetPose.getY(),
-            targetPose.getRotation().getDegrees()
-        });
-
-        Command cmd = new InstantCommand();
-
-        if (isRobotInRangeOfCoralScoring()) {
-            var path = DynamicPathingSubsystem.simplePathToPose(targetPose);
-            if (path.isPresent()){
-                cmd = AutoBuilder.followPath(path.get());
-
-                // System.out.println("Going");
-            } else {
-                // If path isn't present, aka we're too close to the target to reasonably path, just give up
+    public static DynamicPathingSituation getDynamicPathingSituation() {
+        if (isRobotInRangeOfReefPathing()) {
+            if (Manipulator.hasCoralLoaded()) {
+                return DynamicPathingSituation.REEF_CORAL;
+            } else if (!Manipulator.hasAlgeaLoaded()) {
+                return DynamicPathingSituation.REEF_ALGEA;
             }
-            
         }
 
+        if (isRobotInRangeOfNet() && Manipulator.hasAlgeaLoaded()) {
+            return DynamicPathingSituation.NET;
+        }
+
+        if (isRobotInRangeOfProcessor() && Manipulator.hasAlgeaLoaded()) {
+            return DynamicPathingSituation.PROCESSOR;
+        }
+
+        if (!Manipulator.hasCoralLoaded() && isRobotInRangeOfHumanPlayer()) {
+            return DynamicPathingSituation.HUMAN_PICKUP;
+        }
+
+        return DynamicPathingSituation.NONE;
+    }
+
+        /**
+     * Is the robot within a certain distance of the reef
+     * @return a boolean
+     */
+    public static boolean isRobotInRangeOfReefPathing() {
+        var pose = FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose());
+        return (pose.getTranslation().getDistance(REEF_CENTER_BLUE) <= REEF_INRADIUS + REEF_MIN_SCORING_DISTANCE);
+    }
+
+    /**
+     * Is the robot within a bounding box that allows scoring in the net 
+     * @return a boolean
+     */
+    public static boolean isRobotInRangeOfNet() {
+        var pose = FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose());
+        return pose.getX() >= NET_MIN_SCORING_X && pose.getX() <= NET_MAX_SCORING_X && pose.getY() >= NET_MIN_SCORING_Y && pose.getY() <= NET_MAX_SCORING_Y;
+    }
+
+    /**
+     * Is the robot within a certain distance of the processor
+     * @return a boolean
+     */
+    public static boolean isRobotInRangeOfProcessor() {
+        var pose = FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose());
+        return (pose.getTranslation().getDistance(PROCCESSOR_BLUE) <= PROCCESSOR_MIN_SCORING_DISTANCE);
+    }
+
+    /**
+     * Is the robot within a certain distance of the human player station
+     * @return a boolean
+     */
+    public static boolean isRobotInRangeOfHumanPlayer() {
+        var pose = FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose());
+        boolean inRangeLeft = (pose.getTranslation().getDistance(HUMAN_PLAYER_STATION_LEFT_BLUE) <= HUMAN_PLAYER_MIN_PICKUP_DISTANCE);
+        boolean inRangeRight = (pose.getTranslation().getDistance(HUMAN_PLAYER_STATION_RIGHT_BLUE) <= HUMAN_PLAYER_MIN_PICKUP_DISTANCE);
+        return inRangeLeft || inRangeRight;
+    }
+
+    /**
+     * Returns a command that paths to the chosen dynamic path target, chosen by the getDynamicPathingSituation() function
+     * @return A pathplanner command that drives to the chosen position
+     */
+    public Command getCurrentDynamicPathCommand() {
+        Command cmd = new InstantCommand(); // Do nothing fallback in case something goes wrong
+        
+        DynamicPathingSituation currentSituation = getDynamicPathingSituation();
+        
+
+        switch (currentSituation) {
+            case REEF_CORAL: 
+                { // extra curly brackets to keep scopes seperate
+                    Pose2d targetCoralPose = getNearestCoralScoringLocation();
+                    SmartDashboard.putNumberArray("TargetPose Reef", new double[] {
+                        targetCoralPose.getX(),
+                        targetCoralPose.getY(),
+                        targetCoralPose.getRotation().getDegrees()
+                    });
+
+                    DynamicPathingSubsystem.simplePathToPose(targetCoralPose).ifPresent((var path) -> {
+                        // If path isn't present, aka we're too close to the target to reasonably path, just give up
+                        cmd = AutoBuilder.followPath(path);
+                    });
+                }
+                break;
+
+            case REEF_ALGEA:
+                {
+                    Pose2d targetAlgeaPose = getNearestAlgeaPickupLocation();
+                    SmartDashboard.putNumberArray("TargetPose Reef", new double[] {
+                        targetAlgeaPose.getX(),
+                        targetAlgeaPose.getY(),
+                        targetAlgeaPose.getRotation().getDegrees()
+                    });
+
+                    DynamicPathingSubsystem.simplePathToPose(targetAlgeaPose).ifPresent((var path) -> {
+                        // If path isn't present, aka we're too close to the target to reasonably path, just give up
+                        cmd = AutoBuilder.followPath(path);
+                    });
+                }
+                break;
+            case NET:
+                new DriveTeleop(
+                    // a PID controller or smth lmao
+                    Controls::getDriveY,
+                    // PID controller lmao
+                );
+                break;
+            case PROCESSOR:
+                new DriveTeleop(
+                    Controls::getDriveX,
+                    Controls::getDriveY,
+                    // PID controller lmao
+                );
+                break;
+            case HUMAN_PICKUP:
+                new DriveTeleop(
+                    Controls::getDriveX,
+                    Controls::getDriveY,
+                    // PID controller lmao
+                );
+                break;
+            default:
+                break;
+        }
+        
         return cmd;
     }
+
+    /**
+     * Returns a command that paths to the nearest coral scoring or algea pickup position
+     * @return A pathplanner command that drives to the nearest chosen position
+     */
+    // public Command getReefPathCommand( ) {
+    //     Command cmd = new InstantCommand();
+
+    //     if (isRobotInRangeOfReefPathing()) {
+            
+            
+            
+    //     }
+
+    //     return cmd;
+    // }
 
     /**
      * Sets the side which coral scoring targets
@@ -89,29 +237,29 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     }
 
     /**
-     * Is the robot within a certain distance of the reef
-     * @return a boolean
+     * Gets coordinates in field space to the nearest coral scoring position.
+     * @return The coordinates the robot can score from
      */
-    public static boolean isRobotInRangeOfCoralScoring() {
-        var pose = FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose());
-        return (pose.getTranslation().getDistance(REEF_CENTER_BLUE) <= REEF_INRADIUS + REEF_MIN_SCORING_DISTANCE);
+    public Pose2d getNearestCoralScoringLocation() {
+        return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), coralScoringRightSide, false);
     }
 
     /**
      * Gets coordinates in field space to the nearest coral scoring position.
      * @return The coordinates the robot can score from
      */
-    public Pose2d getNearestScoringLocation() {
-        return getNearestScoringLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), coralScoringRightSide);
+    public Pose2d getNearestAlgeaPickupLocation() {
+        return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), false, true);
     }
 
     /**
-     * Gets coordinates in field space to the nearest coral scoring position.
+     * Gets coordinates in field space to the nearest coral scoring position or algae pickup point.
      * @param pose The robot's position in field space (meters)
      * @param rightSide Choose the coral scoring position on the right side of the robot, otherwise the left one is chosen. This depends on the robot's forward orientation.
+     * @param scoringAlgea If true, rightSide is ignored and we path to the center of the reef face
      * @return The coordinates the robot can score from
      */
-    public static Pose2d getNearestScoringLocationStatic(Pose2d robotPose, boolean rightSide) {
+    public static Pose2d getNearestReefLocationStatic(Pose2d robotPose, boolean rightSide, boolean scoringAlgea) {
         Pose2d pose = FlipIfRedAlliance(robotPose);
 
         // SmartDashboard.putNumberArray("InProgress Target Pose", new double[] {
@@ -145,15 +293,17 @@ public class DynamicPathingSubsystem extends SubsystemBase {
             scoringSide = !scoringSide;
         }
 
-        // Choose left or right scoring position
+        // Choose left or right coral scoring position
         scoringPositionOffset = scoringPositionOffset.times(scoringSide ? 1 : -1);
 
-        // Add in offset for chosen coral scoring position 
-        outputTranslation = outputTranslation.plus(scoringPositionOffset);
+        // Only offset if scoring coral 
+        if (!scoringAlgea) {
+            // Add in offset for chosen coral scoring position 
+            outputTranslation = outputTranslation.plus(scoringPositionOffset);
+        }
 
         // Add in reef center to offset to right origin
         outputTranslation = outputTranslation.plus(REEF_CENTER_BLUE);
-
 
         Pose2d outputPose = new Pose2d(outputTranslation, invertedInRadiusAngle);
 
@@ -214,6 +364,22 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         }
         
         return pose;
+    }
+
+    /**
+     * Takes an angle and flips it to the other side of the field if the robot is on the red alliance.
+     * @param pose The input angle (degtees)
+     * @return The output angle 
+     */
+    public static Rotation2d FlipIfRedAllianceAngle(Rotation2d angle) {
+        var alliance = DriverStation.getAlliance();
+        if (alliance.isPresent()) {
+            if (alliance.get() == Alliance.Red) {
+                return FlippingUtil.flipFieldRotation(angle);
+            }
+        }
+        
+        return angle;
     }
 
     /**

@@ -107,7 +107,7 @@ public class RobotContainer {
 
     // Dynamic path to coral scoring
     Controls.leftJoystick.button(1).whileTrue(Commands.defer(
-      () -> dynamicPathingSubsystem.getCoralPathCommand(), new HashSet<>(Arrays.asList(driveSubsystem))
+      () -> dynamicPathingSubsystem.getCurrentDynamicPathCommand(), new HashSet<>(Arrays.asList(driveSubsystem))
     ));
 
     // Switch coral scoring sides
