@@ -22,15 +22,16 @@ public class ElevatorSubsystem extends SubsystemBase {
     public boolean isClimbing = false;
    
     private double elevatorTargetPosition = 0;
+    private boolean isZeroingElevator = false;
 
     private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
 
-    private final double ELEVATOR_DEAD_ZONE = 1;
+    private static final double ELEVATOR_DEAD_ZONE = 1;
 
-    private final CurrentLimitsConfigs elevatorCurrentLimits = new CurrentLimitsConfigs();
-    private boolean previousEnabled = false;
-    private double previousTargetPosition = elevatorTargetPosition;
+    private static final CurrentLimitsConfigs elevatorCurrentLimits = new CurrentLimitsConfigs();
 
+    private static final double ZEROING_SPEED = -0.1; // Slow downward speed
+    private static final double STALL_CURRENT_THRESHOLD = 10.0; // Amperes
 
     public enum elevatorLevel {
       L3(50.0),
@@ -86,6 +87,24 @@ public class ElevatorSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     executeElevatorMotionMagic();
+
+    if (Elevator1.getStatorCurrent().getValueAsDouble() < STALL_CURRENT_THRESHOLD && isZeroingElevator) {
+      // Stop the elevator
+      Elevator1.set(0);
+
+      // Set the current position as the new zero
+      Elevator1.setPosition(0);
+
+      // Reset the target position
+      elevatorTargetPosition = 0;
+
+      // Update the current level
+      currentLevel = elevatorLevel.L0;
+
+      isZeroingElevator = false;
+
+      System.out.println("Elevator zeroed successfully");
+    }
   }
     /**
    * Executes motion profiling for the elevator.
@@ -101,10 +120,7 @@ public class ElevatorSubsystem extends SubsystemBase {
    * @param position Target position in rotations.
    */
   public void setElevatorTargetPosition(double position){
-    this.elevatorTargetPosition = position;
-    if(this.elevatorTargetPosition != this.previousTargetPosition){
-      this.previousTargetPosition = this.elevatorTargetPosition;
-    }
+    elevatorTargetPosition = position;
   }
 
   public double getElevatorPosition(){
@@ -135,34 +151,41 @@ public class ElevatorSubsystem extends SubsystemBase {
     elevatorTargetPosition += change;
   }
 
-  /**
-   * Sets the shooter mode to bottom.
-   */
   public void setLevel0(){
     currentLevel = elevatorLevel.L0;
   }
 
-  /**
-   * Sets the shooter mode to tall.
-   */
   public void setLevel3() {
     currentLevel = elevatorLevel.L3;
   }
 
-  /**
-   * Sets the shooter mode to middle.
-   */
   public void setLevel2() {
     currentLevel = elevatorLevel.L2;
   }
 
-  /**
-   * Sets the shooter mode to short.
-   */
   public void setLevel1() {
     currentLevel = elevatorLevel.L1;
   }
 
+
+
+
+  public void zeroElevator() {
+    // Drive elevator down slowly
+    Elevator1.set(ZEROING_SPEED);
+    isZeroingElevator = true;
+
+    // // Wait until the elevator stalls (hits the base)
+    // while (Elevator1.getStatorCurrent().getValueAsDouble() < STALL_CURRENT_THRESHOLD) {
+    //     // Small delay to prevent tight looping
+    //     try {
+    //         Thread.sleep(20);
+    //     } catch (InterruptedException e) {
+    //         e.printStackTrace();
+    //     }
+    // }
+    //}
+}
   /**
    * Gets the current elevator mode.
    * @return The current ShooterMode of the elevator.
