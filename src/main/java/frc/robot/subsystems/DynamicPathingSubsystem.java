@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import java.io.Console;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.GoalEndState;
@@ -25,15 +26,14 @@ import frc.robot.Controls;
 import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import frc.robot.commands.DriveTeleop;
+import frc.robot.utils.WafflesUtilities;
+import frc.robot.utils.WafflesUtilities.*;
 
 /**
  * All units are meters unless otherwise stated. The origin is on the blue alliance side, and coordinates are returned relative to the blue alliance
 */
 public class DynamicPathingSubsystem extends SubsystemBase {
-    /* Offset from the edge of the reef to score from  */
-    public static final double REEF_SCORING_POSITION_OFFSET = 1;
-
-    /* Distances around various points */
+    /* Various distances */
     public static final double REEF_MIN_SCORING_DISTANCE = 2;
     public static final double PROCCESSOR_MIN_SCORING_DISTANCE = 1.5;
     public static final double HUMAN_PLAYER_MIN_PICKUP_DISTANCE = 2;
@@ -49,16 +49,22 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     public static final Translation2d REEF_CENTER_BLUE = new Translation2d(Units.inchesToMeters(176.745), Units.inchesToMeters(158.50)); 
     public static final double REEF_INRADIUS = 0.81901;
     public static final double REEF_PIPE_CENTER_OFFSET = Units.inchesToMeters(6.5);
+    // Offset from the edge of the reef to score from 
+    public static final double REEF_SCORING_POSITION_OFFSET = 1;
 
     /* Human player station physical parameters */
     public static final Translation2d HUMAN_PLAYER_STATION_LEFT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(25.80));  
     public static final Translation2d HUMAN_PLAYER_STATION_RIGHT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(291.20));  
+    public static final Rotation2d HUMAN_PLAYER_STATION_LEFT_SCORING_ANGLE = Rotation2d.fromDegrees(126);
+    public static final Rotation2d HUMAN_PLAYER_STATION_RIGHT_SCORING_ANGLE = Rotation2d.fromDegrees(234);
 
     /* Processor physical parameters */
     public static final Translation2d PROCCESSOR_BLUE = new Translation2d(Units.inchesToMeters(235.73), Units.inchesToMeters(0.0));  
+    public static final Rotation2d PROCESSOR_SCORING_ANGLE = Rotation2d.fromDegrees(90);
 
     /* Net physical parameters */
     public static final double NET_LINE_X_BLUE = Units.inchesToMeters(204.0);
+    public static final Rotation2d NET_SCORING_ANGLE = Rotation2d.kZero;
 
     /* Path following parameters */
     public static final double MAX_SPEED = 1.0f;
@@ -79,6 +85,9 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         HUMAN_PICKUP // Picking up coral from human player -> has no coral and in range of human player
     }
 
+    /**
+     * Returns the current DynamicPathingSituation
+     */
     public static DynamicPathingSituation getDynamicPathingSituation() {
         if (isRobotInRangeOfReefPathing()) {
             if (Manipulator.hasCoralLoaded()) {
@@ -103,12 +112,12 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         return DynamicPathingSituation.NONE;
     }
 
-        /**
+    /**
      * Is the robot within a certain distance of the reef
      * @return a boolean
      */
     public static boolean isRobotInRangeOfReefPathing() {
-        var pose = FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose());
+        var pose = WafflesUtilities.FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose());
         return (pose.getTranslation().getDistance(REEF_CENTER_BLUE) <= REEF_INRADIUS + REEF_MIN_SCORING_DISTANCE);
     }
 
@@ -117,7 +126,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
      * @return a boolean
      */
     public static boolean isRobotInRangeOfNet() {
-        var pose = FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose());
+        var pose = WafflesUtilities.FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose());
         return pose.getX() >= NET_MIN_SCORING_X && pose.getX() <= NET_MAX_SCORING_X && pose.getY() >= NET_MIN_SCORING_Y && pose.getY() <= NET_MAX_SCORING_Y;
     }
 
@@ -126,7 +135,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
      * @return a boolean
      */
     public static boolean isRobotInRangeOfProcessor() {
-        var pose = FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose());
+        var pose = WafflesUtilities.FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose());
         return (pose.getTranslation().getDistance(PROCCESSOR_BLUE) <= PROCCESSOR_MIN_SCORING_DISTANCE);
     }
 
@@ -135,7 +144,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
      * @return a boolean
      */
     public static boolean isRobotInRangeOfHumanPlayer() {
-        var pose = FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose());
+        var pose = WafflesUtilities.FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose());
         boolean inRangeLeft = (pose.getTranslation().getDistance(HUMAN_PLAYER_STATION_LEFT_BLUE) <= HUMAN_PLAYER_MIN_PICKUP_DISTANCE);
         boolean inRangeRight = (pose.getTranslation().getDistance(HUMAN_PLAYER_STATION_RIGHT_BLUE) <= HUMAN_PLAYER_MIN_PICKUP_DISTANCE);
         return inRangeLeft || inRangeRight;
@@ -149,11 +158,10 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         Command cmd = new InstantCommand(); // Do nothing fallback in case something goes wrong
         
         DynamicPathingSituation currentSituation = getDynamicPathingSituation();
-        
+        SmartDashboard.putString("Pathing Situation", currentSituation.toString());
 
         switch (currentSituation) {
-            case REEF_CORAL: 
-                { // extra curly brackets to keep scopes seperate
+            case REEF_CORAL:  { // extra curly brackets to keep scopes seperate
                     Pose2d targetCoralPose = getNearestCoralScoringLocation();
                     SmartDashboard.putNumberArray("TargetPose Reef", new double[] {
                         targetCoralPose.getX(),
@@ -161,15 +169,14 @@ public class DynamicPathingSubsystem extends SubsystemBase {
                         targetCoralPose.getRotation().getDegrees()
                     });
 
-                    DynamicPathingSubsystem.simplePathToPose(targetCoralPose).ifPresent((var path) -> {
-                        // If path isn't present, aka we're too close to the target to reasonably path, just give up
-                        cmd = AutoBuilder.followPath(path);
-                    });
+                    var path = DynamicPathingSubsystem.simplePathToPose(targetCoralPose);
+                    if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
+                        cmd = AutoBuilder.followPath(path.get());
+                    }
                 }
                 break;
 
-            case REEF_ALGEA:
-                {
+            case REEF_ALGEA: {
                     Pose2d targetAlgeaPose = getNearestAlgeaPickupLocation();
                     SmartDashboard.putNumberArray("TargetPose Reef", new double[] {
                         targetAlgeaPose.getX(),
@@ -177,33 +184,47 @@ public class DynamicPathingSubsystem extends SubsystemBase {
                         targetAlgeaPose.getRotation().getDegrees()
                     });
 
-                    DynamicPathingSubsystem.simplePathToPose(targetAlgeaPose).ifPresent((var path) -> {
-                        // If path isn't present, aka we're too close to the target to reasonably path, just give up
-                        cmd = AutoBuilder.followPath(path);
-                    });
+                    var path = DynamicPathingSubsystem.simplePathToPose(targetAlgeaPose);
+                    if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
+                        cmd = AutoBuilder.followPath(path.get());
+                    }
                 }
                 break;
-            case NET:
-                new DriveTeleop(
-                    // a PID controller or smth lmao
-                    Controls::getDriveY,
-                    // PID controller lmao
-                );
+
+            case NET: {
+                    Rotation2d targetNetRotation = WafflesUtilities.FlipAngleIfRedAlliance(NET_SCORING_ANGLE);
+                    double targetNetX = WafflesUtilities.FlipXIfRedAlliance(NET_LINE_X_BLUE); 
+
+                    new DriveTeleop(
+                        () -> targetNetX, true, // a PID controller or smth lmao
+                        Controls::getDriveY, false,
+                        () -> targetNetRotation, true
+                    );
+                }
                 break;
-            case PROCESSOR:
-                new DriveTeleop(
-                    Controls::getDriveX,
-                    Controls::getDriveY,
-                    // PID controller lmao
-                );
+
+            case PROCESSOR: {
+                    Rotation2d targetProcessorRotation = WafflesUtilities.FlipAngleIfRedAlliance(PROCESSOR_SCORING_ANGLE);
+
+                    cmd = new DriveTeleop(
+                        Controls::getDriveX, false,
+                        Controls::getDriveY, false,
+                        () -> targetProcessorRotation, true
+                    );
+                }
                 break;
-            case HUMAN_PICKUP:
-                new DriveTeleop(
-                    Controls::getDriveX,
-                    Controls::getDriveY,
-                    // PID controller lmao
-                );
+
+            case HUMAN_PICKUP: {
+                    Rotation2d humanPickupRotation = WafflesUtilities.FlipAngleIfRedAlliance(getHumanPlayerPickupAngle());
+
+                    cmd = new DriveTeleop(
+                        Controls::getDriveX, false,
+                        Controls::getDriveY, false,
+                        () -> humanPickupRotation, true
+                    );
+                }
                 break;
+                
             default:
                 break;
         }
@@ -212,28 +233,24 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     }
 
     /**
-     * Returns a command that paths to the nearest coral scoring or algea pickup position
-     * @return A pathplanner command that drives to the nearest chosen position
-     */
-    // public Command getReefPathCommand( ) {
-    //     Command cmd = new InstantCommand();
-
-    //     if (isRobotInRangeOfReefPathing()) {
-            
-            
-            
-    //     }
-
-    //     return cmd;
-    // }
-
-    /**
      * Sets the side which coral scoring targets
      * @param rightSide if the side is to the right or the left, relative to the driver's point of view
      */
     public void setCoralScoringSide(boolean rightSide) {
         coralScoringRightSide = rightSide;
         System.out.println("Setting scoring to right: " + rightSide);
+    }
+
+    /**
+     * Gets the angle the robot should face to pickup from the nearest human player station. Always returns blue alliance angles.
+     * @return
+     */
+    public Rotation2d getHumanPlayerPickupAngle() {
+        Pose2d pose = WafflesUtilities.FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose());
+        if (pose.getY() > (FlippingUtil.fieldSizeY / 2)) {
+            return HUMAN_PLAYER_STATION_LEFT_SCORING_ANGLE;
+        }
+        return HUMAN_PLAYER_STATION_RIGHT_SCORING_ANGLE;
     }
 
     /**
@@ -260,7 +277,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
      * @return The coordinates the robot can score from
      */
     public static Pose2d getNearestReefLocationStatic(Pose2d robotPose, boolean rightSide, boolean scoringAlgea) {
-        Pose2d pose = FlipIfRedAlliance(robotPose);
+        Pose2d pose = WafflesUtilities.FlipIfRedAlliance(robotPose);
 
         // SmartDashboard.putNumberArray("InProgress Target Pose", new double[] {
         //     pose.getX(),
@@ -308,7 +325,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         Pose2d outputPose = new Pose2d(outputTranslation, invertedInRadiusAngle);
 
         // If we flipped the pose at the beginning (aka if we're on the red alliance), flip it back at the end.
-        outputPose = FlipIfRedAlliance(outputPose);
+        outputPose = WafflesUtilities.FlipIfRedAlliance(outputPose);
 
         return outputPose;
     }
@@ -326,7 +343,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
             return Optional.empty();
         }
 
-        double angleBetweenPoses = AngleBetweenPoints(startingPose.getTranslation(), endingPose.getTranslation());
+        double angleBetweenPoses = WafflesUtilities.AngleBetweenPoints(startingPose.getTranslation(), endingPose.getTranslation());
 
         // Create a list of waypoints from poses. Each pose represents one waypoint.
         // The rotation component of the pose should be the direction of travel. Do not use holonomic rotation.
@@ -348,58 +365,5 @@ public class DynamicPathingSubsystem extends SubsystemBase {
 
         
         return Optional.of(path);
-    }
-
-    /**
-     * Takes a pose and flips it to the other side of the field if the robot is on the red alliance.
-     * @param pose The input Pose2d
-     * @return The output Pose2d 
-     */
-    public static Pose2d FlipIfRedAlliance(Pose2d pose) {
-        var alliance = DriverStation.getAlliance();
-        if (alliance.isPresent()) {
-            if (alliance.get() == Alliance.Red) {
-                return FlippingUtil.flipFieldPose(pose);
-            }
-        }
-        
-        return pose;
-    }
-
-    /**
-     * Takes an angle and flips it to the other side of the field if the robot is on the red alliance.
-     * @param pose The input angle (degtees)
-     * @return The output angle 
-     */
-    public static Rotation2d FlipIfRedAllianceAngle(Rotation2d angle) {
-        var alliance = DriverStation.getAlliance();
-        if (alliance.isPresent()) {
-            if (alliance.get() == Alliance.Red) {
-                return FlippingUtil.flipFieldRotation(angle);
-            }
-        }
-        
-        return angle;
-    }
-
-    /**
-     * Returns the angle from p1 to p2
-    */
-    public static double AngleBetweenPoints(Translation2d p1, Translation2d p2) {
-        return Math.atan2(p2.getY() - p1.getY(), p2.getX() - p1.getX());
-    }
-
-    /**
-     * Returns the angle for the driver's forward direction, depending on alliance
-     * @return a rotation2d representing driver forward in field space
-     */
-    public static Rotation2d getDriverForwardAngle() {
-        var alliance = DriverStation.getAlliance();
-        if (alliance.isPresent()) {
-            if (alliance.get() == Alliance.Red) {
-                return Rotation2d.k180deg;
-            }
-        }
-        return Rotation2d.kZero;
     }
 }

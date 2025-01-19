@@ -4,19 +4,18 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.data.Constants.PhysicalConstants;
 
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
-import com.ctre.phoenix6.swerve.SwerveRequest.ApplyFieldSpeeds;
-import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
-import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
-import com.ctre.phoenix6.mechanisms.swerve.LegacySwerveRequest.FieldCentric;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.swerve.SwerveSetpoint;
@@ -25,33 +24,40 @@ import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 import static frc.robot.RobotContainer.*;
 
 public class DriveTeleop extends Command {
-  private final DoubleSupplier xVelocitySupplier;
-  private final DoubleSupplier yVelocitySupplier;
-  private final DoubleSupplier thetaVelocitySupplier;
+  private final DoubleSupplier xSupplier;
+  private final DoubleSupplier ySupplier;
+  private final Supplier<Rotation2d> thetaSupplier;
 
-  // private final SwerveSetpointGenerator setpointGenerator;
-  // private SwerveSetpoint previousSetpoint;
+  private final boolean isSetpointX, isSetpointY, isSetpointTheta;
+
+  /* PID Controllers used if suppliers are interpreted as setpoints */
+  private PIDController xPidController = new PIDController(4, 1, 0);
+  private PIDController yPidController = new PIDController(4, 1, 0);
+  private PIDController thetaPidController = new PIDController(9.0, 1.5, 0.0);
 
   /** 
    * Command that drives the robot field-oriented following velocities given by suppliers 
    */
-  public DriveTeleop(DoubleSupplier xVelocitySupplier, DoubleSupplier yVelocitySupplier, DoubleSupplier thetaVelocitySupplier) {
+  public DriveTeleop(DoubleSupplier xVelocitySupplier, DoubleSupplier yVelocitySupplier, Supplier<Rotation2d> thetaVelocitySupplier) {
+    this(xVelocitySupplier, false, yVelocitySupplier, false, thetaVelocitySupplier, false);
+  }
+
+  /** 
+   * Command that drives the robot field-oriented following velocities given by suppliers, with the option of making suppliers setpoints 
+   */
+  public DriveTeleop(DoubleSupplier xSupplier, boolean isSetpointX, DoubleSupplier ySupplier, boolean isSetpointY, Supplier<Rotation2d> thetaSupplier, boolean isSetpointTheta) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(driveSubsystem);
   
-    this.xVelocitySupplier = xVelocitySupplier;
-    this.yVelocitySupplier = yVelocitySupplier;
-    this.thetaVelocitySupplier = thetaVelocitySupplier;
+    this.xSupplier = xSupplier;
+    this.ySupplier = ySupplier;
+    this.thetaSupplier = thetaSupplier;
 
-    // setpointGenerator = new SwerveSetpointGenerator(
-    //   driveSubsystem.PathPlannerConfig, // The robot configuration. This is the same config used for generating trajectories and running path following commands.
-    //   PhysicalConstants.maxAngularSpeed // The max rotation velocity of a swerve module in radians per second. This should probably be stored in your Constants file
-    // );
+    this.isSetpointX = isSetpointX;
+    this.isSetpointY = isSetpointY;
+    this.isSetpointTheta = isSetpointTheta;
 
-    // // Initialize the previous setpoint to the robot's current speeds & module states
-    // ChassisSpeeds currentSpeeds = driveSubsystem.getCurrentRobotChassisSpeeds(); // Method to get current robot-relative chassis speeds
-    // SwerveModuleState[] currentStates = driveSubsystem.getModule(0).getCurrentState(); // Method to get the current swerve module states
-    // previousSetpoint = new SwerveSetpoint(currentSpeeds, currentStates, DriveFeedforwards.zeros(driveSubsystem.PathPlannerConfig.numModules));
+    thetaPidController.enableContinuousInput(-Math.PI, Math.PI);
   }
 
   // Called when the command is initially scheduled.
@@ -64,15 +70,20 @@ public class DriveTeleop extends Command {
     double speedDeadband = PhysicalConstants.maxSpeed * 0.05;
     double rotationDeadband = PhysicalConstants.maxAngularSpeed * 0.01;
 
+    var currentPose = driveSubsystem.getRobotPose();
+    double xVelocity = isSetpointX ? xPidController.calculate(currentPose.getX(), xSupplier.getAsDouble()) : xSupplier.getAsDouble();
+    double yVelocity = isSetpointY ? yPidController.calculate(currentPose.getY(), ySupplier.getAsDouble()) : ySupplier.getAsDouble();
+    double thetaVelocity = isSetpointTheta ? thetaPidController.calculate(currentPose.getRotation().getRadians(), thetaSupplier.get().getRadians()) : thetaSupplier.get().getRadians();
+
     driveSubsystem.setControl(
       new SwerveRequest.FieldCentric()
         .withDeadband(speedDeadband)
         .withRotationalDeadband(rotationDeadband)
         .withDriveRequestType(DriveRequestType.Velocity)
         .withSteerRequestType(SteerRequestType.MotionMagicExpo)
-        .withVelocityX(xVelocitySupplier.getAsDouble())
-        .withVelocityY(yVelocitySupplier.getAsDouble())
-        .withRotationalRate(thetaVelocitySupplier.getAsDouble())
+        .withVelocityX(xVelocity)
+        .withVelocityY(yVelocity)
+        .withRotationalRate(thetaVelocity)
     );
 
     // ChassisSpeeds targetSpeeds = new ChassisSpeeds(xVelocitySupplier.getAsDouble(), yVelocitySupplier.getAsDouble(), thetaVelocitySupplier.getAsDouble());

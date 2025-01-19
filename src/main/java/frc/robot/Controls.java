@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
@@ -33,7 +34,7 @@ public class Controls {
         return -leftJoystick.getY() * PhysicalConstants.maxSpeed;
     }
 
-    public static double getDriveRotation() {
-        return -rightJoystick.getX() * PhysicalConstants.maxAngularSpeed;
+    public static Rotation2d getDriveRotation() {
+        return Rotation2d.fromRadians(-rightJoystick.getX() * PhysicalConstants.maxAngularSpeed);
     }
 }
