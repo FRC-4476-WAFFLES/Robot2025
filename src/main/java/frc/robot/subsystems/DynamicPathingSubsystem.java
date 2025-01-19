@@ -79,9 +79,9 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     enum DynamicPathingSituation {
         NONE, // None of the conditions for other situations are met
         REEF_CORAL, // Scoring coral -> has coral loaded and in range of reef
-        REEF_ALGEA, // Picking up algea -> has no coral or algea and is in range of reef
-        NET, // Scoring algea in net -> has algea and is in range of net
-        PROCESSOR, // Scoring algea in processor -> has algea and is in range of processor
+        REEF_ALGAE, // Picking up algae -> has no coral or algae and is in range of reef
+        NET, // Scoring algae in net -> has algae and is in range of net
+        PROCESSOR, // Scoring algae in processor -> has algae and is in range of processor
         HUMAN_PICKUP // Picking up coral from human player -> has no coral and in range of human player
     }
 
@@ -92,16 +92,16 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         if (isRobotInRangeOfReefPathing()) {
             if (Manipulator.hasCoralLoaded()) {
                 return DynamicPathingSituation.REEF_CORAL;
-            } else if (!Manipulator.hasAlgeaLoaded()) {
-                return DynamicPathingSituation.REEF_ALGEA;
+            } else if (!Manipulator.hasAlgaeLoaded()) {
+                return DynamicPathingSituation.REEF_ALGAE;
             }
         }
 
-        if (isRobotInRangeOfNet() && Manipulator.hasAlgeaLoaded()) {
+        if (isRobotInRangeOfNet() && Manipulator.hasAlgaeLoaded()) {
             return DynamicPathingSituation.NET;
         }
 
-        if (isRobotInRangeOfProcessor() && Manipulator.hasAlgeaLoaded()) {
+        if (isRobotInRangeOfProcessor() && Manipulator.hasAlgaeLoaded()) {
             return DynamicPathingSituation.PROCESSOR;
         }
 
@@ -176,15 +176,15 @@ public class DynamicPathingSubsystem extends SubsystemBase {
                 }
                 break;
 
-            case REEF_ALGEA: {
-                    Pose2d targetAlgeaPose = getNearestAlgeaPickupLocation();
+            case REEF_ALGAE: {
+                    Pose2d targetAlgaePose = getNearestAlgaePickupLocation();
                     SmartDashboard.putNumberArray("TargetPose Reef", new double[] {
-                        targetAlgeaPose.getX(),
-                        targetAlgeaPose.getY(),
-                        targetAlgeaPose.getRotation().getDegrees()
+                        targetAlgaePose.getX(),
+                        targetAlgaePose.getY(),
+                        targetAlgaePose.getRotation().getDegrees()
                     });
 
-                    var path = DynamicPathingSubsystem.simplePathToPose(targetAlgeaPose);
+                    var path = DynamicPathingSubsystem.simplePathToPose(targetAlgaePose);
                     if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
                         cmd = AutoBuilder.followPath(path.get());
                     }
@@ -265,7 +265,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
      * Gets coordinates in field space to the nearest coral scoring position.
      * @return The coordinates the robot can score from
      */
-    public Pose2d getNearestAlgeaPickupLocation() {
+    public Pose2d getNearestAlgaePickupLocation() {
         return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), false, true);
     }
 
@@ -273,10 +273,10 @@ public class DynamicPathingSubsystem extends SubsystemBase {
      * Gets coordinates in field space to the nearest coral scoring position or algae pickup point.
      * @param pose The robot's position in field space (meters)
      * @param rightSide Choose the coral scoring position on the right side of the robot, otherwise the left one is chosen. This depends on the robot's forward orientation.
-     * @param scoringAlgea If true, rightSide is ignored and we path to the center of the reef face
+     * @param scoringAlgae If true, rightSide is ignored and we path to the center of the reef face
      * @return The coordinates the robot can score from
      */
-    public static Pose2d getNearestReefLocationStatic(Pose2d robotPose, boolean rightSide, boolean scoringAlgea) {
+    public static Pose2d getNearestReefLocationStatic(Pose2d robotPose, boolean rightSide, boolean scoringAlgae) {
         Pose2d pose = WafflesUtilities.FlipIfRedAlliance(robotPose);
 
         // SmartDashboard.putNumberArray("InProgress Target Pose", new double[] {
@@ -314,7 +314,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         scoringPositionOffset = scoringPositionOffset.times(scoringSide ? 1 : -1);
 
         // Only offset if scoring coral 
-        if (!scoringAlgea) {
+        if (!scoringAlgae) {
             // Add in offset for chosen coral scoring position 
             outputTranslation = outputTranslation.plus(scoringPositionOffset);
         }

@@ -15,7 +15,7 @@ public class AlgaeIn extends Command {
 
   /** Creates a new AlgaeIn. */
   public AlgaeIn() {
-    algaeManipulator = RobotContainer.algeManipulator;
+    algaeManipulator = RobotContainer.algaeManipulator;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(algaeManipulator);
     

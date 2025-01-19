@@ -15,7 +15,7 @@ public class AlgaeOut extends Command {
 
   /** Creates a new AlgaeOut. */
   public AlgaeOut() {
-    algaeManipulator = RobotContainer.algeManipulator;
+    algaeManipulator = RobotContainer.algaeManipulator;
     addRequirements(algaeManipulator);
   }
 

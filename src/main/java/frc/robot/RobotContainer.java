@@ -53,7 +53,7 @@ public class RobotContainer {
   public static final CoralManipulator coralPivot = new CoralManipulator();
   public static final Funnel funnel = new Funnel();
   public static final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
-  public static final AlgaeManipulator algeManipulator = new AlgaeManipulator();
+  public static final AlgaeManipulator algaeManipulator = new AlgaeManipulator();
 
   /* Commands */
   final IntakeCoral runIntake = new IntakeCoral();
