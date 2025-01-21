@@ -3,8 +3,6 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.subsystems;
-
-import edu.wpi.first.wpilibj.DutyCycle;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.data.Constants;
@@ -48,29 +46,27 @@ public class Carridge extends SubsystemBase {
     // talonFX configs
     pivot=new TalonFX(Constants.pivotMotor);
     pivotAbsoluteEncoder= new DutyCycleEncoder(Constants.pivotAbsoluteEncoder);
-    TalonFXConfiguration algaeIntakeConfigs = new TalonFXConfiguration();
-    TalonFXConfiguration algaePivotConfigs = new TalonFXConfiguration();
-    algaePivotCurrentLimit.StatorCurrentLimit=60;
-
-    algaePivotCurrentLimit.StatorCurrentLimitEnable=true;
-    algaePivotConfigs.CurrentLimits=algaePivotCurrentLimit;
+    TalonFXConfiguration pivotConfigs = new TalonFXConfiguration();
+    pivotCurrentLimit.StatorCurrentLimit=60;
+    pivotCurrentLimit.StatorCurrentLimitEnable=true;
+    pivotConfigs.CurrentLimits=pivotCurrentLimit;
     
     // motion magic setup (from Elevator subsystem) -- not used yet in algae manipulator code, ADD IF NECESSARY
     MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
     motionMagicConfigs.MotionMagicCruiseVelocity = 110; // Using the existing velocity value
     motionMagicConfigs.MotionMagicAcceleration = 190; // Using the existing acceleration value
     motionMagicConfigs.MotionMagicJerk = 1900; // Setting jerk to 10x acceleration as a starting point
-    algaePivotConfigs.MotionMagic = motionMagicConfigs;
+    pivotConfigs.MotionMagic = motionMagicConfigs;
 
     var slot0Configs = new Slot0Configs();
     slot0Configs.kS = 0; // Keeping the existing value
     slot0Configs.kP = 2; // Keeping the existing value
     slot0Configs.kI = 0; // Keeping the existing value
     slot0Configs.kD = 0.01; // Keeping the existing value
-    algaePivotConfigs.Slot0 = slot0Configs;
-    algaePivot.getConfigurator().apply(algaePivotConfigs);
+    pivotConfigs.Slot0 = slot0Configs;
+    pivot.getConfigurator().apply(pivotConfigs);
 
-    algaePivot.setPosition(pivotAbsoluteEncoder.get()+Constants.pivotAbsoluteEncoderOffset);
+    pivot.setPosition(pivotAbsoluteEncoder.get()+Constants.pivotAbsoluteEncoderOffset);
   }
 
   @Override
@@ -80,11 +76,11 @@ public class Carridge extends SubsystemBase {
     pivotTargetPositionRotations = currentPivotDegree.getDegrees() / 360;
 
     // Update pivot setpoint
-    algaePivot.setControl(motionMagicRequest.withSlot(0).withPosition(pivotTargetPositionRotations));
+    pivot.setControl(motionMagicRequest.withSlot(0).withPosition(pivotTargetPositionRotations));
   }
 
   public boolean isAlgaePivotCorrectPos(){
-    return algaePivot.getPosition().getValueAsDouble()==pivotTargetPositionRotations;
+    return pivot.getPosition().getValueAsDouble()==pivotTargetPositionRotations;
   }
 
     /**
@@ -92,7 +88,7 @@ public class Carridge extends SubsystemBase {
    * @return true if a algae is detected (current exceeds threshold), false otherwise.
    */
   public boolean isAlgaeCurrentDetection() {
-    return algaePivot.getStatorCurrent().getValueAsDouble() > 34;
+    return pivot.getStatorCurrent().getValueAsDouble() > 34;
   }
   public void setL0() {
     currentPivotDegree =pivotPositions.L0;

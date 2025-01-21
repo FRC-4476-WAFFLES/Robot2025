@@ -39,10 +39,8 @@ public final class Constants {
   public static final int climberLeader = 11;
   public static final int climberFollower = 12;
   public static final int climberAllignment = 13;
-  public static final int coralIntakeMotor = 14;
-  public static final int coralPivotMotor = 15;
-  public static final int algaeIntakeMotor = 16;
-  public static final int algaePivotMotor = 17;
+  public static final int intakeMotor = 14;
+  public static final int pivotMotor = 15;
   public static final int funnelMotor = 18;
   
   // Sensors
