@@ -11,21 +11,24 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import au.grapplerobotics.LaserCan;
-import au.grapplerobotics.ConfigurationFailedException;
-import edu.wpi.first.wpilibj.TimedRobot;
+
 
 public class Manipulator extends SubsystemBase {
   /** Creates a new CoralIntake. */
   private TalonFX intake;
   private LaserCan laserCanCamera;
-  private final CurrentLimitsConfigs intakeCurrentLimit= new CurrentLimitsConfigs();
+
+  private final DutyCycleOut algaeIntakeDutyCycle = new DutyCycleOut(0);
   private double intakeSpeed = 0;
   
   public Manipulator() {
     // talonFX configs
-    intake=new TalonFX(Constants.intakeMotor);
+    intake = new TalonFX(Constants.intakeMotor);
     laserCanCamera = new LaserCan(Constants.laserCanCamera);
+
     TalonFXConfiguration intakeConfigs = new TalonFXConfiguration();
+    CurrentLimitsConfigs intakeCurrentLimit= new CurrentLimitsConfigs();
+
     intakeCurrentLimit.StatorCurrentLimit=60;
     intakeCurrentLimit.StatorCurrentLimitEnable=true;
     intakeConfigs.CurrentLimits=intakeCurrentLimit;
@@ -35,7 +38,6 @@ public class Manipulator extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    final DutyCycleOut algaeIntakeDutyCycle = new DutyCycleOut(0);
     intake.setControl(algaeIntakeDutyCycle.withOutput(intakeSpeed));
   }
 

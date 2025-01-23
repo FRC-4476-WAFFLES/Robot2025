@@ -18,21 +18,32 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 
 public class ClimberSubsystem extends SubsystemBase {
-  public final TalonFX climberMotorLeader;
-  public final TalonFX climberMotorFollower;
-  public final TalonFX alignmentMotor;
+  private final TalonFX climberMotorLeader;
+  private final TalonFX climberMotorFollower;
+  private final TalonFX alignmentMotor;
   private final DutyCycleEncoder climberAbsoluteEncoder;
 
   private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
-  private double climberTargetPositionRotations = 0;
-  private double climberTargetPositionDegrees = 0;
-  private double previousTargetPosition = climberTargetPositionRotations;
 
-  private final CurrentLimitsConfigs climberCurrentLimits = new CurrentLimitsConfigs();
-  private final CurrentLimitsConfigs alignmentCurrentLimit= new CurrentLimitsConfigs();
+  private double climberSetpointAngle = 0;
 
   private static final double CLIMBER_DEAD_ZONE = 1;
   
+  public enum ClimberAngle {
+    DeployedAngle(30),
+    RetractedAngle(0);
+
+    private final double angle;
+
+    ClimberAngle(double angle) {
+      this.angle = angle;
+    }
+
+    public double getAngle() {
+      return angle;
+    }
+  }
+
   /** Creates a new ClimberSubsystem. */
   public ClimberSubsystem()
   {
@@ -46,6 +57,9 @@ public class ClimberSubsystem extends SubsystemBase {
     // create a configuration object for the climber motor
     TalonFXConfiguration climberConfig = new TalonFXConfiguration();
     TalonFXConfiguration alignmentConfig = new TalonFXConfiguration();
+
+    CurrentLimitsConfigs climberCurrentLimits = new CurrentLimitsConfigs();
+    CurrentLimitsConfigs alignmentCurrentLimit= new CurrentLimitsConfigs();
     
     //climber configs:
     // current limits
@@ -96,37 +110,40 @@ public class ClimberSubsystem extends SubsystemBase {
   public void periodic()
   {
     // This method will be called once per scheduler run
-
-    executeClimberMotionMagic();
-    
-  }
-
-  private void executeClimberMotionMagic() {
-    motionMagicRequest.Position = climberTargetPositionRotations;
-    motionMagicRequest.Slot = 0; // Use the Slot0 gains
-    climberMotorLeader.setControl(motionMagicRequest);
+    climberMotorLeader.setControl(motionMagicRequest.withPosition(climberSetpointAngle).withSlot(0));
   }
 
 
 
   /**
    * Sets the target position of the climber.
-   * @param position Target position in rotations.
+   * @param position Target position in degrees.
    */
-  public void setClimberTargetPosition(double angle){
+  public void setClimberSetpoint(double angle){
+    climberSetpointAngle = angle;
+  }
 
+  /**
+   * Sets the target position of the climber.
+   * @param position Target position from an enum
+   */
+  public void setClimberSetpoint(ClimberAngle angle){
+    climberSetpointAngle = angle.getAngle();
   }
   
-    /**
-     * Gets the current angle of the climber in degrees.
-     * @return The current angle in degrees.
-     */
-    public double getClimberDegrees() {
-      return climberMotorLeader.getPosition().getValueAsDouble() * 360*Constants.PhysicalConstants.ClimberReduction;
-    }
+  /**
+   * Gets the current angle of the climber in degrees.
+   * @return The current angle in degrees.
+   */
+  public double getClimberDegrees() {
+    return climberMotorLeader.getPosition().getValueAsDouble() * 360 * Constants.PhysicalConstants.ClimberReduction;
+  }
 
-    public boolean isClimberRightPosition(){
-      return Math.abs(climberTargetPositionRotations-climberMotorLeader.getPosition().getValueAsDouble())<CLIMBER_DEAD_ZONE;
-    }
-
+  /**
+   * Gets if the current angle of the climber is within a an allowable deadzone of it's setpoint.
+   * @return A boolean.
+   */
+  public boolean isClimberRightPosition(){
+    return Math.abs(climberSetpointAngle - getClimberDegrees()) < CLIMBER_DEAD_ZONE;
+  }
 }

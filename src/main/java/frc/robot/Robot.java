@@ -35,7 +35,7 @@ public class Robot extends TimedRobot {
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
 
-     // Initialize DataLog
+    // Initialize DataLog
     DataLogManager.start();
 
     // Enable logging of both DS control and joystick data
@@ -58,9 +58,9 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().run();
 
     //do we still need this?
-    if (m_gcTimer.advanceIfElapsed(5)) {
-      // System.gc();
-    }
+    // if (m_gcTimer.advanceIfElapsed(5)) {
+    //   // System.gc();
+    // }
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
