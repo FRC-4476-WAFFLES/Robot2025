@@ -18,14 +18,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 
 public class ClimberSubsystem extends SubsystemBase {
-  
-  // one leader motor, one follower motor to align robot with cage
-  // motor to lower arm, which holds the cage and lifts the robot
-  // intake / outtake motor
-
-  // TODO
-  // in/out motor
-
   public final TalonFX climberMotorLeader;
   public final TalonFX climberMotorFollower;
   public final TalonFX alignmentMotor;
@@ -39,8 +31,7 @@ public class ClimberSubsystem extends SubsystemBase {
   private final CurrentLimitsConfigs climberCurrentLimits = new CurrentLimitsConfigs();
   private final CurrentLimitsConfigs alignmentCurrentLimit= new CurrentLimitsConfigs();
 
-  private final double CLIMBER_DEAD_ZONE = 1;
-  private double rotationPosition;
+  private static final double CLIMBER_DEAD_ZONE = 1;
   
   /** Creates a new ClimberSubsystem. */
   public ClimberSubsystem()
@@ -118,23 +109,12 @@ public class ClimberSubsystem extends SubsystemBase {
 
 
 
-  public void SetRotationPosition(double rotPos)
-  {
-    this.rotationPosition = rotPos;
-  }
-
-    /**
+  /**
    * Sets the target position of the climber.
    * @param position Target position in rotations.
    */
   public void setClimberTargetPosition(double angle){
-    if (Math.abs(angle - this.climberTargetPositionDegrees) > 0.05){
-      this.climberTargetPositionDegrees = MathUtil.clamp(angle,0,90);
-      this.climberTargetPositionRotations = climberTargetPositionDegrees* (Constants.PhysicalConstants.OVERALL_REDUCTION / 360);
-      if(this.climberTargetPositionRotations != this.previousTargetPosition){
-        this.previousTargetPosition = this.climberTargetPositionRotations;
-      }
-    }
+
   }
   
     /**
@@ -142,7 +122,7 @@ public class ClimberSubsystem extends SubsystemBase {
      * @return The current angle in degrees.
      */
     public double getClimberDegrees() {
-      return climberMotorLeader.getPosition().getValueAsDouble() * 360*Constants.PhysicalConstants.OVERALL_REDUCTION;
+      return climberMotorLeader.getPosition().getValueAsDouble() * 360*Constants.PhysicalConstants.ClimberReduction;
     }
 
     public boolean isClimberRightPosition(){

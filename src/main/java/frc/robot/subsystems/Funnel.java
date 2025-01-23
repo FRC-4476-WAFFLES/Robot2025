@@ -18,23 +18,17 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 
 public class Funnel extends SubsystemBase {
-  
   // one leader motor, one follower motor to align robot with cage
   // motor to lower arm, which holds the cage and lifts the robot
   // intake / outtake motor
 
-  // TODO
-  // in/out motor
+  private static final double FUNNEL_DEAD_ZONE = 1;
 
   public final TalonFX funnelPivot;
+
   private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
-  private double funnelTargetPositionRotations = 0;
-  private double funnelTargetPositionDegrees = 0;
-  private double previousTargetPosition = funnelTargetPositionRotations;
-  private final CurrentLimitsConfigs funnelCurrentLimits = new CurrentLimitsConfigs();
-  private final double FUNNEL_DEAD_ZONE = 1;
-  private double rotationPosition;
-  
+  private double funnelAngleSetpoint = 0;
+
   /** Creates a new funnelSubsystem. */
   public Funnel()
   {
@@ -42,9 +36,8 @@ public class Funnel extends SubsystemBase {
 
     // create a configuration object for the funnel motor
     TalonFXConfiguration funnelConfig = new TalonFXConfiguration();
+    CurrentLimitsConfigs funnelCurrentLimits = new CurrentLimitsConfigs();
     
-    //funnel configs:
-    // current limits
     funnelCurrentLimits.StatorCurrentLimit = 60;
     funnelCurrentLimits.StatorCurrentLimitEnable = true;
     
@@ -66,54 +59,37 @@ public class Funnel extends SubsystemBase {
     motionMagicConfigs.MotionMagicJerk = 1900; // Setting jerk to 10x acceleration as a starting point
     funnelConfig.MotionMagic = motionMagicConfigs;
 
+    // Configure gear reduction
+    funnelConfig.Feedback.SensorToMechanismRatio = Constants.PhysicalConstants.funnelReduction;
+
     funnelPivot.getConfigurator().apply(funnelConfig);
   }
 
   @Override
-  public void periodic()
-  {
-    // This method will be called once per scheduler run
-    executefunnelMotionMagic();
-    
+  public void periodic() {
+    funnelPivot.setControl(motionMagicRequest.withPosition(funnelAngleSetpoint / 360).withSlot(0));
   }
 
-  private void executefunnelMotionMagic() {
-    motionMagicRequest.Position = funnelTargetPositionRotations;
-    motionMagicRequest.Slot = 0; // Use the Slot0 gains
-    funnelPivot.setControl(motionMagicRequest);
-  }
-
-
-
-  public void SetRotafunneltionPosition(double rotPos)
-  {
-    this.rotationPosition = rotPos;
-  }
-
-    /**
-   * Sets the target position of the funnel.
-   * @param position Target position in rotations.
+  /**
+   * Sets the angle setpoint
+   * 
+   * @param setpoint the setpoint in degrees
    */
-  public void setFunnelTargetPosition(double angle){
-    if (Math.abs(angle - this.funnelTargetPositionDegrees) > 0.05){
-      this.funnelTargetPositionDegrees = MathUtil.clamp(angle,0,90);
-      this.funnelTargetPositionRotations = funnelTargetPositionDegrees* (Constants.PhysicalConstants.OVERALL_REDUCTION / 360);
-      if(this.funnelTargetPositionRotations != this.previousTargetPosition){
-        this.previousTargetPosition = this.funnelTargetPositionRotations;
-      }
-    }
+  public void setFunnelSetpoint(double setpoint) {
+    funnelAngleSetpoint = setpoint;
   }
-  
-    /**
-     * Gets the current angle of the funnel in degrees.
-     * @return The current angle in degrees.
-     */
-    public double getfunnelDegrees() {
-      return funnelPivot.getPosition().getValueAsDouble() * 360*Constants.PhysicalConstants.OVERALL_REDUCTION;
-    }
 
-    public boolean isfunnelRightPosition(){
-      return Math.abs(funnelTargetPositionRotations-funnelPivot.getPosition().getValueAsDouble())<FUNNEL_DEAD_ZONE;
-    }
+  /**
+   * Gets the current angle of the funnel in degrees.
+   * 
+   * @return The current angle in degrees.
+   */
+  public double getfunnelDegrees() {
+    return funnelPivot.getPosition().getValueAsDouble() * 360;
+  }
+
+  public boolean isfunnelRightPosition() {
+    return Math.abs(funnelAngleSetpoint - getfunnelDegrees()) < FUNNEL_DEAD_ZONE;
+  }
 
 }

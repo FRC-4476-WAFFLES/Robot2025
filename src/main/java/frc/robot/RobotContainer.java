@@ -4,27 +4,20 @@
 
 package frc.robot;
 
-import frc.robot.commands.Autos;
 import frc.robot.commands.DriveTeleop;
-import frc.robot.commands.ExampleCommand;
-import frc.robot.subsystems.AlgaeManipulator;
 import frc.robot.subsystems.Funnel;
 
-import frc.robot.subsystems.CoralManipulator;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.DynamicPathingSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
-import frc.robot.subsystems.LightSubsystem;
+import frc.robot.subsystems.Manipulator;
 import frc.robot.utils.Telemetry;
 
 import java.util.Arrays;
 import java.util.HashSet;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
-
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -47,13 +40,12 @@ public class RobotContainer {
 
   /* Subsystems */
   public static final DriveSubsystem driveSubsystem = TunerConstants.createDrivetrain();
-  public static final DynamicPathingSubsystem dynamicPathingSubsystem = new DynamicPathingSubsystem();
-  public static final CoralManipulator coralIntake = new CoralManipulator();
+  public static final Manipulator manipulatorSubsystem = new Manipulator();
   public static final ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
-  public static final CoralManipulator coralPivot = new CoralManipulator();
-  public static final Funnel funnel = new Funnel();
+  public static final Funnel funnelSubsystem = new Funnel();
   public static final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
-  public static final AlgaeManipulator algeManipulator = new AlgaeManipulator();
+
+  public static final DynamicPathingSubsystem dynamicPathingSubsystem = new DynamicPathingSubsystem();
 
   /* Commands */
   final IntakeCoral runIntake = new IntakeCoral();

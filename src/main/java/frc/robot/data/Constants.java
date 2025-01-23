@@ -83,6 +83,10 @@ public final class Constants {
     // Placeholder values. Tune.
     public static final double maxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
     public static final double maxAngularSpeed = 6; // Max Rad/s
-    public static final double OVERALL_REDUCTION=3535;//PLEASE CHANGE ONCE DESIGN IS FINALLZED
+
+    // In number of motor rotations per mechanism rotation
+    public static final double funnelReduction = 33.75; 
+    public static final double ClimberReduction = -1; // We don't have a climber yet lol
+    public static final double elevatorReductionToMeters = 130.8996939; // Motor rotations to elevator height in meters
   }
 }

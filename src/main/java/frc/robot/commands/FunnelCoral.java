@@ -6,35 +6,33 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.data.Constants;
-import frc.robot.subsystems.CoralManipulator;
+import frc.robot.subsystems.Funnel;
 
-import static frc.robot.RobotContainer.coralIntake;
+import static frc.robot.RobotContainer.funnelSubsystem;
+
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class IntakeCoral extends Command {
-  /** Creates a new RunIntake. */
-
-  public IntakeCoral() {
+public class FunnelCoral extends Command {
+  /** Creates a new RunCoralIntake. */
+  public FunnelCoral() {
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(coralIntake);
+    addRequirements(funnelSubsystem);
+    
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {
-  
-  }
+  public void initialize() {}
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    coralIntake.setCoralIntakeSpeed(1);
+    funnelSubsystem.setFunnelSpeed(1);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    coralIntake.setCoralIntakeSpeed(0);
-    
+    funnelSubsystem.setFunnelSpeed(0);
   }
 
   // Returns true when the command should end.

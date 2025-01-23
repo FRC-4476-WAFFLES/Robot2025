@@ -5,11 +5,14 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.data.Constants;
+
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -20,66 +23,49 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 
-import frc.robot.Constants;
 public class ElevatorSubsystem extends SubsystemBase {
-  /** Creates a new ExampleSubsystem. */
-  public final TalonFX Elevator1;
-    private final TalonFX Elevator2;
+  /** Creates a new ElevatorSubsystem. */
+  private final TalonFX Elevator1;
+  private final TalonFX Elevator2;
 
-    public boolean isClimbing = false;
+  private double elevatorSetpointMeters = 0;
 
-    private final DigitalInput coastSwitch;
-   
-    private double elevatorTargetPosition = 0;
+  private static final double ELEVATOR_DEAD_ZONE = 1;
 
-    private final double ELEVATOR_DEAD_ZONE = 1;
+  private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
 
-    private final CurrentLimitsConfigs elevatorCurrentLimits = new CurrentLimitsConfigs();
+  public enum ElevatorLevel {
+    NET(90),
+    ALGAE_L2(70),
+    ALGAE_L1(60),
+    PROCESSOR(55),
+    CORAL_INTAKE(40),
+    L3(50.0),
+    L2(27.0),
+    L1(10.0),
+    L0(2);
 
-    private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
+    private double height;
 
-    private Timer profileTimer = new Timer();
-    private boolean previousEnabled = false;
-
-    private double previousTargetPosition = elevatorTargetPosition;
-    private double profileStartPosition = 0;
-    private double profileStartVelocity = 0;
-
-    private boolean previousSwitchState;
-
-    public enum elevatorLevel {
-      NET(90),
-      ALGAE_L2(70),
-      ALGAE_L1(60),
-      PROCESSOR(55),
-      CORAL_INTAKE(40),
-      L3(50.0),
-      L2(27.0),
-      L1(10.0),
-      L0(2);
-
-      private double height;
-  
-      elevatorLevel(double height) {
-        this.height = height;
-      }
-  
-      public double getHeight() {
-        return height;
-      }
+    ElevatorLevel(double height) {
+      this.height = height;
     }
-    
-    elevatorLevel currentLevel = elevatorLevel.L0;
+
+    public double getHeight() {
+      return height;
+    }
+  }
+
   public ElevatorSubsystem() {
     Elevator1 = new TalonFX(Constants.elevator1);
     Elevator2 = new TalonFX(Constants.elevator2);
-    coastSwitch = new DigitalInput(Constants.coastModeSwitch);
+
     Elevator2.setControl(new Follower(Constants.elevator1, true));
 
     TalonFXConfiguration elevatorConfig = new TalonFXConfiguration();
-    elevatorCurrentLimits.SupplyCurrentLimit = 40;
-    elevatorCurrentLimits.SupplyTimeThreshold  = 40;
-    elevatorCurrentLimits.SupplyCurrentLimitEnable = true;
+    CurrentLimitsConfigs elevatorCurrentLimits = new CurrentLimitsConfigs();
+    // elevatorCurrentLimits.SupplyCurrentLimit = 40;
+    // elevatorCurrentLimits.SupplyCurrentLimitEnable = true;
     elevatorCurrentLimits.StatorCurrentLimit = 40;
     elevatorCurrentLimits.StatorCurrentLimitEnable = true;
 
@@ -99,50 +85,38 @@ public class ElevatorSubsystem extends SubsystemBase {
     motionMagicConfigs.MotionMagicJerk = 1900; // Setting jerk to 10x acceleration as a starting point
     elevatorConfig.MotionMagic = motionMagicConfigs;
 
+    elevatorConfig.Feedback.SensorToMechanismRatio = Constants.PhysicalConstants.elevatorReductionToMeters;
+
     Elevator1.getConfigurator().apply(elevatorConfig);
     Elevator2.getConfigurator().apply(elevatorConfig);
-
-    profileTimer.start();
   }
 
-public void periodic() {
- if(DriverStation.isDisabled()){
-      this.profileStartPosition = this.Elevator1.getPosition().getValueAsDouble();
-    }
-    executeElevatorMotionMagic();
-
-    if (!getCoastSwitch() && previousSwitchState){
-      Elevator1.setNeutralMode(NeutralModeValue.Coast);
-      Elevator2.setNeutralMode(NeutralModeValue.Coast);
-    }
-    else if(getCoastSwitch() && !previousSwitchState){
-      Elevator1.setNeutralMode(NeutralModeValue.Brake);
-      Elevator2.setNeutralMode(NeutralModeValue.Brake);
-    }
-    previousSwitchState = getCoastSwitch(); 
-}
+  public void periodic() {
+    Elevator1.setControl(motionMagicRequest.withPosition(elevatorSetpointMeters).withSlot(0));
+  }
 
   /**
-   * Executes motion profiling for the elevator.
+   * Sets the target position of the elevator.
+   * @param setpoint Target position in rotations.
    */
-  private void executeElevatorMotionMagic() {
-    motionMagicRequest.Position = elevatorTargetPosition;
-    motionMagicRequest.Slot = 0; // Use the Slot0 gains
-    Elevator1.setControl(motionMagicRequest);
+  public void setElevatorSetpointMeters(double setpoint){
+    elevatorSetpointMeters = setpoint;
   }
 
-   /**
+  /**
    * Sets the target position of the elevator.
-   * @param position Target position in rotations.
+   * @param setpoint Target position enum.
    */
-  public void setElevatorTargetPosition(double position){
-    this.elevatorTargetPosition = position;
-    if(this.elevatorTargetPosition != this.previousTargetPosition){
-      profileTimer.restart();
-      this.previousTargetPosition = this.elevatorTargetPosition;
-      this.profileStartPosition = this.Elevator1.getPosition().getValueAsDouble();
-      this.profileStartVelocity = this.Elevator1.getVelocity().getValueAsDouble();
-    }
+  public void setElevatorSetpoint(ElevatorLevel setpoint){
+    setElevatorSetpointMeters(setpoint.getHeight());
+  }
+
+  /**
+   * Gets the target position of the elevator.
+   * @return the setpoint Target position in rotations.
+   */
+  public double getElevatorSetpointMeters(){
+    return elevatorSetpointMeters;
   }
 
   /**
@@ -150,97 +124,32 @@ public void periodic() {
    * @return The current elevator position in meters.
    */
   public double getElevatorPositionMeters(){
-    return rotationsToInches(Elevator1.getPosition().getValueAsDouble())*0.0254;
-  }
-  /**
-   * Converts rotations to inches.
-   * @param rotations Number of rotations.
-   * @return Equivalent distance in inches.
-   */
-  public double rotationsToInches(double rotations){
-   return (rotations/19.0625)*(1.625*Math.PI);
+    return Elevator1.getPosition().getValueAsDouble();
   }
 
-  /**
-   * Converts inches to rotations.
-   * @param inches Distance in inches.
-   * @return Equivalent number of rotations.
-   */
-  public double inchesToRotations (double inches){
-    return (inches*19.0625)/(1.625/Math.PI);
-  }
+  // /**
+  //  * Converts rotations to inches.
+  //  * @param rotations Number of rotations.
+  //  * @return Equivalent distance in inches.
+  //  */
+  // public double rotationsToInches(double rotations){
+  //  return (rotations/19.0625)*(1.625*Math.PI);
+  // }
+
+  // /**
+  //  * Converts inches to rotations.
+  //  * @param inches Distance in inches.
+  //  * @return Equivalent number of rotations.
+  //  */
+  // public double inchesToRotations(double inches){
+  //   return (inches*19.0625)/(1.625/Math.PI);
+  // }
+
   /**
    * Checks if the elevator is at the desired position.
    * @return true if elevator is at desired position, false otherwise.
    */
   public boolean isGoodElevatorPosition() {
-    return Math.abs(Elevator1.getPosition().getValueAsDouble() - elevatorTargetPosition) < ELEVATOR_DEAD_ZONE;
-  }
-
-  /**
-   * Adjusts the target position of the elevator.
-   * @param change The amount to adjust the target position by.
-   */
-  public void adjustTargetPosition(double change) {
-    elevatorTargetPosition += change;
-  }
-
-  /**
-   * Gets the state of the coast mode switch.
-   * @return The state of the coast mode switch.
-   */
-  public boolean getCoastSwitch(){
-    return coastSwitch.get();
-  }
-
-  /**
-   * Sets the shooter mode to bottom.
-   */
-  public void setBL0(){
-    currentShooterMode = ShooterMode.L0;
-  }
-
-  /**
-   * Sets the shooter mode to tall.
-   */
-  public void setL3() {
-    currentShooterMode = ShooterMode.L3;
-  }
-
-  /**
-   * Sets the shooter mode to middle.
-   */
-  public void setL2() {
-    currentShooterMode = ShooterMode.L2;
-  }
-
-  /**
-   * Sets the shooter mode to short.
-   */
-  public void setNet() {
-    currentShooterMode = ShooterMode.NET;
-  }
-  
-  public void setAlgaeL2() {
-    currentShooterMode = ShooterMode.ALGAE_L2;
-  }
-  
-  public void setAlgaeL1() {
-    currentShooterMode = ShooterMode.ALGAE_l1;
-  }
-  
-  public void setProcessor() {
-    currentShooterMode = ShooterMode.PROCESSOR;
-  }
-
-  public void setCoralIntake() {
-    currentShooterMode = ShooterMode.CORAL_INTAKE;
-  }
-  /**
-   * Gets the current elevator mode.
-   * @return The current ShooterMode of the elevator.
-   */
-  public ShooterMode getElevatorMode(){
-    return currentShooterMode;
+    return Math.abs(getElevatorPositionMeters() - elevatorSetpointMeters) < ELEVATOR_DEAD_ZONE;
   }
 }
