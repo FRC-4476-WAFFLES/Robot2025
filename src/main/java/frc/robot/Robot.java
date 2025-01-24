@@ -62,9 +62,9 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().run();
 
     //do we still need this?
-    if (m_gcTimer.advanceIfElapsed(5)) {
-      // System.gc();
-    }
+    // if (m_gcTimer.advanceIfElapsed(5)) {
+    //   // System.gc();
+    // }
   }
 
   /** This function is called once each time the robot enters Disabled mode. */

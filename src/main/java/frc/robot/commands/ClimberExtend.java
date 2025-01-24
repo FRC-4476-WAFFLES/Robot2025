@@ -5,18 +5,16 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.data.Constants;
-import frc.robot.subsystems.Funnel;
+import frc.robot.subsystems.ClimberSubsystem;
+import frc.robot.subsystems.ClimberSubsystem.ClimberAngle;
 
-import static frc.robot.RobotContainer.funnel;
+import static frc.robot.RobotContainer.*;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class FunnelCoral extends Command {
-  /** Creates a new RunCoralIntake. */
-  public FunnelCoral() {
-    // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(funnel);
-    
+public class ClimberExtend extends Command {
+  /** Creates a new ClimberIn. */
+  public ClimberExtend() {
+    addRequirements(climberSubsystem);// Use addRequirements() here to declare subsystem dependencies.
   }
 
   // Called when the command is initially scheduled.
@@ -26,14 +24,12 @@ public class FunnelCoral extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    funnel.setFunnelSpeed(1);
+    climberSubsystem.setClimberSetpoint(ClimberAngle.DeployedAngle);
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {
-    funnel.setFunnelSpeed(0);
-  }
+  public void end(boolean interrupted) {}
 
   // Returns true when the command should end.
   @Override

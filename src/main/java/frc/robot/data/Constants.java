@@ -39,10 +39,8 @@ public final class Constants {
   public static final int climberLeader = 11;
   public static final int climberFollower = 12;
   public static final int climberAllignment = 13;
-  public static final int coralIntakeMotor = 14;
-  public static final int coralPivotMotor = 15;
-  public static final int algaeIntakeMotor = 16;
-  public static final int algaePivotMotor = 17;
+  public static final int intakeMotor = 14;
+  public static final int pivotMotor = 15;
   public static final int funnelMotor = 18;
   
   // Sensors
@@ -59,6 +57,8 @@ public final class Constants {
   public static final int pivotAbsoluteEncoderOffset=27;
   public static final int pivotAbsoluteEncoder=28;
   
+  public static final int laserCanCamera=29;
+
   public static final int pidgeon = 25;
 
   public static final int CANdle = 26; // CAN ID for the CANdle device
@@ -83,6 +83,10 @@ public final class Constants {
     // Placeholder values. Tune.
     public static final double maxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
     public static final double maxAngularSpeed = 6; // Max Rad/s
-    public static final double OVERALL_REDUCTION=3535;//PLEASE CHANGE ONCE DESIGN IS FINALLZED
+
+    // In number of motor rotations per mechanism rotation
+    public static final double funnelReduction = 33.75; 
+    public static final double ClimberReduction = -1; // We don't have a climber yet lol
+    public static final double elevatorReductionToMeters = 130.8996939; // Motor rotations to elevator height in meters
   }
 }

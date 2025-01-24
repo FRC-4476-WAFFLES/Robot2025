@@ -5,17 +5,15 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.data.Constants;
-import frc.robot.subsystems.CoralManipulator;
+import static frc.robot.RobotContainer.manipulatorSubsystem;
 
-import static frc.robot.RobotContainer.coralIntake;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class IntakeCoral extends Command {
   /** Creates a new RunIntake. */
 
   public IntakeCoral() {
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(coralIntake);
+    addRequirements(manipulatorSubsystem);
   }
 
   // Called when the command is initially scheduled.
@@ -27,13 +25,13 @@ public class IntakeCoral extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    coralIntake.setCoralIntakeSpeed(1);
+    manipulatorSubsystem.setintakeSpeed(1);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    coralIntake.setCoralIntakeSpeed(0);
+    manipulatorSubsystem.setintakeSpeed(0);
     
   }
 
