@@ -74,6 +74,8 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     public static final double MAX_ANGULAR_SPEED = 2 * Math.PI;
     public static final double MAX_ANGULAR_ACCELERATION = 4 * Math.PI;
     
+    private static final Manipulator manipulatorSubsystem = RobotContainer.manipulatorSubsystem;
+
     private boolean coralScoringRightSide = false;
 
     enum DynamicPathingSituation {
@@ -90,22 +92,22 @@ public class DynamicPathingSubsystem extends SubsystemBase {
      */
     public static DynamicPathingSituation getDynamicPathingSituation() {
         if (isRobotInRangeOfReefPathing()) {
-            if (Manipulator.hasCoralLoaded()) {
+            if (manipulatorSubsystem.hasCoralLoaded()) {
                 return DynamicPathingSituation.REEF_CORAL;
-            } else if (!Manipulator.hasAlgaeLoaded()) {
+            } else if (!manipulatorSubsystem.hasAlgaeLoaded()) {
                 return DynamicPathingSituation.REEF_ALGAE;
             }
         }
 
-        if (isRobotInRangeOfNet() && Manipulator.hasAlgaeLoaded()) {
+        if (isRobotInRangeOfNet() && manipulatorSubsystem.hasAlgaeLoaded()) {
             return DynamicPathingSituation.NET;
         }
 
-        if (isRobotInRangeOfProcessor() && Manipulator.hasAlgaeLoaded()) {
+        if (isRobotInRangeOfProcessor() && manipulatorSubsystem.hasAlgaeLoaded()) {
             return DynamicPathingSituation.PROCESSOR;
         }
 
-        if (!Manipulator.hasCoralLoaded() && isRobotInRangeOfHumanPlayer()) {
+        if (!manipulatorSubsystem.hasCoralLoaded() && isRobotInRangeOfHumanPlayer()) {
             return DynamicPathingSituation.HUMAN_PICKUP;
         }
 
