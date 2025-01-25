@@ -35,6 +35,8 @@ public class ElevatorSubsystem extends SubsystemBase {
   private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
 
   public enum ElevatorLevel {
+    //CHANGE VALUES!
+    REST_POSITION(0),
     NET(90),
     ALGAE_L2(70),
     ALGAE_L1(60),
@@ -94,21 +96,12 @@ public class ElevatorSubsystem extends SubsystemBase {
   public void periodic() {
     Elevator1.setControl(motionMagicRequest.withPosition(elevatorSetpointMeters).withSlot(0));
   }
-
-  /**
-   * Sets the target position of the elevator.
-   * @param setpoint Target position in rotations.
-   */
-  public void setElevatorSetpointMeters(double setpoint){
-    elevatorSetpointMeters = setpoint;
-  }
-
   /**
    * Sets the target position of the elevator.
    * @param setpoint Target position enum.
    */
   public void setElevatorSetpoint(ElevatorLevel setpoint){
-    setElevatorSetpointMeters(setpoint.getHeight());
+    elevatorSetpointMeters =setpoint.getHeight();
   }
 
   /**
