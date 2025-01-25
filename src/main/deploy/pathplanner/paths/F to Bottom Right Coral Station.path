@@ -21,7 +21,7 @@
       },
       "prevControl": {
         "x": 2.73493974721741,
-        "y": 1.206806756795104
+        "y": 1.2068067567951037
       },
       "nextControl": null,
       "isLocked": false,
@@ -45,7 +45,7 @@
     "rotation": -126.66563548264217
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Reef to Bottom Left",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 119.74488129694222
