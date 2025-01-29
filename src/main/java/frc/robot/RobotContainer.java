@@ -12,7 +12,7 @@ import frc.robot.subsystems.DynamicPathingSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.Manipulator;
-import frc.robot.utils.Telemetry;
+import frc.robot.subsystems.Telemetry;
 
 import java.util.Arrays;
 import java.util.HashSet;
