@@ -23,8 +23,8 @@ public class Manipulator extends SubsystemBase {
   
   public Manipulator() {
     // talonFX configs
-    intake = new TalonFX(Constants.intakeMotor);
-    laserCanCamera = new LaserCan(Constants.laserCanCamera);
+    intake = new TalonFX(Constants.CANIds.intakeMotor);
+    laserCanCamera = new LaserCan(Constants.CANIds.laserCanCamera);
 
     TalonFXConfiguration intakeConfigs = new TalonFXConfiguration();
     CurrentLimitsConfigs intakeCurrentLimit= new CurrentLimitsConfigs();

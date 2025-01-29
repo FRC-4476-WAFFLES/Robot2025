@@ -10,25 +10,20 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.data.BuildConstants;
 
-public class Telemetry {
-    private final double MaxSpeed;
-
-    /**
-     * Construct a telemetry object, with the specified max speed of the robot
-     * 
-     * @param maxSpeed Maximum speed in meters per second
-     */
-    public Telemetry(double maxSpeed) {
-        MaxSpeed = maxSpeed;
-        //SignalLogger.start();
-    }
+public class Telemetry extends SubsystemBase {
+    /*                         */
+    /* Networktables Variables */
+    /*                         */
 
     /* What to publish over networktables for telemetry */
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
@@ -50,6 +45,18 @@ public class Telemetry {
     private final StringPublisher deployedBranch = buildTable.getStringTopic("Deployed Branch").publish();
     private final StringPublisher buildTimeStamp = buildTable.getStringTopic("Build Timestamp").publish();
     private final StringPublisher repository = buildTable.getStringTopic("Repository").publish();
+
+    /* Build data */
+    private final NetworkTable powerTable = inst.getTable("PowerInfo");
+    private final DoublePublisher busVoltage = powerTable.getDoubleTopic("Bus Voltage (Volts)").publish();
+    private final DoublePublisher temperature = powerTable.getDoubleTopic("Temperature (Celcius)").publish();
+    private final DoublePublisher currentDraw = powerTable.getDoubleTopic("Current Draw (Amps)").publish();
+    private final DoublePublisher powerDraw = powerTable.getDoubleTopic("Power Draw (Watts)").publish(); 
+    private final DoublePublisher energyUsage = powerTable.getDoubleTopic("Energy Usage (Joules)").publish(); 
+
+    /*                            */
+    /* Swerve Telemetry Variables */
+    /*                            */
 
     /* Keep a reference of the last pose to calculate the speeds */
     private Pose2d m_lastPose = new Pose2d();
@@ -80,6 +87,32 @@ public class Telemetry {
         m_moduleMechanisms[3].getRoot("RootDirection", 0.5, 0.5)
             .append(new MechanismLigament2d("Direction", 0.1, 0, 0, new Color8Bit(Color.kWhite))),
     };
+
+    private final double MaxSpeed;
+
+    /*                 */
+    /* Other Variables */
+    /*                 */
+
+    private PowerDistribution powerDistributionHub = new PowerDistribution(1, ModuleType.kRev);
+
+    /**
+     * Construct a telemetry subsystem, with the specified max speed of the robot
+     * 
+     * @param maxSpeed Maximum speed in meters per second
+     */
+    public Telemetry(double maxSpeed) {
+        MaxSpeed = maxSpeed;
+
+        // Publish build info once to networktables
+        publishBuildInfo();
+    }
+
+    @Override
+    public void periodic() {
+      // This method will be called once per scheduler run
+      publishPDHInfo();
+    }
 
     /* Accept the swerve drive state and telemeterize it to smartdashboard */
     public void telemeterize(SwerveDriveState state) {
@@ -128,5 +161,16 @@ public class Telemetry {
         deployedBranch.set(BuildConstants.GIT_BRANCH);
         buildTimeStamp.set(BuildConstants.BUILD_DATE);
         repository.set(BuildConstants.MAVEN_NAME);
+    }
+
+    /**
+     * Publish data about power usage to networktables for monitoring
+     */
+    public void publishPDHInfo() {
+        busVoltage.set(powerDistributionHub.getVoltage());
+        temperature.set(powerDistributionHub.getTemperature());
+        currentDraw.set(powerDistributionHub.getTotalCurrent());
+        powerDraw.set(powerDistributionHub.getTotalPower());
+        energyUsage.set(powerDistributionHub.getTotalEnergy());
     }
 }

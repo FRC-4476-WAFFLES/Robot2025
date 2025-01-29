@@ -46,12 +46,12 @@ public class RobotContainer {
   public static final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
   public static final DynamicPathingSubsystem dynamicPathingSubsystem = new DynamicPathingSubsystem();
+  private final Telemetry telemetry = new Telemetry(PhysicalConstants.maxSpeed);
 
   /* Commands */
   private final IntakeCoral runIntake = new IntakeCoral();
 
   /* Global Robot State */
-  private final Telemetry telemetry = new Telemetry(PhysicalConstants.maxSpeed);
   private final SendableChooser<Command> autoChooser;
   public boolean isOperatorOverride = false;
 
@@ -70,9 +70,6 @@ public class RobotContainer {
 
     // Register commands to be used by pathplanner autos
     registerNamedCommands();
-
-    // Publish build info once to networktables
-    telemetry.publishBuildInfo();
 
     // Build an auto chooser. This will use Commands.none() as the default option.
     autoChooser = AutoBuilder.buildAutoChooser();
