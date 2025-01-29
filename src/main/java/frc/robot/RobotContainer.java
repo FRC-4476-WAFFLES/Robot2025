@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.IntakeCoral;
+import frc.robot.commands.ManualElevatorControl;
 import frc.robot.data.TunerConstants;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.subsystems.ElevatorSubsystem;
@@ -49,11 +50,12 @@ public class RobotContainer {
   private final Telemetry telemetry = new Telemetry(PhysicalConstants.maxSpeed);
 
   /* Commands */
+  private final ManualElevatorControl manualElevatorControl = new ManualElevatorControl();
   private final IntakeCoral runIntake = new IntakeCoral();
 
   /* Global Robot State */
   private final SendableChooser<Command> autoChooser;
-  public boolean isOperatorOverride = false;
+  public static boolean isOperatorOverride = false;
 
   /** The static entry point for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -67,6 +69,9 @@ public class RobotContainer {
       Controls::getDriveY,
       Controls::getDriveRotation
     ));
+
+    // Allow the operator to control the elevator manually, but only if the override is enabled
+    elevatorSubsystem.setDefaultCommand(manualElevatorControl);
 
     // Register commands to be used by pathplanner autos
     registerNamedCommands();
@@ -86,12 +91,15 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-
     Controls.operatorController.leftTrigger().onTrue(
       new InstantCommand(
-        () -> {isOperatorOverride = !isOperatorOverride;}
+        () -> {
+          isOperatorOverride = !isOperatorOverride;
+          telemetry.publishOperatorOverrideInfo();
+        }
       )
     );
+
     //Controls.operatorController.a().onTrue(elevator command for setting L0);
     //Controls.operatorController.b().onTrue(elevator command for setting L1);
     //Controls.operatorController.x().onTrue(elevator command for setting L2);
@@ -110,24 +118,16 @@ public class RobotContainer {
       () -> dynamicPathingSubsystem.getCurrentDynamicPathCommand(), new HashSet<>(Arrays.asList(driveSubsystem))
     ));
 
-    // Switch coral scoring sides IF OVERRIDE IS NOT ON
-    if (isOperatorOverride == false) {
-      Controls.operatorController.povRight().onTrue(
-        new InstantCommand(
-          () -> {dynamicPathingSubsystem.setCoralScoringSide(true);}
-        )
-      );
-      Controls.operatorController.povLeft().onTrue(
-        new InstantCommand(
-          () -> {dynamicPathingSubsystem.setCoralScoringSide(false);}
-        )
-      );  
-    }
-    if (isOperatorOverride == true){
-      // elevatorSubsystem.adjustTargetPosition(rightAxis);
-    }
-    
-
+    Controls.operatorController.povRight().onTrue(
+      new InstantCommand(
+        () -> {dynamicPathingSubsystem.setCoralScoringSide(true);}
+      )
+    );
+    Controls.operatorController.povLeft().onTrue(
+      new InstantCommand(
+        () -> {dynamicPathingSubsystem.setCoralScoringSide(false);}
+      )
+    );  
   }
 
   /**

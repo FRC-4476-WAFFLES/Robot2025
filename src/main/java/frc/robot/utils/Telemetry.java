@@ -5,6 +5,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
@@ -18,6 +19,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
 import frc.robot.data.BuildConstants;
 
 public class Telemetry extends SubsystemBase {
@@ -46,13 +48,17 @@ public class Telemetry extends SubsystemBase {
     private final StringPublisher buildTimeStamp = buildTable.getStringTopic("Build Timestamp").publish();
     private final StringPublisher repository = buildTable.getStringTopic("Repository").publish();
 
-    /* Build data */
+    /* Power data */
     private final NetworkTable powerTable = inst.getTable("PowerInfo");
     private final DoublePublisher busVoltage = powerTable.getDoubleTopic("Bus Voltage (Volts)").publish();
     private final DoublePublisher temperature = powerTable.getDoubleTopic("Temperature (Celcius)").publish();
     private final DoublePublisher currentDraw = powerTable.getDoubleTopic("Current Draw (Amps)").publish();
     private final DoublePublisher powerDraw = powerTable.getDoubleTopic("Power Draw (Watts)").publish(); 
     private final DoublePublisher energyUsage = powerTable.getDoubleTopic("Energy Usage (Joules)").publish(); 
+
+    /* Operator override */
+    private final NetworkTable controlsTable = inst.getTable("Controls");
+    private final BooleanPublisher overrideEnabled = controlsTable.getBooleanTopic("Override Enabled").publish();
 
     /*                            */
     /* Swerve Telemetry Variables */
@@ -172,5 +178,12 @@ public class Telemetry extends SubsystemBase {
         currentDraw.set(powerDistributionHub.getTotalCurrent());
         powerDraw.set(powerDistributionHub.getTotalPower());
         energyUsage.set(powerDistributionHub.getTotalEnergy());
+    }
+
+    /**
+     * Update the state of the operator override. Should only be called when changing the state
+     */
+    public void publishOperatorOverrideInfo() {
+        overrideEnabled.set(RobotContainer.isOperatorOverride);
     }
 }
