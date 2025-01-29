@@ -32,7 +32,7 @@ public class Funnel extends SubsystemBase {
   /** Creates a new funnelSubsystem. */
   public Funnel()
   {
-    funnelPivot = new TalonFX(Constants.funnelMotor);
+    funnelPivot = new TalonFX(Constants.CANIds.funnelMotor);
 
     // create a configuration object for the funnel motor
     TalonFXConfiguration funnelConfig = new TalonFXConfiguration();

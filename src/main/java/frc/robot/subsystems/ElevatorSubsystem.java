@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Controls;
 import frc.robot.data.Constants;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -57,10 +58,9 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
   public ElevatorSubsystem() {
-    Elevator1 = new TalonFX(Constants.elevator1);
-    Elevator2 = new TalonFX(Constants.elevator2);
-
-    Elevator2.setControl(new Follower(Constants.elevator1, true));
+    Elevator1 = new TalonFX(Constants.CANIds.elevator1);
+    Elevator2 = new TalonFX(Constants.CANIds.elevator2);
+    Elevator2.setControl(new Follower(Constants.CANIds.elevator1, true));
 
     TalonFXConfiguration elevatorConfig = new TalonFXConfiguration();
     CurrentLimitsConfigs elevatorCurrentLimits = new CurrentLimitsConfigs();

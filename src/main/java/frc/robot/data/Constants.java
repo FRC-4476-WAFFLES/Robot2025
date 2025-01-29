@@ -22,16 +22,16 @@ import edu.wpi.first.math.util.Units;
 public final class Constants {
 
   /* CAN IDs  */
-
-  // Drive Motors
-  public static final int steeringFrontLeft = 1; 
-  public static final int drivingFrontLeft = 2; 
-  public static final int steeringFrontRight = 3; 
-  public static final int drivingFrontRight = 4; 
-  public static final int steeringBackLeft = 5; 
-  public static final int drivingBackLeft = 6; 
-  public static final int steeringBackRight = 7; 
-  public static final int drivingBackRight = 8; 
+  public static class CANIds {
+    // Drive Motors
+    public static final int steeringFrontLeft = 1; 
+    public static final int drivingFrontLeft = 2; 
+    public static final int steeringFrontRight = 3; 
+    public static final int drivingFrontRight = 4; 
+    public static final int steeringBackLeft = 5; 
+    public static final int drivingBackLeft = 6; 
+    public static final int steeringBackRight = 7; 
+    public static final int drivingBackRight = 8; 
 
   // Other Motors
   public static final int elevator1 = 9; // Kraken X60
@@ -61,16 +61,19 @@ public final class Constants {
 
   public static final int pidgeon = 25;
 
-  public static final int CANdle = 26; // CAN ID for the CANdle device
+    public static final int CANdle = 26;
+  }
 
   /* PWM Outputs */
-  
-  public static final int addressableLEDS = 2; //Light Strip
-  public static final int lightsBlinkin = 3; // REV Blinkin
+  public static class PWMOutputs {
+    public static final int addressableLEDS = 2; //Light Strip
+    public static final int lightsBlinkin = 3; // REV Blinkin
+  }
 
   /* Digital Ports */
-  
-  public static final int coastModeSwitch = 4; // Limit Switch
+  public static class DigitalOutputs {
+    public static final int coastModeSwitch = 4; // Limit Switch
+  }
 
   /* Vision */
   public static class VisionConstants {
