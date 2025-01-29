@@ -32,7 +32,7 @@ public class Funnel extends SubsystemBase {
 
   public Funnel() {
     // talonFX configs
-    funnel=new TalonFX(Constants.funnelMotor);
+    funnel=new TalonFX(Constants.CANIds.funnelMotor);
     TalonFXConfiguration funnelConfigs = new TalonFXConfiguration();
     funnelCurrentLimit.StatorCurrentLimit=60;
     funnelCurrentLimit.StatorCurrentLimitEnable=true;

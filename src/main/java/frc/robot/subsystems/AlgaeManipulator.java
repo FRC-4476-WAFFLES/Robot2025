@@ -52,9 +52,9 @@ public class AlgaeManipulator extends SubsystemBase {
   pivotPositions currentPivotDegree=pivotPositions.insideTheRobot;
   public AlgaeManipulator() {
     // talonFX configs
-    algaeIntake=new TalonFX(Constants.algaeIntakeMotor);
-    algaePivot=new TalonFX(Constants.algaePivotMotor);
-    pivotAbsoluteEncoder= new DutyCycleEncoder(Constants.pivotAbsoluteEncoder);
+    algaeIntake=new TalonFX(Constants.CANIds.algaeIntakeMotor);
+    algaePivot=new TalonFX(Constants.CANIds.algaePivotMotor);
+    pivotAbsoluteEncoder= new DutyCycleEncoder(Constants.CANIds.pivotAbsoluteEncoder);
     TalonFXConfiguration algaeIntakeConfigs = new TalonFXConfiguration();
     TalonFXConfiguration algaePivotConfigs = new TalonFXConfiguration();
     algaeIntakeCurrentLimit.StatorCurrentLimit=60;
@@ -81,7 +81,7 @@ public class AlgaeManipulator extends SubsystemBase {
     algaeIntake.getConfigurator().apply(algaeIntakeConfigs);
     algaePivot.getConfigurator().apply(algaePivotConfigs);
 
-    algaePivot.setPosition(pivotAbsoluteEncoder.get()+Constants.pivotAbsoluteEncoderOffset);
+    algaePivot.setPosition(pivotAbsoluteEncoder.get() + Constants.CANIds.pivotAbsoluteEncoderOffset);
   }
 
   @Override

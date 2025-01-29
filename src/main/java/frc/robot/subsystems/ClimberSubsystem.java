@@ -45,12 +45,12 @@ public class ClimberSubsystem extends SubsystemBase {
   /** Creates a new ClimberSubsystem. */
   public ClimberSubsystem()
   {
-    climberMotorLeader = new TalonFX(Constants.climberLeader);
-    climberMotorFollower = new TalonFX(Constants.climberLeader);
-    alignmentMotor = new TalonFX(Constants.climberAllignment);
-    climberAbsoluteEncoder = new DutyCycleEncoder(Constants.climberAbsoluteEncoder);
+    climberMotorLeader = new TalonFX(Constants.CANIds.climberLeader);
+    climberMotorFollower = new TalonFX(Constants.CANIds.climberLeader);
+    alignmentMotor = new TalonFX(Constants.CANIds.climberAllignment);
+    climberAbsoluteEncoder = new DutyCycleEncoder(Constants.CANIds.climberAbsoluteEncoder);
     // climber motor follower is inverted
-    climberMotorFollower.setControl(new Follower(Constants.climberLeader, true));
+    climberMotorFollower.setControl(new Follower(Constants.CANIds.climberLeader, true));
 
     // create a configuration object for the climber motor
     TalonFXConfiguration climberConfig = new TalonFXConfiguration();
@@ -98,7 +98,7 @@ public class ClimberSubsystem extends SubsystemBase {
     climberMotorLeader.getConfigurator().apply(climberConfig);
     alignmentMotor.getConfigurator().apply(alignmentConfig);
 
-    climberMotorLeader.setPosition(climberAbsoluteEncoder.get()+Constants.climberEncoderOffset);
+    climberMotorLeader.setPosition(climberAbsoluteEncoder.get() + Constants.CANIds.climberEncoderOffset);
   }
 
   @Override

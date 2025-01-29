@@ -57,9 +57,9 @@ public class CoralManipulator extends SubsystemBase {
   private final double PIVOT_DEAD_ZONE = 1; //DEADZONE MEASURED IN ROTATIONS
   public CoralManipulator() {
     // talonFX configs
-    coralIntake=new TalonFX(Constants.coralIntakeMotor);
-    coralPivot=new TalonFX(Constants.coralPivotMotor);
-    coralPivotAbsoluteEncoder = new DutyCycleEncoder(Constants.coralPivotAbsoluteEncoder);
+    coralIntake=new TalonFX(Constants.CANIds.coralIntakeMotor);
+    coralPivot=new TalonFX(Constants.CANIds.coralPivotMotor);
+    coralPivotAbsoluteEncoder = new DutyCycleEncoder(Constants.CANIds.coralPivotAbsoluteEncoder);
     TalonFXConfiguration coralIntakeConfigs = new TalonFXConfiguration();
     TalonFXConfiguration coralPivotConfigs = new TalonFXConfiguration();
     coralIntakeCurrentLimit.StatorCurrentLimit=60;
@@ -75,7 +75,7 @@ public class CoralManipulator extends SubsystemBase {
     motionMagicConfigs.MotionMagicCruiseVelocity = 110; // Using the existing velocity value
     motionMagicConfigs.MotionMagicAcceleration = 190; // Using the existing acceleration value
     motionMagicConfigs.MotionMagicJerk = 1900; // Setting jerk to 10x acceleration as a starting point
-    coralPivot.setPosition(coralPivotAbsoluteEncoder.get()+Constants.coralPivotAbsoluteEncoderOffset);
+    coralPivot.setPosition(coralPivotAbsoluteEncoder.get()+Constants.CANIds.coralPivotAbsoluteEncoderOffset);
   }
 
   @Override

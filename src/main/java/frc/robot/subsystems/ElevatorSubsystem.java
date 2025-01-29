@@ -51,9 +51,9 @@ public class ElevatorSubsystem extends SubsystemBase {
     
     elevatorLevel currentLevel = elevatorLevel.L0;
   public ElevatorSubsystem() {
-    Elevator1 = new TalonFX(Constants.elevator1);
-    Elevator2 = new TalonFX(Constants.elevator2);
-    Elevator2.setControl(new Follower(Constants.elevator1, true));
+    Elevator1 = new TalonFX(Constants.CANIds.elevator1);
+    Elevator2 = new TalonFX(Constants.CANIds.elevator2);
+    Elevator2.setControl(new Follower(Constants.CANIds.elevator1, true));
 
     TalonFXConfiguration elevatorConfig = new TalonFXConfiguration();
     elevatorCurrentLimits.StatorCurrentLimitEnable = true;

@@ -57,17 +57,23 @@ public class RobotContainer {
   public static final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
   public static final AlgaeManipulator algeManipulator = new AlgaeManipulator();
 
+
   /* Commands */
   private final IntakeCoral runIntake = new IntakeCoral();
   //final ElevatorCommand setElevatorLevel = new ElevatorCommand();
   private final ClimberIn climberIn = new ClimberIn();
   private final ClimberOut climberOut = new ClimberOut();
+
+
   /* Global Robot State */
   private final Telemetry telemetry = new Telemetry(PhysicalConstants.maxSpeed);
   private final SendableChooser<Command> autoChooser;
   public boolean isOverride = false;
   public boolean isHeld = false;
   public static double rightAxis = (Controls.operatorController.getRightY() * 2); //CHANGE THIS NUMBER
+
+
+  
   /** The static entry point for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the trigger bindings

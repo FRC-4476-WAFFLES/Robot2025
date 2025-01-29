@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 public class LightSubsystem extends SubsystemBase {
-  private static final CANdle candle = new CANdle(Constants.CANdle); 
+  private static final CANdle candle = new CANdle(Constants.CANIds.CANdle); 
   private static final int LED_COUNT = 64;
 
   private static final Timer blinkTimer = new Timer();
