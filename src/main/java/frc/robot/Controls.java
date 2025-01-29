@@ -9,11 +9,12 @@ import frc.robot.data.Constants.PhysicalConstants;
  * Seperates controls a bit from RobotContainer while grouping controls specific constants together 
  */
 public class Controls {
-
     // Replace with CommandPS4Controller or CommandJoystick if needed
     public static final CommandJoystick leftJoystick = new CommandJoystick(OperatorConstants.leftJoystick);
     public static final CommandJoystick rightJoystick = new CommandJoystick(OperatorConstants.rightJoystick);
     public static final CommandXboxController operatorController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
+
+    public static final double MANUAL_ELEVATOR_CONTROL_MULTIPLIER = 2;  // Todo: Change this number
 
     public static class DriverConstants {
         // Todo put stuff like joystick button IDs here
@@ -25,6 +26,7 @@ public class Controls {
         public static final int rightJoystick = 2;
     }
 
+    /* Methods to get driver input */
     public static double getDriveX() {
         return -leftJoystick.getX() * PhysicalConstants.maxSpeed;
     }
@@ -35,5 +37,14 @@ public class Controls {
 
     public static double getDriveRotation() {
         return -rightJoystick.getX() * PhysicalConstants.maxAngularSpeed;
+    }
+
+    /* Methods to get operator input */
+    public static double getOperatorRightY() {
+        return operatorController.getRightY();
+    }
+
+    public static double getOperatorRightX() {
+        return operatorController.getRightX();
     }
 }

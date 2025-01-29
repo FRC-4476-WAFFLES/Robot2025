@@ -68,12 +68,8 @@ public class RobotContainer {
   /* Global Robot State */
   private final Telemetry telemetry = new Telemetry(PhysicalConstants.maxSpeed);
   private final SendableChooser<Command> autoChooser;
-  public boolean isOverride = false;
-  public boolean isHeld = false;
-  public static double rightAxis = (Controls.operatorController.getRightY() * 2); //CHANGE THIS NUMBER
+  public boolean isOperatorOverride = false;
 
-
-  
   /** The static entry point for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the trigger bindings
@@ -111,7 +107,7 @@ public class RobotContainer {
 
     Controls.operatorController.leftTrigger().onTrue(
       new InstantCommand(
-        () -> {isOverride = !isOverride;}
+        () -> {isOperatorOverride = !isOperatorOverride;}
       )
     );
     //Controls.operatorController.a().onTrue(elevator command for setting L0);
@@ -127,7 +123,7 @@ public class RobotContainer {
     //Controls.operatorController.rightTrigger().onTrue(pivot command for L3); 
 
     // Switch coral scoring sides IF OVERRIDE IS NOT ON
-    if (isOverride == false) {
+    if (isOperatorOverride == false) {
     Controls.operatorController.povRight().onTrue(
       new InstantCommand(
         () -> {dynamicPathingSubsystem.setCoralScoringSide(true);}
@@ -143,8 +139,8 @@ public class RobotContainer {
       () -> dynamicPathingSubsystem.getCoralPathCommand(), new HashSet<>(Arrays.asList(driveSubsystem))
     ));
     }
-    if (isOverride == true){
-      elevatorSubsystem.adjustTargetPosition(rightAxis);
+    if (isOperatorOverride == true){
+      // elevatorSubsystem.adjustTargetPosition(rightAxis);
     }
     
 
