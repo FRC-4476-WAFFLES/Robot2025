@@ -4,20 +4,22 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.data.Constants.PhysicalConstants;
-import frc.robot.utils.DiscretizationlessSetpointGenerator;
 
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
+import com.ctre.phoenix6.mechanisms.swerve.LegacySwerveRequest.FieldCentric;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.swerve.SwerveSetpoint;
+import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 
 import static frc.robot.RobotContainer.*;
 
@@ -26,10 +28,10 @@ public class DriveTeleop extends Command {
   private final DoubleSupplier yVelocitySupplier;
   private final DoubleSupplier thetaVelocitySupplier;
 
-  private final DiscretizationlessSetpointGenerator setpointGenerator;
+  private final SwerveSetpointGenerator setpointGenerator;
   private SwerveSetpoint previousSetpoint;
 
-  private SwerveRequest.ApplyFieldSpeeds driveRequest = new SwerveRequest.ApplyFieldSpeeds();
+  private SwerveRequest.ApplyRobotSpeeds driveRequest = new SwerveRequest.ApplyRobotSpeeds();
 
   /** 
    * Command that drives the robot field-oriented following velocities given by suppliers 
@@ -42,7 +44,7 @@ public class DriveTeleop extends Command {
     this.yVelocitySupplier = yVelocitySupplier;
     this.thetaVelocitySupplier = thetaVelocitySupplier;
 
-    setpointGenerator = new DiscretizationlessSetpointGenerator(
+    setpointGenerator = new SwerveSetpointGenerator(
       driveSubsystem.PathPlannerConfig, // The robot configuration. This is the same config used for generating trajectories and running path following commands.
       PhysicalConstants.maxAngularSpeed // The max rotation velocity of a swerve module in radians per second. This should probably be stored in your Constants file
     );
@@ -80,14 +82,27 @@ public class DriveTeleop extends Command {
     //     .withRotationalRate(thetaVelocitySupplier.getAsDouble())
     // );
 
-    ChassisSpeeds targetSpeeds = new ChassisSpeeds(xVelocitySupplier.getAsDouble(), yVelocitySupplier.getAsDouble(), thetaVelocitySupplier.getAsDouble());
+    ChassisSpeeds fieldRelativeSpeeds = new ChassisSpeeds(xVelocitySupplier.getAsDouble(), yVelocitySupplier.getAsDouble(), thetaVelocitySupplier.getAsDouble());
+
+    Translation2d speeds = new Translation2d(fieldRelativeSpeeds.vxMetersPerSecond, fieldRelativeSpeeds.vyMetersPerSecond);
+    speeds.rotateBy(driveSubsystem.getOperatorForwardDirection());
     
+    fieldRelativeSpeeds.vxMetersPerSecond = speeds.getX();
+    fieldRelativeSpeeds.vyMetersPerSecond = speeds.getY();
+
+    ChassisSpeeds targetSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+      fieldRelativeSpeeds,
+      driveSubsystem.getRobotPose().getRotation()
+    );
+
+
+
     // Note: it is important to not discretize speeds before or after
     // using the setpoint generator, as it will discretize them for you
     previousSetpoint = setpointGenerator.generateSetpoint(
-        previousSetpoint, // The previous setpoint
-        targetSpeeds, // The desired target speeds
-        0.02 // The loop time of the robot code, in seconds
+      previousSetpoint, // The previous setpoint
+      targetSpeeds, // The desired target speeds
+      0.02 // The loop time of the robot code, in seconds
     );
 
     
@@ -110,8 +125,8 @@ public class DriveTeleop extends Command {
         .withWheelForceFeedforwardsX(previousSetpoint.feedforwards().robotRelativeForcesX())
         .withWheelForceFeedforwardsY(previousSetpoint.feedforwards().robotRelativeForcesY())
         .withSpeeds(setpointGeneratedSpeeds)
-        .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective)
     );
+
   }
 
   // Called once the command ends or is interrupted.
