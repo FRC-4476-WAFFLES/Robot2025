@@ -12,7 +12,7 @@
         "y": 6.709968534158778
       },
       "isLocked": false,
-      "linkedName": "coralStation"
+      "linkedName": "Top Right Coral Station"
     },
     {
       "anchor": {
@@ -45,7 +45,7 @@
     "rotation": -57.42594286542748
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Top right to reef",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 125.00000000000001

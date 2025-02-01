@@ -2,7 +2,17 @@
   "robotWidth": 0.9,
   "robotLength": 0.9,
   "holonomicMode": true,
-  "pathFolders": [],
+  "pathFolders": [
+    "Top right to reef",
+    "Starting Line(BOT)",
+    "Starting Line (TOP)",
+    "Starting Line (MID)",
+    "Reef to bottom right",
+    "Reef to Top right",
+    "Reef to Bottom Left",
+    "Bottom right to reef",
+    "Bottom Left to reef"
+  ],
   "autoFolders": [],
   "defaultMaxVel": 3.0,
   "defaultMaxAccel": 3.0,
