@@ -36,6 +36,8 @@ public class ElevatorSubsystem extends SubsystemBase {
   private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
 
   public enum ElevatorLevel {
+    //CHANGE VALUES!
+    REST_POSITION(0),
     NET(90),
     ALGAE_L2(70),
     ALGAE_L1(60),

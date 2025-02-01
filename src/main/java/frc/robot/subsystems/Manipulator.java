@@ -77,7 +77,7 @@ public class Manipulator extends SubsystemBase {
     pivotConfigs.Slot0 = slot0Configs;
     pivot.getConfigurator().apply(pivotConfigs);
 
-    pivot.setPosition(pivotAbsoluteEncoder.get()+Constants.pivotAbsoluteEncoderOffset);
+    pivot.setPosition(pivotAbsoluteEncoder.get()+Constants.PhysicalConstants.pivotAbsoluteEncoderOffset);
 
     intake = new TalonFX(Constants.CANIds.intakeMotor);
     laserCanCamera = new LaserCan(Constants.CANIds.laserCanCamera);

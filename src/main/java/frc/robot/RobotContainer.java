@@ -26,11 +26,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.IntakeCoral;
 import frc.robot.commands.ManualElevatorControl;
+import frc.robot.commands.RunIntake;
 import frc.robot.data.TunerConstants;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.subsystems.ElevatorSubsystem;
+
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
  * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
@@ -52,7 +53,7 @@ public class RobotContainer {
 
   /* Commands */
   private final ManualElevatorControl manualElevatorControl = new ManualElevatorControl();
-  private final IntakeCoral runIntake = new IntakeCoral();
+  private final RunIntake runIntake = new RunIntake();
 
   /* Global Robot State */
   private final SendableChooser<Command> autoChooser;
@@ -101,17 +102,17 @@ public class RobotContainer {
       )
     );
 
-    //Controls.operatorController.a().onTrue(elevator command for setting L0);
-    //Controls.operatorController.b().onTrue(elevator command for setting L1);
-    //Controls.operatorController.x().onTrue(elevator command for setting L2);
-    //Controls.operatorController.y().onTrue(elevator command for setting L3);
+    // Controls.operatorController.a().onTrue(elevator command for setting L0);
+    // Controls.operatorController.b().onTrue(elevator command for setting L1);
+    // Controls.operatorController.x().onTrue(elevator command for setting L2);
+    // Controls.operatorController.y().onTrue(elevator command for setting L3);
     Controls.operatorController.povUp().whileTrue(runIntake);
-    //Controls.operatorController.povDown().whileTrue(runOuttake);
+    // Controls.operatorController.povDown().whileTrue(runOuttake);
     // Controls.operatorController.rightStick().onTrue(climberIn);
     // Controls.operatorController.leftStick().onTrue(climberOut);
-    //Controls.operatorController.leftBumper().onTrue(pivot L0 command);
-    //Controls.operatorController.rightBumper().onTrue(pivot L1-2 command);
-    //Controls.operatorController.rightTrigger().onTrue(pivot command for L3); 
+    // Controls.operatorController.leftBumper().onTrue(pivot L0 command);
+    // Controls.operatorController.rightBumper().onTrue(pivot L1-2 command);
+    // Controls.operatorController.rightTrigger().onTrue(pivot command for L3); 
     Controls.operatorController.b().whileTrue(runIntake);
 
     Controls.operatorController.a().onTrue(new InstantCommand(() -> {

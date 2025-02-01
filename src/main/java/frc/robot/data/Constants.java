@@ -10,6 +10,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -18,7 +19,6 @@ import edu.wpi.first.math.numbers.N3;
  * <p>It is advised to statically import this class (or one of its inner classes) wherever the
  * constants are needed, to reduce verbosity.
  */
-import edu.wpi.first.math.util.Units;
 public final class Constants {
 
   /* CAN IDs  */
@@ -33,33 +33,33 @@ public final class Constants {
     public static final int steeringBackRight = 7; 
     public static final int drivingBackRight = 8; 
 
-  // Other Motors
-  public static final int elevator1 = 9; // Kraken X60
-  public static final int elevator2 = 10; // Kraken X60
-  public static final int climberLeader = 11;
-  public static final int climberFollower = 12;
-  public static final int climberAllignment = 13;
-  public static final int intakeMotor = 14;
-  public static final int pivotMotor = 15;
-  public static final int funnelMotor = 18;
-  
-  // Sensors
-  
-  public static final int frontLeftAbsoluteEncoder = 19; // CANcoder
-  public static final int frontRightAbsoluteEncoder = 20; // CANcoder
-  public static final int backLeftAbsoluteEncoder = 21; // CANcoder
-  public static final int backRightAbsoluteEncoder = 22; // CANcoder
-  public static final int climberAbsoluteEncoder = 23;
-  public static final int climberEncoderOffset = 0;
-  public static final int coralPivotAbsoluteEncoder = 24;
-  public static final int coralPivotAbsoluteEncoderOffset = 0;
+    // Other Motors
+    public static final int elevator1 = 9; // Kraken X60
+    public static final int elevator2 = 10; // Kraken X60
+    public static final int climberLeader = 11;
+    public static final int climberFollower = 12;
+    public static final int climberAllignment = 13;
+    public static final int intakeMotor = 14;
+    public static final int pivotMotor = 15;
+    public static final int funnelMotor = 18;
+    
+    // Sensors
+    
+    public static final int frontLeftAbsoluteEncoder = 19; // CANcoder
+    public static final int frontRightAbsoluteEncoder = 20; // CANcoder
+    public static final int backLeftAbsoluteEncoder = 21; // CANcoder
+    public static final int backRightAbsoluteEncoder = 22; // CANcoder
+    public static final int climberAbsoluteEncoder = 23;
+    public static final int climberEncoderOffset = 0;
+    public static final int coralPivotAbsoluteEncoder = 24;
+    public static final int coralPivotAbsoluteEncoderOffset = 0;
 
-  public static final int pivotAbsoluteEncoderOffset=27;
-  public static final int pivotAbsoluteEncoder=28;
-  
-  public static final int laserCanCamera=29;
+    public static final int pivotAbsoluteEncoderOffset=27;
+    public static final int pivotAbsoluteEncoder=28;
+    
+    public static final int laserCanCamera=29;
 
-  public static final int pidgeon = 25;
+    public static final int pidgeon = 25;
 
     public static final int CANdle = 26;
   }
@@ -91,5 +91,7 @@ public final class Constants {
     public static final double funnelReduction = 33.75; 
     public static final double ClimberReduction = -1; // We don't have a climber yet lol
     public static final double elevatorReductionToMeters = 130.8996939; // Motor rotations to elevator height in meters
+
+    public static final double pivotAbsoluteEncoderOffset = 0;
   }
 }
