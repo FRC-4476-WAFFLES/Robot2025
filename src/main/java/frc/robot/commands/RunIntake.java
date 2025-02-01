@@ -8,10 +8,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import static frc.robot.RobotContainer.manipulatorSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class IntakeCoral extends Command {
+public class RunIntake extends Command {
   /** Creates a new RunIntake. */
 
-  public IntakeCoral() {
+  public RunIntake() {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(manipulatorSubsystem);
   }

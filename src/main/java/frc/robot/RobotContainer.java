@@ -10,6 +10,7 @@ import frc.robot.subsystems.Funnel;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.DynamicPathingSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
+import frc.robot.subsystems.ElevatorSubsystem.ElevatorLevel;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.Manipulator;
 import frc.robot.subsystems.Telemetry;
@@ -112,6 +113,10 @@ public class RobotContainer {
     //Controls.operatorController.rightBumper().onTrue(pivot L1-2 command);
     //Controls.operatorController.rightTrigger().onTrue(pivot command for L3); 
     Controls.operatorController.b().whileTrue(runIntake);
+
+    Controls.operatorController.a().onTrue(new InstantCommand(() -> {
+      elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.L3);
+    }));
 
     // Dynamic path to coral scoring
     Controls.leftJoystick.button(1).whileTrue(Commands.defer(

@@ -5,35 +5,36 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.data.Constants;
+import frc.robot.subsystems.ElevatorSubsystem.ElevatorLevel;
 
-import static frc.robot.RobotContainer.manipulatorSubsystem;
+import static frc.robot.RobotContainer.elevatorSubsystem;;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class IntakeOut extends Command {
-  /** Creates a new RunIntake. */
-
-  public IntakeOut() {
+public class SetElevatorPos extends Command {
+private ElevatorLevel currentLevel;
+  /** Creates a new elevatorL0. */
+  public SetElevatorPos(ElevatorLevel level) {
+    addRequirements(elevatorSubsystem);
+    currentLevel=level;
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(manipulatorSubsystem);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-  
+    
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    manipulatorSubsystem.setintakeSpeed(1);
+    elevatorSubsystem.setElevatorSetpoint(currentLevel);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    manipulatorSubsystem.setintakeSpeed(0);
+    elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
   }
 
   // Returns true when the command should end.
