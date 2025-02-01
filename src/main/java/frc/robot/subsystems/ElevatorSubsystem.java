@@ -30,8 +30,11 @@ public class ElevatorSubsystem extends SubsystemBase {
   private final TalonFX Elevator2;
 
   private double elevatorSetpointMeters = 0;
+  private boolean isZeroingElevator = false;
 
   private static final double ELEVATOR_DEAD_ZONE = 1;
+  private static final double ZEROING_SPEED = -0.1; // Slow downward speed
+  private static final double STALL_CURRENT_THRESHOLD = 10.0; // Amperes
 
   private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
 
@@ -95,6 +98,21 @@ public class ElevatorSubsystem extends SubsystemBase {
 
   public void periodic() {
     Elevator1.setControl(motionMagicRequest.withPosition(elevatorSetpointMeters).withSlot(0));
+
+    if (Elevator1.getStatorCurrent().getValueAsDouble() > STALL_CURRENT_THRESHOLD && isZeroingElevator) {
+      // Stop the elevator
+      Elevator1.set(0);
+
+      // Set the current position as the new zero
+      Elevator1.setPosition(0);
+
+      // Reset the target position
+      elevatorSetpointMeters = 0;
+
+      isZeroingElevator = false;
+
+      System.out.println("Elevator zeroed successfully");
+    }
   }
 
   /**
@@ -153,5 +171,15 @@ public class ElevatorSubsystem extends SubsystemBase {
    */
   public boolean isGoodElevatorPosition() {
     return Math.abs(getElevatorPositionMeters() - elevatorSetpointMeters) < ELEVATOR_DEAD_ZONE;
+  }
+
+
+  /**
+   * Begins zeroing the elevator.
+   */
+  public void zeroElevator() {
+    // Drive elevator down slowly
+    Elevator1.set(ZEROING_SPEED);
+    isZeroingElevator = true;
   }
 }
