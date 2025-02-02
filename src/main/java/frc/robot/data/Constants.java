@@ -89,6 +89,7 @@ public final class Constants {
 
     // In number of motor rotations per mechanism rotation
     public static final double funnelReduction = 33.75; 
+    public static final double pivotReduction = 52.5625; 
     public static final double ClimberReduction = -1; // We don't have a climber yet lol
     public static final double elevatorReductionToMeters = 130.8996939; // Motor rotations to elevator height in meters
 

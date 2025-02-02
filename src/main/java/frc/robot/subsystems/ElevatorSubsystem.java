@@ -6,6 +6,10 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.BooleanPublisher;
+import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -13,6 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Controls;
 import frc.robot.data.Constants;
+import frc.robot.utils.NetworkUser;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -24,7 +29,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 
-public class ElevatorSubsystem extends SubsystemBase {
+public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
   /** Creates a new ElevatorSubsystem. */
   private final TalonFX Elevator1;
   private final TalonFX Elevator2;
@@ -61,6 +66,14 @@ public class ElevatorSubsystem extends SubsystemBase {
       return height;
     }
   }
+
+  /* Networktables Variables */
+  private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+  private final NetworkTable elevatorTable = inst.getTable("Elevator");
+
+  private final DoublePublisher elevatorSetpointNT = elevatorTable.getDoubleTopic("Setpoint (Meters)").publish();
+  private final DoublePublisher elevatorPositionNT = elevatorTable.getDoubleTopic("Current Position (Meters)").publish();
+  private final BooleanPublisher elevatorIsZeroingNT = elevatorTable.getBooleanTopic("Is Zeroing").publish();
 
   public ElevatorSubsystem() {
     Elevator1 = new TalonFX(Constants.CANIds.elevator1);
@@ -181,5 +194,17 @@ public class ElevatorSubsystem extends SubsystemBase {
     // Drive elevator down slowly
     Elevator1.set(ZEROING_SPEED);
     isZeroingElevator = true;
+  }
+
+  /* Networktables methods */
+  public void initializeNetwork() {
+    // Could be used to make shuffleboard layouts programatically
+    // Currently unused
+  }
+
+  public void updateNetwork() {
+    elevatorSetpointNT.set(elevatorSetpointMeters);
+    elevatorPositionNT.set(getElevatorPositionMeters());
+    elevatorIsZeroingNT.set(isZeroingElevator);
   }
 }

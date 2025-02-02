@@ -5,9 +5,14 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.data.Constants;
+import frc.robot.utils.NetworkUser;
+import frc.robot.utils.SubsystemNetworkManager;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -17,7 +22,7 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 
-public class Funnel extends SubsystemBase {
+public class Funnel extends SubsystemBase implements NetworkUser {
   // one leader motor, one follower motor to align robot with cage
   // motor to lower arm, which holds the cage and lifts the robot
   // intake / outtake motor
@@ -27,11 +32,20 @@ public class Funnel extends SubsystemBase {
   public final TalonFX funnelPivot;
 
   private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
+
   private double funnelAngleSetpoint = 0;
+  
+  /* Networktables Variables */
+  private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+  private final NetworkTable funnelTable = inst.getTable("Funnel");
+
+  private final DoublePublisher funnelPivotSetpointNT = funnelTable.getDoubleTopic("Setpoint (Degrees)").publish();
+  private final DoublePublisher funnelPivotAngleNT = funnelTable.getDoubleTopic("Current Angle (Degrees)").publish();
 
   /** Creates a new funnelSubsystem. */
-  public Funnel()
-  {
+  public Funnel() {
+    SubsystemNetworkManager.RegisterNetworkUser(this);
+
     funnelPivot = new TalonFX(Constants.CANIds.funnelMotor);
 
     // create a configuration object for the funnel motor
@@ -88,8 +102,22 @@ public class Funnel extends SubsystemBase {
     return funnelPivot.getPosition().getValueAsDouble() * 360;
   }
 
-  public boolean isfunnelRightPosition() {
+  /**
+   * Checks if a the funnel pivot is within a deadband of the desired setpoint
+   * @return a boolean
+   */
+  public boolean isfunnelAtSetpoint() {
     return Math.abs(funnelAngleSetpoint - getfunnelDegrees()) < FUNNEL_DEAD_ZONE;
   }
 
+  /* Networktables methods */
+  public void initializeNetwork() {
+    // Could be used to make shuffleboard layouts programatically
+    // Currently unused
+  }
+
+  public void updateNetwork() {
+    funnelPivotSetpointNT.set(funnelAngleSetpoint);
+    funnelPivotAngleNT.set(getfunnelDegrees());
+  }
 }
