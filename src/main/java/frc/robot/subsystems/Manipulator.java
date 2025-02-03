@@ -13,13 +13,17 @@ import frc.robot.utils.NetworkConfiguredPID;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+
 import au.grapplerobotics.LaserCan;
 
 
@@ -27,7 +31,7 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
   /** Creates a new Manipulator. */
   private final TalonFX intake;
   private final TalonFX pivot;
-  private final DutyCycleEncoder pivotAbsoluteEncoder;
+  private final CANcoder pivotAbsoluteEncoder;
   private final LaserCan laserCanCamera;
 
   private final DutyCycleOut algaeIntakeDutyCycle = new DutyCycleOut(0);
@@ -66,36 +70,43 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     }
   }
 
-  private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
+  // -------------------- Tuning Code --------------------
+  // private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
   
-  public void updatePID() {
-    var slot0Configs = new Slot0Configs();
-    slot0Configs.kS = networkPIDConfiguration.getS(); // Static feedforward
-    slot0Configs.kP = networkPIDConfiguration.getP(); 
-    slot0Configs.kI = networkPIDConfiguration.getI(); 
-    slot0Configs.kD = networkPIDConfiguration.getD(); 
+  // public void updatePID() {
+  //   var slot0Configs = new Slot0Configs();
+  //   slot0Configs.kS = networkPIDConfiguration.getS(); // Static feedforward
+  //   slot0Configs.kP = networkPIDConfiguration.getP(); 
+  //   slot0Configs.kI = networkPIDConfiguration.getI(); 
+  //   slot0Configs.kD = networkPIDConfiguration.getD(); 
 
-    pivot.getConfigurator().apply(slot0Configs);
+  //   pivot.getConfigurator().apply(slot0Configs);
 
 
-    MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
-    motionMagicConfigs.MotionMagicCruiseVelocity = networkPIDConfiguration.getMotionMagicCruiseVelocity(); 
-    motionMagicConfigs.MotionMagicAcceleration = networkPIDConfiguration.getMotionMagicAcceleration();
-    motionMagicConfigs.MotionMagicJerk = networkPIDConfiguration.getMotionMagicJerk(); 
+  //   MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
+  //   motionMagicConfigs.MotionMagicCruiseVelocity = networkPIDConfiguration.getMotionMagicCruiseVelocity(); 
+  //   motionMagicConfigs.MotionMagicAcceleration = networkPIDConfiguration.getMotionMagicAcceleration();
+  //   motionMagicConfigs.MotionMagicJerk = networkPIDConfiguration.getMotionMagicJerk(); 
 
-    pivot.getConfigurator().apply(motionMagicConfigs);
-  }
+  //   pivot.getConfigurator().apply(motionMagicConfigs);
+  // }
 
   public Manipulator() {
     SubsystemNetworkManager.RegisterNetworkUser(this);
 
+    intake = new TalonFX(Constants.CANIds.intakeMotor);
     pivot = new TalonFX(Constants.CANIds.pivotMotor);
-    pivotAbsoluteEncoder = new DutyCycleEncoder(Constants.CANIds.pivotAbsoluteEncoder);
 
+    // -------------------- CANCoder Configuration --------------------
+    pivotAbsoluteEncoder = new CANcoder(Constants.CANIds.pivotAbsoluteEncoder);
+    CANcoderConfiguration config = new CANcoderConfiguration();
+    config.MagnetSensor.MagnetOffset = Constants.PhysicalConstants.pivotAbsoluteEncoderOffset; // To tune
+    pivotAbsoluteEncoder.getConfigurator().apply(config);
+
+    // -------------------- Pivot Configuration --------------------
     TalonFXConfiguration pivotConfigs = new TalonFXConfiguration();
-    CurrentLimitsConfigs pivotCurrentLimit= new CurrentLimitsConfigs();
-    CurrentLimitsConfigs intakeCurrentLimit= new CurrentLimitsConfigs();
 
+    CurrentLimitsConfigs pivotCurrentLimit= new CurrentLimitsConfigs();
     pivotCurrentLimit.StatorCurrentLimit = 60;
     pivotCurrentLimit.StatorCurrentLimitEnable = true;
     pivotConfigs.CurrentLimits = pivotCurrentLimit;
@@ -104,7 +115,6 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     motionMagicConfigs.MotionMagicCruiseVelocity = 110; // Using the existing velocity value
     motionMagicConfigs.MotionMagicAcceleration = 190; // Using the existing acceleration value
     motionMagicConfigs.MotionMagicJerk = 1900; // Setting jerk to 10x acceleration as a starting point
-
     pivotConfigs.MotionMagic = motionMagicConfigs;
 
     var slot0Configs = new Slot0Configs();
@@ -114,22 +124,37 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     slot0Configs.kD = 0.01; // Keeping the existing value
     pivotConfigs.Slot0 = slot0Configs;
 
+    // For when CANCoder is not present
     pivotConfigs.Feedback.SensorToMechanismRatio = Constants.PhysicalConstants.pivotReduction;
+    // For when CANCoder is present
+    // pivotConfigs.Feedback.RotorToSensorRatio = Constants.PhysicalConstants.pivotReduction;
+    // pivotConfigs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+    // pivotConfigs.Feedback.FeedbackRemoteSensorID = pivotAbsoluteEncoder.getDeviceID();
+
 
     pivot.getConfigurator().apply(pivotConfigs);
 
     // Init from absolute encoder
-    pivot.setPosition(pivotAbsoluteEncoder.get() + Constants.PhysicalConstants.pivotAbsoluteEncoderOffset);
+    resetInternalEncoder();
 
-    intake = new TalonFX(Constants.CANIds.intakeMotor);
+    // -------------------- Intake Configuration --------------------
     TalonFXConfiguration intakeConfigs = new TalonFXConfiguration();
 
+    CurrentLimitsConfigs intakeCurrentLimit= new CurrentLimitsConfigs();
     intakeCurrentLimit.StatorCurrentLimit = 60;
     intakeCurrentLimit.StatorCurrentLimitEnable = true;
     intakeConfigs.CurrentLimits = intakeCurrentLimit;
     intake.getConfigurator().apply(intakeConfigs); 
 
+    // Create LaserCan
     laserCanCamera = new LaserCan(Constants.CANIds.laserCanCamera);
+  }
+
+  private void resetInternalEncoder() {
+    // Possibly not nessesary?
+    setPivotSetpoint(PivotPosition.REST_POSITION);
+    // pivot.setPosition();
+
   }
 
   @Override

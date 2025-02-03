@@ -32,8 +32,8 @@ import com.ctre.phoenix6.configs.MotionMagicConfigs;
 
 public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
   /** Creates a new ElevatorSubsystem. */
-  private final TalonFX Elevator1;
-  private final TalonFX Elevator2;
+  private final TalonFX elevatorMotor1;
+  private final TalonFX elevatorMotor2;
 
   private double elevatorSetpointMeters = 0;
   private boolean isZeroingElevator = false;
@@ -43,19 +43,21 @@ public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
   private static final double STALL_CURRENT_THRESHOLD = 10.0; // Amperes
 
   private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
-  private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
+
+  // -------------------- Tuning Code --------------------
+  // private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
   
-  public void updatePID() {
-    var slot0Configs = new Slot0Configs();
-    slot0Configs.kS = networkPIDConfiguration.getS(); // Static feedforward
-    slot0Configs.kP = networkPIDConfiguration.getP(); 
-    slot0Configs.kI = networkPIDConfiguration.getI(); 
-    slot0Configs.kD = networkPIDConfiguration.getD(); 
+  // public void updatePID() {
+  //   var slot0Configs = new Slot0Configs();
+  //   slot0Configs.kS = networkPIDConfiguration.getS(); // Static feedforward
+  //   slot0Configs.kP = networkPIDConfiguration.getP(); 
+  //   slot0Configs.kI = networkPIDConfiguration.getI(); 
+  //   slot0Configs.kD = networkPIDConfiguration.getD(); 
 
 
-    Elevator1.getConfigurator().apply(slot0Configs);
-    Elevator2.getConfigurator().apply(slot0Configs);
-  }
+  //   Elevator1.getConfigurator().apply(slot0Configs);
+  //   Elevator2.getConfigurator().apply(slot0Configs);
+  // }
 
   public enum ElevatorLevel {
     //CHANGE VALUES!
@@ -90,14 +92,13 @@ public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
   private final BooleanPublisher elevatorIsZeroingNT = elevatorTable.getBooleanTopic("Is Zeroing").publish();
 
   public ElevatorSubsystem() {
-    Elevator1 = new TalonFX(Constants.CANIds.elevator1);
-    Elevator2 = new TalonFX(Constants.CANIds.elevator2);
-    Elevator2.setControl(new Follower(Constants.CANIds.elevator1, true));
+    elevatorMotor1 = new TalonFX(Constants.CANIds.elevator1);
+    elevatorMotor2 = new TalonFX(Constants.CANIds.elevator2);
+
+    elevatorMotor2.setControl(new Follower(Constants.CANIds.elevator1, true));
 
     TalonFXConfiguration elevatorConfig = new TalonFXConfiguration();
     CurrentLimitsConfigs elevatorCurrentLimits = new CurrentLimitsConfigs();
-    // elevatorCurrentLimits.SupplyCurrentLimit = 40;
-    // elevatorCurrentLimits.SupplyCurrentLimitEnable = true;
     elevatorCurrentLimits.StatorCurrentLimit = 40;
     elevatorCurrentLimits.StatorCurrentLimitEnable = true;
 
@@ -119,19 +120,19 @@ public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
 
     elevatorConfig.Feedback.SensorToMechanismRatio = Constants.PhysicalConstants.elevatorReductionToMeters;
 
-    Elevator1.getConfigurator().apply(elevatorConfig);
-    Elevator2.getConfigurator().apply(elevatorConfig);
+    elevatorMotor1.getConfigurator().apply(elevatorConfig);
+    elevatorMotor2.getConfigurator().apply(elevatorConfig);
   }
 
   public void periodic() {
-    Elevator1.setControl(motionMagicRequest.withPosition(elevatorSetpointMeters).withSlot(0));
+    elevatorMotor1.setControl(motionMagicRequest.withPosition(elevatorSetpointMeters).withSlot(0));
 
-    if (Elevator1.getStatorCurrent().getValueAsDouble() > STALL_CURRENT_THRESHOLD && isZeroingElevator) {
+    if (elevatorMotor1.getStatorCurrent().getValueAsDouble() > STALL_CURRENT_THRESHOLD && isZeroingElevator) {
       // Stop the elevator
-      Elevator1.set(0);
+      elevatorMotor1.set(0);
 
       // Set the current position as the new zero
-      Elevator1.setPosition(0);
+      elevatorMotor1.setPosition(0);
 
       // Reset the target position
       elevatorSetpointMeters = 0;
@@ -171,26 +172,8 @@ public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
    * @return The current elevator position in meters.
    */
   public double getElevatorPositionMeters(){
-    return Elevator1.getPosition().getValueAsDouble();
+    return elevatorMotor1.getPosition().getValueAsDouble();
   }
-
-  // /**
-  //  * Converts rotations to inches.
-  //  * @param rotations Number of rotations.
-  //  * @return Equivalent distance in inches.
-  //  */
-  // public double rotationsToInches(double rotations){
-  //  return (rotations/19.0625)*(1.625*Math.PI);
-  // }
-
-  // /**
-  //  * Converts inches to rotations.
-  //  * @param inches Distance in inches.
-  //  * @return Equivalent number of rotations.
-  //  */
-  // public double inchesToRotations(double inches){
-  //   return (inches*19.0625)/(1.625/Math.PI);
-  // }
 
   /**
    * Checks if the elevator is at the desired position.
@@ -200,13 +183,12 @@ public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
     return Math.abs(getElevatorPositionMeters() - elevatorSetpointMeters) < ELEVATOR_DEAD_ZONE;
   }
 
-
   /**
    * Begins zeroing the elevator.
    */
   public void zeroElevator() {
     // Drive elevator down slowly
-    Elevator1.set(ZEROING_SPEED);
+    elevatorMotor1.set(ZEROING_SPEED);
     isZeroingElevator = true;
   }
 

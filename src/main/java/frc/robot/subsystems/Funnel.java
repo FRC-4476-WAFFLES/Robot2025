@@ -23,16 +23,11 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 
 public class Funnel extends SubsystemBase implements NetworkUser {
-  // one leader motor, one follower motor to align robot with cage
-  // motor to lower arm, which holds the cage and lifts the robot
-  // intake / outtake motor
+  private static final double FUNNEL_DEAD_ZONE = 1; // In degrees
 
-  private static final double FUNNEL_DEAD_ZONE = 1;
-
-  public final TalonFX funnelPivot;
+  public final TalonFX funnelPivotMotor;
 
   private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
-
   private double funnelAngleSetpoint = 0;
   
   /* Networktables Variables */
@@ -46,7 +41,7 @@ public class Funnel extends SubsystemBase implements NetworkUser {
   public Funnel() {
     SubsystemNetworkManager.RegisterNetworkUser(this);
 
-    funnelPivot = new TalonFX(Constants.CANIds.funnelMotor);
+    funnelPivotMotor = new TalonFX(Constants.CANIds.funnelMotor);
 
     // create a configuration object for the funnel motor
     TalonFXConfiguration funnelConfig = new TalonFXConfiguration();
@@ -76,7 +71,7 @@ public class Funnel extends SubsystemBase implements NetworkUser {
     // Configure gear reduction
     funnelConfig.Feedback.SensorToMechanismRatio = Constants.PhysicalConstants.funnelReduction;
 
-    funnelPivot.getConfigurator().apply(funnelConfig);
+    funnelPivotMotor.getConfigurator().apply(funnelConfig);
   }
 
   @Override
@@ -99,7 +94,7 @@ public class Funnel extends SubsystemBase implements NetworkUser {
    * @return The current angle in degrees.
    */
   public double getfunnelDegrees() {
-    return funnelPivot.getPosition().getValueAsDouble() * 360;
+    return funnelPivotMotor.getPosition().getValueAsDouble() * 360;
   }
 
   /**
