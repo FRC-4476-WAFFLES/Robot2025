@@ -81,7 +81,7 @@ public class Funnel extends SubsystemBase implements NetworkUser {
 
   @Override
   public void periodic() {
-    funnelPivot.setControl(motionMagicRequest.withPosition(funnelAngleSetpoint / 360).withSlot(0));
+    // funnelPivot.setControl(motionMagicRequest.withPosition(funnelAngleSetpoint / 360).withSlot(0));
   }
 
   /**

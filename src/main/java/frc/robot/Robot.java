@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.data.Constants;
+import frc.robot.utils.NetworkConfiguredPID;
 import frc.robot.utils.SubsystemNetworkManager;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
@@ -102,6 +103,8 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+
+    NetworkConfiguredPID.onEnable();
   }
 
   /** This function is called periodically during operator control. */

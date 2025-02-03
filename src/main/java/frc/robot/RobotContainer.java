@@ -11,6 +11,7 @@ import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.DynamicPathingSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem.ElevatorLevel;
+import frc.robot.subsystems.Manipulator.PivotPosition;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.Manipulator;
 import frc.robot.subsystems.Telemetry;
@@ -28,6 +29,9 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.ManualElevatorControl;
 import frc.robot.commands.RunIntake;
+import frc.robot.commands.RunOutake;
+import frc.robot.commands.SetElevatorPos;
+import frc.robot.commands.SetPivotPos;
 import frc.robot.data.TunerConstants;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.subsystems.ElevatorSubsystem;
@@ -54,6 +58,7 @@ public class RobotContainer {
   /* Commands */
   private final ManualElevatorControl manualElevatorControl = new ManualElevatorControl();
   private final RunIntake runIntake = new RunIntake();
+  private final RunOutake runOutake = new RunOutake();
 
   /* Global Robot State */
   private final SendableChooser<Command> autoChooser;
@@ -102,22 +107,20 @@ public class RobotContainer {
       )
     );
 
-    // Controls.operatorController.a().onTrue(elevator command for setting L0);
-    // Controls.operatorController.b().onTrue(elevator command for setting L1);
-    // Controls.operatorController.x().onTrue(elevator command for setting L2);
-    // Controls.operatorController.y().onTrue(elevator command for setting L3);
-    Controls.operatorController.povUp().whileTrue(runIntake);
-    // Controls.operatorController.povDown().whileTrue(runOuttake);
+    Controls.operatorController.a().onTrue(new SetElevatorPos(ElevatorLevel.L0)); // elevator command for setting L0
+    Controls.operatorController.b().onTrue(new SetElevatorPos(ElevatorLevel.L1));
+    Controls.operatorController.x().onTrue(new SetElevatorPos(ElevatorLevel.L2));
+    Controls.operatorController.y().onTrue(new SetElevatorPos(ElevatorLevel.L3));
+
+    Controls.operatorController.leftBumper().whileTrue(runIntake);
+    Controls.operatorController.rightBumper().whileTrue(runOutake);
+
     // Controls.operatorController.rightStick().onTrue(climberIn);
     // Controls.operatorController.leftStick().onTrue(climberOut);
-    // Controls.operatorController.leftBumper().onTrue(pivot L0 command);
-    // Controls.operatorController.rightBumper().onTrue(pivot L1-2 command);
-    // Controls.operatorController.rightTrigger().onTrue(pivot command for L3); 
-    Controls.operatorController.b().whileTrue(runIntake);
 
-    Controls.operatorController.a().onTrue(new InstantCommand(() -> {
-      elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.L3);
-    }));
+    Controls.operatorController.leftBumper().onTrue(new SetPivotPos(PivotPosition.L0));
+    Controls.operatorController.rightBumper().onTrue(new SetPivotPos(PivotPosition.L2));
+    Controls.operatorController.rightTrigger().onTrue(new SetPivotPos(PivotPosition.L3)); 
 
     // Dynamic path to coral scoring
     Controls.leftJoystick.button(1).whileTrue(Commands.defer(

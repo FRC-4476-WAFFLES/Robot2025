@@ -9,6 +9,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.data.Constants;
+import frc.robot.utils.NetworkConfiguredPID;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
 
@@ -45,7 +46,8 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
   private final DoublePublisher pivotSetpointNT = pivotTable.getDoubleTopic("Setpoint (Degrees)").publish();
   private final DoublePublisher pivotAngleNT = pivotTable.getDoubleTopic("Current Angle (Degrees)").publish();
 
-  public enum pivotPositions {
+  public enum PivotPosition {
+    REST_POSITION(0),
     ALGAE(6789),
     CORALINTAKE(12345),
     NET(10),
@@ -55,13 +57,33 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
 
     private double pivotDegrees;
 
-    pivotPositions(double pivotDegrees) {
+    PivotPosition(double pivotDegrees) {
       this.pivotDegrees = pivotDegrees;
     }
 
     public double getDegrees() {
       return pivotDegrees;
     }
+  }
+
+  private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
+  
+  public void updatePID() {
+    var slot0Configs = new Slot0Configs();
+    slot0Configs.kS = networkPIDConfiguration.getS(); // Static feedforward
+    slot0Configs.kP = networkPIDConfiguration.getP(); 
+    slot0Configs.kI = networkPIDConfiguration.getI(); 
+    slot0Configs.kD = networkPIDConfiguration.getD(); 
+
+    pivot.getConfigurator().apply(slot0Configs);
+
+
+    MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
+    motionMagicConfigs.MotionMagicCruiseVelocity = networkPIDConfiguration.getMotionMagicCruiseVelocity(); 
+    motionMagicConfigs.MotionMagicAcceleration = networkPIDConfiguration.getMotionMagicAcceleration();
+    motionMagicConfigs.MotionMagicJerk = networkPIDConfiguration.getMotionMagicJerk(); 
+
+    pivot.getConfigurator().apply(motionMagicConfigs);
   }
 
   public Manipulator() {
@@ -77,11 +99,12 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     pivotCurrentLimit.StatorCurrentLimit = 60;
     pivotCurrentLimit.StatorCurrentLimitEnable = true;
     pivotConfigs.CurrentLimits = pivotCurrentLimit;
-    // motion magic setup (from Elevator subsystem) -- not used yet in algae manipulator code, ADD IF NECESSARY
+
     MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
     motionMagicConfigs.MotionMagicCruiseVelocity = 110; // Using the existing velocity value
     motionMagicConfigs.MotionMagicAcceleration = 190; // Using the existing acceleration value
     motionMagicConfigs.MotionMagicJerk = 1900; // Setting jerk to 10x acceleration as a starting point
+
     pivotConfigs.MotionMagic = motionMagicConfigs;
 
     var slot0Configs = new Slot0Configs();
@@ -128,7 +151,7 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
    * Sets the target setPoint of the elevator.
    * @param setpoint Target position enum.
    */
-  public void setPivotSetpoint(pivotPositions setpoint){
+  public void setPivotSetpoint(PivotPosition setpoint){
     pivotSetpointAngle = setpoint.getDegrees();
   }
 

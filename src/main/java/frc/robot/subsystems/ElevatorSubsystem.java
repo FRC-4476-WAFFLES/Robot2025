@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Controls;
 import frc.robot.data.Constants;
+import frc.robot.utils.NetworkConfiguredPID;
 import frc.robot.utils.NetworkUser;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -42,6 +43,19 @@ public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
   private static final double STALL_CURRENT_THRESHOLD = 10.0; // Amperes
 
   private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
+  private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
+  
+  public void updatePID() {
+    var slot0Configs = new Slot0Configs();
+    slot0Configs.kS = networkPIDConfiguration.getS(); // Static feedforward
+    slot0Configs.kP = networkPIDConfiguration.getP(); 
+    slot0Configs.kI = networkPIDConfiguration.getI(); 
+    slot0Configs.kD = networkPIDConfiguration.getD(); 
+
+
+    Elevator1.getConfigurator().apply(slot0Configs);
+    Elevator2.getConfigurator().apply(slot0Configs);
+  }
 
   public enum ElevatorLevel {
     //CHANGE VALUES!
@@ -182,7 +196,7 @@ public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
    * Checks if the elevator is at the desired position.
    * @return true if elevator is at desired position, false otherwise.
    */
-  public boolean isGoodElevatorPosition() {
+  public boolean isElevatorAtSetpoint() {
     return Math.abs(getElevatorPositionMeters() - elevatorSetpointMeters) < ELEVATOR_DEAD_ZONE;
   }
 

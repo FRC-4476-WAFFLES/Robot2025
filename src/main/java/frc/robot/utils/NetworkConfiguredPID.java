@@ -1,5 +1,8 @@
 package frc.robot.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.networktables.DoubleTopic;
 import edu.wpi.first.networktables.NetworkTable;
@@ -29,9 +32,23 @@ public class NetworkConfiguredPID {
     private final DoubleEntry VTopic; // Output per unit of requested velocity (output/rps)
     private final DoubleEntry ATopic; // Output per unit of requested acceleration (output/(rps/s))
 
+    /* Motion Magic Gains */
+    private final DoubleEntry MotionMagicCruiseVelocity; 
+    private final DoubleEntry MotionMagicAcceleration; 
+    private final DoubleEntry MotionMagicJerk; // If set to zero, there is no jerk limit
+    private final DoubleEntry MotionMagicExpo_kA;
+    private final DoubleEntry MotionMagicExpo_kV;
+
+    private static ArrayList<NetworkConfiguredPID> onEnableUpdateList = new ArrayList<NetworkConfiguredPID>();
+    private Runnable updateMethod;
 
     public NetworkConfiguredPID(String name) {
+        this(name, () -> {});
+    }
+
+    public NetworkConfiguredPID(String name, Runnable updateMethod) {
         this.name = name;
+        this.updateMethod = updateMethod;
 
         groupTable = inst.getTable("PID Configuration");
         instanceTable = groupTable.getSubTable(this.name);
@@ -44,6 +61,15 @@ public class NetworkConfiguredPID {
         STopic = instanceTable.getDoubleTopic("Friction Feedforward").getEntry(0, (PubSubOption)null);
         VTopic = instanceTable.getDoubleTopic("Velocity Feedforward").getEntry(0, (PubSubOption)null);
         ATopic = instanceTable.getDoubleTopic("Acceleration Feedforward").getEntry(0, (PubSubOption)null);
+
+        MotionMagicCruiseVelocity = instanceTable.getDoubleTopic("MotionMagic CruiseVelocity").getEntry(0, (PubSubOption)null);
+        MotionMagicAcceleration = instanceTable.getDoubleTopic("MotionMagic Acceleration").getEntry(0, (PubSubOption)null);
+        MotionMagicJerk = instanceTable.getDoubleTopic("MotionMagic Jerk").getEntry(0, (PubSubOption)null);
+        MotionMagicExpo_kA = instanceTable.getDoubleTopic("MotionMagic kA").getEntry(0, (PubSubOption)null);
+        MotionMagicExpo_kV = instanceTable.getDoubleTopic("MotionMagic kV").getEntry(0, (PubSubOption)null);
+
+
+        onEnableUpdateList.add(this);
     }
 
     /**
@@ -100,5 +126,56 @@ public class NetworkConfiguredPID {
      */
     public double getA() {
         return ATopic.getAsDouble();
+    }
+
+    /**
+     * Gets the current MotionMagicCruiseVelocity value from networktables
+     * @return the current value
+     */
+    public double getMotionMagicCruiseVelocity() {
+        return MotionMagicCruiseVelocity.getAsDouble();
+    }
+
+    /**
+     * Gets the current MotionMagicAcceleration value from networktables
+     * @return the current value
+     */
+    public double getMotionMagicAcceleration() {
+        return MotionMagicAcceleration.getAsDouble();
+    }
+
+    /**
+     * Gets the current MotionMagicJerk value from networktables
+     * @return the current value
+     */
+    public double getMotionMagicJerk() {
+        return MotionMagicJerk.getAsDouble();
+    }
+
+    /**
+     * Gets the current MotionMagicExpo_kA value from networktables
+     * @return the current value
+     */
+    public double getMotionMagicExpo_kA() {
+        return MotionMagicExpo_kA.getAsDouble();
+    }
+
+    /**
+     * Gets the current MotionMagicExpo_kV value from networktables
+     * @return the current value
+     */
+    public double getMotionMagicExpo_kV() {
+        return MotionMagicExpo_kV.getAsDouble();
+    }
+
+    /* OnEnable Hook Setup */
+    public void runUpdateTask() {
+        updateMethod.run();
+    }
+
+    public static void onEnable() {
+        for (var obj : onEnableUpdateList) {
+            obj.runUpdateTask();
+        }
     }
 }
