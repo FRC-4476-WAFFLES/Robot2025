@@ -34,7 +34,6 @@ import frc.robot.commands.SetElevatorPos;
 import frc.robot.commands.SetPivotPos;
 import frc.robot.data.TunerConstants;
 import frc.robot.data.Constants.PhysicalConstants;
-import frc.robot.subsystems.ElevatorSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a

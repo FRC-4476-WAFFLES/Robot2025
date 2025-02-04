@@ -22,9 +22,9 @@ public class Controls {
     }
 
     public static class OperatorConstants {
-        public static final int kDriverControllerPort = 0;
-        public static final int leftJoystick = 1;
-        public static final int rightJoystick = 2;
+        public static final int leftJoystick = 0;
+        public static final int rightJoystick = 1;
+        public static final int kDriverControllerPort = 2;
     }
 
     /* Methods to get driver input */
