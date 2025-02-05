@@ -75,8 +75,12 @@ public class RobotContainer {
       Controls::getDriveRotation
     ));
 
-    // Allow the operator to control the elevator manually, but only if the override is enabled
-    elevatorSubsystem.setDefaultCommand(manualElevatorControl);
+    // Set default commands based on mode
+    new Trigger(() -> !isOperatorOverride)
+        .whileTrue(manualElevatorControl);
+    
+    new Trigger(() -> isOperatorOverride)
+        .whileTrue(new SetElevatorPos(ElevatorLevel.REST_POSITION));
 
     // Register commands to be used by pathplanner autos
     registerNamedCommands();
@@ -87,8 +91,6 @@ public class RobotContainer {
 
     // Warmup pathplanner to reduce delay when dynamic pathing
     FollowPathCommand.warmupCommand().schedule();
-
-
   }
 
   /**
@@ -110,14 +112,21 @@ public class RobotContainer {
       new InstantCommand(RobotContainer::toggleOperatorOverride)
     );
 
-    //  Elevator height setters
-    inNormalMode.and(Controls.operatorController.b()).onTrue(new SetElevatorPos(ElevatorLevel.L1));
-    inNormalMode.and(Controls.operatorController.x()).onTrue(new SetElevatorPos(ElevatorLevel.L2));
-    inNormalMode.and(Controls.operatorController.y()).onTrue(new SetElevatorPos(ElevatorLevel.L3));
+    //  Elevator height setters - Normal mode just sets target without moving
+    inNormalMode.and(Controls.operatorController.b()).onTrue(new InstantCommand(() -> elevatorSubsystem.setTargetPosition(ElevatorLevel.L1)));
+    inNormalMode.and(Controls.operatorController.x()).onTrue(new InstantCommand(() -> elevatorSubsystem.setTargetPosition(ElevatorLevel.L2)));
+    inNormalMode.and(Controls.operatorController.y()).onTrue(new InstantCommand(() -> elevatorSubsystem.setTargetPosition(ElevatorLevel.L3)));
+    inNormalMode.and(Controls.operatorController.a()).onTrue(new InstantCommand(() -> elevatorSubsystem.setTargetPosition(ElevatorLevel.L4)));
 
-    inOverrideMode.and(Controls.operatorController.b()).onTrue(new SetElevatorPos(ElevatorLevel.L1));
-    inOverrideMode.and(Controls.operatorController.x()).onTrue(new SetElevatorPos(ElevatorLevel.L2));
-    inOverrideMode.and(Controls.operatorController.y()).onTrue(new SetElevatorPos(ElevatorLevel.L3));
+    // Override mode immediately moves to position while held
+    inOverrideMode.and(Controls.operatorController.b()).whileTrue(new SetElevatorPos(ElevatorLevel.L1))
+        .whileFalse(new SetElevatorPos(ElevatorLevel.REST_POSITION));
+    inOverrideMode.and(Controls.operatorController.x()).whileTrue(new SetElevatorPos(ElevatorLevel.L2))
+        .whileFalse(new SetElevatorPos(ElevatorLevel.REST_POSITION));
+    inOverrideMode.and(Controls.operatorController.y()).whileTrue(new SetElevatorPos(ElevatorLevel.L3))
+        .whileFalse(new SetElevatorPos(ElevatorLevel.REST_POSITION));
+    inOverrideMode.and(Controls.operatorController.a()).whileTrue(new SetElevatorPos(ElevatorLevel.L4))
+        .whileFalse(new SetElevatorPos(ElevatorLevel.REST_POSITION));
 
     // Axis intake control only in override mode
     inOverrideMode.whileTrue(axisIntakeControl);

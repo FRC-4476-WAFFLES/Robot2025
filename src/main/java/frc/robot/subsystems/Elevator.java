@@ -11,6 +11,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
@@ -20,7 +21,9 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants;
+import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.utils.NetworkUser;
+import frc.robot.utils.SubsystemNetworkManager;
 
 public class Elevator extends SubsystemBase implements NetworkUser {
   // Hardware Components
@@ -40,6 +43,8 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   private final DoublePublisher elevatorSetpointNT = elevatorTable.getDoubleTopic("Setpoint (Meters)").publish();
   private final DoublePublisher elevatorPositionNT = elevatorTable.getDoubleTopic("Current Position (Meters)").publish();
   private final BooleanPublisher elevatorIsZeroingNT = elevatorTable.getBooleanTopic("Is Zeroing").publish();
+
+  private ElevatorLevel targetPosition = ElevatorLevel.REST_POSITION;
 
   // -------------------- Tuning Code --------------------
   // private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
@@ -103,8 +108,11 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     elevatorMotorFollower.setControl(new Follower(Constants.CANIds.elevator1, true));
   }
 
+  @Override
   public void periodic() {
+    // Main control logic
     if (!isZeroingElevator) {
+      // Use motion magic to control position
       elevatorMotorLeader.setControl(motionMagicRequest.withPosition(elevatorSetpointMeters).withSlot(0));
     } else {
       zeroElevator();
@@ -124,6 +132,9 @@ public class Elevator extends SubsystemBase implements NetworkUser {
 
       DriverStation.reportWarning("Elevator zeroed successfully", false);
     }
+
+    // Update network tables
+    updateNetwork();
   }
 
   /**
@@ -191,5 +202,13 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     elevatorSetpointNT.set(elevatorSetpointMeters);
     elevatorPositionNT.set(getElevatorPositionMeters());
     elevatorIsZeroingNT.set(isZeroingElevator);
+  }
+
+  public void setTargetPosition(ElevatorLevel position) {
+    targetPosition = position;
+  }
+
+  public ElevatorLevel getTargetPosition() {
+    return targetPosition;
   }
 }

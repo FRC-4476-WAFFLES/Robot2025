@@ -138,16 +138,17 @@ public final class Constants {
 
     // Predefined heights for the elevator (in meters)
     public enum ElevatorLevel {
-      REST_POSITION(0),
-      NET(90),
-      ALGAE_L2(70),
-      ALGAE_L1(60),
-      PROCESSOR(55),
-      CORAL_INTAKE(40),
+      REST_POSITION(0.0),
+      NET(90.0),
+      ALGAE_L2(70.0),
+      ALGAE_L1(60.0),
+      PROCESSOR(55.0),
+      CORAL_INTAKE(40.0),
+      L4(70.0),
       L3(50.0),
       L2(27.0),
-      L1(10.0),
-      L0(2);
+      L1(10.0);
+
 
       private final double height;
 
