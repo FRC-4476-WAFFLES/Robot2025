@@ -4,18 +4,6 @@
 
 package frc.robot;
 
-import frc.robot.commands.DriveTeleop;
-import frc.robot.subsystems.Funnel;
-
-import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.DynamicPathingSubsystem;
-import frc.robot.subsystems.ElevatorSubsystem;
-import frc.robot.subsystems.ElevatorSubsystem.ElevatorLevel;
-import frc.robot.subsystems.Manipulator.PivotPosition;
-import frc.robot.subsystems.ClimberSubsystem;
-import frc.robot.subsystems.Manipulator;
-import frc.robot.subsystems.Telemetry;
-
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -29,13 +17,23 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.ManualElevatorControl;
 import frc.robot.commands.RunIntake;
 import frc.robot.commands.RunOutake;
 import frc.robot.commands.SetElevatorPos;
 import frc.robot.commands.SetPivotPos;
-import frc.robot.data.TunerConstants;
+import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.PhysicalConstants;
+import frc.robot.data.TunerConstants;
+import frc.robot.subsystems.Climber;
+import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.DynamicPathingSubsystem;
+import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.Funnel;
+import frc.robot.subsystems.Manipulator;
+import frc.robot.subsystems.Manipulator.PivotPosition;
+import frc.robot.subsystems.Telemetry;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -49,9 +47,9 @@ public class RobotContainer {
   /* Subsystems */
   public static final DriveSubsystem driveSubsystem = TunerConstants.createDrivetrain();
   public static final Manipulator manipulatorSubsystem = new Manipulator();
-  public static final ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
+  public static final Elevator elevatorSubsystem = new Elevator();
   public static final Funnel funnelSubsystem = new Funnel();
-  public static final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+  public static final Climber climberSubsystem = new Climber();
 
   public static final DynamicPathingSubsystem dynamicPathingSubsystem = new DynamicPathingSubsystem();
   private final Telemetry telemetry = new Telemetry(PhysicalConstants.maxSpeed);

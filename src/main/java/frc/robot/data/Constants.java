@@ -4,12 +4,11 @@
 
 package frc.robot.data;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
-
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -117,5 +116,48 @@ public final class Constants {
     public static final double PIVOT_kI = 0.0;
     public static final double PIVOT_kD = 0.01;
     public static final double PIVOT_kS = 0.0;
+  }
+
+  /* Elevator Constants */
+  public static class ElevatorConstants {
+    // Control constants
+    public static final double ELEVATOR_DEAD_ZONE = 1;
+    public static final double ZEROING_SPEED = -0.1; // Slow downward speed
+    public static final double STALL_CURRENT_THRESHOLD = 10.0; // Amperes
+
+    // Motion Magic configuration
+    public static final double MOTION_CRUISE_VELOCITY = 110;
+    public static final double MOTION_ACCELERATION = 190;
+    public static final double MOTION_JERK = 1900;
+
+    // PID Values
+    public static final double kP = 2.0;
+    public static final double kI = 0.0;
+    public static final double kD = 0.01;
+    public static final double kS = 0.0;
+
+    // Predefined heights for the elevator (in meters)
+    public enum ElevatorLevel {
+      REST_POSITION(0),
+      NET(90),
+      ALGAE_L2(70),
+      ALGAE_L1(60),
+      PROCESSOR(55),
+      CORAL_INTAKE(40),
+      L3(50.0),
+      L2(27.0),
+      L1(10.0),
+      L0(2);
+
+      private final double height;
+
+      ElevatorLevel(double height) {
+        this.height = height;
+      }
+
+      public double getHeight() {
+        return height;
+      }
+    }
   }
 }

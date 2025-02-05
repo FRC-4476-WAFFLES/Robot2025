@@ -26,7 +26,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-public class LightSubsystem extends SubsystemBase {
+public class Lights extends SubsystemBase {
   private static final CANdle candle = new CANdle(Constants.CANIds.CANdle); 
   private static final int LED_COUNT = 64;
 
@@ -125,7 +125,7 @@ public class LightSubsystem extends SubsystemBase {
    * Constructs a new LightSubsystem.
    * Initializes the blink timer and configures the CANdle settings.
    */
-  public LightSubsystem() {
+  public Lights() {
     blinkTimer.reset();
     blinkTimer.start();
 

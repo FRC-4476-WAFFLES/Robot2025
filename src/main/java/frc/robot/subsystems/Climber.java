@@ -15,7 +15,7 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 
-public class ClimberSubsystem extends SubsystemBase {
+public class Climber extends SubsystemBase {
   private final TalonFX climberMotorLeader;
   private final TalonFX climberMotorFollower;
 
@@ -41,7 +41,7 @@ public class ClimberSubsystem extends SubsystemBase {
   }
 
   /** Creates a new ClimberSubsystem. */
-  public ClimberSubsystem()
+  public Climber()
   {
     climberMotorLeader = new TalonFX(Constants.CANIds.climberLeader);
     climberMotorFollower = new TalonFX(Constants.CANIds.climberLeader);

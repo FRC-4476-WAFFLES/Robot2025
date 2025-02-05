@@ -4,23 +4,25 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.networktables.BooleanPublisher;
-import edu.wpi.first.networktables.DoublePublisher;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.data.Constants;
-import frc.robot.utils.NetworkUser;
-
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
 
-public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
+import edu.wpi.first.networktables.BooleanPublisher;
+import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.data.Constants;
+import frc.robot.data.Constants.ElevatorConstants;
+import frc.robot.utils.NetworkUser;
+
+public class Elevator extends SubsystemBase implements NetworkUser {
   // Hardware Components
   private final TalonFX elevatorMotorLeader;
   private final TalonFX elevatorMotorFollower;
@@ -31,11 +33,6 @@ public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
 
   private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
 
-  // Constants
-  private static final double ELEVATOR_DEAD_ZONE = 1;
-  private static final double ZEROING_SPEED = -0.1; // Slow downward speed
-  private static final double STALL_CURRENT_THRESHOLD = 10.0; // Amperes
-  
   // Networktables Variables 
   private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
   private final NetworkTable elevatorTable = inst.getTable("Elevator");
@@ -43,33 +40,6 @@ public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
   private final DoublePublisher elevatorSetpointNT = elevatorTable.getDoubleTopic("Setpoint (Meters)").publish();
   private final DoublePublisher elevatorPositionNT = elevatorTable.getDoubleTopic("Current Position (Meters)").publish();
   private final BooleanPublisher elevatorIsZeroingNT = elevatorTable.getBooleanTopic("Is Zeroing").publish();
-
-  /**
-   * Represents predefined heights for the elevator
-   */
-  public enum ElevatorLevel {
-    //CHANGE VALUES!
-    REST_POSITION(0),
-    NET(90),
-    ALGAE_L2(70),
-    ALGAE_L1(60),
-    PROCESSOR(55),
-    CORAL_INTAKE(40),
-    L3(50.0),
-    L2(27.0),
-    L1(10.0),
-    L0(2);
-
-    private double height;
-
-    ElevatorLevel(double height) {
-      this.height = height;
-    }
-
-    public double getHeight() {
-      return height;
-    }
-  }
 
   // -------------------- Tuning Code --------------------
   // private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
@@ -86,7 +56,7 @@ public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
   //   Elevator2.getConfigurator().apply(slot0Configs);
   // }
 
-  public ElevatorSubsystem() {
+  public Elevator() {
     elevatorMotorLeader = new TalonFX(Constants.CANIds.elevator1);
     elevatorMotorFollower = new TalonFX(Constants.CANIds.elevator2);
 
@@ -108,18 +78,18 @@ public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
     
     // PID Gains
     var slot0Configs = new Slot0Configs();
-    slot0Configs.kS = 0; // Keeping the existing value
-    slot0Configs.kP = 2; // Keeping the existing value
-    slot0Configs.kI = 0; // Keeping the existing value
-    slot0Configs.kD = 0.01; // Keeping the existing value
+    slot0Configs.kS = ElevatorConstants.kS;
+    slot0Configs.kP = ElevatorConstants.kP;
+    slot0Configs.kI = ElevatorConstants.kI;
+    slot0Configs.kD = ElevatorConstants.kD;
 
     elevatorConfig.Slot0 = slot0Configs;
 
     // Motion Magic
     MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
-    motionMagicConfigs.MotionMagicCruiseVelocity = 110; // Using the existing velocity value
-    motionMagicConfigs.MotionMagicAcceleration = 190; // Using the existing acceleration value
-    motionMagicConfigs.MotionMagicJerk = 1900; // Setting jerk to 10x acceleration as a starting point
+    motionMagicConfigs.MotionMagicCruiseVelocity = ElevatorConstants.MOTION_CRUISE_VELOCITY;
+    motionMagicConfigs.MotionMagicAcceleration = ElevatorConstants.MOTION_ACCELERATION;
+    motionMagicConfigs.MotionMagicJerk = ElevatorConstants.MOTION_JERK;
     elevatorConfig.MotionMagic = motionMagicConfigs;
 
     // Mechanism Reduction
@@ -134,9 +104,13 @@ public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
   }
 
   public void periodic() {
-    elevatorMotorLeader.setControl(motionMagicRequest.withPosition(elevatorSetpointMeters).withSlot(0));
-
-    if (elevatorMotorLeader.getStatorCurrent().getValueAsDouble() > STALL_CURRENT_THRESHOLD && isZeroingElevator) {
+    if (!isZeroingElevator) {
+      elevatorMotorLeader.setControl(motionMagicRequest.withPosition(elevatorSetpointMeters).withSlot(0));
+    } else {
+      zeroElevator();
+    }
+  
+    if (elevatorMotorLeader.getStatorCurrent().getValueAsDouble() > ElevatorConstants.STALL_CURRENT_THRESHOLD && isZeroingElevator) {
       // Stop the elevator
       elevatorMotorLeader.set(0);
 
@@ -148,7 +122,7 @@ public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
 
       isZeroingElevator = false;
 
-      System.out.println("Elevator zeroed successfully");
+      DriverStation.reportWarning("Elevator zeroed successfully", false);
     }
   }
 
@@ -164,7 +138,7 @@ public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
    * Sets the target position of the elevator.
    * @param setpoint Target position enum.
    */
-  public void setElevatorSetpoint(ElevatorLevel setpoint){
+  public void setElevatorSetpoint(ElevatorConstants.ElevatorLevel setpoint){
     setElevatorSetpointMeters(setpoint.getHeight());
   }
 
@@ -189,7 +163,7 @@ public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
    * @return true if elevator is at desired position, false otherwise.
    */
   public boolean isElevatorAtSetpoint() {
-    return Math.abs(getElevatorPositionMeters() - elevatorSetpointMeters) < ELEVATOR_DEAD_ZONE;
+    return Math.abs(getElevatorPositionMeters() - elevatorSetpointMeters) < ElevatorConstants.ELEVATOR_DEAD_ZONE;
   }
 
   /**
@@ -197,9 +171,10 @@ public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
    */
   public void zeroElevator() {
     // Drive elevator down slowly
-    elevatorMotorLeader.set(ZEROING_SPEED);
+    elevatorMotorLeader.set(ElevatorConstants.ZEROING_SPEED);
     isZeroingElevator = true;
   }
+  
 
   /* Networktables methods */
   @Override

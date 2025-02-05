@@ -5,15 +5,15 @@
 package frc.robot;
 
 
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.utils.NetworkConfiguredPID;
 import frc.robot.utils.SubsystemNetworkManager;
-import edu.wpi.first.wpilibj.DataLogManager;
-
-import edu.wpi.first.wpilibj.DriverStation;
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
  * the TimedRobot documentation. If you change the name of this class or the package after creating
@@ -37,11 +37,27 @@ public class Robot extends TimedRobot {
     // Initialize subsystem network manager
     SubsystemNetworkManager.init(this);
 
-    // Initialize DataLog
-    DataLogManager.start();
+    // Start USB logging
+    DataLogManager.start("/U/logs");  // Log to USB drive
 
-    // Enable logging of both DS control and joystick data
+    // Record both DS control and joystick data
     DriverStation.startDataLog(DataLogManager.getLog());
+
+    // Start logging NetworkTables data
+    NetworkTableInstance.getDefault().startEntryDataLog(DataLogManager.getLog(), "", "");
+
+    // Log metadata about the build
+    DataLogManager.log("Robot program starting");
+    DataLogManager.log("Build date: " + getBuildDate());
+    DataLogManager.log("Build time: " + getBuildTime());
+  }
+
+  private String getBuildDate() {
+    return new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date());
+  }
+
+  private String getBuildTime() {
+    return new java.text.SimpleDateFormat("HH:mm:ss").format(new java.util.Date());
   }
 
   /**
@@ -59,10 +75,6 @@ public class Robot extends TimedRobot {
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
 
-    //do we still need this?
-    // if (m_gcTimer.advanceIfElapsed(5)) {
-    //   // System.gc();
-    // }
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
