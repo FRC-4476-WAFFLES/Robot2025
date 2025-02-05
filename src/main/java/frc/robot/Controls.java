@@ -26,7 +26,7 @@ public class Controls {
         public static final int kOperatorControllerPort = 2;
     }
 
-    /* Methods to get driver input */
+    // Methods to get driver input
     public static double getDriveX() {
         return -leftJoystick.getX() * PhysicalConstants.maxSpeed;
     }

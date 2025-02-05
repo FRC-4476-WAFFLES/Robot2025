@@ -113,22 +113,24 @@ public class Funnel extends SubsystemBase implements NetworkUser {
    * Checks if a the funnel pivot is within a deadband of the desired setpoint
    * @return a boolean
    */
-  public boolean isfunnelAtSetpoint() {
+  public boolean isFunnelAtSetpoint() {
     return Math.abs(funnelAngleSetpoint - getfunnelDegrees()) < FUNNEL_DEAD_ZONE;
   }
 
   /* Networktables methods */
+
+  /**
+     * This method is called automatically by the SubsystemNetworkManager
+     */
+    @Override
+    public void updateNetwork() {
+      funnelPivotSetpointNT.set(funnelAngleSetpoint);
+      funnelPivotAngleNT.set(getfunnelDegrees());
+    }
+
   public void initializeNetwork() {
     // Could be used to make shuffleboard layouts programatically
     // Currently unused
   }
-
-  /**
-   * This method is called automatically by the SubsystemNetworkManager
-   */
-  @Override
-  public void updateNetwork() {
-    funnelPivotSetpointNT.set(funnelAngleSetpoint);
-    funnelPivotAngleNT.set(getfunnelDegrees());
-  }
 }
+

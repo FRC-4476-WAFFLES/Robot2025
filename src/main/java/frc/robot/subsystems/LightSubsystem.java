@@ -23,7 +23,6 @@ import frc.robot.data.Constants;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +33,6 @@ public class LightSubsystem extends SubsystemBase {
   private static final Timer blinkTimer = new Timer();
   private boolean isBlinkColour = true;
   public boolean isEndgameWarning = false;
-  private Animation m_currentAnimation;
   private double blinkRate = 0.1;
   private int[][] ledColors;
   

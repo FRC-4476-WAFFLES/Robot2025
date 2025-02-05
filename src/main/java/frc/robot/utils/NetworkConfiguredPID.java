@@ -1,14 +1,11 @@
 package frc.robot.utils;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import edu.wpi.first.networktables.DoubleEntry;
-import edu.wpi.first.networktables.DoubleTopic;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
-import edu.wpi.first.networktables.PubSubOptions;
 
 /**
  * A utility that provides a quick and easy way to configure a PID controller from networktables
