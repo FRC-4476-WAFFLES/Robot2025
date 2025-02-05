@@ -20,8 +20,6 @@ import com.ctre.phoenix6.configs.MotionMagicConfigs;
 public class ClimberSubsystem extends SubsystemBase {
   private final TalonFX climberMotorLeader;
   private final TalonFX climberMotorFollower;
-  private final TalonFX alignmentMotor;
-  private final DutyCycleEncoder climberAbsoluteEncoder;
 
   private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
 
@@ -49,8 +47,6 @@ public class ClimberSubsystem extends SubsystemBase {
   {
     climberMotorLeader = new TalonFX(Constants.CANIds.climberLeader);
     climberMotorFollower = new TalonFX(Constants.CANIds.climberLeader);
-    alignmentMotor = new TalonFX(Constants.CANIds.climberAllignment);
-    climberAbsoluteEncoder = new DutyCycleEncoder(Constants.CANIds.climberAbsoluteEncoder);
     // climber motor follower is inverted
     climberMotorFollower.setControl(new Follower(Constants.CANIds.climberLeader, true));
 
@@ -70,10 +66,10 @@ public class ClimberSubsystem extends SubsystemBase {
     climberConfig.CurrentLimits = climberCurrentLimits;
     
     var climberSlot0Configs = new Slot0Configs();
-    climberSlot0Configs.kS = 0; // Keeping the existing value
-    climberSlot0Configs.kP = 2; // Keeping the existing value
-    climberSlot0Configs.kI = 0; // Keeping the existing value
-    climberSlot0Configs.kD = 0.01; // Keeping the existing value
+    climberSlot0Configs.kS = 0;
+    climberSlot0Configs.kP = 2;
+    climberSlot0Configs.kI = 0;
+    climberSlot0Configs.kD = 0.01; 
 
     climberConfig.Slot0 = climberSlot0Configs;
 
@@ -93,17 +89,14 @@ public class ClimberSubsystem extends SubsystemBase {
     alignmentConfig.CurrentLimits = alignmentCurrentLimit;
 
     var allignmentSlot0Configs = new Slot0Configs();
-    allignmentSlot0Configs.kS = 0; // Keeping the existing value
-    allignmentSlot0Configs.kP = 2; // Keeping the existing value
-    allignmentSlot0Configs.kI = 0; // Keeping the existing value
-    allignmentSlot0Configs.kD = 0.01; // Keeping the existing value
+    allignmentSlot0Configs.kS = 0;
+    allignmentSlot0Configs.kP = 2;
+    allignmentSlot0Configs.kI = 0;
+    allignmentSlot0Configs.kD = 0.01; 
     climberMotorLeader.setPosition(0);
     alignmentConfig.Slot0 = allignmentSlot0Configs;
 
     climberMotorLeader.getConfigurator().apply(climberConfig);
-    alignmentMotor.getConfigurator().apply(alignmentConfig);
-
-    climberMotorLeader.setPosition(climberAbsoluteEncoder.get() + Constants.CANIds.climberEncoderOffset);
   }
 
   @Override

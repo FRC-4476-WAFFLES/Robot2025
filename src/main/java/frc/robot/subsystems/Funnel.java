@@ -4,11 +4,9 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.data.Constants;
 import frc.robot.utils.NetworkUser;
@@ -17,7 +15,6 @@ import frc.robot.utils.SubsystemNetworkManager;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
@@ -27,7 +24,7 @@ public class Funnel extends SubsystemBase implements NetworkUser {
 
   public final TalonFX funnelPivotMotor;
 
-  private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
+  
   private double funnelAngleSetpoint = 0;
   
   /* Networktables Variables */

@@ -38,10 +38,10 @@ public final class Constants {
     public static final int elevator2 = 10; // Kraken X60
     public static final int climberLeader = 11;
     public static final int climberFollower = 12;
-    public static final int climberAllignment = 13;
+    public static final int funnelMotor = 13;
     public static final int intakeMotor = 14;
     public static final int pivotMotor = 15;
-    public static final int funnelMotor = 18;
+    
     
     // Sensors
     
@@ -49,10 +49,10 @@ public final class Constants {
     public static final int frontRightAbsoluteEncoder = 20; // CANcoder
     public static final int backLeftAbsoluteEncoder = 21; // CANcoder
     public static final int backRightAbsoluteEncoder = 22; // CANcoder
-    public static final int climberAbsoluteEncoder = 23;
-    public static final int climberEncoderOffset = 0;
-    public static final int coralPivotAbsoluteEncoder = 24;
-    public static final int coralPivotAbsoluteEncoderOffset = 0;
+    // public static final int climberAbsoluteEncoder = 23;
+    // public static final int climberEncoderOffset = 0;
+    // public static final int coralPivotAbsoluteEncoder = 24;
+    // public static final int coralPivotAbsoluteEncoderOffset = 0;
 
     public static final int pivotAbsoluteEncoderOffset=27;
     public static final int pivotAbsoluteEncoder=28;
@@ -66,8 +66,7 @@ public final class Constants {
 
   /* PWM Outputs */
   public static class PWMOutputs {
-    public static final int addressableLEDS = 2; //Light Strip
-    public static final int lightsBlinkin = 3; // REV Blinkin
+    // we should have none
   }
 
   /* Digital Ports */
@@ -94,5 +93,29 @@ public final class Constants {
     public static final double elevatorReductionToMeters = 130.8996939; // Motor rotations to elevator height in meters
 
     public static final double pivotAbsoluteEncoderOffset = 0;
+  }
+
+  /* Manipulator Constants */
+  public static class ManipulatorConstants {
+    // Detection thresholds
+    public static final double CORAL_LOADED_DISTANCE_THRESHOLD = 30.0; // mm
+    public static final double ALGAE_CURRENT_THRESHOLD = 34.0; // amps
+
+    // Pivot constants
+    public static final double PIVOT_ANGLE_DEADBAND = 0.015; // rotations
+    public static final double PIVOT_MIN_ANGLE = 0.0; // degrees
+    public static final double PIVOT_MAX_ANGLE = 90.0; // degrees
+
+    // Motor configuration
+    public static final double PIVOT_MOTION_CRUISE_VELOCITY = 110.0;
+    public static final double PIVOT_MOTION_ACCELERATION = 190.0;
+    public static final double PIVOT_MOTION_JERK = 1900.0;
+    public static final double STATOR_CURRENT_LIMIT = 60.0; // amps
+
+    // PID Values
+    public static final double PIVOT_kP = 2.0;
+    public static final double PIVOT_kI = 0.0;
+    public static final double PIVOT_kD = 0.01;
+    public static final double PIVOT_kS = 0.0;
   }
 }
