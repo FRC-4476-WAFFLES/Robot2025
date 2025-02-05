@@ -130,10 +130,14 @@ public class LightSubsystem extends SubsystemBase {
   public LightSubsystem() {
     blinkTimer.reset();
     blinkTimer.start();
+
     CANdleConfiguration configAll = new CANdleConfiguration();
+
     configAll.stripType = LEDStripType.GRB;
     configAll.v5Enabled = true;
+
     candle.configAllSettings(configAll, 100);
+
     ledColors = new int[LED_COUNT][3];
   }
 

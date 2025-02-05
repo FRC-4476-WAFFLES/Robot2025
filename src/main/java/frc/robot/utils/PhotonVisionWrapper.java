@@ -28,7 +28,7 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.robot.Robot;
 
-public class Vision {
+public class PhotonVisionWrapper {
     private final PhotonCamera camera;
     private PhotonPoseEstimator photonEstimator;
     private double lastEstTimestamp = 0;
@@ -38,7 +38,7 @@ public class Vision {
     private VisionSystemSim visionSim;
 
     @SuppressWarnings("unused")
-    public Vision(String cameraName, Transform3d camPosition) {
+    public PhotonVisionWrapper(String cameraName, Transform3d camPosition) {
         camera = new PhotonCamera(cameraName);
         
         

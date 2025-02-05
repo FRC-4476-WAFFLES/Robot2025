@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.FollowPathCommand;
+
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -86,6 +88,9 @@ public class RobotContainer {
     // Build an auto chooser. This will use Commands.none() as the default option.
     autoChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("Auto Chooser", autoChooser);
+
+    // Warmup pathplanner to reduce delay when dynamic pathing
+    FollowPathCommand.warmupCommand().schedule();
   }
 
   /**
