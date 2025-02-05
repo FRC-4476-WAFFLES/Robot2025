@@ -86,22 +86,22 @@ public class DynamicPathingSubsystem extends SubsystemBase {
      */
     public static DynamicPathingSituation getDynamicPathingSituation() {
         if (isRobotInRangeOfReefPathing()) {
-            if (manipulatorSubsystem.hasCoralLoaded()) {
+            if (manipulatorSubsystem.isCoralLoaded()) {
                 return DynamicPathingSituation.REEF_CORAL;
-            } else if (!manipulatorSubsystem.hasAlgaeLoaded()) {
+            } else if (!manipulatorSubsystem.isAlgaeLoaded()) {
                 return DynamicPathingSituation.REEF_ALGAE;
             }
         }
 
-        if (isRobotInRangeOfNet() && manipulatorSubsystem.hasAlgaeLoaded()) {
+        if (isRobotInRangeOfNet() && manipulatorSubsystem.isAlgaeLoaded()) {
             return DynamicPathingSituation.NET;
         }
 
-        if (isRobotInRangeOfProcessor() && manipulatorSubsystem.hasAlgaeLoaded()) {
+        if (isRobotInRangeOfProcessor() && manipulatorSubsystem.isAlgaeLoaded()) {
             return DynamicPathingSituation.PROCESSOR;
         }
 
-        if (!manipulatorSubsystem.hasCoralLoaded() && isRobotInRangeOfHumanPlayer()) {
+        if (!manipulatorSubsystem.isCoralLoaded() && isRobotInRangeOfHumanPlayer()) {
             return DynamicPathingSituation.HUMAN_PICKUP;
         }
 

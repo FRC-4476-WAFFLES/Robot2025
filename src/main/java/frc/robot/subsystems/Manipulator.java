@@ -49,6 +49,7 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     private static final double PIVOT_MAX_ANGLE = 90.0; // degrees
 
     // State variables
+    public boolean algaeLoaded = false;
     private double intakeSpeed = 0;
     private double pivotSetpointAngle = 0;
 
@@ -237,19 +238,44 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
      * Checks if algae is present in the intake based on current draw
      * @return true if algae is detected
      */
-    public boolean hasAlgaeLoaded() {
-        return intake.getStatorCurrent().getValueAsDouble() > ALGAE_CURRENT_THRESHOLD;
+    public void detectAlgaeLoaded() {
+        if (intake.getStatorCurrent().getValueAsDouble() > ALGAE_CURRENT_THRESHOLD && isIntakingAlgae()) {
+          algaeLoaded = true;
+        }
+        else if(isOuttakingAlgae()) {
+          algaeLoaded = false;
+        }
+    }
+
+    public boolean isAlgaeLoaded() {
+        return algaeLoaded;
     }
 
     /**
      * Checks if coral is loaded using the laser distance sensor
      * @return true if coral is detected within threshold distance
      */
-    public boolean hasCoralLoaded() {
+    public boolean isCoralLoaded() {
         var measurement = laserCanCamera.getMeasurement();
         return measurement != null && 
                measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT &&
                measurement.distance_mm <= CORAL_LOADED_DISTANCE_THRESHOLD;
+    }
+
+    public boolean isIntakingCoral() {
+        return !isCoralLoaded() && intake.getVelocity().getValueAsDouble() > 0;
+    }
+
+    public boolean isIntakingAlgae() {
+        return !isAlgaeLoaded() && intake.getVelocity().getValueAsDouble() < 0;
+    }
+
+    public boolean isOuttakingAlgae() {
+        return isAlgaeLoaded() && intake.getVelocity().getValueAsDouble() > 0;
+    }
+
+    public boolean isOuttakingCoral() {
+        return isCoralLoaded() && intake.getVelocity().getValueAsDouble() < 0;
     }
 
     /**
