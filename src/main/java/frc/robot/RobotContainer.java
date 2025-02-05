@@ -49,13 +49,13 @@ public class RobotContainer {
   public static final Climber climberSubsystem = new Climber();
 
   public static final DynamicPathingSubsystem dynamicPathingSubsystem = new DynamicPathingSubsystem();
-  private final Telemetry telemetry = new Telemetry(PhysicalConstants.maxSpeed);
+  private static final Telemetry telemetry = new Telemetry(PhysicalConstants.maxSpeed);
 
   /* Commands */
   private final ManualElevatorControl manualElevatorControl = new ManualElevatorControl();
   private final AxisIntakeControl axisIntakeControl = new AxisIntakeControl(
-    () -> Controls.operatorController.getRightTriggerAxis(),
-    () -> Controls.operatorController.getLeftTriggerAxis()
+    Controls.operatorController::getRightTriggerAxis,
+    Controls.operatorController::getLeftTriggerAxis
   );
 
   /* Global Robot State */
@@ -107,12 +107,7 @@ public class RobotContainer {
 
     // Toggle operator override
     Controls.operatorController.start().onTrue(
-      new InstantCommand(
-        () -> {
-          isOperatorOverride = !isOperatorOverride;
-          telemetry.publishOperatorOverrideInfo();
-        }
-      )
+      new InstantCommand(RobotContainer::toggleOperatorOverride)
     );
 
     //  Elevator height setters
@@ -145,6 +140,11 @@ public class RobotContainer {
         () -> {dynamicPathingSubsystem.setCoralScoringSide(false);}
       )
     );
+  }
+
+  private static void toggleOperatorOverride() {
+    isOperatorOverride = !isOperatorOverride;
+    telemetry.publishOperatorOverrideInfo();
   }
 
   /**
