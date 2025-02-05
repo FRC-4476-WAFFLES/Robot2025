@@ -16,6 +16,7 @@ public class Controls {
     public static final CommandXboxController operatorController = new CommandXboxController(OperatorConstants.kOperatorControllerPort);
 
     public static final double MANUAL_ELEVATOR_CONTROL_MULTIPLIER = 2;  // Todo: Change this number
+    public static final double AXIS_DEADBAND = 0.1;  // Deadband for controller axes to prevent unintended activation
 
     public static class DriverConstants {
         public static final int leftJoystick = 0;

@@ -19,10 +19,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.ManualElevatorControl;
-import frc.robot.commands.RunIntake;
-import frc.robot.commands.RunOutake;
 import frc.robot.commands.SetElevatorPos;
-import frc.robot.commands.SetPivotPos;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.TunerConstants;
@@ -32,8 +29,8 @@ import frc.robot.subsystems.DynamicPathingSubsystem;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Funnel;
 import frc.robot.subsystems.Manipulator;
-import frc.robot.subsystems.Manipulator.PivotPosition;
 import frc.robot.subsystems.Telemetry;
+import frc.robot.commands.AxisIntakeControl;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -56,8 +53,10 @@ public class RobotContainer {
 
   /* Commands */
   private final ManualElevatorControl manualElevatorControl = new ManualElevatorControl();
-  private final RunIntake runIntake = new RunIntake();
-  private final RunOutake runOutake = new RunOutake();
+  private final AxisIntakeControl axisIntakeControl = new AxisIntakeControl(
+    () -> Controls.operatorController.getRightTriggerAxis(),
+    () -> Controls.operatorController.getLeftTriggerAxis()
+  );
 
   /* Global Robot State */
   private final SendableChooser<Command> autoChooser;
@@ -88,6 +87,8 @@ public class RobotContainer {
 
     // Warmup pathplanner to reduce delay when dynamic pathing
     FollowPathCommand.warmupCommand().schedule();
+
+
   }
 
   /**
@@ -100,7 +101,12 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    Controls.operatorController.leftTrigger().onTrue(
+    // Create conditional triggers based on operator override state
+    Trigger inNormalMode = new Trigger(() -> !isOperatorOverride);
+    Trigger inOverrideMode = new Trigger(() -> isOperatorOverride);
+
+    // Toggle operator override
+    Controls.operatorController.start().onTrue(
       new InstantCommand(
         () -> {
           isOperatorOverride = !isOperatorOverride;
@@ -109,23 +115,23 @@ public class RobotContainer {
       )
     );
 
-    Controls.operatorController.a().onTrue(new SetElevatorPos(ElevatorLevel.L0)); // elevator command for setting L0
-    Controls.operatorController.b().onTrue(new SetElevatorPos(ElevatorLevel.L1));
-    Controls.operatorController.x().onTrue(new SetElevatorPos(ElevatorLevel.L2));
-    Controls.operatorController.y().onTrue(new SetElevatorPos(ElevatorLevel.L3));
+    //  Elevator height setters
+    inNormalMode.and(Controls.operatorController.b()).onTrue(new SetElevatorPos(ElevatorLevel.L1));
+    inNormalMode.and(Controls.operatorController.x()).onTrue(new SetElevatorPos(ElevatorLevel.L2));
+    inNormalMode.and(Controls.operatorController.y()).onTrue(new SetElevatorPos(ElevatorLevel.L3));
 
-    Controls.operatorController.leftBumper().whileTrue(runIntake);
-    Controls.operatorController.rightBumper().whileTrue(runOutake);
+    inOverrideMode.and(Controls.operatorController.b()).onTrue(new SetElevatorPos(ElevatorLevel.L1));
+    inOverrideMode.and(Controls.operatorController.x()).onTrue(new SetElevatorPos(ElevatorLevel.L2));
+    inOverrideMode.and(Controls.operatorController.y()).onTrue(new SetElevatorPos(ElevatorLevel.L3));
+
+    // Axis intake control only in override mode
+    inOverrideMode.whileTrue(axisIntakeControl);
 
     // Controls.operatorController.rightStick().onTrue(climberIn);
     // Controls.operatorController.leftStick().onTrue(climberOut);
 
-    Controls.operatorController.leftBumper().onTrue(new SetPivotPos(PivotPosition.L0));
-    Controls.operatorController.rightBumper().onTrue(new SetPivotPos(PivotPosition.L2));
-    Controls.operatorController.rightTrigger().onTrue(new SetPivotPos(PivotPosition.L3)); 
-
     // Dynamic path to coral scoring
-    Controls.leftJoystick.button(1).whileTrue(Commands.defer(
+    Controls.rightJoystick.button(0).whileTrue(Commands.defer(
       () -> dynamicPathingSubsystem.getCurrentDynamicPathCommand(), new HashSet<>(Arrays.asList(driveSubsystem))
     ));
 
@@ -138,7 +144,7 @@ public class RobotContainer {
       new InstantCommand(
         () -> {dynamicPathingSubsystem.setCoralScoringSide(false);}
       )
-    );  
+    );
   }
 
   /**
