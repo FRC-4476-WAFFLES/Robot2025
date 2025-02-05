@@ -6,6 +6,8 @@ package frc.robot.utils;
 
 import org.opencv.core.Point;
 
+import edu.wpi.first.math.MathUtil;
+
 /** Hastily assembled 1D Natural spline generator from Numerical Recipes.
  *  Source is borderline unreadable due to having been transcribed verbatim
  *  from Fortran code included in the second edition of Numerical Recipes */
@@ -59,7 +61,7 @@ public class Spline1D {
     public double interpolate(double x, boolean clampToPoints){
         double val = x;
         if (clampToPoints) {
-            val = WafflesUtilities.Clamp(val, nodes[0].x, nodes[n-1].x); // REALLY hacky way to get a min & max from list, but too lazy for anything else
+            val = MathUtil.clamp(val, nodes[0].x, nodes[n-1].x); // REALLY hacky way to get a min & max from list, but too lazy for anything else
         }
 
         return interpolate(val);

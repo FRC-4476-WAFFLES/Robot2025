@@ -11,20 +11,19 @@ import frc.robot.data.Constants.PhysicalConstants;
  */
 public class Controls {
     // Replace with CommandPS4Controller or CommandJoystick if needed
-    public static final CommandJoystick leftJoystick = new CommandJoystick(OperatorConstants.leftJoystick);
-    public static final CommandJoystick rightJoystick = new CommandJoystick(OperatorConstants.rightJoystick);
-    public static final CommandXboxController operatorController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
+    public static final CommandJoystick leftJoystick = new CommandJoystick(DriverConstants.leftJoystick);
+    public static final CommandJoystick rightJoystick = new CommandJoystick(DriverConstants.rightJoystick);
+    public static final CommandXboxController operatorController = new CommandXboxController(OperatorConstants.kOperatorControllerPort);
 
     public static final double MANUAL_ELEVATOR_CONTROL_MULTIPLIER = 2;  // Todo: Change this number
 
     public static class DriverConstants {
-        // Todo put stuff like joystick button IDs here
+        public static final int leftJoystick = 0;
+        public static final int rightJoystick = 1;
     }
 
     public static class OperatorConstants {
-        public static final int leftJoystick = 0;
-        public static final int rightJoystick = 1;
-        public static final int kDriverControllerPort = 2;
+        public static final int kOperatorControllerPort = 2;
     }
 
     /* Methods to get driver input */
