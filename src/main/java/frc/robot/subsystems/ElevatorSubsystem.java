@@ -4,61 +4,49 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Controls;
 import frc.robot.data.Constants;
-import frc.robot.utils.NetworkConfiguredPID;
 import frc.robot.utils.NetworkUser;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 
 public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
-  /** Creates a new ElevatorSubsystem. */
-  private final TalonFX elevatorMotor1;
-  private final TalonFX elevatorMotor2;
+  // Hardware Components
+  private final TalonFX elevatorMotorLeader;
+  private final TalonFX elevatorMotorFollower;
 
+  // Instance Variables
   private double elevatorSetpointMeters = 0;
   private boolean isZeroingElevator = false;
 
+  private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
+
+  // Constants
   private static final double ELEVATOR_DEAD_ZONE = 1;
   private static final double ZEROING_SPEED = -0.1; // Slow downward speed
   private static final double STALL_CURRENT_THRESHOLD = 10.0; // Amperes
-
-  private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
-
-  // -------------------- Tuning Code --------------------
-  // private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
   
-  // public void updatePID() {
-  //   var slot0Configs = new Slot0Configs();
-  //   slot0Configs.kS = networkPIDConfiguration.getS(); // Static feedforward
-  //   slot0Configs.kP = networkPIDConfiguration.getP(); 
-  //   slot0Configs.kI = networkPIDConfiguration.getI(); 
-  //   slot0Configs.kD = networkPIDConfiguration.getD(); 
+  // Networktables Variables 
+  private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+  private final NetworkTable elevatorTable = inst.getTable("Elevator");
 
+  private final DoublePublisher elevatorSetpointNT = elevatorTable.getDoubleTopic("Setpoint (Meters)").publish();
+  private final DoublePublisher elevatorPositionNT = elevatorTable.getDoubleTopic("Current Position (Meters)").publish();
+  private final BooleanPublisher elevatorIsZeroingNT = elevatorTable.getBooleanTopic("Is Zeroing").publish();
 
-  //   Elevator1.getConfigurator().apply(slot0Configs);
-  //   Elevator2.getConfigurator().apply(slot0Configs);
-  // }
-
+  /**
+   * Represents predefined heights for the elevator
+   */
   public enum ElevatorLevel {
     //CHANGE VALUES!
     REST_POSITION(0),
@@ -83,27 +71,42 @@ public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
     }
   }
 
-  /* Networktables Variables */
-  private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
-  private final NetworkTable elevatorTable = inst.getTable("Elevator");
+  // -------------------- Tuning Code --------------------
+  // private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
+  
+  // public void updatePID() {
+  //   var slot0Configs = new Slot0Configs();
+  //   slot0Configs.kS = networkPIDConfiguration.getS(); // Static feedforward
+  //   slot0Configs.kP = networkPIDConfiguration.getP(); 
+  //   slot0Configs.kI = networkPIDConfiguration.getI(); 
+  //   slot0Configs.kD = networkPIDConfiguration.getD(); 
 
-  private final DoublePublisher elevatorSetpointNT = elevatorTable.getDoubleTopic("Setpoint (Meters)").publish();
-  private final DoublePublisher elevatorPositionNT = elevatorTable.getDoubleTopic("Current Position (Meters)").publish();
-  private final BooleanPublisher elevatorIsZeroingNT = elevatorTable.getBooleanTopic("Is Zeroing").publish();
+
+  //   Elevator1.getConfigurator().apply(slot0Configs);
+  //   Elevator2.getConfigurator().apply(slot0Configs);
+  // }
 
   public ElevatorSubsystem() {
-    elevatorMotor1 = new TalonFX(Constants.CANIds.elevator1);
-    elevatorMotor2 = new TalonFX(Constants.CANIds.elevator2);
+    elevatorMotorLeader = new TalonFX(Constants.CANIds.elevator1);
+    elevatorMotorFollower = new TalonFX(Constants.CANIds.elevator2);
 
-    elevatorMotor2.setControl(new Follower(Constants.CANIds.elevator1, true));
+    configureElevatorMotors();
+  }
 
+  /**
+   * Configures both elevator motors. One is made a follower of the other.
+   */
+  private void configureElevatorMotors() {
     TalonFXConfiguration elevatorConfig = new TalonFXConfiguration();
+
+    // Current Limits
     CurrentLimitsConfigs elevatorCurrentLimits = new CurrentLimitsConfigs();
     elevatorCurrentLimits.StatorCurrentLimit = 40;
     elevatorCurrentLimits.StatorCurrentLimitEnable = true;
 
     elevatorConfig.CurrentLimits = elevatorCurrentLimits;
     
+    // PID Gains
     var slot0Configs = new Slot0Configs();
     slot0Configs.kS = 0; // Keeping the existing value
     slot0Configs.kP = 2; // Keeping the existing value
@@ -112,27 +115,33 @@ public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
 
     elevatorConfig.Slot0 = slot0Configs;
 
+    // Motion Magic
     MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
     motionMagicConfigs.MotionMagicCruiseVelocity = 110; // Using the existing velocity value
     motionMagicConfigs.MotionMagicAcceleration = 190; // Using the existing acceleration value
     motionMagicConfigs.MotionMagicJerk = 1900; // Setting jerk to 10x acceleration as a starting point
     elevatorConfig.MotionMagic = motionMagicConfigs;
 
+    // Mechanism Reduction
     elevatorConfig.Feedback.SensorToMechanismRatio = Constants.PhysicalConstants.elevatorReductionToMeters;
 
-    elevatorMotor1.getConfigurator().apply(elevatorConfig);
-    elevatorMotor2.getConfigurator().apply(elevatorConfig);
+    // Apply Configurations
+    elevatorMotorLeader.getConfigurator().apply(elevatorConfig);
+    elevatorMotorFollower.getConfigurator().apply(elevatorConfig);
+
+    // Make Follower Motor
+    elevatorMotorFollower.setControl(new Follower(Constants.CANIds.elevator1, true));
   }
 
   public void periodic() {
-    elevatorMotor1.setControl(motionMagicRequest.withPosition(elevatorSetpointMeters).withSlot(0));
+    elevatorMotorLeader.setControl(motionMagicRequest.withPosition(elevatorSetpointMeters).withSlot(0));
 
-    if (elevatorMotor1.getStatorCurrent().getValueAsDouble() > STALL_CURRENT_THRESHOLD && isZeroingElevator) {
+    if (elevatorMotorLeader.getStatorCurrent().getValueAsDouble() > STALL_CURRENT_THRESHOLD && isZeroingElevator) {
       // Stop the elevator
-      elevatorMotor1.set(0);
+      elevatorMotorLeader.set(0);
 
       // Set the current position as the new zero
-      elevatorMotor1.setPosition(0);
+      elevatorMotorLeader.setPosition(0);
 
       // Reset the target position
       elevatorSetpointMeters = 0;
@@ -172,7 +181,7 @@ public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
    * @return The current elevator position in meters.
    */
   public double getElevatorPositionMeters(){
-    return elevatorMotor1.getPosition().getValueAsDouble();
+    return elevatorMotorLeader.getPosition().getValueAsDouble();
   }
 
   /**
@@ -188,16 +197,21 @@ public class ElevatorSubsystem extends SubsystemBase implements NetworkUser {
    */
   public void zeroElevator() {
     // Drive elevator down slowly
-    elevatorMotor1.set(ZEROING_SPEED);
+    elevatorMotorLeader.set(ZEROING_SPEED);
     isZeroingElevator = true;
   }
 
   /* Networktables methods */
+  @Override
   public void initializeNetwork() {
     // Could be used to make shuffleboard layouts programatically
     // Currently unused
   }
 
+  /**
+   * This method is called automatically by the SubsystemNetworkManager
+   */
+  @Override
   public void updateNetwork() {
     elevatorSetpointNT.set(elevatorSetpointMeters);
     elevatorPositionNT.set(getElevatorPositionMeters());

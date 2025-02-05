@@ -81,29 +81,29 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
         }
     }
 
-  // -------------------- Tuning Code --------------------
-  // private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
-  
-  // public void updatePID() {
-  //   var slot0Configs = new Slot0Configs();
-  //   slot0Configs.kS = networkPIDConfiguration.getS(); // Static feedforward
-  //   slot0Configs.kP = networkPIDConfiguration.getP(); 
-  //   slot0Configs.kI = networkPIDConfiguration.getI(); 
-  //   slot0Configs.kD = networkPIDConfiguration.getD(); 
+    // -------------------- Tuning Code --------------------
+    // private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
+    
+    // public void updatePID() {
+    //   var slot0Configs = new Slot0Configs();
+    //   slot0Configs.kS = networkPIDConfiguration.getS(); // Static feedforward
+    //   slot0Configs.kP = networkPIDConfiguration.getP(); 
+    //   slot0Configs.kI = networkPIDConfiguration.getI(); 
+    //   slot0Configs.kD = networkPIDConfiguration.getD(); 
 
-  //   pivot.getConfigurator().apply(slot0Configs);
+    //   pivot.getConfigurator().apply(slot0Configs);
 
 
-  //   MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
-  //   motionMagicConfigs.MotionMagicCruiseVelocity = networkPIDConfiguration.getMotionMagicCruiseVelocity(); 
-  //   motionMagicConfigs.MotionMagicAcceleration = networkPIDConfiguration.getMotionMagicAcceleration();
-  //   motionMagicConfigs.MotionMagicJerk = networkPIDConfiguration.getMotionMagicJerk(); 
+    //   MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
+    //   motionMagicConfigs.MotionMagicCruiseVelocity = networkPIDConfiguration.getMotionMagicCruiseVelocity(); 
+    //   motionMagicConfigs.MotionMagicAcceleration = networkPIDConfiguration.getMotionMagicAcceleration();
+    //   motionMagicConfigs.MotionMagicJerk = networkPIDConfiguration.getMotionMagicJerk(); 
 
-  //   pivot.getConfigurator().apply(motionMagicConfigs);
-  // }
+    //   pivot.getConfigurator().apply(motionMagicConfigs);
+    // }
 
-  public Manipulator() {
-      SubsystemNetworkManager.RegisterNetworkUser(this);
+    public Manipulator() {
+        SubsystemNetworkManager.RegisterNetworkUser(this);
 
         // Initialize hardware
         intake = new TalonFX(Constants.CANIds.intakeMotor);
@@ -189,9 +189,6 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
         // Update motor controls
         pivot.setControl(motionMagicRequest.withPosition(pivotSetpointAngle / 360).withSlot(0));
         intake.setControl(algaeIntakeDutyCycle.withOutput(intakeSpeed));
-        
-        // Update network tables
-        updateNetwork();
     }
 
     /**
@@ -267,6 +264,9 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
         setPivotSetpoint(PivotPosition.REST_POSITION);
     }
 
+    /**
+     * This method is called automatically by the SubsystemNetworkManager
+     */
     @Override
     public void updateNetwork() {
         pivotSetpointNT.set(pivotSetpointAngle);

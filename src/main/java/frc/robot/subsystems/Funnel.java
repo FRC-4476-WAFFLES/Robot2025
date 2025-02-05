@@ -19,15 +19,22 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 
+/**
+ * The Funnel subsystem is responsible for pivoting the funnel
+ * It controls a single pivot motor. 
+ */
 public class Funnel extends SubsystemBase implements NetworkUser {
-  private static final double FUNNEL_DEAD_ZONE = 1; // In degrees
-
+  // Hardware Components
   public final TalonFX funnelPivotMotor;
 
-  
+  // Instance Variables
   private double funnelAngleSetpoint = 0;
+  private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
   
-  /* Networktables Variables */
+  // Constants
+  private static final double FUNNEL_DEAD_ZONE = 1; // In degrees
+
+  // Networktables Variables 
   private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
   private final NetworkTable funnelTable = inst.getTable("Funnel");
 
@@ -38,42 +45,50 @@ public class Funnel extends SubsystemBase implements NetworkUser {
   public Funnel() {
     SubsystemNetworkManager.RegisterNetworkUser(this);
 
+    // Initialize hardware
     funnelPivotMotor = new TalonFX(Constants.CANIds.funnelMotor);
 
+    // Configure hardware
+    configurePivotMotor();
+  }
+
+  private void configurePivotMotor() {
     // create a configuration object for the funnel motor
     TalonFXConfiguration funnelConfig = new TalonFXConfiguration();
+
+    // Current Limits
     CurrentLimitsConfigs funnelCurrentLimits = new CurrentLimitsConfigs();
-    
     funnelCurrentLimits.StatorCurrentLimit = 60;
     funnelCurrentLimits.StatorCurrentLimitEnable = true;
-    
-    // apply the configuration to the climber motor
+
     funnelConfig.CurrentLimits = funnelCurrentLimits;
     
+    // PID Gains
     var funnelSlot0Configs = new Slot0Configs();
-    funnelSlot0Configs.kS = 0; // Keeping the existing value
-    funnelSlot0Configs.kP = 2; // Keeping the existing value
-    funnelSlot0Configs.kI = 0; // Keeping the existing value
-    funnelSlot0Configs.kD = 0.01; // Keeping the existing value
+    funnelSlot0Configs.kS = 0; 
+    funnelSlot0Configs.kP = 2; 
+    funnelSlot0Configs.kI = 0; 
+    funnelSlot0Configs.kD = 0.01; 
 
     funnelConfig.Slot0 = funnelSlot0Configs;
 
-    // Configure MotionMagic
+    // Motion Magic
     MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
     motionMagicConfigs.MotionMagicCruiseVelocity = 110; // Using the existing velocity value
     motionMagicConfigs.MotionMagicAcceleration = 190; // Using the existing acceleration value
     motionMagicConfigs.MotionMagicJerk = 1900; // Setting jerk to 10x acceleration as a starting point
     funnelConfig.MotionMagic = motionMagicConfigs;
 
-    // Configure gear reduction
+    // Configure Mechanism Reduction
     funnelConfig.Feedback.SensorToMechanismRatio = Constants.PhysicalConstants.funnelReduction;
 
+    // Apply Configuration
     funnelPivotMotor.getConfigurator().apply(funnelConfig);
   }
 
   @Override
   public void periodic() {
-    // funnelPivot.setControl(motionMagicRequest.withPosition(funnelAngleSetpoint / 360).withSlot(0));
+    funnelPivotMotor.setControl(motionMagicRequest.withPosition(funnelAngleSetpoint / 360).withSlot(0));
   }
 
   /**
@@ -108,6 +123,10 @@ public class Funnel extends SubsystemBase implements NetworkUser {
     // Currently unused
   }
 
+  /**
+   * This method is called automatically by the SubsystemNetworkManager
+   */
+  @Override
   public void updateNetwork() {
     funnelPivotSetpointNT.set(funnelAngleSetpoint);
     funnelPivotAngleNT.set(getfunnelDegrees());
