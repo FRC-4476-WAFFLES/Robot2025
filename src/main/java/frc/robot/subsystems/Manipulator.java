@@ -37,7 +37,7 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     private final TalonFX intake;
     private final TalonFX pivot;
     private final CANcoder pivotAbsoluteEncoder;
-    private final LaserCan laserCanCamera;
+    private final LaserCan laserCan;
 
     // Control Objects
     private final DutyCycleOut algaeIntakeDutyCycle = new DutyCycleOut(0);
@@ -54,6 +54,8 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     private final NetworkTable pivotTable = inst.getTable("Pivot");
     private final DoublePublisher pivotSetpointNT = pivotTable.getDoubleTopic("Setpoint (Degrees)").publish();
     private final DoublePublisher pivotAngleNT = pivotTable.getDoubleTopic("Current Angle (Degrees)").publish();
+    private final DoublePublisher laserCanDistanceNT = pivotTable.getDoubleTopic("LaserCan Distance (mm)").publish();
+
 
     // -------------------- Tuning Code --------------------
     // private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
@@ -91,7 +93,7 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
 
         // Initialize LaserCan with error handling
         try {
-            laserCanCamera = new LaserCan(Constants.CANIds.laserCan);
+            laserCan = new LaserCan(Constants.CANIds.laserCan);
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize LaserCan: " + e.getMessage());
         }
@@ -231,7 +233,7 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
      * @return true if coral is detected within threshold distance
      */
     public boolean isCoralLoaded() {
-        var measurement = laserCanCamera.getMeasurement();
+        var measurement = laserCan.getMeasurement();
         return measurement != null && 
                measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT &&
                measurement.distance_mm <= Constants.ManipulatorConstants.CORAL_LOADED_DISTANCE_THRESHOLD;
@@ -272,6 +274,7 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     public void updateNetwork() {
         pivotSetpointNT.set(pivotSetpointAngle);
         pivotAngleNT.set(getPivotPosition());
+        laserCanDistanceNT.set(laserCan.getMeasurement().distance_mm);
     }
 
     @Override
