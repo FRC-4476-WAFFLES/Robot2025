@@ -17,6 +17,8 @@ import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import au.grapplerobotics.LaserCan;
 import edu.wpi.first.math.MathUtil;
@@ -118,7 +120,7 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
 
         // Initialize LaserCan with error handling
         try {
-            laserCanCamera = new LaserCan(Constants.CANIds.laserCanCamera);
+            laserCanCamera = new LaserCan(Constants.CANIds.laserCan);
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize LaserCan: " + e.getMessage());
         }
@@ -169,6 +171,8 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
         // pivotConfigs.Feedback.RotorToSensorRatio = Constants.PhysicalConstants.pivotReduction;
         // pivotConfigs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
         // pivotConfigs.Feedback.FeedbackRemoteSensorID = pivotAbsoluteEncoder.getDeviceID();
+        pivotConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        pivotConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
         pivot.getConfigurator().apply(pivotConfigs);
     }
@@ -188,8 +192,8 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     @Override
     public void periodic() {
         // Update motor controls
-        pivot.setControl(motionMagicRequest.withPosition(pivotSetpointAngle / 360).withSlot(0));
-        intake.setControl(algaeIntakeDutyCycle.withOutput(intakeSpeed));
+        //pivot.setControl(motionMagicRequest.withPosition(pivotSetpointAngle / 360).withSlot(0));
+        //intake.setControl(algaeIntakeDutyCycle.withOutput(intakeSpeed));
     }
 
     /**

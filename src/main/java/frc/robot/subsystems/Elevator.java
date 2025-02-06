@@ -11,6 +11,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.networktables.BooleanPublisher;
@@ -62,6 +63,8 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   // }
 
   public Elevator() {
+    SubsystemNetworkManager.RegisterNetworkUser(this, true, 5);
+
     elevatorMotorLeader = new TalonFX(Constants.CANIds.elevator1);
     elevatorMotorFollower = new TalonFX(Constants.CANIds.elevator2);
 
@@ -100,6 +103,8 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     // Mechanism Reduction
     elevatorConfig.Feedback.SensorToMechanismRatio = Constants.PhysicalConstants.elevatorReductionToMeters;
 
+    elevatorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+
     // Apply Configurations
     elevatorMotorLeader.getConfigurator().apply(elevatorConfig);
     elevatorMotorFollower.getConfigurator().apply(elevatorConfig);
@@ -113,9 +118,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     // Main control logic
     if (!isZeroingElevator) {
       // Use motion magic to control position
-      elevatorMotorLeader.setControl(motionMagicRequest.withPosition(elevatorSetpointMeters).withSlot(0));
-    } else {
-      zeroElevator();
+      //elevatorMotorLeader.setControl(motionMagicRequest.withPosition(elevatorSetpointMeters).withSlot(0));
     }
   
     if (elevatorMotorLeader.getStatorCurrent().getValueAsDouble() > ElevatorConstants.STALL_CURRENT_THRESHOLD && isZeroingElevator) {

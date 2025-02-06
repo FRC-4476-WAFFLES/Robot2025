@@ -43,7 +43,7 @@ public class Funnel extends SubsystemBase implements NetworkUser {
 
   /** Creates a new funnelSubsystem. */
   public Funnel() {
-    SubsystemNetworkManager.RegisterNetworkUser(this);
+    SubsystemNetworkManager.RegisterNetworkUser(this, true, 5);
 
     // Initialize hardware
     funnelPivotMotor = new TalonFX(Constants.CANIds.funnelMotor);

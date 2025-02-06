@@ -5,6 +5,7 @@
 package frc.robot;
 
 
+import au.grapplerobotics.CanBridge;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -12,6 +13,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.data.BuildConstants;
 import frc.robot.utils.NetworkConfiguredPID;
 import frc.robot.utils.SubsystemNetworkManager;
 /**
@@ -30,34 +32,28 @@ public class Robot extends TimedRobot {
    * initialization code.
    */
   public Robot() {
+    // Initialize subsystem network manager
+    SubsystemNetworkManager.init(this);
+
+    // Init something for laserCAN
+    CanBridge.runTCP();
+
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
 
-    // Initialize subsystem network manager
-    SubsystemNetworkManager.init(this);
-
     // Start USB logging
-    DataLogManager.start("/U/logs");  // Log to USB drive
+    // DataLogManager.start("/U/logs");  // Log to USB drive
 
-    // Record both DS control and joystick data
-    DriverStation.startDataLog(DataLogManager.getLog());
+    // // Record both DS control and joystick data
+    // DriverStation.startDataLog(DataLogManager.getLog());
 
-    // Start logging NetworkTables data
-    NetworkTableInstance.getDefault().startEntryDataLog(DataLogManager.getLog(), "", "");
+    // // Start logging NetworkTables data
+    // NetworkTableInstance.getDefault().startEntryDataLog(DataLogManager.getLog(), "", "");
 
-    // Log metadata about the build
-    DataLogManager.log("Robot program starting");
-    DataLogManager.log("Build date: " + getBuildDate());
-    DataLogManager.log("Build time: " + getBuildTime());
-  }
-
-  private String getBuildDate() {
-    return new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date());
-  }
-
-  private String getBuildTime() {
-    return new java.text.SimpleDateFormat("HH:mm:ss").format(new java.util.Date());
+    // // Log metadata about the build
+    // DataLogManager.log("Robot program starting");
+    // DataLogManager.log("Build date: " + BuildConstants.BUILD_DATE);
   }
 
   /**

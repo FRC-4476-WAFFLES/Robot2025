@@ -53,10 +53,9 @@ public final class Constants {
     // public static final int coralPivotAbsoluteEncoder = 24;
     // public static final int coralPivotAbsoluteEncoderOffset = 0;
 
-    public static final int pivotAbsoluteEncoderOffset=27;
-    public static final int pivotAbsoluteEncoder=28;
+    public static final int pivotAbsoluteEncoder = 28;
     
-    public static final int laserCanCamera=29;
+    public static final int laserCan = 29;
 
     public static final int pidgeon = 25;
 
@@ -89,7 +88,7 @@ public final class Constants {
     public static final double funnelReduction = 33.75; 
     public static final double pivotReduction = 52.5625; 
     public static final double ClimberReduction = -1; // We don't have a climber yet lol
-    public static final double elevatorReductionToMeters = 130.8996939; // Motor rotations to elevator height in meters
+    public static final double elevatorReductionToMeters = 52.1602684; // Motor rotations to elevator height in meters
 
     public static final double pivotAbsoluteEncoderOffset = 0;
   }

@@ -45,8 +45,8 @@ public class RobotContainer {
   public static final DriveSubsystem driveSubsystem = TunerConstants.createDrivetrain();
   public static final Manipulator manipulatorSubsystem = new Manipulator();
   public static final Elevator elevatorSubsystem = new Elevator();
-  public static final Funnel funnelSubsystem = new Funnel();
-  public static final Climber climberSubsystem = new Climber();
+  // public static final Funnel funnelSubsystem = new Funnel();
+  public static final Climber climberSubsystem = null; //  new Climber()
 
   public static final DynamicPathingSubsystem dynamicPathingSubsystem = new DynamicPathingSubsystem();
   private static final Telemetry telemetry = new Telemetry(PhysicalConstants.maxSpeed);
@@ -70,8 +70,8 @@ public class RobotContainer {
     // Swerve telemetry from odometry thread
     driveSubsystem.registerTelemetry(telemetry::telemeterize);
     driveSubsystem.setDefaultCommand(new DriveTeleop(
-      Controls::getDriveX,
       Controls::getDriveY,
+      Controls::getDriveX,
       Controls::getDriveRotation
     ));
 
@@ -135,7 +135,7 @@ public class RobotContainer {
     // Controls.operatorController.leftStick().onTrue(climberOut);
 
     // Dynamic path to coral scoring
-    Controls.rightJoystick.button(0).whileTrue(Commands.defer(
+    Controls.rightJoystick.button(1).whileTrue(Commands.defer(
       () -> dynamicPathingSubsystem.getCurrentDynamicPathCommand(), new HashSet<>(Arrays.asList(driveSubsystem))
     ));
 
