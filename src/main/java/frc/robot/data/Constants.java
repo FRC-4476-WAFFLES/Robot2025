@@ -115,6 +115,27 @@ public final class Constants {
     public static final double PIVOT_kI = 0.0;
     public static final double PIVOT_kD = 0.01;
     public static final double PIVOT_kS = 0.0;
+
+    // Pivot Positions
+    public enum PivotPosition {
+        REST_POSITION(0),
+        ALGAE(6789),
+        CORALINTAKE(12345),
+        NET(10),
+        L3(50.0),
+        L2(27.0),
+        L0(2);
+
+        private final double pivotDegrees;
+
+        PivotPosition(double pivotDegrees) {
+            this.pivotDegrees = pivotDegrees;
+        }
+
+        public double getDegrees() {
+            return pivotDegrees;
+        }
+    }
   }
 
   /* Elevator Constants */

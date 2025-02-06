@@ -43,12 +43,6 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     private final DutyCycleOut algaeIntakeDutyCycle = new DutyCycleOut(0);
     private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
 
-    // Constants
-    private static final double CORAL_LOADED_DISTANCE_THRESHOLD = 30.0; // mm
-    private static final double PIVOT_ANGLE_DEADBAND = 0.015; // rotations
-    private static final double ALGAE_CURRENT_THRESHOLD = 34.0; // amps
-    private static final double PIVOT_MIN_ANGLE = 0.0; // degrees
-    private static final double PIVOT_MAX_ANGLE = 90.0; // degrees
 
     // State variables
     public boolean algaeLoaded = false;
@@ -60,29 +54,6 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     private final NetworkTable pivotTable = inst.getTable("Pivot");
     private final DoublePublisher pivotSetpointNT = pivotTable.getDoubleTopic("Setpoint (Degrees)").publish();
     private final DoublePublisher pivotAngleNT = pivotTable.getDoubleTopic("Current Angle (Degrees)").publish();
-
-    /**
-     * Represents predefined positions for the pivot mechanism
-     */
-    public enum PivotPosition {
-        REST_POSITION(0),
-        ALGAE(6789),
-        CORALINTAKE(12345),
-        NET(10),
-        L3(50.0),
-        L2(27.0),
-        L0(2);
-
-        private final double pivotDegrees;
-
-        PivotPosition(double pivotDegrees) {
-            this.pivotDegrees = pivotDegrees;
-        }
-
-        public double getDegrees() {
-            return pivotDegrees;
-        }
-    }
 
     // -------------------- Tuning Code --------------------
     // private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
@@ -146,23 +117,23 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
 
         // Current limits
         CurrentLimitsConfigs pivotCurrentLimit = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(STATOR_CURRENT_LIMIT)
+            .withStatorCurrentLimit(Constants.ManipulatorConstants.STATOR_CURRENT_LIMIT)
             .withStatorCurrentLimitEnable(true);
         pivotConfigs.CurrentLimits = pivotCurrentLimit;
 
         // Motion Magic
         MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs()
-            .withMotionMagicCruiseVelocity(PIVOT_MOTION_CRUISE_VELOCITY)
-            .withMotionMagicAcceleration(PIVOT_MOTION_ACCELERATION)
-            .withMotionMagicJerk(PIVOT_MOTION_JERK);
+            .withMotionMagicCruiseVelocity(Constants.ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY)
+            .withMotionMagicAcceleration(Constants.ManipulatorConstants.PIVOT_MOTION_ACCELERATION)
+            .withMotionMagicJerk(Constants.ManipulatorConstants.PIVOT_MOTION_JERK);
         pivotConfigs.MotionMagic = motionMagicConfigs;
 
         // PID
         Slot0Configs slot0Configs = new Slot0Configs();
-        slot0Configs.kP = PIVOT_kP;
-        slot0Configs.kI = PIVOT_kI;
-        slot0Configs.kD = PIVOT_kD;
-        slot0Configs.kS = PIVOT_kS;
+        slot0Configs.kP = Constants.ManipulatorConstants.PIVOT_kP;
+        slot0Configs.kI = Constants.ManipulatorConstants.PIVOT_kI;
+        slot0Configs.kD = Constants.ManipulatorConstants.PIVOT_kD;
+        slot0Configs.kS = Constants.ManipulatorConstants.PIVOT_kS;
         pivotConfigs.Slot0 = slot0Configs;
 
         // For when CANCoder is not present
@@ -171,7 +142,7 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
         // pivotConfigs.Feedback.RotorToSensorRatio = Constants.PhysicalConstants.pivotReduction;
         // pivotConfigs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
         // pivotConfigs.Feedback.FeedbackRemoteSensorID = pivotAbsoluteEncoder.getDeviceID();
-        pivotConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        pivotConfigs.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         pivotConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
         pivot.getConfigurator().apply(pivotConfigs);
@@ -183,7 +154,7 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     private void configureIntakeMotor() {
         TalonFXConfiguration intakeConfigs = new TalonFXConfiguration();
         CurrentLimitsConfigs intakeCurrentLimit = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(STATOR_CURRENT_LIMIT)
+            .withStatorCurrentLimit(Constants.ManipulatorConstants.STATOR_CURRENT_LIMIT)
             .withStatorCurrentLimitEnable(true);
         intakeConfigs.CurrentLimits = intakeCurrentLimit;
         intake.getConfigurator().apply(intakeConfigs);
@@ -204,8 +175,8 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     public void setPivotSetpoint(Object setpoint) {
         double targetDegrees;
         // Check if input is an enum value (e.g., PivotPosition.REST_POSITION)
-        if (setpoint instanceof PivotPosition) {
-            targetDegrees = ((PivotPosition) setpoint).getDegrees();
+        if (setpoint instanceof Constants.ManipulatorConstants.PivotPosition) {
+            targetDegrees = ((Constants.ManipulatorConstants.PivotPosition) setpoint).getDegrees();
         } 
         // Check if input is a number (e.g., 45.0 or 45)
         else if (setpoint instanceof Double || setpoint instanceof Integer) {
@@ -216,7 +187,7 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
             throw new IllegalArgumentException("Setpoint must be a PivotPosition enum or a number");
         }
         
-        pivotSetpointAngle = MathUtil.clamp(targetDegrees, PIVOT_MIN_ANGLE, PIVOT_MAX_ANGLE);
+        pivotSetpointAngle = MathUtil.clamp(targetDegrees, Constants.ManipulatorConstants.PIVOT_MIN_ANGLE, Constants.ManipulatorConstants.PIVOT_MAX_ANGLE);
     }
 
     /**
@@ -243,7 +214,7 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
      * @return true if algae is detected
      */
     public void detectAlgaeLoaded() {
-        if (intake.getStatorCurrent().getValueAsDouble() > ALGAE_CURRENT_THRESHOLD && isIntakingAlgae()) {
+        if (intake.getStatorCurrent().getValueAsDouble() > Constants.ManipulatorConstants.ALGAE_CURRENT_THRESHOLD && isIntakingAlgae()) {
           algaeLoaded = true;
         }
         else if(isOuttakingAlgae()) {
@@ -263,7 +234,7 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
         var measurement = laserCanCamera.getMeasurement();
         return measurement != null && 
                measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT &&
-               measurement.distance_mm <= CORAL_LOADED_DISTANCE_THRESHOLD;
+               measurement.distance_mm <= Constants.ManipulatorConstants.CORAL_LOADED_DISTANCE_THRESHOLD;
     }
 
     public boolean isIntakingCoral() {
@@ -287,11 +258,11 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
      * @return true if within deadband of setpoint
      */
     public boolean isPivotAtSetpoint() {
-        return Math.abs(getPivotPosition() - pivotSetpointAngle) < PIVOT_ANGLE_DEADBAND;
+        return Math.abs(getPivotPosition() - pivotSetpointAngle) < Constants.ManipulatorConstants.PIVOT_ANGLE_DEADBAND;
     }
 
     private void resetInternalEncoder() {
-        setPivotSetpoint(PivotPosition.REST_POSITION);
+        setPivotSetpoint(Constants.ManipulatorConstants.PivotPosition.REST_POSITION);
     }
 
     /**
