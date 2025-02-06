@@ -6,14 +6,14 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
-import frc.robot.subsystems.Manipulator.PivotPosition;
+import frc.robot.data.Constants.ManipulatorConstants;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class SetPivotPos extends Command {
-  private PivotPosition chosenPosition;
+  private ManipulatorConstants.PivotPosition chosenPosition;
 
   /** Creates a new SetPivotPos. */
-  public SetPivotPos(PivotPosition position) {
+  public SetPivotPos(ManipulatorConstants.PivotPosition position) {
     // Use addRequirements() here to declare subsystem dependencies.
 
     addRequirements(RobotContainer.manipulatorSubsystem);

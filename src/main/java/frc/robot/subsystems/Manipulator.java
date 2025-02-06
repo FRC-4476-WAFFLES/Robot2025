@@ -40,7 +40,7 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     private final LaserCan laserCan;
 
     // Control Objects
-    private final DutyCycleOut algaeIntakeDutyCycle = new DutyCycleOut(0);
+    private final DutyCycleOut intakeDutyCycle = new DutyCycleOut(0);
     private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
 
 
@@ -166,7 +166,7 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     public void periodic() {
         // Update motor controls
         //pivot.setControl(motionMagicRequest.withPosition(pivotSetpointAngle / 360).withSlot(0));
-        //intake.setControl(algaeIntakeDutyCycle.withOutput(intakeSpeed));
+        intake.setControl(intakeDutyCycle.withOutput(intakeSpeed));
     }
 
     /**
