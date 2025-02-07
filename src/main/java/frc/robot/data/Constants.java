@@ -120,7 +120,7 @@ public final class Constants {
     // Pivot Positions
     public enum PivotPosition {
         ZERO(0),
-        REST_POSITION(28),
+        CLEARANCE_POSITION(28),
         ALGAE(160),
         CORALINTAKE(0.5),
         NET(10),
@@ -150,6 +150,10 @@ public final class Constants {
 
     // Elevator will not move if the pivot is not past this angle, to avoid collision with top bar
     public static final double MIN_ELEVATOR_PIVOT_ANGLE = 25; 
+
+    // Collision zone constants
+    public static final double COLLISION_ZONE_LOWER = 0.8; // meters
+    public static final double COLLISION_ZONE_UPPER = 1.4; // meters
 
     // Motion Magic configuration
     public static final double MOTION_CRUISE_VELOCITY = 1;

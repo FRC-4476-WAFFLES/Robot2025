@@ -32,6 +32,7 @@ import frc.robot.subsystems.Funnel;
 import frc.robot.subsystems.Manipulator;
 import frc.robot.subsystems.Telemetry;
 import frc.robot.commands.AxisIntakeControl;
+import frc.robot.commands.CoralIntake;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -119,7 +120,7 @@ public class RobotContainer {
     // inNormalMode.and(Controls.operatorController.y()).onTrue(new InstantCommand(() -> elevatorSubsystem.setTargetPosition(ElevatorLevel.L3)));
     // inNormalMode.and(Controls.operatorController.a()).onTrue(new InstantCommand(() -> elevatorSubsystem.setTargetPosition(ElevatorLevel.L4)));
 
-    inNormalMode.and(Controls.operatorController.b()).onTrue(new InstantCommand(() -> { manipulatorSubsystem.setPivotSetpoint(PivotPosition.REST_POSITION); }));
+    inNormalMode.and(Controls.operatorController.b()).onTrue(new InstantCommand(() -> { manipulatorSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION); }));
     inNormalMode.and(Controls.operatorController.a()).onTrue(new InstantCommand(() -> { manipulatorSubsystem.setPivotSetpoint(PivotPosition.ALGAE); }));
     inNormalMode.and(Controls.operatorController.x()).onTrue(new InstantCommand(() -> { manipulatorSubsystem.setPivotSetpoint(PivotPosition.L4); }));
     
@@ -135,6 +136,8 @@ public class RobotContainer {
 
     // Axis intake control only in override mode
     inOverrideMode.whileTrue(axisIntakeControl);
+
+    inNormalMode.and(Controls.operatorController.rightStick()).whileTrue(new CoralIntake());
 
     // Controls.operatorController.rightStick().onTrue(climberIn);
     // Controls.operatorController.leftStick().onTrue(climberOut);

@@ -6,7 +6,10 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
+import frc.robot.data.Constants.ElevatorConstants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
+import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
+import frc.robot.subsystems.Elevator;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class SetElevatorPos extends Command {
@@ -29,8 +32,27 @@ public class SetElevatorPos extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    // Continuously ensure we're at the right setpoint
-    RobotContainer.elevatorSubsystem.setElevatorSetpoint(chosenLevel);
+    // Check for potential collisions
+    Elevator.CollisionType collisionPrediction = RobotContainer.elevatorSubsystem.isCollisionPredicted(chosenLevel.getHeight());
+    
+    if (collisionPrediction == Elevator.CollisionType.NONE) {
+      // Safe to move elevator
+      RobotContainer.elevatorSubsystem.setElevatorSetpoint(chosenLevel);
+    } 
+    else if(collisionPrediction == Elevator.CollisionType.ENTERING_FROM_ABOVE) {
+      // Entering above, temporarily move pivot out of the way and clamp the height to not go thru danger zone till clear
+      RobotContainer.manipulatorSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
+      RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorConstants.COLLISION_ZONE_UPPER);
+    }
+    else if(collisionPrediction == Elevator.CollisionType.ENTERING_FROM_BELOW) {
+      // Entering below, temporarily move pivot out of the way and clamp the height to not go thru danger zone till clear
+      RobotContainer.manipulatorSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
+      RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorConstants.COLLISION_ZONE_LOWER);
+    }
+    else {
+      // Move pivot out of the way first before moving elevator at all
+      RobotContainer.manipulatorSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
+    }
   }
 
   // Called once the command ends or is interrupted.

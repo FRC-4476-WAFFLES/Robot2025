@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import static frc.robot.RobotContainer.manipulatorSubsystem;
+
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -12,7 +14,6 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
@@ -20,15 +21,31 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
+import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.utils.NetworkConfiguredPID;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
 
 public class Elevator extends SubsystemBase implements NetworkUser {
+  /**
+   * Enum representing different types of potential collisions
+   */
+  public enum CollisionType {
+    /** No collision predicted */
+    NONE,
+    /** Currently inside collision zone */
+    IN_ZONE,
+    /** Will enter collision zone from below */
+    ENTERING_FROM_BELOW,
+    /** Will enter collision zone from above */
+    ENTERING_FROM_ABOVE
+  }
+
   // Hardware Components
   private final TalonFX elevatorMotorLeader;
   private final TalonFX elevatorMotorFollower;
@@ -53,6 +70,10 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   // -------------------- Tuning Code --------------------
   private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
   
+  /**
+   * Updates the PID and Motion Magic configurations from network tables values.
+   * This is called automatically when network table values change.
+   */
   public void updatePID() {
     var slot0Configs = new Slot0Configs();
     slot0Configs.kS = networkPIDConfiguration.getS(); // Static feedforward
@@ -130,12 +151,8 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   public void periodic() {
     // Main control logic
     if (!isZeroingElevator) {
-      if (RobotContainer.manipulatorSubsystem.getPivotPosition() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE && 
-        RobotContainer.manipulatorSubsystem.getPivotSetpoint() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE) 
-      {
-        // Use motion magic to control position
-        elevatorMotorLeader.setControl(motionMagicRequest.withPosition(elevatorSetpointMeters).withSlot(0));
-      }
+      // Move elevator to setpoint
+      elevatorMotorLeader.setControl(motionMagicRequest.withPosition(elevatorSetpointMeters).withSlot(0));
     }
   
     if (elevatorMotorLeader.getStatorCurrent().getValueAsDouble() > ElevatorConstants.STALL_CURRENT_THRESHOLD && isZeroingElevator) {
@@ -159,18 +176,30 @@ public class Elevator extends SubsystemBase implements NetworkUser {
 
   /**
    * Sets the target position of the elevator.
-   * @param setpoint Target position in rotations.
+   * @param setpoint Target position in meters.
    */
-  public void setElevatorSetpointMeters(double setpoint){
+  private void setElevatorSetpointMeters(double setpoint){
     elevatorSetpointMeters = setpoint;
   }
 
   /**
    * Sets the target position of the elevator.
-   * @param setpoint Target position enum.
+   * Can take either a direct height value in meters or a predefined ElevatorLevel position.
+   * When using an ElevatorLevel, it will also update the target position state.
+   * @param setpoint Target position (either ElevatorLevel enum or height in meters)
    */
-  public void setElevatorSetpoint(ElevatorConstants.ElevatorLevel setpoint){
-    setElevatorSetpointMeters(setpoint.getHeight());
+  public void setElevatorSetpoint(Object setpoint) {
+    if (setpoint instanceof ElevatorConstants.ElevatorLevel) {
+      ElevatorConstants.ElevatorLevel levelSetpoint = (ElevatorConstants.ElevatorLevel) setpoint;
+      setElevatorSetpointMeters(levelSetpoint.getHeight());
+      targetPosition = levelSetpoint;
+    } else if (setpoint instanceof Double || setpoint instanceof Integer) {
+      double heightSetpoint = ((Number) setpoint).doubleValue();
+      setElevatorSetpointMeters(heightSetpoint);
+      // When using direct meter values, we don't update targetPosition since it doesn't correspond to a predefined level
+    } else {
+      throw new IllegalArgumentException("Setpoint must be either an ElevatorLevel or a numeric height in meters");
+    }
   }
 
   /**
@@ -208,6 +237,10 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   
 
   /* Networktables methods */
+  /**
+   * Initializes network tables. Could be used to make shuffleboard layouts programmatically.
+   * Currently unused but required by NetworkUser interface.
+   */
   @Override
   public void initializeNetwork() {
     // Could be used to make shuffleboard layouts programatically
@@ -215,7 +248,8 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   }
 
   /**
-   * This method is called automatically by the SubsystemNetworkManager
+   * Updates network table values with current elevator state.
+   * This method is called automatically by the SubsystemNetworkManager.
    */
   @Override
   public void updateNetwork() {
@@ -225,11 +259,72 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     isAtSetpointNT.set(isElevatorAtSetpoint());
   }
 
+  /**
+   * Sets the target position for the elevator using an ElevatorLevel enum.
+   * This is used to track the desired position state of the elevator.
+   * @param position The target ElevatorLevel position
+   */
   public void setTargetPosition(ElevatorLevel position) {
     targetPosition = position;
   }
 
+  /**
+   * Gets the current target position of the elevator.
+   * @return The current target ElevatorLevel position
+   */
   public ElevatorLevel getTargetPosition() {
     return targetPosition;
+  }
+
+  /**
+   * Checks if the elevator movement would cause a collision and what type of collision it would be
+   * @param setpoint The target position the elevator is trying to move to in meters
+   * @return The type of collision predicted, or NONE if movement is safe or pivot is in safe position
+   */
+  public CollisionType isCollisionPredicted(double setpoint) {
+    // Check if pivot is in safe position
+    boolean pivotSafe = RobotContainer.manipulatorSubsystem.getPivotPosition() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE && 
+                       RobotContainer.manipulatorSubsystem.getPivotSetpoint() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE;
+
+    // If pivot is safe, no collision possible
+    if (pivotSafe) {
+      return CollisionType.NONE;
+    }
+
+    double currentPosition = getElevatorPositionMeters();
+    
+    // First check if we're currently in the collision zone
+    if (currentPosition >= ElevatorConstants.COLLISION_ZONE_LOWER && 
+        currentPosition <= ElevatorConstants.COLLISION_ZONE_UPPER) {
+      return CollisionType.IN_ZONE;
+    }
+    
+    // If moving up (setpoint > current)
+    if (setpoint > currentPosition) {
+      // Check if path intersects collision zone from below
+      if (currentPosition <= ElevatorConstants.COLLISION_ZONE_LOWER && 
+          setpoint >= ElevatorConstants.COLLISION_ZONE_LOWER) {
+        return CollisionType.ENTERING_FROM_BELOW;
+      }
+    } else {
+      // If moving down (setpoint < current)
+      // Check if path intersects collision zone from above
+      if (currentPosition >= ElevatorConstants.COLLISION_ZONE_UPPER && 
+          setpoint <= ElevatorConstants.COLLISION_ZONE_UPPER) {
+        return CollisionType.ENTERING_FROM_ABOVE;
+      }
+    }
+    
+    // If setpoint is in the zone
+    if (setpoint >= ElevatorConstants.COLLISION_ZONE_LOWER && 
+        setpoint <= ElevatorConstants.COLLISION_ZONE_UPPER) {
+      if (setpoint > currentPosition) {
+        return CollisionType.ENTERING_FROM_BELOW;
+      } else {
+        return CollisionType.ENTERING_FROM_ABOVE;
+      }
+    }
+    
+    return CollisionType.NONE;
   }
 }

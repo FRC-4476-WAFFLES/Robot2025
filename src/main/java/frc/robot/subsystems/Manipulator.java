@@ -294,7 +294,7 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     }
 
     private void resetInternalEncoder() {
-        setPivotSetpoint(Constants.ManipulatorConstants.PivotPosition.REST_POSITION);
+        setPivotSetpoint(Constants.ManipulatorConstants.PivotPosition.CLEARANCE_POSITION);
     }
 
     /**
