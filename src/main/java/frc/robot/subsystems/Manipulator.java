@@ -230,9 +230,6 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
      * @param speed Speed value between -1.0 and 1.0
      */
     public void setIntakeSpeed(double speed) {
-        if (speed < -1.0 || speed > 1.0) {
-            throw new IllegalArgumentException("Intake speed must be between -1.0 and 1.0");
-        }
         this.intakeSpeed = speed;
     }
 
