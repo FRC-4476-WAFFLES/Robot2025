@@ -96,35 +96,38 @@ public final class Constants {
   /* Manipulator Constants */
   public static class ManipulatorConstants {
     // Detection thresholds
-    public static final double CORAL_LOADED_DISTANCE_THRESHOLD = 30.0; // mm
+    public static final double CORAL_LOADED_DISTANCE_THRESHOLD = 10.0; // mm
     public static final double ALGAE_CURRENT_THRESHOLD = 34.0; // amps
 
     // Pivot constants
-    public static final double PIVOT_ANGLE_DEADBAND = 0.015; // rotations
+    public static final double PIVOT_ANGLE_DEADBAND = 1;
     public static final double PIVOT_MIN_ANGLE = 0.0; // degrees
-    public static final double PIVOT_MAX_ANGLE = 90.0; // degrees
+    public static final double PIVOT_MAX_ANGLE = 185.0; // degrees
 
     // Motor configuration
-    public static final double PIVOT_MOTION_CRUISE_VELOCITY = 110.0;
-    public static final double PIVOT_MOTION_ACCELERATION = 190.0;
-    public static final double PIVOT_MOTION_JERK = 1900.0;
+    public static final double PIVOT_MOTION_CRUISE_VELOCITY = 4.0;
+    public static final double PIVOT_MOTION_ACCELERATION = 20.0;
+    public static final double PIVOT_MOTION_JERK = 2000.0;
     public static final double STATOR_CURRENT_LIMIT = 60.0; // amps
+    public static final double PIVOT_MOTOR_DEADBAND = 0.001;
 
     // PID Values
-    public static final double PIVOT_kP = 2.0;
+    public static final double PIVOT_kP = 100.0;
     public static final double PIVOT_kI = 0.0;
-    public static final double PIVOT_kD = 0.01;
+    public static final double PIVOT_kD = 0.0;
     public static final double PIVOT_kS = 0.0;
 
     // Pivot Positions
     public enum PivotPosition {
-        REST_POSITION(0),
-        ALGAE(6789),
-        CORALINTAKE(12345),
+        ZERO(0),
+        REST_POSITION(28),
+        ALGAE(160),
+        CORALINTAKE(0.5),
         NET(10),
+        L4(74),
         L3(50.0),
         L2(27.0),
-        L0(2);
+        L1(2);
 
         private final double pivotDegrees;
 
@@ -145,13 +148,16 @@ public final class Constants {
     public static final double ZEROING_SPEED = -0.1; // Slow downward speed
     public static final double STALL_CURRENT_THRESHOLD = 10.0; // Amperes
 
+    // Elevator will not move if the pivot is not past this angle, to avoid collision with top bar
+    public static final double MIN_ELEVATOR_PIVOT_ANGLE = 25; 
+
     // Motion Magic configuration
-    public static final double MOTION_CRUISE_VELOCITY = 110;
-    public static final double MOTION_ACCELERATION = 190;
-    public static final double MOTION_JERK = 1900;
+    public static final double MOTION_CRUISE_VELOCITY = 1;
+    public static final double MOTION_ACCELERATION = 4;
+    public static final double MOTION_JERK = 2000;
 
     // PID Values
-    public static final double kP = 2.0;
+    public static final double kP = 75.0;
     public static final double kI = 0.0;
     public static final double kD = 0.01;
     public static final double kS = 0.0;
@@ -159,15 +165,15 @@ public final class Constants {
     // Predefined heights for the elevator (in meters)
     public enum ElevatorLevel {
       REST_POSITION(0.0),
-      NET(90.0),
-      ALGAE_L2(70.0),
-      ALGAE_L1(60.0),
-      PROCESSOR(55.0),
-      CORAL_INTAKE(40.0),
-      L4(70.0),
-      L3(50.0),
-      L2(27.0),
-      L1(10.0);
+      NET(1.0),
+      ALGAE_L2(1.0),
+      ALGAE_L1(1.0),
+      PROCESSOR(1.0),
+      CORAL_INTAKE(1.0),
+      L4(1.0),
+      L3(1.0),
+      L2(1.0),
+      L1(1.0);
 
 
       private final double height;

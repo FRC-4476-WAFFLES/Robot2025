@@ -4,11 +4,13 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.data.Constants;
+import frc.robot.utils.NetworkConfiguredPID;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
 
@@ -24,6 +26,8 @@ import au.grapplerobotics.LaserCan;
 import edu.wpi.first.math.MathUtil;
 import static frc.robot.data.Constants.ManipulatorConstants.*;
 
+import javax.print.event.PrintJobAttributeEvent;
+
 /**
  * The Manipulator subsystem handles the robot's intake and pivot mechanisms.
  * It controls:
@@ -37,7 +41,7 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     private final TalonFX intake;
     private final TalonFX pivot;
     private final CANcoder pivotAbsoluteEncoder;
-    private final LaserCan laserCan;
+    private LaserCan laserCan;
 
     // Control Objects
     private final DutyCycleOut intakeDutyCycle = new DutyCycleOut(0);
@@ -45,9 +49,10 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
 
 
     // State variables
-    public boolean algaeLoaded = false;
+    private boolean algaeLoaded = false;
     private double intakeSpeed = 0;
     private double pivotSetpointAngle = 0;
+    private double laserCANDistance = 0;
 
     // Network Tables
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
@@ -55,6 +60,8 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     private final DoublePublisher pivotSetpointNT = pivotTable.getDoubleTopic("Setpoint (Degrees)").publish();
     private final DoublePublisher pivotAngleNT = pivotTable.getDoubleTopic("Current Angle (Degrees)").publish();
     private final DoublePublisher laserCanDistanceNT = pivotTable.getDoubleTopic("LaserCan Distance (mm)").publish();
+    private final BooleanPublisher isAtSetpointNT = pivotTable.getBooleanTopic("Pivot at Setpoint").publish();
+    private final BooleanPublisher coralLoadedNT = pivotTable.getBooleanTopic("Coral Loaded").publish();
 
 
     // -------------------- Tuning Code --------------------
@@ -69,13 +76,14 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
 
     //   pivot.getConfigurator().apply(slot0Configs);
 
-
     //   MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
     //   motionMagicConfigs.MotionMagicCruiseVelocity = networkPIDConfiguration.getMotionMagicCruiseVelocity(); 
     //   motionMagicConfigs.MotionMagicAcceleration = networkPIDConfiguration.getMotionMagicAcceleration();
     //   motionMagicConfigs.MotionMagicJerk = networkPIDConfiguration.getMotionMagicJerk(); 
 
     //   pivot.getConfigurator().apply(motionMagicConfigs);
+
+    //   System.out.println("Refreshing PID values from networktables for manipulator");
     // }
 
     public Manipulator() {
@@ -94,8 +102,13 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
         // Initialize LaserCan with error handling
         try {
             laserCan = new LaserCan(Constants.CANIds.laserCan);
+            laserCan.setRangingMode(LaserCan.RangingMode.SHORT);
+            // laserCan.setRegionOfInterest(new LaserCan.RegionOfInterest(8, 8, 16, 16));
+            laserCan.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_33MS);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to initialize LaserCan: " + e.getMessage());
+            // throw new RuntimeException("Failed to initialize LaserCan: " + e.getMessage());
+            System.out.println("Failed to initialize LaserCan: " + e.getMessage());
+            laserCan = null;
         }
 
         // Initialize position
@@ -138,6 +151,8 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
         slot0Configs.kS = Constants.ManipulatorConstants.PIVOT_kS;
         pivotConfigs.Slot0 = slot0Configs;
 
+        pivotConfigs.MotorOutput.DutyCycleNeutralDeadband = PIVOT_MOTOR_DEADBAND;
+
         // For when CANCoder is not present
         pivotConfigs.Feedback.SensorToMechanismRatio = Constants.PhysicalConstants.pivotReduction;
         // For when CANCoder is present
@@ -165,8 +180,10 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     @Override
     public void periodic() {
         // Update motor controls
-        //pivot.setControl(motionMagicRequest.withPosition(pivotSetpointAngle / 360).withSlot(0));
+        pivot.setControl(motionMagicRequest.withPosition(pivotSetpointAngle / 360).withSlot(0));
         intake.setControl(intakeDutyCycle.withOutput(intakeSpeed));
+
+        updateCoralSensor();
     }
 
     /**
@@ -198,6 +215,14 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
      */
     public double getPivotPosition() {
         return pivot.getPosition().getValueAsDouble() * 360;
+    }
+
+    /**
+     * Gets the current pivot setpoint
+     * @return Current setpoint angle in degrees
+     */
+    public double getPivotSetpoint() {
+        return pivotSetpointAngle;
     }
 
     /**
@@ -233,10 +258,18 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
      * @return true if coral is detected within threshold distance
      */
     public boolean isCoralLoaded() {
-        var measurement = laserCan.getMeasurement();
-        return measurement != null && 
-               measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT &&
-               measurement.distance_mm <= Constants.ManipulatorConstants.CORAL_LOADED_DISTANCE_THRESHOLD;
+        return laserCANDistance <= Constants.ManipulatorConstants.CORAL_LOADED_DISTANCE_THRESHOLD;
+    }
+
+    private void updateCoralSensor() {
+        if (laserCan != null) {
+            var measurement = laserCan.getMeasurement();
+            if (measurement != null) {
+                if (measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
+                    laserCANDistance = measurement.distance_mm;
+                }
+            }
+        }
     }
 
     public boolean isIntakingCoral() {
@@ -272,9 +305,11 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
      */
     @Override
     public void updateNetwork() {
+        isAtSetpointNT.set(isPivotAtSetpoint());
         pivotSetpointNT.set(pivotSetpointAngle);
         pivotAngleNT.set(getPivotPosition());
-        laserCanDistanceNT.set(laserCan.getMeasurement().distance_mm);
+        laserCanDistanceNT.set(laserCANDistance);
+        coralLoadedNT.set(isCoralLoaded());
     }
 
     @Override

@@ -20,9 +20,11 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
+import frc.robot.utils.NetworkConfiguredPID;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
 
@@ -44,23 +46,34 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   private final DoublePublisher elevatorSetpointNT = elevatorTable.getDoubleTopic("Setpoint (Meters)").publish();
   private final DoublePublisher elevatorPositionNT = elevatorTable.getDoubleTopic("Current Position (Meters)").publish();
   private final BooleanPublisher elevatorIsZeroingNT = elevatorTable.getBooleanTopic("Is Zeroing").publish();
+  private final BooleanPublisher isAtSetpointNT = elevatorTable.getBooleanTopic("Elevator at Setpoint").publish();
 
   private ElevatorLevel targetPosition = ElevatorLevel.REST_POSITION;
 
   // -------------------- Tuning Code --------------------
-  // private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
+  private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
   
-  // public void updatePID() {
-  //   var slot0Configs = new Slot0Configs();
-  //   slot0Configs.kS = networkPIDConfiguration.getS(); // Static feedforward
-  //   slot0Configs.kP = networkPIDConfiguration.getP(); 
-  //   slot0Configs.kI = networkPIDConfiguration.getI(); 
-  //   slot0Configs.kD = networkPIDConfiguration.getD(); 
+  public void updatePID() {
+    var slot0Configs = new Slot0Configs();
+    slot0Configs.kS = networkPIDConfiguration.getS(); // Static feedforward
+    slot0Configs.kP = networkPIDConfiguration.getP(); 
+    slot0Configs.kI = networkPIDConfiguration.getI(); 
+    slot0Configs.kD = networkPIDConfiguration.getD(); 
 
 
-  //   Elevator1.getConfigurator().apply(slot0Configs);
-  //   Elevator2.getConfigurator().apply(slot0Configs);
-  // }
+    elevatorMotorLeader.getConfigurator().apply(slot0Configs);
+    elevatorMotorFollower.getConfigurator().apply(slot0Configs);
+
+    MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
+    motionMagicConfigs.MotionMagicCruiseVelocity = networkPIDConfiguration.getMotionMagicCruiseVelocity(); 
+    motionMagicConfigs.MotionMagicAcceleration = networkPIDConfiguration.getMotionMagicAcceleration();
+    motionMagicConfigs.MotionMagicJerk = networkPIDConfiguration.getMotionMagicJerk(); 
+
+    elevatorMotorLeader.getConfigurator().apply(motionMagicConfigs);
+    elevatorMotorFollower.getConfigurator().apply(motionMagicConfigs);
+
+    System.out.println("Refreshing PID values from networktables for elevator");
+  }
 
   public Elevator() {
     SubsystemNetworkManager.RegisterNetworkUser(this, true, 5);
@@ -110,15 +123,19 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     elevatorMotorFollower.getConfigurator().apply(elevatorConfig);
 
     // Make Follower Motor
-    elevatorMotorFollower.setControl(new Follower(Constants.CANIds.elevator1, true));
+    elevatorMotorFollower.setControl(new Follower(Constants.CANIds.elevator1, false));
   }
 
   @Override
   public void periodic() {
     // Main control logic
     if (!isZeroingElevator) {
-      // Use motion magic to control position
-      //elevatorMotorLeader.setControl(motionMagicRequest.withPosition(elevatorSetpointMeters).withSlot(0));
+      if (RobotContainer.manipulatorSubsystem.getPivotPosition() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE && 
+        RobotContainer.manipulatorSubsystem.getPivotSetpoint() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE) 
+      {
+        // Use motion magic to control position
+        elevatorMotorLeader.setControl(motionMagicRequest.withPosition(elevatorSetpointMeters).withSlot(0));
+      }
     }
   
     if (elevatorMotorLeader.getStatorCurrent().getValueAsDouble() > ElevatorConstants.STALL_CURRENT_THRESHOLD && isZeroingElevator) {
@@ -205,6 +222,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     elevatorSetpointNT.set(elevatorSetpointMeters);
     elevatorPositionNT.set(getElevatorPositionMeters());
     elevatorIsZeroingNT.set(isZeroingElevator);
+    isAtSetpointNT.set(isElevatorAtSetpoint());
   }
 
   public void setTargetPosition(ElevatorLevel position) {

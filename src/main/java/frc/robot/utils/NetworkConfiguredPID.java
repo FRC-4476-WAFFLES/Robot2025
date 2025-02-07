@@ -50,21 +50,35 @@ public class NetworkConfiguredPID {
         groupTable = inst.getTable("PID Configuration");
         instanceTable = groupTable.getSubTable(this.name);
 
-        PTopic = instanceTable.getDoubleTopic("P Value").getEntry(0, (PubSubOption)null);
-        ITopic = instanceTable.getDoubleTopic("I Value").getEntry(0, (PubSubOption)null);
-        DTopic = instanceTable.getDoubleTopic("D Value").getEntry(0, (PubSubOption)null);
+        PTopic = instanceTable.getDoubleTopic("P Value").getEntry(0, PubSubOption.pollStorage(10));
+        ITopic = instanceTable.getDoubleTopic("I Value").getEntry(0, PubSubOption.pollStorage(10));
+        DTopic = instanceTable.getDoubleTopic("D Value").getEntry(0, PubSubOption.pollStorage(10));
+       
+        PTopic.set(2);
+        ITopic.set(0);
+        DTopic.set(0);
 
-        GTopic = instanceTable.getDoubleTopic("Gravity Feedforward").getEntry(0, (PubSubOption)null);
-        STopic = instanceTable.getDoubleTopic("Friction Feedforward").getEntry(0, (PubSubOption)null);
-        VTopic = instanceTable.getDoubleTopic("Velocity Feedforward").getEntry(0, (PubSubOption)null);
-        ATopic = instanceTable.getDoubleTopic("Acceleration Feedforward").getEntry(0, (PubSubOption)null);
+        GTopic = instanceTable.getDoubleTopic("Gravity Feedforward").getEntry(0, PubSubOption.pollStorage(10));
+        STopic = instanceTable.getDoubleTopic("Friction Feedforward").getEntry(0, PubSubOption.pollStorage(10));
+        VTopic = instanceTable.getDoubleTopic("Velocity Feedforward").getEntry(0, PubSubOption.pollStorage(10));
+        ATopic = instanceTable.getDoubleTopic("Acceleration Feedforward").getEntry(0, PubSubOption.pollStorage(10));
+        
+        GTopic.set(0);
+        STopic.set(0);
+        VTopic.set(0);
+        ATopic.set(0);
 
-        MotionMagicCruiseVelocity = instanceTable.getDoubleTopic("MotionMagic CruiseVelocity").getEntry(0, (PubSubOption)null);
-        MotionMagicAcceleration = instanceTable.getDoubleTopic("MotionMagic Acceleration").getEntry(0, (PubSubOption)null);
-        MotionMagicJerk = instanceTable.getDoubleTopic("MotionMagic Jerk").getEntry(0, (PubSubOption)null);
-        MotionMagicExpo_kA = instanceTable.getDoubleTopic("MotionMagic kA").getEntry(0, (PubSubOption)null);
-        MotionMagicExpo_kV = instanceTable.getDoubleTopic("MotionMagic kV").getEntry(0, (PubSubOption)null);
+        MotionMagicCruiseVelocity = instanceTable.getDoubleTopic("MotionMagic CruiseVelocity").getEntry(0, PubSubOption.pollStorage(10));
+        MotionMagicAcceleration = instanceTable.getDoubleTopic("MotionMagic Acceleration").getEntry(0, PubSubOption.pollStorage(10));
+        MotionMagicJerk = instanceTable.getDoubleTopic("MotionMagic Jerk").getEntry(0, PubSubOption.pollStorage(10));
+        MotionMagicExpo_kA = instanceTable.getDoubleTopic("MotionMagic kA").getEntry(0, PubSubOption.pollStorage(10));
+        MotionMagicExpo_kV = instanceTable.getDoubleTopic("MotionMagic kV").getEntry(0, PubSubOption.pollStorage(10));
 
+        MotionMagicCruiseVelocity.set(1);
+        MotionMagicAcceleration.set(2);
+        MotionMagicJerk.set(2000);
+        MotionMagicExpo_kA.set(0);
+        MotionMagicExpo_kV.set(0);
 
         onEnableUpdateList.add(this);
     }

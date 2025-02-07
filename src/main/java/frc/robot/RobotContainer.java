@@ -21,6 +21,7 @@ import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.ManualElevatorControl;
 import frc.robot.commands.SetElevatorPos;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
+import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.TunerConstants;
 import frc.robot.subsystems.Climber;
@@ -113,11 +114,15 @@ public class RobotContainer {
     );
 
     //  Elevator height setters - Normal mode just sets target without moving
-    inNormalMode.and(Controls.operatorController.b()).onTrue(new InstantCommand(() -> elevatorSubsystem.setTargetPosition(ElevatorLevel.L1)));
-    inNormalMode.and(Controls.operatorController.x()).onTrue(new InstantCommand(() -> elevatorSubsystem.setTargetPosition(ElevatorLevel.L2)));
-    inNormalMode.and(Controls.operatorController.y()).onTrue(new InstantCommand(() -> elevatorSubsystem.setTargetPosition(ElevatorLevel.L3)));
-    inNormalMode.and(Controls.operatorController.a()).onTrue(new InstantCommand(() -> elevatorSubsystem.setTargetPosition(ElevatorLevel.L4)));
+    // inNormalMode.and(Controls.operatorController.b()).onTrue(new InstantCommand(() -> elevatorSubsystem.setTargetPosition(ElevatorLevel.L1)));
+    // inNormalMode.and(Controls.operatorController.x()).onTrue(new InstantCommand(() -> elevatorSubsystem.setTargetPosition(ElevatorLevel.L2)));
+    // inNormalMode.and(Controls.operatorController.y()).onTrue(new InstantCommand(() -> elevatorSubsystem.setTargetPosition(ElevatorLevel.L3)));
+    // inNormalMode.and(Controls.operatorController.a()).onTrue(new InstantCommand(() -> elevatorSubsystem.setTargetPosition(ElevatorLevel.L4)));
 
+    inNormalMode.and(Controls.operatorController.b()).onTrue(new InstantCommand(() -> { manipulatorSubsystem.setPivotSetpoint(PivotPosition.REST_POSITION); }));
+    inNormalMode.and(Controls.operatorController.a()).onTrue(new InstantCommand(() -> { manipulatorSubsystem.setPivotSetpoint(PivotPosition.ALGAE); }));
+    inNormalMode.and(Controls.operatorController.x()).onTrue(new InstantCommand(() -> { manipulatorSubsystem.setPivotSetpoint(PivotPosition.L4); }));
+    
     // Override mode immediately moves to position while held
     inOverrideMode.and(Controls.operatorController.b()).whileTrue(new SetElevatorPos(ElevatorLevel.L1))
         .whileFalse(new SetElevatorPos(ElevatorLevel.REST_POSITION));
