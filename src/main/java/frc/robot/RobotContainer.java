@@ -33,6 +33,8 @@ import frc.robot.subsystems.Manipulator;
 import frc.robot.subsystems.Telemetry;
 import frc.robot.commands.AxisIntakeControl;
 import frc.robot.commands.CoralIntake;
+import frc.robot.commands.SetPivotPos;
+import frc.robot.commands.DefaultPosition;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -59,6 +61,7 @@ public class RobotContainer {
     Controls.operatorController::getRightTriggerAxis,
     Controls.operatorController::getLeftTriggerAxis
   );
+  private final DefaultPosition defaultPosition = new DefaultPosition();
 
   /* Global Robot State */
   private final SendableChooser<Command> autoChooser;
@@ -82,7 +85,7 @@ public class RobotContainer {
         .whileTrue(manualElevatorControl);
     
     new Trigger(() -> isOperatorOverride)
-        .whileTrue(new SetElevatorPos(ElevatorLevel.REST_POSITION));
+        .whileTrue(defaultPosition);
 
     // Register commands to be used by pathplanner autos
     registerNamedCommands();
@@ -95,15 +98,6 @@ public class RobotContainer {
     FollowPathCommand.warmupCommand().schedule();
   }
 
-  /**
-   * Use this method to define your trigger->command mappings. Triggers can be created via the
-   * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
-   * predicate, or via the named factories in {@link
-   * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
-   * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
-   * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
-   * joysticks}.
-   */
   private void configureBindings() {
     // Create conditional triggers based on operator override state
     Trigger inNormalMode = new Trigger(() -> !isOperatorOverride);
@@ -114,34 +108,40 @@ public class RobotContainer {
       new InstantCommand(RobotContainer::toggleOperatorOverride)
     );
 
-    //  Elevator height setters - Normal mode just sets target without moving
-    // inNormalMode.and(Controls.operatorController.b()).onTrue(new InstantCommand(() -> elevatorSubsystem.setTargetPosition(ElevatorLevel.L1)));
-    // inNormalMode.and(Controls.operatorController.x()).onTrue(new InstantCommand(() -> elevatorSubsystem.setTargetPosition(ElevatorLevel.L2)));
-    // inNormalMode.and(Controls.operatorController.y()).onTrue(new InstantCommand(() -> elevatorSubsystem.setTargetPosition(ElevatorLevel.L3)));
-    // inNormalMode.and(Controls.operatorController.a()).onTrue(new InstantCommand(() -> elevatorSubsystem.setTargetPosition(ElevatorLevel.L4)));
-
+    // Normal mode button bindings
     inNormalMode.and(Controls.operatorController.b()).onTrue(new InstantCommand(() -> { manipulatorSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION); }));
     inNormalMode.and(Controls.operatorController.a()).onTrue(new InstantCommand(() -> { manipulatorSubsystem.setPivotSetpoint(PivotPosition.ALGAE); }));
     inNormalMode.and(Controls.operatorController.x()).onTrue(new InstantCommand(() -> { manipulatorSubsystem.setPivotSetpoint(PivotPosition.L4); }));
     inNormalMode.and(Controls.operatorController.y()).onTrue(new InstantCommand(() -> { manipulatorSubsystem.setPivotSetpoint(PivotPosition.ZERO); }));
     
     // Override mode immediately moves to position while held
-    inOverrideMode.and(Controls.operatorController.b()).whileTrue(new SetElevatorPos(ElevatorLevel.L1))
-        .whileFalse(new SetElevatorPos(ElevatorLevel.REST_POSITION));
-    inOverrideMode.and(Controls.operatorController.x()).whileTrue(new SetElevatorPos(ElevatorLevel.L2))
-        .whileFalse(new SetElevatorPos(ElevatorLevel.REST_POSITION));
-    inOverrideMode.and(Controls.operatorController.y()).whileTrue(new SetElevatorPos(ElevatorLevel.L3))
-        .whileFalse(new SetElevatorPos(ElevatorLevel.REST_POSITION));
-    inOverrideMode.and(Controls.operatorController.a()).whileTrue(new SetElevatorPos(ElevatorLevel.L4))
-        .whileFalse(new SetElevatorPos(ElevatorLevel.REST_POSITION));
+    inOverrideMode.and(Controls.operatorController.b()).whileTrue(
+        Commands.parallel(
+            new SetElevatorPos(ElevatorLevel.L1),
+            new SetPivotPos(PivotPosition.L1)
+        ));
+    inOverrideMode.and(Controls.operatorController.x()).whileTrue(
+        Commands.parallel(
+            new SetElevatorPos(ElevatorLevel.L2),
+            new SetPivotPos(PivotPosition.L2)
+        ));
+
+    inOverrideMode.and(Controls.operatorController.y()).whileTrue(
+        Commands.parallel(
+            new SetElevatorPos(ElevatorLevel.L3),
+            new SetPivotPos(PivotPosition.L3)
+        ));
+
+    inOverrideMode.and(Controls.operatorController.a()).whileTrue(
+        Commands.parallel(
+            new SetElevatorPos(ElevatorLevel.L4),
+            new SetPivotPos(PivotPosition.L4)
+        ));
 
     // Axis intake control only in override mode
     inOverrideMode.whileTrue(axisIntakeControl);
 
     inNormalMode.and(Controls.operatorController.rightStick()).whileTrue(new CoralIntake());
-
-    // Controls.operatorController.rightStick().onTrue(climberIn);
-    // Controls.operatorController.leftStick().onTrue(climberOut);
 
     // Dynamic path to coral scoring
     Controls.rightJoystick.button(1).whileTrue(Commands.defer(
