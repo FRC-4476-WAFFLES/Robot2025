@@ -16,6 +16,7 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -23,6 +24,7 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -30,6 +32,7 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import frc.robot.data.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.utils.LimelightHelpers;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -58,6 +61,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
     //     frc.robot.data.VisionConstants.kRobotToLeftCamera);
     // private Vision visionRight = new Vision(frc.robot.data.VisionConstants.kCameraRight,
     //     frc.robot.data.VisionConstants.kRobotToRightCamera);
+    public static final String LIMELIGHT_NAME = "limelight-front";
 
     /* Swerve request used for autos */
     private final SwerveRequest.ApplyRobotSpeeds autoRequest = new SwerveRequest.ApplyRobotSpeeds()
@@ -281,6 +285,34 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
     private void updateVisionOdometry() {
         if (!isOdometryValid()) {
             return;
+        }
+        
+
+        LimelightHelpers.SetRobotOrientation(LIMELIGHT_NAME, getRobotPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
+        LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LIMELIGHT_NAME);
+        boolean doRejectUpdate = false;
+        if (mt2 != null) {
+            if(Math.abs(getPigeon2().getAngularVelocityZWorld().getValueAsDouble()) > 360) // if our angular velocity is greater than 720 degrees per second, ignore vision updates
+            {
+                doRejectUpdate = true;
+            }
+            if(mt2.tagCount == 0)
+            {
+                doRejectUpdate = true;
+            }
+            if(!doRejectUpdate)
+            {
+                setVisionMeasurementStdDevs(VecBuilder.fill(.7,.7,9999999));
+                addVisionMeasurement(
+                    mt2.pose,
+                    Utils.fpgaToCurrentTime(mt2.timestampSeconds));
+
+                SmartDashboard.putNumberArray("LL Pose", new double[] {
+                    mt2.pose.getX(),
+                    mt2.pose.getY(),
+                    mt2.pose.getRotation().getDegrees()
+                });
+            }
         }
 
         // Commented out sicne we don't have a camera setup figured out yet

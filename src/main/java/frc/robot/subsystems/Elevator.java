@@ -13,6 +13,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 
 import edu.wpi.first.networktables.BooleanPublisher;
@@ -66,35 +67,39 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   private final BooleanPublisher isAtSetpointNT = elevatorTable.getBooleanTopic("Elevator at Setpoint").publish();
 
   private ElevatorLevel targetPosition = ElevatorLevel.REST_POSITION;
+  private CollisionType currentCollisionPrediction = CollisionType.NONE;
+  private CollisionType potentialCollisionPrediction = CollisionType.NONE; // If the movement could induce collision
 
   // -------------------- Tuning Code --------------------
-  private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
+  // private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
   
-  /**
-   * Updates the PID and Motion Magic configurations from network tables values.
-   * This is called automatically when network table values change.
-   */
-  public void updatePID() {
-    var slot0Configs = new Slot0Configs();
-    slot0Configs.kS = networkPIDConfiguration.getS(); // Static feedforward
-    slot0Configs.kP = networkPIDConfiguration.getP(); 
-    slot0Configs.kI = networkPIDConfiguration.getI(); 
-    slot0Configs.kD = networkPIDConfiguration.getD(); 
+  // /**
+  //  * Updates the PID and Motion Magic configurations from network tables values.
+  //  * This is called automatically when network table values change.
+  //  */
+  // public void updatePID() {
+  //   var slot0Configs = new Slot0Configs();
+  //   slot0Configs.kS = networkPIDConfiguration.getS(); // Static feedforward
+  //   slot0Configs.kP = networkPIDConfiguration.getP(); 
+  //   slot0Configs.kI = networkPIDConfiguration.getI(); 
+  //   slot0Configs.kD = networkPIDConfiguration.getD(); 
+  //   slot0Configs.kG = ElevatorConstants.kG;
+  //   slot0Configs.GravityType = GravityTypeValue.Elevator_Static;
 
 
-    elevatorMotorLeader.getConfigurator().apply(slot0Configs);
-    elevatorMotorFollower.getConfigurator().apply(slot0Configs);
+  //   elevatorMotorLeader.getConfigurator().apply(slot0Configs);
+  //   elevatorMotorFollower.getConfigurator().apply(slot0Configs);
 
-    MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
-    motionMagicConfigs.MotionMagicCruiseVelocity = networkPIDConfiguration.getMotionMagicCruiseVelocity(); 
-    motionMagicConfigs.MotionMagicAcceleration = networkPIDConfiguration.getMotionMagicAcceleration();
-    motionMagicConfigs.MotionMagicJerk = networkPIDConfiguration.getMotionMagicJerk(); 
+  //   MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
+  //   motionMagicConfigs.MotionMagicCruiseVelocity = networkPIDConfiguration.getMotionMagicCruiseVelocity(); 
+  //   motionMagicConfigs.MotionMagicAcceleration = networkPIDConfiguration.getMotionMagicAcceleration();
+  //   motionMagicConfigs.MotionMagicJerk = networkPIDConfiguration.getMotionMagicJerk(); 
 
-    elevatorMotorLeader.getConfigurator().apply(motionMagicConfigs);
-    elevatorMotorFollower.getConfigurator().apply(motionMagicConfigs);
+  //   elevatorMotorLeader.getConfigurator().apply(motionMagicConfigs);
+  //   elevatorMotorFollower.getConfigurator().apply(motionMagicConfigs);
 
-    System.out.println("Refreshing PID values from networktables for elevator");
-  }
+  //   System.out.println("Refreshing PID values from networktables for elevator");
+  // }
 
   public Elevator() {
     SubsystemNetworkManager.RegisterNetworkUser(this, true, 5);
@@ -124,6 +129,8 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     slot0Configs.kP = ElevatorConstants.kP;
     slot0Configs.kI = ElevatorConstants.kI;
     slot0Configs.kD = ElevatorConstants.kD;
+    slot0Configs.kG = ElevatorConstants.kG;
+    slot0Configs.GravityType = GravityTypeValue.Elevator_Static;
 
     elevatorConfig.Slot0 = slot0Configs;
 
@@ -149,10 +156,27 @@ public class Elevator extends SubsystemBase implements NetworkUser {
 
   @Override
   public void periodic() {
+    currentCollisionPrediction = isCollisionPredicted(elevatorSetpointMeters);
+
     // Main control logic
     if (!isZeroingElevator) {
-      // Move elevator to setpoint
-      elevatorMotorLeader.setControl(motionMagicRequest.withPosition(elevatorSetpointMeters).withSlot(0));
+      if (currentCollisionPrediction == Elevator.CollisionType.NONE) {
+        // Safe to move elevator
+        // Move elevator to setpoint
+        elevatorMotorLeader.setControl(motionMagicRequest.withPosition(elevatorSetpointMeters).withSlot(0));
+      } 
+      else if(currentCollisionPrediction == Elevator.CollisionType.ENTERING_FROM_ABOVE) {
+        // move to safe setpoint
+        elevatorMotorLeader.setControl(motionMagicRequest.withPosition(ElevatorConstants.COLLISION_ZONE_UPPER).withSlot(0));
+      }
+      else if(currentCollisionPrediction == Elevator.CollisionType.ENTERING_FROM_BELOW) {
+        // move to safe setpoint
+        elevatorMotorLeader.setControl(motionMagicRequest.withPosition(ElevatorConstants.COLLISION_ZONE_LOWER).withSlot(0));
+      }
+      else {
+        // try to stop motor
+        elevatorMotorLeader.setControl(motionMagicRequest.withPosition(getElevatorPositionMeters()).withSlot(0));
+      }
     }
   
     if (elevatorMotorLeader.getStatorCurrent().getValueAsDouble() > ElevatorConstants.STALL_CURRENT_THRESHOLD && isZeroingElevator) {
@@ -216,6 +240,22 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    */
   public double getElevatorPositionMeters(){
     return elevatorMotorLeader.getPosition().getValueAsDouble();
+  }
+
+  /**
+   * Gets if the elevator in a state that it will hit something
+   * @return
+   */
+  public CollisionType getCurrentCollisionPrediction() {
+    return currentCollisionPrediction;
+  }
+
+  /**
+   * Gets if the elevator is making a motion that requires the pivot to move for safety
+   * @return
+   */
+  public CollisionType getCurrentCollisionPotential() {
+    return potentialCollisionPrediction;
   }
 
   /**
@@ -283,14 +323,24 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    */
   public CollisionType isCollisionPredicted(double setpoint) {
     // Check if pivot is in safe position
-    boolean pivotSafe = RobotContainer.manipulatorSubsystem.getPivotPosition() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE && 
-                       RobotContainer.manipulatorSubsystem.getPivotSetpoint() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE;
+    boolean pivotSafe = RobotContainer.manipulatorSubsystem.getPivotPosition() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE;
+                        // RobotContainer.manipulatorSubsystem.getPivotSetpoint() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE;
+    potentialCollisionPrediction = predictedPotentialCollision(setpoint);
 
     // If pivot is safe, no collision possible
     if (pivotSafe) {
       return CollisionType.NONE;
     }
+    
+    return potentialCollisionPrediction;
+  }
 
+  /**
+   * Checks if the elevator movement would cause a collision and what type of collision it would be
+   * @param setpoint The target position the elevator is trying to move to in meters
+   * @return The type of collision predicted
+   */
+  public CollisionType predictedPotentialCollision(double setpoint) {
     double currentPosition = getElevatorPositionMeters();
     
     // First check if we're currently in the collision zone

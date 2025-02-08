@@ -36,7 +36,7 @@ public class Robot extends TimedRobot {
     SubsystemNetworkManager.init(this);
 
     // Init something for laserCAN
-    CanBridge.runTCP();
+    //CanBridge.runTCP();
 
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.

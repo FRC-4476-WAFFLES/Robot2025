@@ -33,26 +33,26 @@ public class SetElevatorPos extends Command {
   @Override
   public void execute() {
     // Check for potential collisions
-    Elevator.CollisionType collisionPrediction = RobotContainer.elevatorSubsystem.isCollisionPredicted(chosenLevel.getHeight());
+    //Elevator.CollisionType collisionPrediction = RobotContainer.elevatorSubsystem.isCollisionPredicted(chosenLevel.getHeight());
     
-    if (collisionPrediction == Elevator.CollisionType.NONE) {
-      // Safe to move elevator
-      RobotContainer.elevatorSubsystem.setElevatorSetpoint(chosenLevel);
-    } 
-    else if(collisionPrediction == Elevator.CollisionType.ENTERING_FROM_ABOVE) {
-      // Entering above, temporarily move pivot out of the way and clamp the height to not go thru danger zone till clear
-      RobotContainer.manipulatorSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
-      RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorConstants.COLLISION_ZONE_UPPER);
-    }
-    else if(collisionPrediction == Elevator.CollisionType.ENTERING_FROM_BELOW) {
-      // Entering below, temporarily move pivot out of the way and clamp the height to not go thru danger zone till clear
-      RobotContainer.manipulatorSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
-      RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorConstants.COLLISION_ZONE_LOWER);
-    }
-    else {
-      // Move pivot out of the way first before moving elevator at all
-      RobotContainer.manipulatorSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
-    }
+    // if (collisionPrediction == Elevator.CollisionType.NONE) {
+    //   // Safe to move elevator
+    RobotContainer.elevatorSubsystem.setElevatorSetpoint(chosenLevel);
+    // } 
+    // else if(collisionPrediction == Elevator.CollisionType.ENTERING_FROM_ABOVE) {
+    //   // Entering above, temporarily move pivot out of the way and clamp the height to not go thru danger zone till clear
+    //   RobotContainer.manipulatorSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
+    //   RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorConstants.COLLISION_ZONE_UPPER);
+    // }
+    // else if(collisionPrediction == Elevator.CollisionType.ENTERING_FROM_BELOW) {
+    //   // Entering below, temporarily move pivot out of the way and clamp the height to not go thru danger zone till clear
+    //   RobotContainer.manipulatorSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
+    //   RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorConstants.COLLISION_ZONE_LOWER);
+    // }
+    // else {
+    //   // Move pivot out of the way first before moving elevator at all
+    //   RobotContainer.manipulatorSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
+    // }
   }
 
   // Called once the command ends or is interrupted.
@@ -64,6 +64,6 @@ public class SetElevatorPos extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false; // Run continuously until interrupted
+    return RobotContainer.elevatorSubsystem.isElevatorAtSetpoint(); // Run continuously until interrupted
   }
 }

@@ -9,7 +9,11 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
+import frc.robot.data.Constants.ElevatorConstants;
+import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
+import frc.robot.subsystems.Elevator.CollisionType;
 import frc.robot.utils.NetworkConfiguredPID;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
@@ -180,7 +184,16 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     @Override
     public void periodic() {
         // Update motor controls
-        pivot.setControl(motionMagicRequest.withPosition(pivotSetpointAngle / 360).withSlot(0));
+        Elevator.CollisionType collisionPrediction = RobotContainer.elevatorSubsystem.getCurrentCollisionPotential();
+        if (collisionPrediction == CollisionType.NONE || pivotSetpointAngle > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE) {
+            // If we're past the safety angle, or aren't in danger of hitting anything, move pivot normally
+            pivot.setControl(motionMagicRequest.withPosition(pivotSetpointAngle / 360).withSlot(0));
+        } else {
+            // Not safe in some way, move pivot out of the way
+            pivot.setControl(motionMagicRequest.withPosition(PivotPosition.CLEARANCE_POSITION.getDegrees() / 360).withSlot(0));
+            // System.out.println(collisionPrediction);
+        }
+
         intake.setControl(intakeDutyCycle.withOutput(intakeSpeed));
 
         updateCoralSensor();
@@ -194,8 +207,8 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     public void setPivotSetpoint(Object setpoint) {
         double targetDegrees;
         // Check if input is an enum value (e.g., PivotPosition.REST_POSITION)
-        if (setpoint instanceof Constants.ManipulatorConstants.PivotPosition) {
-            targetDegrees = ((Constants.ManipulatorConstants.PivotPosition) setpoint).getDegrees();
+        if (setpoint instanceof PivotPosition) {
+            targetDegrees = ((PivotPosition) setpoint).getDegrees();
         } 
         // Check if input is a number (e.g., 45.0 or 45)
         else if (setpoint instanceof Double || setpoint instanceof Integer) {
