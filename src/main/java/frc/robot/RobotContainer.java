@@ -23,6 +23,7 @@ import frc.robot.commands.ResetGyroHeading;
 import frc.robot.commands.SetElevatorPos;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
+import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.TunerConstants;
 import frc.robot.subsystems.Climber;
@@ -110,12 +111,14 @@ public class RobotContainer {
       new InstantCommand(RobotContainer::toggleOperatorOverride)
     );
 
-    // Normal mode button bindings
-    inNormalMode.and(Controls.operatorController.b()).onTrue(new InstantCommand(() -> { manipulatorSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION); }));
-    inNormalMode.and(Controls.operatorController.a()).onTrue(new InstantCommand(() -> { manipulatorSubsystem.setPivotSetpoint(PivotPosition.ALGAE); }));
-    inNormalMode.and(Controls.operatorController.x()).onTrue(new InstantCommand(() -> { manipulatorSubsystem.setPivotSetpoint(PivotPosition.L4); }));
-    inNormalMode.and(Controls.operatorController.y()).onTrue(new InstantCommand(() -> { manipulatorSubsystem.setPivotSetpoint(PivotPosition.ZERO); }));
     Controls.rightJoystick.button(9).whileTrue(resetGyroHeading);
+
+    // Normal mode button bindings
+    inNormalMode.and(Controls.operatorController.b()).onTrue(new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L1); }));
+    inNormalMode.and(Controls.operatorController.a()).onTrue(new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L2); }));
+    inNormalMode.and(Controls.operatorController.x()).onTrue(new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L3); }));
+    inNormalMode.and(Controls.operatorController.y()).onTrue(new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L4); }));
+    
     // Override mode immediately moves to position while held
     inOverrideMode.and(Controls.operatorController.b()).whileTrue(
         Commands.parallel(

@@ -10,6 +10,8 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
 import com.pathplanner.lib.util.FlippingUtil;
 
+import edu.wpi.first.wpilibj2.command.Commands;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -21,6 +23,11 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.commands.DriveTeleop;
+import frc.robot.commands.semiauto.ScoreCoral;
+import frc.robot.data.Constants.ScoringConstants;
+import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
+import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
+import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.utils.WafflesUtilities;
 
 /**
@@ -72,6 +79,9 @@ public class DynamicPathingSubsystem extends SubsystemBase {
 
     /* Persistent state */
     private boolean coralScoringRightSide = false;
+    // Only used for coral scoring, level can be determined automatically in every other situation
+    private ScoringLevel coralScoringLevel = ScoringLevel.L1;
+    private boolean isPathing;
 
     enum DynamicPathingSituation {
         NONE, // None of the conditions for other situations are met
@@ -168,7 +178,8 @@ public class DynamicPathingSubsystem extends SubsystemBase {
 
                     var path = DynamicPathingSubsystem.simplePathToPose(targetCoralPose);
                     if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
-                        cmd = AutoBuilder.followPath(path.get());
+                        var pathingCommand = getDynamicPathingWrapperCommand(AutoBuilder.followPath(path.get()));
+                        cmd = ScoreCoral.scoreCoralWithPath(pathingCommand);
                     }
                 }
                 break;
@@ -183,7 +194,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
 
                     var path = DynamicPathingSubsystem.simplePathToPose(targetAlgaePose);
                     if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
-                        cmd = AutoBuilder.followPath(path.get());
+                        cmd = getDynamicPathingWrapperCommand(AutoBuilder.followPath(path.get()));
                     }
                 }
                 break;
@@ -235,7 +246,32 @@ public class DynamicPathingSubsystem extends SubsystemBase {
      */
     public void setCoralScoringSide(boolean rightSide) {
         coralScoringRightSide = rightSide;
-        System.out.println("Setting scoring to right: " + rightSide);
+        System.out.println("Setting coral scoring to right side: " + coralScoringRightSide);
+    }
+
+    /**
+     * Sets the desired coral scoring level
+     * @param level the desired scoring level
+     */
+    public void setCoralScoringLevel(ScoringLevel level) {
+        coralScoringLevel = level;
+        System.out.println("Setting coral scoring sevel to: " + coralScoringLevel);
+    }
+
+    /**
+     * Gets the coral scoring level set by the operator
+     * @return a ScoringLevel enum
+     */
+    public ScoringLevel getCoralScoringLevel() {
+        return coralScoringLevel;
+    }
+
+    /**
+     * Is the robot actively executing a dynamic pathing command
+     * @return a boolean
+     */
+    public boolean isPathing() {
+        return isPathing;
     }
 
     /**
@@ -362,5 +398,14 @@ public class DynamicPathingSubsystem extends SubsystemBase {
 
         
         return Optional.of(path);
+    }
+
+    /**
+     * Wraps a pathing command with setters for isPathing 
+     * @param pathingCommand command to wrap
+     * @return the wrapped command
+     */
+    private Command getDynamicPathingWrapperCommand(Command pathingCommand) {
+        return pathingCommand.beforeStarting(() -> {isPathing = true;}).finallyDo(() -> {isPathing = false;});
     }
 }

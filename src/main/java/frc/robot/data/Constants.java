@@ -8,6 +8,9 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
+import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
+
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 /**
@@ -94,6 +97,36 @@ public final class Constants {
     public static final double elevatorReductionToMeters = 52.1602684; // Motor rotations to elevator height in meters
 
     public static final double pivotAbsoluteEncoderOffset = 0;
+  }
+
+  public static class ScoringConstants {
+    /**
+     * Maps scoring levels to their respective elevator and pivot enums
+     */
+    public enum ScoringLevel {
+      L1(PivotPosition.L1, ElevatorLevel.L1),
+      L2(PivotPosition.L2, ElevatorLevel.L2),
+      L3(PivotPosition.L3, ElevatorLevel.L3),
+      L4(PivotPosition.L3, ElevatorLevel.L3),
+      ALGEA_L1(PivotPosition.ALGAE, ElevatorLevel.ALGAE_L1),
+      ALGEA_L2(PivotPosition.ALGAE, ElevatorLevel.ALGAE_L2);
+      
+      private final PivotPosition pivotPosition;
+      private final ElevatorLevel elevatorLevel;
+
+      ScoringLevel(PivotPosition pivotPosition, ElevatorLevel elevatorLevel) {
+          this.pivotPosition = pivotPosition;
+          this.elevatorLevel = elevatorLevel;
+      }
+
+      public ElevatorLevel getElevatorLevel() {
+          return elevatorLevel;
+      }
+
+      public PivotPosition getPivotPosition() {
+          return pivotPosition;
+      }
+    }
   }
 
   /* Manipulator Constants */
