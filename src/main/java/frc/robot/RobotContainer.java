@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.ManualElevatorControl;
+import frc.robot.commands.ResetGyroHeading;
 import frc.robot.commands.SetElevatorPos;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
@@ -61,6 +62,7 @@ public class RobotContainer {
     Controls.operatorController::getRightTriggerAxis,
     Controls.operatorController::getLeftTriggerAxis
   );
+  private final ResetGyroHeading resetGyroHeading = new ResetGyroHeading();
   private final DefaultPosition defaultPosition = new DefaultPosition();
 
   /* Global Robot State */
@@ -113,7 +115,7 @@ public class RobotContainer {
     inNormalMode.and(Controls.operatorController.a()).onTrue(new InstantCommand(() -> { manipulatorSubsystem.setPivotSetpoint(PivotPosition.ALGAE); }));
     inNormalMode.and(Controls.operatorController.x()).onTrue(new InstantCommand(() -> { manipulatorSubsystem.setPivotSetpoint(PivotPosition.L4); }));
     inNormalMode.and(Controls.operatorController.y()).onTrue(new InstantCommand(() -> { manipulatorSubsystem.setPivotSetpoint(PivotPosition.ZERO); }));
-    
+    Controls.rightJoystick.button(9).whileTrue(resetGyroHeading);
     // Override mode immediately moves to position while held
     inOverrideMode.and(Controls.operatorController.b()).whileTrue(
         Commands.parallel(
