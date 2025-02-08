@@ -70,6 +70,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     
     private static final Manipulator manipulatorSubsystem = RobotContainer.manipulatorSubsystem;
 
+    /* Persistent state */
     private boolean coralScoringRightSide = false;
 
     enum DynamicPathingSituation {

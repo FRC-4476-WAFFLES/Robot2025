@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import frc.robot.data.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.LimelightHelpers;
+import frc.robot.utils.VisionHelpers;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -288,6 +289,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
         }
         
 
+        // Integrate position from mt2
         LimelightHelpers.SetRobotOrientation(LIMELIGHT_NAME, getRobotPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
         LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LIMELIGHT_NAME);
         boolean doRejectUpdate = false;
@@ -307,13 +309,41 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
                     mt2.pose,
                     Utils.fpgaToCurrentTime(mt2.timestampSeconds));
 
-                SmartDashboard.putNumberArray("LL Pose", new double[] {
+                SmartDashboard.putNumberArray("LL Pose MT2", new double[] {
                     mt2.pose.getX(),
                     mt2.pose.getY(),
                     mt2.pose.getRotation().getDegrees()
                 });
             }
         }
+        // Integrate rotation from mt1
+        LimelightHelpers.PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue(LIMELIGHT_NAME);
+        boolean doRejectUpdateMT1 = false;
+        if (mt1 != null) {
+            if(Math.abs(getPigeon2().getAngularVelocityZWorld().getValueAsDouble()) > 360) // if our angular velocity is greater than 720 degrees per second, ignore vision updates
+            {
+                doRejectUpdateMT1 = true;
+            }
+            if(mt1.tagCount == 0)
+            {
+                doRejectUpdateMT1 = true;
+            }
+            if(!doRejectUpdateMT1)
+            {
+                setVisionMeasurementStdDevs(VisionHelpers.getEstimationStdDevsLimelight(mt1.pose, mt1.rawFiducials));
+                addVisionMeasurement(
+                    mt1.pose,
+                    Utils.fpgaToCurrentTime(mt1.timestampSeconds));
+
+                SmartDashboard.putNumberArray("LL Pose MT1", new double[] {
+                    mt1.pose.getX(),
+                    mt1.pose.getY(),
+                    mt1.pose.getRotation().getDegrees()
+                });
+            }
+        }
+
+
 
         // Commented out sicne we don't have a camera setup figured out yet
         // var visionEstimationLeft = visionLeft.getEstimatedGlobalPose();
