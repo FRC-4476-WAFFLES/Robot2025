@@ -123,6 +123,7 @@ public class RobotContainer {
     inNormalMode.and(Controls.operatorController.b()).onTrue(new InstantCommand(() -> { manipulatorSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION); }));
     inNormalMode.and(Controls.operatorController.a()).onTrue(new InstantCommand(() -> { manipulatorSubsystem.setPivotSetpoint(PivotPosition.ALGAE); }));
     inNormalMode.and(Controls.operatorController.x()).onTrue(new InstantCommand(() -> { manipulatorSubsystem.setPivotSetpoint(PivotPosition.L4); }));
+    inNormalMode.and(Controls.operatorController.y()).onTrue(new InstantCommand(() -> { manipulatorSubsystem.setPivotSetpoint(PivotPosition.ZERO); }));
     
     // Override mode immediately moves to position while held
     inOverrideMode.and(Controls.operatorController.b()).whileTrue(new SetElevatorPos(ElevatorLevel.L1))

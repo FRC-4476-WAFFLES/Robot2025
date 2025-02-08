@@ -151,20 +151,24 @@ public final class Constants {
     // Elevator will not move if the pivot is not past this angle, to avoid collision with top bar
     public static final double MIN_ELEVATOR_PIVOT_ANGLE = 25; 
 
+    public static final double MIN_ELEVATOR_HEIGHT = 0;
+    public static final double MAX_ELEVATOR_HEIGHT = 1.46;
+
     // Collision zone constants
-    public static final double COLLISION_ZONE_LOWER = 0.8; // meters
-    public static final double COLLISION_ZONE_UPPER = 1.4; // meters
+    public static final double COLLISION_ZONE_LOWER = 0.12; // meters
+    public static final double COLLISION_ZONE_UPPER = 0.54; // meters
 
     // Motion Magic configuration
-    public static final double MOTION_CRUISE_VELOCITY = 1;
-    public static final double MOTION_ACCELERATION = 4;
+    public static final double MOTION_CRUISE_VELOCITY = 0.2;
+    public static final double MOTION_ACCELERATION = 8;
     public static final double MOTION_JERK = 2000;
 
     // PID Values
-    public static final double kP = 75.0;
+    public static final double kP = 85.0;
     public static final double kI = 0.0;
     public static final double kD = 0.01;
     public static final double kS = 0.0;
+    public static final double kG = 0.18; // Volts of feedforward was 0.36 but halved with constant force springs
 
     // Predefined heights for the elevator (in meters)
     public enum ElevatorLevel {
