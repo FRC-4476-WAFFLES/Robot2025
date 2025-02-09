@@ -31,7 +31,8 @@ import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.DynamicPathingSubsystem;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Funnel;
-import frc.robot.subsystems.Manipulator;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Telemetry;
 import frc.robot.commands.AxisIntakeControl;
 import frc.robot.commands.CoralIntake;
@@ -49,13 +50,14 @@ public class RobotContainer {
 
   /* Subsystems */
   public static final DriveSubsystem driveSubsystem = TunerConstants.createDrivetrain();
-  public static final Manipulator manipulatorSubsystem = new Manipulator();
+  public static final Pivot pivotSubsystem = new Pivot();
+  public static final Intake intakeSubsystem = new Intake();
   public static final Elevator elevatorSubsystem = new Elevator();
   // public static final Funnel funnelSubsystem = new Funnel();
   public static final Climber climberSubsystem = null; //  new Climber()
 
   public static final DynamicPathingSubsystem dynamicPathingSubsystem = new DynamicPathingSubsystem();
-  private static final Telemetry telemetry = new Telemetry(PhysicalConstants.maxSpeed);
+  public static final Telemetry telemetry = new Telemetry(PhysicalConstants.maxSpeed);
 
   /* Commands */
   private final ManualElevatorControl manualElevatorControl = new ManualElevatorControl();
@@ -83,12 +85,6 @@ public class RobotContainer {
       Controls::getDriveRotation
     ));
 
-    // Set default commands based on mode
-    new Trigger(() -> !isOperatorOverride)
-        .whileTrue(manualElevatorControl);
-    
-    new Trigger(() -> isOperatorOverride)
-        .whileTrue(defaultPosition);
 
     // Register commands to be used by pathplanner autos
     registerNamedCommands();
@@ -106,6 +102,9 @@ public class RobotContainer {
     Trigger inNormalMode = new Trigger(() -> !isOperatorOverride);
     Trigger inOverrideMode = new Trigger(() -> isOperatorOverride);
 
+    // new Trigger(() -> isOperatorOverride)
+    //   .whileTrue(defaultPosition);
+
     // Toggle operator override
     Controls.operatorController.start().onTrue(
       new InstantCommand(RobotContainer::toggleOperatorOverride)
@@ -121,30 +120,63 @@ public class RobotContainer {
     
     // Override mode immediately moves to position while held
     inOverrideMode.and(Controls.operatorController.b()).whileTrue(
+      Commands.either(
         Commands.parallel(
-            new SetElevatorPos(ElevatorLevel.L1),
-            new SetPivotPos(PivotPosition.L1)
-        ));
+          new SetElevatorPos(ElevatorLevel.L1),
+          new SetPivotPos(PivotPosition.L1)
+        ), 
+        Commands.parallel(
+          new SetElevatorPos(ElevatorLevel.PROCESSOR),
+          new SetPivotPos(PivotPosition.PROCESSOR)
+        ), 
+        () -> intakeSubsystem.isCoralLoaded()
+      )
+    ).onFalse(defaultPosition);
+
     inOverrideMode.and(Controls.operatorController.x()).whileTrue(
+      Commands.either(
         Commands.parallel(
-            new SetElevatorPos(ElevatorLevel.L2),
-            new SetPivotPos(PivotPosition.L2)
-        ));
+          new SetElevatorPos(ElevatorLevel.L2),
+          new SetPivotPos(PivotPosition.L2)
+        ), 
+        Commands.parallel(
+          new SetElevatorPos(ElevatorLevel.ALGAE_L1),
+          new SetPivotPos(PivotPosition.ALGAE_L1)
+        ), 
+        () -> intakeSubsystem.isCoralLoaded()
+      )
+    ).onFalse(defaultPosition);
 
     inOverrideMode.and(Controls.operatorController.y()).whileTrue(
+      Commands.either(
         Commands.parallel(
-            new SetElevatorPos(ElevatorLevel.L3),
-            new SetPivotPos(PivotPosition.L3)
-        ));
+          new SetElevatorPos(ElevatorLevel.L3),
+          new SetPivotPos(PivotPosition.L3)
+        ), 
+        Commands.parallel(
+          new SetElevatorPos(ElevatorLevel.ALGAE_L2),
+          new SetPivotPos(PivotPosition.ALGAE_L2)
+        ), 
+        () -> intakeSubsystem.isCoralLoaded()
+      )
+    ).onFalse(defaultPosition);
 
     inOverrideMode.and(Controls.operatorController.a()).whileTrue(
+      Commands.either(
         Commands.parallel(
-            new SetElevatorPos(ElevatorLevel.L4),
-            new SetPivotPos(PivotPosition.L4)
-        ));
+          new SetElevatorPos(ElevatorLevel.L4),
+          new SetPivotPos(PivotPosition.L4)
+        ), 
+        Commands.parallel(
+          new SetElevatorPos(ElevatorLevel.NET),
+          new SetPivotPos(PivotPosition.NET)
+        ), 
+        () -> intakeSubsystem.isCoralLoaded()
+      )
+    ).onFalse(defaultPosition);
 
-    // Axis intake control only in override mode
-    inOverrideMode.whileTrue(axisIntakeControl);
+    // Axis intake control 
+    intakeSubsystem.setDefaultCommand(axisIntakeControl);
 
     inNormalMode.and(Controls.operatorController.rightStick()).whileTrue(new CoralIntake());
 

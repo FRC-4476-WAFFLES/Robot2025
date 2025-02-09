@@ -13,14 +13,14 @@ public class DefaultPosition extends Command {
   /** Creates a new DefaultPosition. */
   public DefaultPosition() {
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(RobotContainer.elevatorSubsystem, RobotContainer.manipulatorSubsystem);
+    addRequirements(RobotContainer.elevatorSubsystem, RobotContainer.pivotSubsystem);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
     RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
-    RobotContainer.manipulatorSubsystem.setPivotSetpoint(PivotPosition.ZERO);
+    RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.ZERO);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -34,6 +34,6 @@ public class DefaultPosition extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false; // Run continuously until interrupted
+    return true; // Run continuously until interrupted
   }
 } 

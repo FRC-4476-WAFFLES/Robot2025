@@ -9,6 +9,7 @@ import java.util.function.DoubleSupplier;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
+import frc.robot.data.Constants.ManipulatorConstants;
 
 public class AxisIntakeControl extends Command {
   private final DoubleSupplier intakeAxis;
@@ -16,7 +17,7 @@ public class AxisIntakeControl extends Command {
 
   /** Creates a new AxisIntakeControl. */
   public AxisIntakeControl(DoubleSupplier intakeAxis, DoubleSupplier outtakeAxis) {
-    addRequirements(RobotContainer.manipulatorSubsystem);
+    addRequirements(RobotContainer.intakeSubsystem);
     this.intakeAxis = intakeAxis;
     this.outtakeAxis = outtakeAxis;
   }
@@ -24,23 +25,27 @@ public class AxisIntakeControl extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    RobotContainer.manipulatorSubsystem.setIntakeSpeed(0);
+    RobotContainer.intakeSubsystem.setIntakeSpeed(0);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double intakeValue = Math.abs(intakeAxis.getAsDouble()) > Controls.AXIS_DEADBAND ? intakeAxis.getAsDouble() : 0;
-    double outtakeValue = Math.abs(outtakeAxis.getAsDouble()) > Controls.AXIS_DEADBAND ? -outtakeAxis.getAsDouble() : 0;
-    
-    // Sum the values - positive for intake, negative for outtake
-    RobotContainer.manipulatorSubsystem.setIntakeSpeed(intakeValue + outtakeValue);
+    if (RobotContainer.isOperatorOverride) {
+      double intakeValue = Math.abs(intakeAxis.getAsDouble() * ManipulatorConstants.INTAKE_SPEED_MULTIPLIER) > Controls.AXIS_DEADBAND ? intakeAxis.getAsDouble() : 0;
+      double outtakeValue = Math.abs(outtakeAxis.getAsDouble() * ManipulatorConstants.INTAKE_SPEED_MULTIPLIER) > Controls.AXIS_DEADBAND ? -outtakeAxis.getAsDouble() : 0;
+      
+      // Sum the values - positive for intake, negative for outtake
+      RobotContainer.intakeSubsystem.setIntakeSpeed(intakeValue + outtakeValue);
+
+      //System.out.println("Executing intake");
+    }
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    RobotContainer.manipulatorSubsystem.setIntakeSpeed(0);
+    RobotContainer.intakeSubsystem.setIntakeSpeed(0);
   }
 
   // Returns true when the command should end.

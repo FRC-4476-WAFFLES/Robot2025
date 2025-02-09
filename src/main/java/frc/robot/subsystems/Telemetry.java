@@ -56,10 +56,13 @@ public class Telemetry extends SubsystemBase {
     private final DoublePublisher powerDraw = powerTable.getDoubleTopic("Power Draw (Watts)").publish(); 
     private final DoublePublisher energyUsage = powerTable.getDoubleTopic("Energy Usage (Joules)").publish(); 
 
-    /* Operator override */
+    /* Controls data */
     private final NetworkTable controlsTable = inst.getTable("Controls");
     private final BooleanPublisher overrideEnabled = controlsTable.getBooleanTopic("Override Enabled").publish();
-
+    private final DoublePublisher calculatedDriveX = controlsTable.getDoubleTopic("Calculated Drive X").publish();
+    private final DoublePublisher calculatedDriveY = controlsTable.getDoubleTopic("Calculated Drive Y").publish();
+    private final DoublePublisher calculatedDriveRot = controlsTable.getDoubleTopic("Calculated Drive Rotation").publish();
+    
     /*                            */
     /* Swerve Telemetry Variables */
     /*                            */
@@ -178,6 +181,28 @@ public class Telemetry extends SubsystemBase {
         currentDraw.set(powerDistributionHub.getTotalCurrent());
         powerDraw.set(powerDistributionHub.getTotalPower());
         energyUsage.set(powerDistributionHub.getTotalEnergy());
+    }
+
+    /**
+     * Publish data about controls
+     */
+    public void publishControlInfoX(double driveX) {
+        calculatedDriveX.set(driveX);    
+    }
+
+    /**
+     * Publish data about controls
+     */
+    public void publishControlInfoY(double driveY) {        
+        calculatedDriveY.set(driveY);
+    }
+
+    
+    /**
+     * Publish data about controls
+     */
+    public void publishControlInfoRot(double driveRot) {        
+        calculatedDriveRot.set(driveRot);
     }
 
     /**

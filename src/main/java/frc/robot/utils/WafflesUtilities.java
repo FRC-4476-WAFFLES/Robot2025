@@ -46,7 +46,7 @@ public class WafflesUtilities {
     }
 
 
-        /**
+    /**
      * Takes a pose and flips it to the other side of the field if the robot is on the red alliance.
      * @param pose The input Pose2d
      * @return The output Pose2d 

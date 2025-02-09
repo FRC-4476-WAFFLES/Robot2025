@@ -16,14 +16,14 @@ public class SetPivotPos extends Command {
   public SetPivotPos(ManipulatorConstants.PivotPosition position) {
     // Use addRequirements() here to declare subsystem dependencies.
 
-    addRequirements(RobotContainer.manipulatorSubsystem);
+    addRequirements(RobotContainer.pivotSubsystem);
     chosenPosition = position;
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    RobotContainer.manipulatorSubsystem.setPivotSetpoint(chosenPosition);
+    RobotContainer.pivotSubsystem.setPivotSetpoint(chosenPosition);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -41,6 +41,6 @@ public class SetPivotPos extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return RobotContainer.manipulatorSubsystem.isPivotAtSetpoint();
+    return RobotContainer.pivotSubsystem.isPivotAtSetpoint();
   }
 }

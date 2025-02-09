@@ -4,7 +4,7 @@
 
 package frc.robot.commands;
 
-import static frc.robot.RobotContainer.manipulatorSubsystem;
+import static frc.robot.RobotContainer.intakeSubsystem;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
@@ -13,7 +13,7 @@ import frc.robot.RobotContainer;
 public class CoralIntake extends Command {
   /** Creates a new CoralIntake. */
   public CoralIntake() {
-    addRequirements(RobotContainer.manipulatorSubsystem);
+    addRequirements(RobotContainer.intakeSubsystem);
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
@@ -24,18 +24,18 @@ public class CoralIntake extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    RobotContainer.manipulatorSubsystem.setIntakeSpeed(0.5);
+    RobotContainer.intakeSubsystem.setIntakeSpeed(0.5);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    RobotContainer.manipulatorSubsystem.setIntakeSpeed(0);
+    RobotContainer.intakeSubsystem.setIntakeSpeed(0);
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return RobotContainer.manipulatorSubsystem.isCoralLoaded();
+    return RobotContainer.intakeSubsystem.isCoralLoaded();
   }
 }

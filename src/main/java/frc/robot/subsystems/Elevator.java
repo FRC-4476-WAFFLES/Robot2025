@@ -4,7 +4,7 @@
 
 package frc.robot.subsystems;
 
-import static frc.robot.RobotContainer.manipulatorSubsystem;
+import static frc.robot.RobotContainer.pivotSubsystem;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
@@ -323,7 +323,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    */
   public CollisionType isCollisionPredicted(double setpoint) {
     // Check if pivot is in safe position
-    boolean pivotSafe = RobotContainer.manipulatorSubsystem.getPivotPosition() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE;
+    boolean pivotSafe = RobotContainer.pivotSubsystem.getPivotPosition() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE;
                         // RobotContainer.manipulatorSubsystem.getPivotSetpoint() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE;
     potentialCollisionPrediction = predictedPotentialCollision(setpoint);
 

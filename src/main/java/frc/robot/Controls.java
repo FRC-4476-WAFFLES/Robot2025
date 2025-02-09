@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import frc.robot.data.Constants.PhysicalConstants;
+import frc.robot.utils.WafflesUtilities;
 
 /** 
  * Seperates controls a bit from RobotContainer while grouping controls specific constants together 
@@ -14,6 +15,11 @@ public class Controls {
     public static final CommandJoystick leftJoystick = new CommandJoystick(DriverConstants.leftJoystick);
     public static final CommandJoystick rightJoystick = new CommandJoystick(DriverConstants.rightJoystick);
     public static final CommandXboxController operatorController = new CommandXboxController(OperatorConstants.kOperatorControllerPort);
+
+
+    private static final double JOYSTICK_DEADZONE_INNER = 0.025; // Below the inner value the input is zero
+    private static final double JOYSTICK_DEADZONE_OUTER = 0.15; // Between the inner and outer value the input is interpolated towards it's actual value
+
 
     public static final double MANUAL_ELEVATOR_CONTROL_MULTIPLIER = 2;  // Todo: Change this number
     public static final double AXIS_DEADBAND = 0.1;  // Deadband for controller axes to prevent unintended activation
@@ -29,15 +35,31 @@ public class Controls {
 
     // Methods to get driver input
     public static double getDriveX() {
-        return -leftJoystick.getX() * PhysicalConstants.maxSpeed;
+        double driveX = applyDeadzone(leftJoystick.getX());
+        RobotContainer.telemetry.publishControlInfoX(driveX);
+        return -driveX * PhysicalConstants.maxSpeed;
     }
 
     public static double getDriveY() {
-        return -leftJoystick.getY() * PhysicalConstants.maxSpeed;
+        double driveY = applyDeadzone(leftJoystick.getY());
+        RobotContainer.telemetry.publishControlInfoY(driveY);
+        return -driveY * PhysicalConstants.maxSpeed;
     }
 
     public static Rotation2d getDriveRotation() {
-        return Rotation2d.fromRadians(-rightJoystick.getX() * PhysicalConstants.maxAngularSpeed);
+        double driveRot = applyDeadzone(rightJoystick.getX());
+        RobotContainer.telemetry.publishControlInfoRot(driveRot);
+        return Rotation2d.fromRadians(-driveRot * PhysicalConstants.maxAngularSpeed);
+    }
+
+    // Smooths deadzone over range
+    public static double applyDeadzone(double input){
+        return Math.abs(input) > JOYSTICK_DEADZONE_OUTER ? 
+        input : 
+        (Math.abs(input) < JOYSTICK_DEADZONE_INNER ? 
+            0 : 
+            (WafflesUtilities.Lerp(0, input, WafflesUtilities.InvLerp(JOYSTICK_DEADZONE_INNER, JOYSTICK_DEADZONE_OUTER, input)) * Math.signum(input))
+        );
     }
 
     /* Methods to get operator input */

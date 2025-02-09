@@ -28,7 +28,7 @@ public class PickupAlgea extends SequentialCommandGroup {
   public static Command pickupAlgeaWithPath(Command driveCommand) {
     return new PickupAlgea(driveCommand).finallyDo(() -> {
       RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
-      RobotContainer.manipulatorSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
+      RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
     });
   }
 }

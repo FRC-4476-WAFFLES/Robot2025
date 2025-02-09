@@ -11,7 +11,7 @@ import frc.robot.RobotContainer;
 public class PrepareScoreCoral extends Command {
   /** Creates a new PrepareCoralScore. */
   public PrepareScoreCoral() {
-    addRequirements(RobotContainer.manipulatorSubsystem, RobotContainer.elevatorSubsystem);
+    addRequirements(RobotContainer.pivotSubsystem, RobotContainer.elevatorSubsystem);
   }
 
   // Called when the command is initially scheduled.
@@ -23,7 +23,7 @@ public class PrepareScoreCoral extends Command {
   public void execute() {
     var ScoringLevel = RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel();
     RobotContainer.elevatorSubsystem.setElevatorSetpoint(ScoringLevel.getElevatorLevel());
-    RobotContainer.manipulatorSubsystem.setPivotSetpoint(ScoringLevel.getPivotPosition());
+    RobotContainer.pivotSubsystem.setPivotSetpoint(ScoringLevel.getPivotPosition());
   }
 
   // Called once the command ends or is interrupted.
@@ -33,7 +33,7 @@ public class PrepareScoreCoral extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return RobotContainer.manipulatorSubsystem.isPivotAtSetpoint() &&
+    return RobotContainer.pivotSubsystem.isPivotAtSetpoint() &&
            RobotContainer.elevatorSubsystem.isElevatorAtSetpoint() &&
            !RobotContainer.dynamicPathingSubsystem.isPathing(); // Ends only once pathing is done
   }

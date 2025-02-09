@@ -27,7 +27,7 @@ public class ScoreCoral extends SequentialCommandGroup {
   public static Command scoreCoralWithPath(Command driveCommand) {
     return new ScoreCoral(driveCommand).finallyDo(() -> {
       RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
-      RobotContainer.manipulatorSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
+      RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
     });
   }
 }

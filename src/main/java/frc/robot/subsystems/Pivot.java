@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants;
+import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.subsystems.Elevator.CollisionType;
 import frc.robot.utils.NetworkConfiguredPID;
@@ -33,39 +34,28 @@ import static frc.robot.data.Constants.ManipulatorConstants.*;
 import javax.print.event.PrintJobAttributeEvent;
 
 /**
- * The Manipulator subsystem handles the robot's intake and pivot mechanisms.
+ * The Manipulator subsystem handles the robot's pivot mechanism.
  * It controls:
- * - An intake motor for collecting game pieces
  * - A pivot motor for positioning the intake
  * - A CANCoder for absolute position feedback
- * - A LaserCan sensor for detecting game pieces
  */
-public class Manipulator extends SubsystemBase implements NetworkUser {
+public class Pivot extends SubsystemBase implements NetworkUser {
     // Hardware Components
-    private final TalonFX intake;
     private final TalonFX pivot;
     private final CANcoder pivotAbsoluteEncoder;
-    private LaserCan laserCan;
 
     // Control Objects
-    private final DutyCycleOut intakeDutyCycle = new DutyCycleOut(0);
     private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
 
-
     // State variables
-    private boolean algaeLoaded = false;
-    private double intakeSpeed = 0;
     private double pivotSetpointAngle = 0;
-    private double laserCANDistance = 0;
 
     // Network Tables
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
     private final NetworkTable pivotTable = inst.getTable("Pivot");
     private final DoublePublisher pivotSetpointNT = pivotTable.getDoubleTopic("Setpoint (Degrees)").publish();
     private final DoublePublisher pivotAngleNT = pivotTable.getDoubleTopic("Current Angle (Degrees)").publish();
-    private final DoublePublisher laserCanDistanceNT = pivotTable.getDoubleTopic("LaserCan Distance (mm)").publish();
     private final BooleanPublisher isAtSetpointNT = pivotTable.getBooleanTopic("Pivot at Setpoint").publish();
-    private final BooleanPublisher coralLoadedNT = pivotTable.getBooleanTopic("Coral Loaded").publish();
 
 
     // -------------------- Tuning Code --------------------
@@ -90,30 +80,16 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     //   System.out.println("Refreshing PID values from networktables for manipulator");
     // }
 
-    public Manipulator() {
+    public Pivot() {
         SubsystemNetworkManager.RegisterNetworkUser(this);
 
         // Initialize hardware
-        intake = new TalonFX(Constants.CANIds.intakeMotor);
         pivot = new TalonFX(Constants.CANIds.pivotMotor);
         pivotAbsoluteEncoder = new CANcoder(Constants.CANIds.pivotAbsoluteEncoder);
         
         // Configure hardware
         configureCANCoder();
         configurePivotMotor();
-        configureIntakeMotor();
-
-        // Initialize LaserCan with error handling
-        try {
-            laserCan = new LaserCan(Constants.CANIds.laserCan);
-            laserCan.setRangingMode(LaserCan.RangingMode.SHORT);
-            // laserCan.setRegionOfInterest(new LaserCan.RegionOfInterest(8, 8, 16, 16));
-            laserCan.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_33MS);
-        } catch (Exception e) {
-            // throw new RuntimeException("Failed to initialize LaserCan: " + e.getMessage());
-            System.out.println("Failed to initialize LaserCan: " + e.getMessage());
-            laserCan = null;
-        }
 
         // Initialize position
         resetInternalEncoder();
@@ -169,34 +145,25 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
         pivot.getConfigurator().apply(pivotConfigs);
     }
 
-    /**
-     * Configures the intake motor with current limits
-     */
-    private void configureIntakeMotor() {
-        TalonFXConfiguration intakeConfigs = new TalonFXConfiguration();
-        CurrentLimitsConfigs intakeCurrentLimit = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(Constants.ManipulatorConstants.STATOR_CURRENT_LIMIT)
-            .withStatorCurrentLimitEnable(true);
-        intakeConfigs.CurrentLimits = intakeCurrentLimit;
-        intake.getConfigurator().apply(intakeConfigs);
-    }
-
     @Override
     public void periodic() {
         // Update motor controls
         Elevator.CollisionType collisionPrediction = RobotContainer.elevatorSubsystem.getCurrentCollisionPotential();
         if (collisionPrediction == CollisionType.NONE || pivotSetpointAngle > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE) {
-            // If we're past the safety angle, or aren't in danger of hitting anything, move pivot normally
-            pivot.setControl(motionMagicRequest.withPosition(pivotSetpointAngle / 360).withSlot(0));
+            
+            // Check for bumper collision, and limit angle if so
+            if (isInBumperDangerZone() && pivotSetpointAngle > ManipulatorConstants.PIVOT_BUMPER_CLEARANCE_ANGLE) {
+                // Move to max safe angle
+                pivot.setControl(motionMagicRequest.withPosition(ManipulatorConstants.PIVOT_BUMPER_CLEARANCE_ANGLE / 360).withSlot(0));
+            } else {
+                // If we're past the safety angle, or aren't in danger of hitting anything, move pivot normally
+                pivot.setControl(motionMagicRequest.withPosition(pivotSetpointAngle / 360).withSlot(0));
+            }
         } else {
             // Not safe in some way, move pivot out of the way
             pivot.setControl(motionMagicRequest.withPosition(PivotPosition.CLEARANCE_POSITION.getDegrees() / 360).withSlot(0));
             // System.out.println(collisionPrediction);
         }
-
-        intake.setControl(intakeDutyCycle.withOutput(intakeSpeed));
-
-        updateCoralSensor();
     }
 
     /**
@@ -239,66 +206,6 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
     }
 
     /**
-     * Sets the intake motor speed
-     * @param speed Speed value between -1.0 and 1.0
-     */
-    public void setIntakeSpeed(double speed) {
-        this.intakeSpeed = speed;
-    }
-
-    /**
-     * Checks if algae is present in the intake based on current draw
-     * @return true if algae is detected
-     */
-    public void detectAlgaeLoaded() {
-        if (intake.getStatorCurrent().getValueAsDouble() > Constants.ManipulatorConstants.ALGAE_CURRENT_THRESHOLD && isIntakingAlgae()) {
-          algaeLoaded = true;
-        }
-        else if(isOuttakingAlgae()) {
-          algaeLoaded = false;
-        }
-    }
-
-    public boolean isAlgaeLoaded() {
-        return algaeLoaded;
-    }
-
-    /**
-     * Checks if coral is loaded using the laser distance sensor
-     * @return true if coral is detected within threshold distance
-     */
-    public boolean isCoralLoaded() {
-        return laserCANDistance <= Constants.ManipulatorConstants.CORAL_LOADED_DISTANCE_THRESHOLD;
-    }
-
-    private void updateCoralSensor() {
-        if (laserCan != null) {
-            var measurement = laserCan.getMeasurement();
-            if (measurement != null) {
-                if (measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
-                    laserCANDistance = measurement.distance_mm;
-                }
-            }
-        }
-    }
-
-    public boolean isIntakingCoral() {
-        return !isCoralLoaded() && intake.getVelocity().getValueAsDouble() > 0;
-    }
-
-    public boolean isIntakingAlgae() {
-        return !isAlgaeLoaded() && intake.getVelocity().getValueAsDouble() < 0;
-    }
-
-    public boolean isOuttakingAlgae() {
-        return isAlgaeLoaded() && intake.getVelocity().getValueAsDouble() > 0;
-    }
-
-    public boolean isOuttakingCoral() {
-        return isCoralLoaded() && intake.getVelocity().getValueAsDouble() < 0;
-    }
-
-    /**
      * Checks if pivot is at the target position
      * @return true if within deadband of setpoint
      */
@@ -318,12 +225,16 @@ public class Manipulator extends SubsystemBase implements NetworkUser {
         isAtSetpointNT.set(isPivotAtSetpoint());
         pivotSetpointNT.set(pivotSetpointAngle);
         pivotAngleNT.set(getPivotPosition());
-        laserCanDistanceNT.set(laserCANDistance);
-        coralLoadedNT.set(isCoralLoaded());
+        // laserCanDistanceNT.set(laserCANDistance);
+        // coralLoadedNT.set(isCoralLoaded());
     }
 
     @Override
     public void initializeNetwork() {
         // Network initialization if needed
+    }
+
+    public boolean isInBumperDangerZone() {
+        return RobotContainer.elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT;
     }
 }

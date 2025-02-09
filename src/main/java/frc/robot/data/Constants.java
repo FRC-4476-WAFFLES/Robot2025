@@ -13,6 +13,8 @@ import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
+import java.util.concurrent.Flow.Processor;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -80,8 +82,8 @@ public final class Constants {
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 1);
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
 
-    public static final Matrix<N3, N1> kSingleTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 2);
-    public static final Matrix<N3, N1> kMultiTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 1);
+    public static final Matrix<N3, N1> kSingleTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 4);
+    public static final Matrix<N3, N1> kMultiTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 2);
   }
 
   /* Physical */
@@ -108,8 +110,8 @@ public final class Constants {
       L2(PivotPosition.L2, ElevatorLevel.L2),
       L3(PivotPosition.L3, ElevatorLevel.L3),
       L4(PivotPosition.L3, ElevatorLevel.L3),
-      ALGEA_L1(PivotPosition.ALGAE, ElevatorLevel.ALGAE_L1),
-      ALGEA_L2(PivotPosition.ALGAE, ElevatorLevel.ALGAE_L2);
+      ALGEA_L1(PivotPosition.ALGAE_L1, ElevatorLevel.ALGAE_L1),
+      ALGEA_L2(PivotPosition.ALGAE_L2, ElevatorLevel.ALGAE_L2);
       
       private final PivotPosition pivotPosition;
       private final ElevatorLevel elevatorLevel;
@@ -135,10 +137,14 @@ public final class Constants {
     public static final double CORAL_LOADED_DISTANCE_THRESHOLD = 10.0; // mm
     public static final double ALGAE_CURRENT_THRESHOLD = 34.0; // amps
 
+    // Intake constants
+    public static final double INTAKE_SPEED_MULTIPLIER = 0.15;
+
     // Pivot constants
     public static final double PIVOT_ANGLE_DEADBAND = 1;
     public static final double PIVOT_MIN_ANGLE = 0.0; // degrees
     public static final double PIVOT_MAX_ANGLE = 185.0; // degrees
+    public static final double PIVOT_BUMPER_CLEARANCE_ANGLE = 144.4; // degrees
 
     // Motor configuration
     public static final double PIVOT_MOTION_CRUISE_VELOCITY = 4.0;
@@ -157,7 +163,9 @@ public final class Constants {
     public enum PivotPosition {
         ZERO(0),
         CLEARANCE_POSITION(28),
-        ALGAE(160),
+        ALGAE_L2(169.1),
+        ALGAE_L1(178.5),
+        PROCESSOR(189),
         CORALINTAKE(0.5),
         NET(10),
         L4(44.5),
@@ -186,6 +194,7 @@ public final class Constants {
 
     // Elevator will not move if the pivot is not past this angle, to avoid collision with top bar
     public static final double MIN_ELEVATOR_PIVOT_ANGLE = 25; 
+    public static final double PIVOT_BUMPER_CLEAR_HEIGHT = 0.180;
 
     public static final double MIN_ELEVATOR_HEIGHT = 0;
     public static final double MAX_ELEVATOR_HEIGHT = 1.46;
@@ -195,7 +204,7 @@ public final class Constants {
     public static final double COLLISION_ZONE_UPPER = 0.54; // meters
 
     // Motion Magic configuration
-    public static final double MOTION_CRUISE_VELOCITY = 0.2;
+    public static final double MOTION_CRUISE_VELOCITY = 4;
     public static final double MOTION_ACCELERATION = 8;
     public static final double MOTION_JERK = 2000;
 
@@ -210,10 +219,10 @@ public final class Constants {
     public enum ElevatorLevel {
       REST_POSITION(0.0),
       NET(1.0),
-      ALGAE_L2(1.0),
-      ALGAE_L1(1.0),
-      PROCESSOR(1.0),
-      CORAL_INTAKE(1.0),
+      ALGAE_L2(0.809),
+      ALGAE_L1(0.472),
+      PROCESSOR(0.188),
+      CORAL_INTAKE(0.176),
       L4(1.251),
       L3(0.648),
       L2(0.272),
