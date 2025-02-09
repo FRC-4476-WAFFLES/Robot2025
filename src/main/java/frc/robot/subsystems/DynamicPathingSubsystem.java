@@ -35,7 +35,7 @@ import frc.robot.utils.WafflesUtilities;
 */
 public class DynamicPathingSubsystem extends SubsystemBase {
     /* Various distances */
-    public static final double REEF_MIN_SCORING_DISTANCE = 2;
+    public static final double REEF_MIN_SCORING_DISTANCE = 2.5;
     public static final double PROCCESSOR_MIN_SCORING_DISTANCE = 1.5;
     public static final double HUMAN_PLAYER_MIN_PICKUP_DISTANCE = 2;
 
@@ -49,9 +49,9 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     /* Reef physical parameters */
     public static final Translation2d REEF_CENTER_BLUE = new Translation2d(Units.inchesToMeters(176.745), Units.inchesToMeters(158.50)); 
     public static final double REEF_INRADIUS = 0.81901;
-    public static final double REEF_PIPE_CENTER_OFFSET = Units.inchesToMeters(6.5);
+    public static final double REEF_PIPE_CENTER_OFFSET = Units.inchesToMeters(6.8); // Fudged
     // Offset from the edge of the reef to score from 
-    public static final double REEF_SCORING_POSITION_OFFSET = 1;
+    public static final double REEF_SCORING_POSITION_OFFSET = 0.464;
 
     /* Human player station physical parameters */
     public static final Translation2d HUMAN_PLAYER_STATION_LEFT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(25.80));  
@@ -80,7 +80,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     /* Persistent state */
     private boolean coralScoringRightSide = false;
     // Only used for coral scoring, level can be determined automatically in every other situation
-    private ScoringLevel coralScoringLevel = ScoringLevel.L1;
+    private ScoringLevel coralScoringLevel = ScoringLevel.L3;
     private boolean isPathing;
 
     enum DynamicPathingSituation {

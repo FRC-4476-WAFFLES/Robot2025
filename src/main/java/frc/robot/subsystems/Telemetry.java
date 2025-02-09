@@ -65,7 +65,7 @@ public class Telemetry extends SubsystemBase {
 
     /* Controls data */
     private final NetworkTable swerveTable = inst.getTable("SwerveModule");
-    private final BooleanPublisher driveSetpoint = swerveTable.getBooleanTopic("DriveSetpoint").publish();
+    private final DoublePublisher driveSetpoint = swerveTable.getDoubleTopic("DriveSetpoint").publish();
     private final DoublePublisher driveSpeed = swerveTable.getDoubleTopic("DriveSpeed").publish();
     private final DoublePublisher angleSetpoint = swerveTable.getDoubleTopic("AngleSetpoint").publish();
     private final DoublePublisher anglePos = swerveTable.getDoubleTopic("AnglePos").publish();
@@ -163,6 +163,11 @@ public class Telemetry extends SubsystemBase {
 
             SmartDashboard.putData("Module " + i, m_moduleMechanisms[i]);
         }
+
+        driveSpeed.set(state.ModuleStates[0].speedMetersPerSecond);
+        anglePos.set(state.ModuleStates[0].angle.getDegrees());
+        driveSetpoint.set(state.ModuleTargets[0].speedMetersPerSecond);
+        angleSetpoint.set(state.ModuleTargets[0].angle.getDegrees());
 
         //SignalLogger.writeDoubleArray("odometry", new double[] {pose.getX(), pose.getY(), pose.getRotation().getDegrees()});
         //SignalLogger.writeDouble("odom period", state.OdometryPeriod, "seconds");
