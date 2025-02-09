@@ -160,10 +160,10 @@ public final class Constants {
         ALGAE(160),
         CORALINTAKE(0.5),
         NET(10),
-        L4(74),
-        L3(50.0),
-        L2(27.0),
-        L1(2);
+        L4(44.5),
+        L3(31.4),
+        L2(31.4),
+        L1(143);
 
         private final double pivotDegrees;
 
@@ -214,10 +214,10 @@ public final class Constants {
       ALGAE_L1(1.0),
       PROCESSOR(1.0),
       CORAL_INTAKE(1.0),
-      L4(1.0),
-      L3(1.0),
-      L2(1.0),
-      L1(1.0);
+      L4(1.251),
+      L3(0.648),
+      L2(0.272),
+      L1(0.248);
 
 
       private final double height;
