@@ -38,6 +38,7 @@ import frc.robot.commands.AxisIntakeControl;
 import frc.robot.commands.CoralIntake;
 import frc.robot.commands.SetPivotPos;
 import frc.robot.commands.DefaultPosition;
+import edu.wpi.first.wpilibj.GenericHID;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -114,13 +115,13 @@ public class RobotContainer {
     Controls.operatorController.back().onTrue(new InstantCommand(() -> {elevatorSubsystem.zeroElevator();}));
 
     // Normal mode button bindings
-    inNormalMode.and(Controls.operatorController.b()).onTrue(new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L1); }));
-    inNormalMode.and(Controls.operatorController.a()).onTrue(new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L2); }));
-    inNormalMode.and(Controls.operatorController.x()).onTrue(new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L3); }));
+    inNormalMode.and(Controls.operatorController.a()).onTrue(new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L1); }));
+    inNormalMode.and(Controls.operatorController.x()).onTrue(new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L2); }));
+    inNormalMode.and(Controls.operatorController.b()).onTrue(new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L3); }));
     inNormalMode.and(Controls.operatorController.y()).onTrue(new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L4); }));
     
     // Override mode immediately moves to position while held
-    inOverrideMode.and(Controls.operatorController.b()).whileTrue(
+    inOverrideMode.and(Controls.operatorController.a()).whileTrue(
       Commands.either(
         Commands.parallel(
           new SetElevatorPos(ElevatorLevel.L1),
@@ -148,7 +149,7 @@ public class RobotContainer {
       )
     ).onFalse(defaultPosition);
 
-    inOverrideMode.and(Controls.operatorController.y()).whileTrue(
+    inOverrideMode.and(Controls.operatorController.b()).whileTrue(
       Commands.either(
         Commands.parallel(
           new SetElevatorPos(ElevatorLevel.L3),
@@ -162,7 +163,7 @@ public class RobotContainer {
       )
     ).onFalse(defaultPosition);
 
-    inOverrideMode.and(Controls.operatorController.a()).whileTrue(
+    inOverrideMode.and(Controls.operatorController.y()).whileTrue(
       Commands.either(
         Commands.parallel(
           new SetElevatorPos(ElevatorLevel.L4),
@@ -184,9 +185,20 @@ public class RobotContainer {
     inNormalMode.and(Controls.operatorController.rightStick()).whileTrue(new CoralIntake());
 
     // Dynamic path to coral scoring
-    Controls.rightJoystick.button(1).whileTrue(Commands.defer(
-      () -> dynamicPathingSubsystem.getCurrentDynamicPathCommand(), new HashSet<>(Arrays.asList(driveSubsystem))
-    ));
+    Controls.rightJoystick.button(1).whileTrue(
+      Commands.startEnd(
+        // On start - Begin rumble and start dynamic pathing
+        () -> {
+          Controls.operatorController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.5);
+          Commands.defer(
+            () -> dynamicPathingSubsystem.getCurrentDynamicPathCommand(), 
+            new HashSet<>(Arrays.asList(driveSubsystem))
+          ).schedule();
+        },
+        // On end - Stop rumble
+        () -> Controls.operatorController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0)
+      )
+    );
 
     Controls.operatorController.povRight().onTrue(
       new InstantCommand(
@@ -194,6 +206,18 @@ public class RobotContainer {
       )
     );
     Controls.operatorController.povLeft().onTrue(
+      new InstantCommand(
+        () -> {dynamicPathingSubsystem.setCoralScoringSide(false);}
+      )
+    );
+    
+    // Additional L3/R3 controls for coral scoring side which are also the back paddles
+    Controls.operatorController.rightStick().onTrue(
+      new InstantCommand(
+        () -> {dynamicPathingSubsystem.setCoralScoringSide(true);}
+      )
+    );
+    Controls.operatorController.leftStick().onTrue(
       new InstantCommand(
         () -> {dynamicPathingSubsystem.setCoralScoringSide(false);}
       )
