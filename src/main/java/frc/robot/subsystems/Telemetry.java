@@ -62,6 +62,13 @@ public class Telemetry extends SubsystemBase {
     private final DoublePublisher calculatedDriveX = controlsTable.getDoubleTopic("Calculated Drive X").publish();
     private final DoublePublisher calculatedDriveY = controlsTable.getDoubleTopic("Calculated Drive Y").publish();
     private final DoublePublisher calculatedDriveRot = controlsTable.getDoubleTopic("Calculated Drive Rotation").publish();
+
+    /* Controls data */
+    private final NetworkTable swerveTable = inst.getTable("SwerveModule");
+    private final BooleanPublisher driveSetpoint = swerveTable.getBooleanTopic("DriveSetpoint").publish();
+    private final DoublePublisher driveSpeed = swerveTable.getDoubleTopic("DriveSpeed").publish();
+    private final DoublePublisher angleSetpoint = swerveTable.getDoubleTopic("AngleSetpoint").publish();
+    private final DoublePublisher anglePos = swerveTable.getDoubleTopic("AnglePos").publish();
     
     /*                            */
     /* Swerve Telemetry Variables */

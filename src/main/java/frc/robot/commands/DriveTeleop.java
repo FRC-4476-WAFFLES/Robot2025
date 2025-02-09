@@ -7,6 +7,7 @@ package frc.robot.commands;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -98,61 +99,74 @@ public class DriveTeleop extends Command {
     double yVelocity = isSetpointY ? yPidController.calculate(currentPose.getY(), ySupplier.getAsDouble()) : ySupplier.getAsDouble();
     double thetaVelocity = isSetpointTheta ? thetaPidController.calculate(currentPose.getRotation().getRadians(), thetaSupplier.get().getRadians()) : thetaSupplier.get().getRadians();
 
-    // driveSubsystem.setControl(
-    //   new SwerveRequest.FieldCentric()
-    //     .withDeadband(speedDeadband)
-    //     .withRotationalDeadband(rotationDeadband)
-    //     .withDriveRequestType(DriveRequestType.Velocity)
-    //     .withSteerRequestType(SteerRequestType.MotionMagicExpo)
-    //     .withVelocityX(xVelocitySupplier.getAsDouble())
-    //     .withVelocityY(yVelocitySupplier.getAsDouble())
-    //     .withRotationalRate(thetaVelocitySupplier.getAsDouble())
-    // );
-
-    ChassisSpeeds fieldRelativeSpeeds = new ChassisSpeeds(xVelocity, yVelocity, thetaVelocity);
-
-    Translation2d speeds = new Translation2d(fieldRelativeSpeeds.vxMetersPerSecond, fieldRelativeSpeeds.vyMetersPerSecond);
-    speeds.rotateBy(driveSubsystem.getOperatorForwardDirection());
-    
-    fieldRelativeSpeeds.vxMetersPerSecond = speeds.getX();
-    fieldRelativeSpeeds.vyMetersPerSecond = speeds.getY();
-
-    ChassisSpeeds targetSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-      fieldRelativeSpeeds,
-      driveSubsystem.getRobotPose().getRotation()
-    );
-
-
-
-    // Note: it is important to not discretize speeds before or after
-    // using the setpoint generator, as it will discretize them for you
-    previousSetpoint = setpointGenerator.generateSetpoint(
-      previousSetpoint, // The previous setpoint
-      targetSpeeds, // The desired target speeds
-      0.02 // The loop time of the robot code, in seconds
-    );
-
-    
-    
-    ChassisSpeeds setpointGeneratedSpeeds = previousSetpoint.robotRelativeSpeeds();
-
-    // Deadband speeds
-    if (Math.sqrt(setpointGeneratedSpeeds.vxMetersPerSecond * setpointGeneratedSpeeds.vxMetersPerSecond + setpointGeneratedSpeeds.vyMetersPerSecond * setpointGeneratedSpeeds.vyMetersPerSecond) < speedDeadband) {
-      setpointGeneratedSpeeds.vxMetersPerSecond = 0;
-      setpointGeneratedSpeeds.vyMetersPerSecond = 0;
-    }
-    if (Math.abs(setpointGeneratedSpeeds.omegaRadiansPerSecond) < rotationDeadband) {
-      setpointGeneratedSpeeds.omegaRadiansPerSecond = 0;
-    }
-
     driveSubsystem.setControl(
-      driveRequest
+      new SwerveRequest.FieldCentric()
+        .withDeadband(speedDeadband)
+        .withRotationalDeadband(rotationDeadband)
         .withDriveRequestType(DriveRequestType.Velocity)
         .withSteerRequestType(SteerRequestType.MotionMagicExpo)
-        .withWheelForceFeedforwardsX(previousSetpoint.feedforwards().robotRelativeForcesX())
-        .withWheelForceFeedforwardsY(previousSetpoint.feedforwards().robotRelativeForcesY())
-        .withSpeeds(setpointGeneratedSpeeds)
+        .withVelocityX(xVelocity)
+        .withVelocityY(yVelocity)
+        .withRotationalRate(thetaVelocity)
     );
+
+    // ChassisSpeeds fieldRelativeSpeeds = new ChassisSpeeds(xVelocity, yVelocity, thetaVelocity);
+
+    // Translation2d speeds = new Translation2d(fieldRelativeSpeeds.vxMetersPerSecond, fieldRelativeSpeeds.vyMetersPerSecond);
+    // speeds.rotateBy(driveSubsystem.getOperatorForwardDirection());
+    
+    // fieldRelativeSpeeds.vxMetersPerSecond = speeds.getX();
+    // fieldRelativeSpeeds.vyMetersPerSecond = speeds.getY();
+
+    // ChassisSpeeds targetSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+    //   fieldRelativeSpeeds,
+    //   driveSubsystem.getRobotPose().getRotation()
+    // );
+
+    // SmartDashboard.putNumberArray("Targetspeeds", new Double[] {
+    //   targetSpeeds.vxMetersPerSecond, targetSpeeds.vyMetersPerSecond,
+    //   targetSpeeds.omegaRadiansPerSecond
+    // });
+
+    // // Note: it is important to not discretize speeds before or after
+    // // using the setpoint generator, as it will discretize them for you
+    // previousSetpoint = setpointGenerator.generateSetpoint(
+    //   previousSetpoint, // The previous setpoint
+    //   targetSpeeds, // The desired target speeds
+    //   0.02 // The loop time of the robot code, in seconds
+    // );
+
+    
+    
+    // ChassisSpeeds setpointGeneratedSpeeds = previousSetpoint.robotRelativeSpeeds();
+
+    // SmartDashboard.putNumberArray("s2", new Double[] {
+    //   setpointGeneratedSpeeds.vxMetersPerSecond, setpointGeneratedSpeeds.vyMetersPerSecond,
+    //   setpointGeneratedSpeeds.omegaRadiansPerSecond
+    // });
+
+    // // Deadband speeds
+    // if (Math.sqrt(setpointGeneratedSpeeds.vxMetersPerSecond * setpointGeneratedSpeeds.vxMetersPerSecond + setpointGeneratedSpeeds.vyMetersPerSecond * setpointGeneratedSpeeds.vyMetersPerSecond) < speedDeadband) {
+    //   setpointGeneratedSpeeds.vxMetersPerSecond = 0;
+    //   setpointGeneratedSpeeds.vyMetersPerSecond = 0;
+    // }
+    // if (Math.abs(setpointGeneratedSpeeds.omegaRadiansPerSecond) < rotationDeadband) {
+    //   setpointGeneratedSpeeds.omegaRadiansPerSecond = 0;
+    // }
+
+    // SmartDashboard.putNumberArray("SetpointSpeeds", new Double[] {
+    //   setpointGeneratedSpeeds.vxMetersPerSecond, setpointGeneratedSpeeds.vyMetersPerSecond,
+    //   setpointGeneratedSpeeds.omegaRadiansPerSecond
+    // });
+
+    // driveSubsystem.setControl(
+    //   driveRequest
+    //     .withDriveRequestType(DriveRequestType.Velocity)
+    //     .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+    //     .withWheelForceFeedforwardsX(previousSetpoint.feedforwards().robotRelativeForcesX())
+    //     .withWheelForceFeedforwardsY(previousSetpoint.feedforwards().robotRelativeForcesY())
+    //     .withSpeeds(setpointGeneratedSpeeds)
+    // );
 
   }
 
