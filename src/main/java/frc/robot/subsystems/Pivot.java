@@ -149,6 +149,11 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     public void periodic() {
         // Update motor controls
         Elevator.CollisionType collisionPrediction = RobotContainer.elevatorSubsystem.getCurrentCollisionPotential();
+        if (RobotContainer.elevatorSubsystem.isZeroing()) {
+            // Not safe since zeroing
+            pivot.setControl(motionMagicRequest.withPosition(PivotPosition.CLEARANCE_POSITION.getDegrees() / 360).withSlot(0));
+        }
+
         if (collisionPrediction == CollisionType.NONE || pivotSetpointAngle > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE) {
             
             // Check for bumper collision, and limit angle if so

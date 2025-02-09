@@ -267,6 +267,14 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   }
 
   /**
+   * Checks if the elevator is currently performing it's zeroing routine
+   * @return true if elevator zeroing
+   */
+  public boolean isZeroing() {
+    return isZeroingElevator;
+  }
+
+  /**
    * Begins zeroing the elevator.
    */
   public void zeroElevator() {

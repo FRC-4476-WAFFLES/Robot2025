@@ -111,6 +111,7 @@ public class RobotContainer {
     );
 
     Controls.rightJoystick.button(9).whileTrue(resetGyroHeading);
+    Controls.operatorController.back().onTrue(new InstantCommand(() -> {elevatorSubsystem.zeroElevator();}));
 
     // Normal mode button bindings
     inNormalMode.and(Controls.operatorController.b()).onTrue(new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L1); }));
@@ -174,6 +175,8 @@ public class RobotContainer {
         () -> intakeSubsystem.isCoralLoaded()
       )
     ).onFalse(defaultPosition);
+
+
 
     // Axis intake control 
     intakeSubsystem.setDefaultCommand(axisIntakeControl);
