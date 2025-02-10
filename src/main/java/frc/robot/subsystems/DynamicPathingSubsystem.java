@@ -5,12 +5,11 @@ import java.util.Optional;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.IdealStartingState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
 import com.pathplanner.lib.util.FlippingUtil;
-
-import edu.wpi.first.wpilibj2.command.Commands;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -24,9 +23,6 @@ import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.semiauto.ScoreCoral;
-import frc.robot.data.Constants.ScoringConstants;
-import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
-import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.utils.WafflesUtilities;
 
@@ -378,6 +374,18 @@ public class DynamicPathingSubsystem extends SubsystemBase {
 
         double angleBetweenPoses = WafflesUtilities.AngleBetweenPoints(startingPose.getTranslation(), endingPose.getTranslation());
 
+        // Get current chassis speeds for smooth transition
+        var currentSpeeds = RobotContainer.driveSubsystem.getCurrentRobotChassisSpeeds();
+        double currentVelocity = Math.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
+        
+        // Use consistent constraints regardless of current speed
+        PathConstraints constraints = new PathConstraints(
+            MAX_SPEED,
+            MAX_ACCELERATION,
+            MAX_ANGULAR_SPEED,
+            MAX_ANGULAR_ACCELERATION
+        );
+
         // Create a list of waypoints from poses. Each pose represents one waypoint.
         // The rotation component of the pose should be the direction of travel. Do not use holonomic rotation.
         List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(
@@ -385,18 +393,16 @@ public class DynamicPathingSubsystem extends SubsystemBase {
             new Pose2d(endingPose.getTranslation(), Rotation2d.fromDegrees(angleBetweenPoses))
         );
 
-        PathConstraints constraints = new PathConstraints(MAX_SPEED, MAX_ACCELERATION, MAX_ANGULAR_SPEED, MAX_ANGULAR_ACCELERATION); // The constraints for this path.
-
-        // Create the path using the waypoints created above
+        // Create the path using the waypoints above with initial velocity
+        // The path will naturally slow down to MAX_SPEED using the consistent constraints
         PathPlannerPath path = new PathPlannerPath(
             waypoints,
             constraints,
-            null, // The ideal starting state, this is only relevant for pre-planned paths, so can be null for on-the-fly paths.
-            new GoalEndState(0.0, endingPose.getRotation()) // Goal end state. You can set a holonomic rotation here. If using a differential drivetrain, the rotation will have no effect.
+            new IdealStartingState(currentVelocity, Rotation2d.fromDegrees(angleBetweenPoses)), // Use current velocity and direction as starting state
+            new GoalEndState(0.0, endingPose.getRotation()) // Goal end state with holonomic rotation
         );
         path.preventFlipping = true;
 
-        
         return Optional.of(path);
     }
 
