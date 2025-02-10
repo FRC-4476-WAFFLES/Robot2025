@@ -15,23 +15,18 @@ import frc.robot.data.Constants.ElevatorConstants;
 import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.subsystems.Elevator.CollisionType;
-import frc.robot.utils.NetworkConfiguredPID;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
 
 import com.ctre.phoenix6.configs.*;
-import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import au.grapplerobotics.LaserCan;
 import edu.wpi.first.math.MathUtil;
 import static frc.robot.data.Constants.ManipulatorConstants.*;
-
-import javax.print.event.PrintJobAttributeEvent;
 
 /**
  * The Manipulator subsystem handles the robot's pivot mechanism.

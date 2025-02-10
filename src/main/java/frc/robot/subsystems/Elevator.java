@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems;
 
-import static frc.robot.RobotContainer.pivotSubsystem;
-
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -27,8 +25,6 @@ import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
-import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
-import frc.robot.utils.NetworkConfiguredPID;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
 
