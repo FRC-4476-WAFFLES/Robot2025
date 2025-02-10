@@ -75,9 +75,9 @@ public class DynamicPathingSubsystem extends SubsystemBase {
 
     /* Persistent state */
     private boolean coralScoringRightSide = false;
+    private boolean isPathing;
     // Only used for coral scoring, level can be determined automatically in every other situation
     private ScoringLevel coralScoringLevel = ScoringLevel.L3;
-    private boolean isPathing;
 
     enum DynamicPathingSituation {
         NONE, // None of the conditions for other situations are met
@@ -241,8 +241,32 @@ public class DynamicPathingSubsystem extends SubsystemBase {
      * @param rightSide if the side is to the right or the left, relative to the driver's point of view
      */
     public void setCoralScoringSide(boolean rightSide) {
-        coralScoringRightSide = rightSide;
-        System.out.println("Setting coral scoring to right side: " + coralScoringRightSide);
+        if (coralScoringRightSide != rightSide) {
+            coralScoringRightSide = rightSide;
+            System.out.println("Setting coral scoring to right side: " + coralScoringRightSide);
+            // If we're currently pathing, regenerate the path
+            if (isPathing) {
+                regenerateCurrentPath();
+            }
+        }
+    }
+
+    /**
+     * Regenerates the current path using the new side selection while maintaining smooth motion
+     */
+    private void regenerateCurrentPath() {
+        // Get the new target pose with updated side selection
+        Pose2d newTargetPose = getNearestCoralScoringLocation();
+        
+        // Generate a new path from our current position
+        var newPath = simplePathToPose(newTargetPose);
+        
+        if (newPath.isPresent()) {
+            // Create and schedule the new path command
+            var pathCommand = AutoBuilder.followPath(newPath.get());
+            pathCommand = getDynamicPathingWrapperCommand(pathCommand);
+            pathCommand.schedule();
+        }
     }
 
     /**
