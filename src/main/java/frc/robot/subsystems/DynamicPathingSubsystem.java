@@ -426,7 +426,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         PathPlannerPath path = new PathPlannerPath(
             waypoints,
             constraints,
-            new IdealStartingState(currentVelocity, Rotation2d.fromDegrees(angleBetweenPoses)), // Use current velocity and direction as starting state
+            new IdealStartingState(currentVelocity, startingPose.getRotation()), // Use current velocity and direction as starting state
             new GoalEndState(0.0, endingPose.getRotation()) // Goal end state with holonomic rotation
         );
         path.preventFlipping = true;
