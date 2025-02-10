@@ -176,28 +176,24 @@ public class RobotContainer {
     ).onFalse(defaultPosition);
 
 
-
     // Axis intake control 
     intakeSubsystem.setDefaultCommand(axisIntakeControl);
 
     inNormalMode.and(Controls.operatorController.rightStick()).whileTrue(new CoralIntake());
 
-    // Dynamic path to coral scoring
-    Controls.rightJoystick.button(1).whileTrue(
-      Commands.startEnd(
-        // On start - Begin rumble and start dynamic pathing
-        () -> {
-          Controls.operatorController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.5);
-          Commands.defer(
-            () -> dynamicPathingSubsystem.getCurrentDynamicPathCommand(), 
-            new HashSet<>(Arrays.asList(driveSubsystem))
-          ).schedule();
-        },
-        // On end - Stop rumble
-        () -> Controls.operatorController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0)
+    // Dynamic pathing button
+    Controls.dynamicPathingButton.whileTrue(
+      Commands.defer(
+        () -> dynamicPathingSubsystem.getCurrentDynamicPathCommand(), 
+        new HashSet<>(Arrays.asList(driveSubsystem))
       )
+      // On start - Begin rumble and start dynamic pathing
+      .beforeStarting(() -> Controls.operatorController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.5))
+      // On end - Stop rumble
+      .finallyDo(() -> Controls.operatorController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0))
     );
 
+    // Switch coral scoring side
     Controls.operatorController.povRight().onTrue(
       new InstantCommand(
         () -> {dynamicPathingSubsystem.setCoralScoringSide(true);}

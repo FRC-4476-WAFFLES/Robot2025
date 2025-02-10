@@ -3,7 +3,7 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.utils.WafflesUtilities;
 
@@ -15,6 +15,9 @@ public class Controls {
     public static final CommandJoystick leftJoystick = new CommandJoystick(DriverConstants.leftJoystick);
     public static final CommandJoystick rightJoystick = new CommandJoystick(DriverConstants.rightJoystick);
     public static final CommandXboxController operatorController = new CommandXboxController(OperatorConstants.kOperatorControllerPort);
+
+    // This button is referenced in multiple places, and is defined here so it can be edited in one place
+    public static final Trigger dynamicPathingButton = rightJoystick.button(1);
 
 
     private static final double JOYSTICK_DEADZONE_INNER = 0.025; // Below the inner value the input is zero

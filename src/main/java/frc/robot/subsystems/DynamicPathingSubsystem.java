@@ -246,7 +246,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
             System.out.println("Setting coral scoring to right side: " + coralScoringRightSide);
             // If we're currently pathing, regenerate the path
             if (isPathing) {
-                regenerateCurrentPath();
+                regenerateCurrentCoralPath();
             }
         }
     }
@@ -254,7 +254,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     /**
      * Regenerates the current path using the new side selection while maintaining smooth motion
      */
-    private void regenerateCurrentPath() {
+    private void regenerateCurrentCoralPath() {
         // Get the new target pose with updated side selection
         Pose2d newTargetPose = getNearestCoralScoringLocation();
         
@@ -262,10 +262,14 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         var newPath = simplePathToPose(newTargetPose);
         
         if (newPath.isPresent()) {
-            // Create and schedule the new path command
-            var pathCommand = AutoBuilder.followPath(newPath.get());
-            pathCommand = getDynamicPathingWrapperCommand(pathCommand);
-            pathCommand.schedule();
+            // Create and schedule the new scoring command
+            var pathCommand = getDynamicPathingWrapperCommand(AutoBuilder.followPath(newPath.get()));
+
+            // Different from normal pathing command.
+            // Since started from outside button based scheduling, letting go of the dynamic pathing button would fail to cancel it
+            // .onlyWhile() ensures it can still be canceled by letting go of the button
+            Command cmd = ScoreCoral.scoreCoralWithPath(pathCommand).onlyWhile(() -> Controls.dynamicPathingButton.getAsBoolean());
+            cmd.schedule();
         }
     }
 
