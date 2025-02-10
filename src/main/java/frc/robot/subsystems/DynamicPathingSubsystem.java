@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.commands.DriveTeleop;
+import frc.robot.commands.semiauto.PickupAlgea;
 import frc.robot.commands.semiauto.ScoreCoral;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.utils.WafflesUtilities;
@@ -78,6 +79,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     private boolean isPathing;
     // Only used for coral scoring, level can be determined automatically in every other situation
     private ScoringLevel coralScoringLevel = ScoringLevel.L3;
+    private DynamicPathingSituation lastPathingSituation = DynamicPathingSituation.NONE;
 
     enum DynamicPathingSituation {
         NONE, // None of the conditions for other situations are met
@@ -162,6 +164,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         
         DynamicPathingSituation currentSituation = getDynamicPathingSituation();
         SmartDashboard.putString("Pathing Situation", currentSituation.toString());
+        lastPathingSituation = currentSituation;
 
         switch (currentSituation) {
             case REEF_CORAL:  { // extra curly brackets to keep scopes seperate
@@ -190,7 +193,8 @@ public class DynamicPathingSubsystem extends SubsystemBase {
 
                     var path = DynamicPathingSubsystem.simplePathToPose(targetAlgaePose);
                     if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
-                        cmd = getDynamicPathingWrapperCommand(AutoBuilder.followPath(path.get()));
+                        var pathingCommand = getDynamicPathingWrapperCommand(AutoBuilder.followPath(path.get()));
+                        cmd = PickupAlgea.pickupAlgeaWithPath(pathingCommand, getAlgeaScoringLevel(RobotContainer.driveSubsystem.getRobotPose()));
                     }
                 }
                 break;
@@ -245,7 +249,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
             coralScoringRightSide = rightSide;
             System.out.println("Setting coral scoring to right side: " + coralScoringRightSide);
             // If we're currently pathing, regenerate the path
-            if (isPathing) {
+            if (isPathing && lastPathingSituation == DynamicPathingSituation.REEF_CORAL) {
                 regenerateCurrentCoralPath();
             }
         }
@@ -385,6 +389,25 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         outputPose = WafflesUtilities.FlipIfRedAlliance(outputPose);
 
         return outputPose;
+    }
+
+    public static ScoringLevel getAlgeaScoringLevel(Pose2d robotPose) {
+        Pose2d pose = WafflesUtilities.FlipIfRedAlliance(robotPose);
+
+
+        Translation2d TranslatedPose = pose.getTranslation().minus(REEF_CENTER_BLUE);
+        double angle = Math.toDegrees(Math.atan2(TranslatedPose.getY(), TranslatedPose.getX())) + 30;
+        if (angle < 0) {
+            angle = 360 + angle;
+        }
+
+        int hexagonFace = (int)(angle / 60.0f);
+        
+        if (hexagonFace % 2 == 0) {
+            return ScoringLevel.ALGEA_L1;
+        } else {
+            return ScoringLevel.ALGEA_L2;
+        }
     }
 
     /**
