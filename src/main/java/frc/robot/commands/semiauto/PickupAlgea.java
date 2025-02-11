@@ -12,21 +12,22 @@ import frc.robot.RobotContainer;
 import frc.robot.commands.AlgeaIntake;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
+import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 
 public class PickupAlgea extends SequentialCommandGroup {
   /** Creates a new ScoreCoral. */
-  private PickupAlgea(Command driveCommand) {
+  private PickupAlgea(Command driveCommand, ScoringLevel scoringLevel) {
     addCommands(
       new ParallelCommandGroup(
         driveCommand,
-        new PrepareScoreAlgea()
+        new PreparePickupAlgea(scoringLevel)
       ),
       new AlgeaIntake()
     );
   }
 
-  public static Command pickupAlgeaWithPath(Command driveCommand) {
-    return new PickupAlgea(driveCommand).finallyDo(() -> {
+  public static Command pickupAlgeaWithPath(Command driveCommand, ScoringLevel scoringLevel) {
+    return new PickupAlgea(driveCommand, scoringLevel).finallyDo(() -> {
       RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
       RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
     });
