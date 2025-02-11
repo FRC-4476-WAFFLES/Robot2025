@@ -4,6 +4,12 @@
 
 package frc.robot.subsystems;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+
 import com.ctre.phoenix.led.Animation;
 import com.ctre.phoenix.led.CANdle;
 import com.ctre.phoenix.led.CANdle.LEDStripType;
@@ -12,23 +18,17 @@ import com.ctre.phoenix.led.ColorFlowAnimation;
 import com.ctre.phoenix.led.ColorFlowAnimation.Direction;
 import com.ctre.phoenix.led.LarsonAnimation;
 import com.ctre.phoenix.led.LarsonAnimation.BounceMode;
-import com.ctre.phoenix.led.StrobeAnimation;
 import com.ctre.phoenix.led.RainbowAnimation;
+import com.ctre.phoenix.led.StrobeAnimation;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.data.Constants;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-
 public class Lights extends SubsystemBase {
   private static final CANdle candle = new CANdle(Constants.CANIds.CANdle); 
-  private static final int LED_COUNT = 64;
+  private static final int LED_COUNT = 100;
 
   private static final Timer blinkTimer = new Timer();
   private boolean isBlinkColour = true;
@@ -40,13 +40,32 @@ public class Lights extends SubsystemBase {
 
   public enum LedRange {
     CANDLE(0,8),
-    RIGHT_SIDE_FULL(8,26),
-    MIDDLE_FULL(26,44),
-    LEFT_SIDE_FULL(44,64),
-    RIGHT_SIDE_TOP(20,26),
-    RIGHT_SIDE_BOTTOM(8,20),
-    LEFT_SIDE_TOP(44,51),
-    LEFT_SIDE_BOTTOM(51,64);
+    // Full sections
+    RIGHT_SIDE_FULL(8,38),
+    MIDDLE_FULL(38,62),
+    LEFT_SIDE_FULL(62,100),
+    // Right side sections and progressive ranges
+    RIGHT_SIDE_TOP(8,15),
+    RIGHT_SIDE_UPPER_MIDDLE(15,23),
+    RIGHT_SIDE_LOWER_MIDDLE(23,31),
+    RIGHT_SIDE_BOTTOM(31,38),
+    R1(31,38),      // Bottom only
+    R2(23,38),      // Bottom + lower middle
+    R3(15,38),      // Bottom + lower middle + upper middle
+    R4(8,38),       // All sections (same as RIGHT_SIDE_FULL)
+    // Middle sections
+    MIDDLE_TOP(38,46),
+    MIDDLE_MIDDLE(46,54),
+    MIDDLE_BOTTOM(54,62),
+    // Left side sections and progressive ranges
+    LEFT_SIDE_TOP(62,71),
+    LEFT_SIDE_UPPER_MIDDLE(71,80),
+    LEFT_SIDE_LOWER_MIDDLE(80,89),
+    LEFT_SIDE_BOTTOM(89,100),
+    L1(89,100),     // Bottom only
+    L2(80,100),     // Bottom + lower middle
+    L3(71,100),     // Bottom + lower middle + upper middle
+    L4(62,100);     // All sections (same as LEFT_SIDE_FULL)
 
     private final int start;
     private final int end;
@@ -299,5 +318,46 @@ public class Lights extends SubsystemBase {
 
     // Clear ledRangeColours for the next update cycle
     ledRangeColours.clear();
+  }
+
+  /**
+   * Sets both left and right progressive ranges to the same color
+   * @param level The level (1-4) to set the progressive ranges to
+   * @param color The color to set the ranges to
+   */
+  public void setProgressiveRanges(int level, LightColours color) {
+    // Clear any existing colors first
+    ledRangeColours.clear();
+    
+    switch(level) {
+      case 1:
+        setLEDRangeGroup(LedRange.L1, color, color, false);
+        setLEDRangeGroup(LedRange.R1, color, color, false);
+        break;
+      case 2:
+        setLEDRangeGroup(LedRange.L2, color, color, false);
+        setLEDRangeGroup(LedRange.R2, color, color, false);
+        break;
+      case 3:
+        setLEDRangeGroup(LedRange.L3, color, color, false);
+        setLEDRangeGroup(LedRange.R3, color, color, false);
+        break;
+      case 4:
+        setLEDRangeGroup(LedRange.L4, color, color, false);
+        setLEDRangeGroup(LedRange.R4, color, color, false);
+        break;
+      default:
+        // Turn off all LEDs if invalid level
+        setAllLEDs(LightColours.BLACK);
+        break;
+    }
+  }
+
+  /**
+   * Sets both left and right progressive ranges to white
+   * @param level The level (1-4) to set the progressive ranges to
+   */
+  public void setWhiteProgressiveRanges(int level) {
+    setProgressiveRanges(level, LightColours.WHITE);
   }
 } 

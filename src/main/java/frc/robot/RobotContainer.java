@@ -37,6 +37,8 @@ import frc.robot.commands.AxisIntakeControl;
 import frc.robot.commands.CoralIntake;
 import frc.robot.commands.SetPivotPos;
 import frc.robot.commands.DefaultPosition;
+import frc.robot.subsystems.Lights;
+import frc.robot.commands.DefaultLightCommand;
 
 
 /**
@@ -55,6 +57,7 @@ public class RobotContainer {
   public static final Elevator elevatorSubsystem = new Elevator();
   // public static final Funnel funnelSubsystem = new Funnel();
   public static final Climber climberSubsystem = null; //  new Climber()
+  public static final Lights lightsSubsystem = new Lights();
 
   public static final DynamicPathingSubsystem dynamicPathingSubsystem = new DynamicPathingSubsystem();
   public static final Telemetry telemetry = new Telemetry(PhysicalConstants.maxSpeed);
@@ -84,6 +87,8 @@ public class RobotContainer {
       Controls::getDriveRotation
     ));
 
+    // Set default command for lights
+    lightsSubsystem.setDefaultCommand(new DefaultLightCommand());
 
     // Register commands to be used by pathplanner autos
     registerNamedCommands();
@@ -101,9 +106,6 @@ public class RobotContainer {
     Trigger inNormalMode = new Trigger(() -> !isOperatorOverride);
     Trigger inOverrideMode = new Trigger(() -> isOperatorOverride);
 
-    // new Trigger(() -> isOperatorOverride)
-    //   .whileTrue(defaultPosition);
-
     // Toggle operator override
     Controls.operatorController.start().onTrue(
       new InstantCommand(RobotContainer::toggleOperatorOverride)
@@ -113,10 +115,18 @@ public class RobotContainer {
     Controls.operatorController.back().onTrue(new InstantCommand(() -> {elevatorSubsystem.zeroElevator();}));
 
     // Normal mode button bindings
-    inNormalMode.and(Controls.operatorController.a()).onTrue(new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L1); }));
-    inNormalMode.and(Controls.operatorController.x()).onTrue(new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L2); }));
-    inNormalMode.and(Controls.operatorController.b()).onTrue(new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L3); }));
-    inNormalMode.and(Controls.operatorController.y()).onTrue(new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L4); }));
+    inNormalMode.and(Controls.operatorController.a()).onTrue(
+      new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L1); })
+    );
+    inNormalMode.and(Controls.operatorController.x()).onTrue(
+      new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L2); })
+    );
+    inNormalMode.and(Controls.operatorController.b()).onTrue(
+      new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L3); })
+    );
+    inNormalMode.and(Controls.operatorController.y()).onTrue(
+      new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L4); })
+    );
     
     // Override mode immediately moves to position while held
     inOverrideMode.and(Controls.operatorController.a()).whileTrue(
