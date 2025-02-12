@@ -20,7 +20,6 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants;
@@ -61,6 +60,8 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   private final DoublePublisher elevatorPositionNT = elevatorTable.getDoubleTopic("Current Position (Meters)").publish();
   private final BooleanPublisher elevatorIsZeroingNT = elevatorTable.getBooleanTopic("Is Zeroing").publish();
   private final BooleanPublisher isAtSetpointNT = elevatorTable.getBooleanTopic("Elevator at Setpoint").publish();
+  private final DoublePublisher leaderCurrentDrawNT = elevatorTable.getDoubleTopic("Leader Motor Current (Amps)").publish();
+  private final DoublePublisher followerCurrentDrawNT = elevatorTable.getDoubleTopic("Follower Motor Current (Amps)").publish();
 
   private ElevatorLevel targetPosition = ElevatorLevel.REST_POSITION;
   private CollisionType currentCollisionPrediction = CollisionType.NONE;
@@ -301,6 +302,8 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     elevatorPositionNT.set(getElevatorPositionMeters());
     elevatorIsZeroingNT.set(isZeroingElevator);
     isAtSetpointNT.set(isElevatorAtSetpoint());
+    leaderCurrentDrawNT.set(elevatorMotorLeader.getStatorCurrent().getValueAsDouble());
+    followerCurrentDrawNT.set(elevatorMotorFollower.getStatorCurrent().getValueAsDouble());
   }
 
   /**
@@ -318,6 +321,22 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    */
   public ElevatorLevel getTargetPosition() {
     return targetPosition;
+  }
+
+  /**
+   * Gets the current draw from the leader motor.
+   * @return The leader motor's current draw in amps
+   */
+  public double getLeaderCurrent() {
+    return elevatorMotorLeader.getStatorCurrent().getValueAsDouble();
+  }
+
+  /**
+   * Gets the current draw from the follower motor.
+   * @return The follower motor's current draw in amps
+   */
+  public double getFollowerCurrent() {
+    return elevatorMotorFollower.getStatorCurrent().getValueAsDouble();
   }
 
   /**

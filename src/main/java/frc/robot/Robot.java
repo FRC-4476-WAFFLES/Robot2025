@@ -8,7 +8,9 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-
+import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.commands.test.TestDriveAuto;
+import frc.robot.commands.test.TestElevatorAuto;
 import frc.robot.utils.NetworkConfiguredPID;
 import frc.robot.utils.SubsystemNetworkManager;
 /**
@@ -18,6 +20,7 @@ import frc.robot.utils.SubsystemNetworkManager;
  */
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
+  private Command m_testCommand;
 
   private final RobotContainer m_robotContainer;
 
@@ -115,11 +118,23 @@ public class Robot extends TimedRobot {
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
+    
+    // Create and schedule both test commands in sequence
+    m_testCommand = Commands.sequence(
+      new TestElevatorAuto(m_robotContainer.getElevator()),
+      new TestDriveAuto(m_robotContainer.getDriveSubsystem())
+    );
+
+    if (m_testCommand != null) {
+      m_testCommand.schedule();
+    }
   }
 
   /** This function is called periodically during test mode. */
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+    // The command scheduler will automatically run the test commands
+  }
 
   /** This function is called once when the robot is first started up. */
   @Override

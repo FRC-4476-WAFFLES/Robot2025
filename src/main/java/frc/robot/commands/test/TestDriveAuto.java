@@ -1,0 +1,214 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
+package frc.robot.commands.test;
+
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
+import com.ctre.phoenix6.swerve.SwerveRequest;
+import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.subsystems.DriveSubsystem;
+
+public class TestDriveAuto extends SequentialCommandGroup {
+  // Current monitoring for each module
+  private static class ModuleCurrentStats {
+    double minDriveCurrent = Double.MAX_VALUE;
+    double maxDriveCurrent = Double.MIN_VALUE;
+    double totalDriveCurrent = 0;
+    int driveCount = 0;
+
+    double minSteerCurrent = Double.MAX_VALUE;
+    double maxSteerCurrent = Double.MIN_VALUE;
+    double totalSteerCurrent = 0;
+    int steerCount = 0;
+  }
+
+  private final ModuleCurrentStats frontLeftStats = new ModuleCurrentStats();
+  private final ModuleCurrentStats frontRightStats = new ModuleCurrentStats();
+  private final ModuleCurrentStats backLeftStats = new ModuleCurrentStats();
+  private final ModuleCurrentStats backRightStats = new ModuleCurrentStats();
+
+  // NetworkTables publishers
+  private final NetworkTable testTable;
+  private final DoublePublisher[] driveMinCurrentNT = new DoublePublisher[4];
+  private final DoublePublisher[] driveMaxCurrentNT = new DoublePublisher[4];
+  private final DoublePublisher[] driveAvgCurrentNT = new DoublePublisher[4];
+  private final DoublePublisher[] steerMinCurrentNT = new DoublePublisher[4];
+  private final DoublePublisher[] steerMaxCurrentNT = new DoublePublisher[4];
+  private final DoublePublisher[] steerAvgCurrentNT = new DoublePublisher[4];
+
+  /**
+   * Creates a new TestDriveAuto command.
+   * This command tests various drive movements:
+   * 1. Aligns all wheels forward
+   * 2. Drives forward for 5 seconds
+   * 3. Drives backward for 5 seconds
+   * 4. Rotates clockwise for 5 seconds
+   * 5. Rotates counterclockwise for 5 seconds
+   * 6. Re-aligns wheels forward
+   * 
+   * @param drive The drive subsystem
+   */
+  public TestDriveAuto(DriveSubsystem drive) {
+    addRequirements(drive);
+
+    // Initialize NetworkTables publishers
+    testTable = NetworkTableInstance.getDefault().getTable("DriveTest");
+    String[] moduleNames = {"FrontLeft", "FrontRight", "BackLeft", "BackRight"};
+    
+    for (int i = 0; i < 4; i++) {
+      driveMinCurrentNT[i] = testTable.getDoubleTopic(moduleNames[i] + " Drive Min Current (Amps)").publish();
+      driveMaxCurrentNT[i] = testTable.getDoubleTopic(moduleNames[i] + " Drive Max Current (Amps)").publish();
+      driveAvgCurrentNT[i] = testTable.getDoubleTopic(moduleNames[i] + " Drive Avg Current (Amps)").publish();
+      steerMinCurrentNT[i] = testTable.getDoubleTopic(moduleNames[i] + " Steer Min Current (Amps)").publish();
+      steerMaxCurrentNT[i] = testTable.getDoubleTopic(moduleNames[i] + " Steer Max Current (Amps)").publish();
+      steerAvgCurrentNT[i] = testTable.getDoubleTopic(moduleNames[i] + " Steer Avg Current (Amps)").publish();
+    }
+
+    // Create a command to monitor current during movement
+    Command monitorCurrent = Commands.run(() -> {
+      var modules = drive.getModules();
+      
+      // Update front left stats
+      updateModuleStats(frontLeftStats, modules[0].getDriveMotor().getStatorCurrent().getValueAsDouble(),
+                       modules[0].getSteerMotor().getStatorCurrent().getValueAsDouble());
+      
+      // Update front right stats
+      updateModuleStats(frontRightStats, modules[1].getDriveMotor().getStatorCurrent().getValueAsDouble(),
+                       modules[1].getSteerMotor().getStatorCurrent().getValueAsDouble());
+      
+      // Update back left stats
+      updateModuleStats(backLeftStats, modules[2].getDriveMotor().getStatorCurrent().getValueAsDouble(),
+                       modules[2].getSteerMotor().getStatorCurrent().getValueAsDouble());
+      
+      // Update back right stats
+      updateModuleStats(backRightStats, modules[3].getDriveMotor().getStatorCurrent().getValueAsDouble(),
+                       modules[3].getSteerMotor().getStatorCurrent().getValueAsDouble());
+    });
+
+    // Create a command to publish final statistics
+    Command publishStats = Commands.runOnce(() -> {
+      ModuleCurrentStats[] stats = {frontLeftStats, frontRightStats, backLeftStats, backRightStats};
+      
+      for (int i = 0; i < 4; i++) {
+        driveMinCurrentNT[i].set(stats[i].minDriveCurrent);
+        driveMaxCurrentNT[i].set(stats[i].maxDriveCurrent);
+        driveAvgCurrentNT[i].set(stats[i].totalDriveCurrent / stats[i].driveCount);
+        steerMinCurrentNT[i].set(stats[i].minSteerCurrent);
+        steerMaxCurrentNT[i].set(stats[i].maxSteerCurrent);
+        steerAvgCurrentNT[i].set(stats[i].totalSteerCurrent / stats[i].steerCount);
+      }
+    });
+
+    // Create commands for each test phase
+    Command alignWheelsForward = drive.applyRequest(() -> 
+      new SwerveRequest.FieldCentric()
+        .withDriveRequestType(DriveRequestType.Velocity)
+        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+        .withVelocityX(0)
+        .withVelocityY(0)
+        .withRotationalRate(0)
+    );
+
+    Command driveForward = drive.applyRequest(() ->
+      new SwerveRequest.FieldCentric()
+        .withDriveRequestType(DriveRequestType.Velocity)
+        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+        .withVelocityX(1.0)
+        .withVelocityY(0)
+        .withRotationalRate(0)
+    );
+
+    Command driveBackward = drive.applyRequest(() ->
+      new SwerveRequest.FieldCentric()
+        .withDriveRequestType(DriveRequestType.Velocity)
+        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+        .withVelocityX(-1.0)
+        .withVelocityY(0)
+        .withRotationalRate(0)
+    );
+
+    Command rotateClockwise = drive.applyRequest(() ->
+      new SwerveRequest.FieldCentric()
+        .withDriveRequestType(DriveRequestType.Velocity)
+        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+        .withVelocityX(0)
+        .withVelocityY(0)
+        .withRotationalRate(1.0)
+    );
+
+    Command rotateCounterclockwise = drive.applyRequest(() ->
+      new SwerveRequest.FieldCentric()
+        .withDriveRequestType(DriveRequestType.Velocity)
+        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+        .withVelocityX(0)
+        .withVelocityY(0)
+        .withRotationalRate(-1.0)
+    );
+
+    // Add commands to the sequential command group
+    addCommands(
+      // Initial alignment
+      Commands.parallel(
+        alignWheelsForward,
+        monitorCurrent
+      ),
+      new WaitCommand(1.0),
+
+      // Forward/backward test
+      Commands.parallel(
+        driveForward,
+        monitorCurrent
+      ),
+      new WaitCommand(5.0),
+      Commands.parallel(
+        driveBackward,
+        monitorCurrent
+      ),
+      new WaitCommand(5.0),
+
+      // Rotation test
+      Commands.parallel(
+        rotateClockwise,
+        monitorCurrent
+      ),
+      new WaitCommand(5.0),
+      Commands.parallel(
+        rotateCounterclockwise,
+        monitorCurrent
+      ),
+      new WaitCommand(5.0),
+
+      // Final alignment
+      Commands.parallel(
+        alignWheelsForward,
+        monitorCurrent
+      ),
+      new WaitCommand(1.0),
+
+      // Publish final statistics
+      publishStats
+    );
+  }
+
+  private void updateModuleStats(ModuleCurrentStats stats, double driveCurrent, double steerCurrent) {
+    // Update drive stats
+    stats.minDriveCurrent = Math.min(stats.minDriveCurrent, driveCurrent);
+    stats.maxDriveCurrent = Math.max(stats.maxDriveCurrent, driveCurrent);
+    stats.totalDriveCurrent += driveCurrent;
+    stats.driveCount++;
+
+    // Update steer stats
+    stats.minSteerCurrent = Math.min(stats.minSteerCurrent, steerCurrent);
+    stats.maxSteerCurrent = Math.max(stats.maxSteerCurrent, steerCurrent);
+    stats.totalSteerCurrent += steerCurrent;
+    stats.steerCount++;
+  }
+} 

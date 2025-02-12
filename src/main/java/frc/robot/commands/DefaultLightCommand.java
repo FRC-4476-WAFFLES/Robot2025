@@ -12,7 +12,6 @@ import frc.robot.subsystems.Lights;
 
 public class DefaultLightCommand extends Command {
   private int currentLevel = 0;
-  private double lastElevatorSetpoint = 0;
 
   /** Creates a new DefaultLightCommand. */
   public DefaultLightCommand() {

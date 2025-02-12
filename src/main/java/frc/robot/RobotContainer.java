@@ -251,4 +251,20 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     return autoChooser.getSelected();
   }
+
+  /**
+   * Gets the elevator subsystem instance.
+   * @return The elevator subsystem
+   */
+  public Elevator getElevator() {
+    return elevatorSubsystem;
+  }
+
+  /**
+   * Gets the drive subsystem instance.
+   * @return The drive subsystem
+   */
+  public DriveSubsystem getDriveSubsystem() {
+    return driveSubsystem;
+  }
 }
