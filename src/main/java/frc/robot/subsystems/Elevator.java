@@ -276,6 +276,15 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    */
   public void zeroElevator() {
     // Drive elevator down slowly
+    if (isZeroingElevator) {
+      // Allow the operator to cancel zeroing elevator by pressing button again, in case zeroing fails
+      isZeroingElevator = false;
+      elevatorMotorLeader.set(0);
+      DriverStation.reportWarning("Elevator zeroing canceled", false);
+
+      return;
+    }
+
     elevatorMotorLeader.set(ElevatorConstants.ZEROING_SPEED);
     isZeroingElevator = true;
   }

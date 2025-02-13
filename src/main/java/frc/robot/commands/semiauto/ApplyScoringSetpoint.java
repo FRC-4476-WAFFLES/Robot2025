@@ -5,10 +5,10 @@ import frc.robot.RobotContainer;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 
 /* Continuously adjusts position of elevator and pivot to desired scoring level */
-public class PreparePickupAlgea extends Command {
+public class ApplyScoringSetpoint extends Command {
     private final ScoringLevel level;
     /** Creates a new PrepareCoralScore. */
-    public PreparePickupAlgea(ScoringLevel scoringLevel) {
+    public ApplyScoringSetpoint(ScoringLevel scoringLevel) {
         addRequirements(RobotContainer.pivotSubsystem, RobotContainer.elevatorSubsystem);
         level = scoringLevel;
     }

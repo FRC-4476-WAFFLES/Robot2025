@@ -110,7 +110,8 @@ public final class Constants {
       L3(PivotPosition.L3, ElevatorLevel.L3),
       L4(PivotPosition.L3, ElevatorLevel.L3),
       ALGEA_L1(PivotPosition.ALGAE_L1, ElevatorLevel.ALGAE_L1),
-      ALGEA_L2(PivotPosition.ALGAE_L2, ElevatorLevel.ALGAE_L2);
+      ALGEA_L2(PivotPosition.ALGAE_L2, ElevatorLevel.ALGAE_L2),
+      CORAL_INTAKE(PivotPosition.CORAL_INTAKE, ElevatorLevel.CORAL_INTAKE);
       
       private final PivotPosition pivotPosition;
       private final ElevatorLevel elevatorLevel;
@@ -167,7 +168,7 @@ public final class Constants {
         ALGAE_L2(169.1),
         ALGAE_L1(178.5),
         PROCESSOR(189),
-        CORALINTAKE(0.5),
+        CORAL_INTAKE(0.5),
         NET(10),
         L4(44.5),
         L3(31.4),

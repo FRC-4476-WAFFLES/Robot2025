@@ -39,6 +39,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private final NetworkTable pivotTable = inst.getTable("Intake");
     private final DoublePublisher laserCanDistanceNT = pivotTable.getDoubleTopic("LaserCan Distance (mm)").publish();
     private final BooleanPublisher coralLoadedNT = pivotTable.getBooleanTopic("Coral Loaded").publish();
+    private final BooleanPublisher algeaLoadedNT = pivotTable.getBooleanTopic("Algea Loaded").publish();
 
     public Intake() {
         SubsystemNetworkManager.RegisterNetworkUser(this);
@@ -152,6 +153,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
     public void updateNetwork() {
         laserCanDistanceNT.set(laserCANDistance);
         coralLoadedNT.set(isCoralLoaded());
+        algeaLoadedNT.set(isAlgaeLoaded());
     }
 
     @Override
