@@ -140,7 +140,8 @@ public final class Constants {
     public static final double ALGAE_CURRENT_THRESHOLD = 34.0; // amps
 
     // Intake constants
-    public static final double INTAKE_SPEED_MULTIPLIER = 0.3;
+    public static final double INTAKE_SPEED_MULTIPLIER = 0.15;
+    public static final double INTAKE_MAX_SPEED = 13; // Rps
 
     // Pivot constants
     public static final double PIVOT_ANGLE_DEADBAND = 1;
@@ -224,7 +225,7 @@ public final class Constants {
       ALGAE_L2(0.809),
       ALGAE_L1(0.472),
       PROCESSOR(0.188),
-      CORAL_INTAKE(0.176),
+      CORAL_INTAKE(0.01),
       L4(1.251),
       L3(0.648),
       L2(0.272),

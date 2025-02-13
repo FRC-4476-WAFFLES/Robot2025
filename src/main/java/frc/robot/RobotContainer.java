@@ -191,6 +191,7 @@ public class RobotContainer {
     // Axis intake control 
     intakeSubsystem.setDefaultCommand(axisIntakeControl);
 
+    // Manual intake
     inNormalMode.and(Controls.operatorController.leftBumper()).whileTrue(
       Commands.parallel(
         new CoralIntake(),
