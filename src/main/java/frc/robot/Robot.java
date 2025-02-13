@@ -121,7 +121,7 @@ public class Robot extends TimedRobot {
     
     // Create and schedule both test commands in sequence
     m_testCommand = Commands.sequence(
-      new TestElevatorAuto(m_robotContainer.getElevator()),
+      //new TestElevatorAuto(m_robotContainer.getElevator()),
       new TestDriveAuto(m_robotContainer.getDriveSubsystem())
     );
 

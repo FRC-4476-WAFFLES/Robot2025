@@ -72,27 +72,6 @@ public class TestDriveAuto extends SequentialCommandGroup {
       steerAvgCurrentNT[i] = testTable.getDoubleTopic(moduleNames[i] + " Steer Avg Current (Amps)").publish();
     }
 
-    // Create a command to monitor current during movement
-    Command monitorCurrent = Commands.run(() -> {
-      var modules = drive.getModules();
-      
-      // Update front left stats
-      updateModuleStats(frontLeftStats, modules[0].getDriveMotor().getStatorCurrent().getValueAsDouble(),
-                       modules[0].getSteerMotor().getStatorCurrent().getValueAsDouble());
-      
-      // Update front right stats
-      updateModuleStats(frontRightStats, modules[1].getDriveMotor().getStatorCurrent().getValueAsDouble(),
-                       modules[1].getSteerMotor().getStatorCurrent().getValueAsDouble());
-      
-      // Update back left stats
-      updateModuleStats(backLeftStats, modules[2].getDriveMotor().getStatorCurrent().getValueAsDouble(),
-                       modules[2].getSteerMotor().getStatorCurrent().getValueAsDouble());
-      
-      // Update back right stats
-      updateModuleStats(backRightStats, modules[3].getDriveMotor().getStatorCurrent().getValueAsDouble(),
-                       modules[3].getSteerMotor().getStatorCurrent().getValueAsDouble());
-    });
-
     // Create a command to publish final statistics
     Command publishStats = Commands.runOnce(() -> {
       ModuleCurrentStats[] stats = {frontLeftStats, frontRightStats, backLeftStats, backRightStats};
@@ -107,94 +86,83 @@ public class TestDriveAuto extends SequentialCommandGroup {
       }
     });
 
-    // Create commands for each test phase
-    Command alignWheelsForward = drive.applyRequest(() -> 
-      new SwerveRequest.FieldCentric()
-        .withDriveRequestType(DriveRequestType.Velocity)
-        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
-        .withVelocityX(0)
-        .withVelocityY(0)
-        .withRotationalRate(0)
-    );
-
-    Command driveForward = drive.applyRequest(() ->
-      new SwerveRequest.FieldCentric()
-        .withDriveRequestType(DriveRequestType.Velocity)
-        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
-        .withVelocityX(1.0)
-        .withVelocityY(0)
-        .withRotationalRate(0)
-    );
-
-    Command driveBackward = drive.applyRequest(() ->
-      new SwerveRequest.FieldCentric()
-        .withDriveRequestType(DriveRequestType.Velocity)
-        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
-        .withVelocityX(-1.0)
-        .withVelocityY(0)
-        .withRotationalRate(0)
-    );
-
-    Command rotateClockwise = drive.applyRequest(() ->
-      new SwerveRequest.FieldCentric()
-        .withDriveRequestType(DriveRequestType.Velocity)
-        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
-        .withVelocityX(0)
-        .withVelocityY(0)
-        .withRotationalRate(1.0)
-    );
-
-    Command rotateCounterclockwise = drive.applyRequest(() ->
-      new SwerveRequest.FieldCentric()
-        .withDriveRequestType(DriveRequestType.Velocity)
-        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
-        .withVelocityX(0)
-        .withVelocityY(0)
-        .withRotationalRate(-1.0)
-    );
+    // Create a command to monitor current
+    Runnable monitorCurrents = () -> {
+      var modules = drive.getModules();
+      updateModuleStats(frontLeftStats, modules[0].getDriveMotor().getStatorCurrent().getValueAsDouble(),
+                     modules[0].getSteerMotor().getStatorCurrent().getValueAsDouble());
+      updateModuleStats(frontRightStats, modules[1].getDriveMotor().getStatorCurrent().getValueAsDouble(),
+                     modules[1].getSteerMotor().getStatorCurrent().getValueAsDouble());
+      updateModuleStats(backLeftStats, modules[2].getDriveMotor().getStatorCurrent().getValueAsDouble(),
+                     modules[2].getSteerMotor().getStatorCurrent().getValueAsDouble());
+      updateModuleStats(backRightStats, modules[3].getDriveMotor().getStatorCurrent().getValueAsDouble(),
+                     modules[3].getSteerMotor().getStatorCurrent().getValueAsDouble());
+    };
 
     // Add commands to the sequential command group
     addCommands(
-      // Initial alignment
-      Commands.parallel(
-        alignWheelsForward,
-        monitorCurrent
-      ),
-      new WaitCommand(1.0),
+      Commands.sequence(
+        // Initial alignment (1 second)
+        Commands.parallel(
+          drive.applyRequest(() -> new SwerveRequest.FieldCentric()
+            .withDriveRequestType(DriveRequestType.Velocity)
+            .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+            .withVelocityX(0).withVelocityY(0).withRotationalRate(0)),
+          Commands.run(monitorCurrents)
+        ).withTimeout(1.0),
 
-      // Forward/backward test
-      Commands.parallel(
-        driveForward,
-        monitorCurrent
-      ),
-      new WaitCommand(5.0),
-      Commands.parallel(
-        driveBackward,
-        monitorCurrent
-      ),
-      new WaitCommand(5.0),
+        // Drive forward (5 seconds)
+        Commands.parallel(
+          drive.applyRequest(() -> new SwerveRequest.FieldCentric()
+            .withDriveRequestType(DriveRequestType.Velocity)
+            .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+            .withVelocityX(1.0).withVelocityY(0).withRotationalRate(0)),
+          Commands.run(monitorCurrents)
+        ).withTimeout(5.0),
 
-      // Rotation test
-      Commands.parallel(
-        rotateClockwise,
-        monitorCurrent
-      ),
-      new WaitCommand(5.0),
-      Commands.parallel(
-        rotateCounterclockwise,
-        monitorCurrent
-      ),
-      new WaitCommand(5.0),
+        // Drive backward (5 seconds)
+        Commands.parallel(
+          drive.applyRequest(() -> new SwerveRequest.FieldCentric()
+            .withDriveRequestType(DriveRequestType.Velocity)
+            .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+            .withVelocityX(-1.0).withVelocityY(0).withRotationalRate(0)),
+          Commands.run(monitorCurrents)
+        ).withTimeout(5.0),
 
-      // Final alignment
-      Commands.parallel(
-        alignWheelsForward,
-        monitorCurrent
-      ),
-      new WaitCommand(1.0),
+        // Steer clockwise test (5 seconds) - continuous steer rotation
+        Commands.parallel(
+          drive.applyRequest(() -> new SwerveRequest.FieldCentric()
+            .withDriveRequestType(DriveRequestType.Velocity)
+            .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+            .withVelocityX(0)
+            .withVelocityY(0)
+            .withRotationalRate(Math.PI * 2)),  // Rotate at 2π radians/sec (continuous rotation)
+          Commands.run(monitorCurrents)
+        ).withTimeout(5.0),
 
-      // Publish final statistics
-      publishStats
+        // Steer counter-clockwise test (5 seconds) - continuous steer rotation
+        Commands.parallel(
+          drive.applyRequest(() -> new SwerveRequest.FieldCentric()
+            .withDriveRequestType(DriveRequestType.Velocity)
+            .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+            .withVelocityX(0)
+            .withVelocityY(0)
+            .withRotationalRate(-Math.PI * 2)),  // Rotate at -2π radians/sec (continuous rotation)
+          Commands.run(monitorCurrents)
+        ).withTimeout(5.0),
+
+        // Final alignment (1 second)
+        Commands.parallel(
+          drive.applyRequest(() -> new SwerveRequest.FieldCentric()
+            .withDriveRequestType(DriveRequestType.Velocity)
+            .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+            .withVelocityX(0).withVelocityY(0).withRotationalRate(0)),
+          Commands.run(monitorCurrents)
+        ).withTimeout(1.0),
+
+        // Publish final statistics
+        publishStats
+      )
     );
   }
 

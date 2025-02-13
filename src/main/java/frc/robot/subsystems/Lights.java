@@ -26,6 +26,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.data.Constants;
 
+import static frc.robot.RobotContainer.*;
+
 public class Lights extends SubsystemBase {
   private static final CANdle candle = new CANdle(Constants.CANIds.CANdle); 
   private static final int LED_COUNT = 100;
@@ -166,7 +168,19 @@ public class Lights extends SubsystemBase {
   public void periodic() {
     
     if(DriverStation.isDisabled()){
-      setLEDRangeGroup(LedRange.RIGHT_SIDE_BOTTOM, LightColours.GREEN, LightColours.GREEN, false);
+      if(intakeSubsystem.isAlgaeLoaded()){
+        setLEDRange(0, 1, LightColours.DARKGREEN);
+      }
+      else{
+        setLEDRange(0, 1, LightColours.BLACK);
+      }
+      if(intakeSubsystem.isCoralLoaded()){
+        setLEDRange(1, 2, LightColours.WHITE);
+      }
+      else{
+        setLEDRange(1, 2, LightColours.BLACK);
+      }
+    
       /* 
       LedAnimation currentAnimation = getLedAnimation();
       if (shooterSubsystem.isNote()){
@@ -271,6 +285,10 @@ public class Lights extends SubsystemBase {
   }
 
    private void updateLedRanges() {
+    if (ledRangeColours.isEmpty()) {
+      return; // Don't update if there are no colors to set
+    }
+
     // Initialize ledColors[] to default color
     int[] defaultRGB = LightColours.BLACK.getRGBValues();
     for (int i = 0; i < LED_COUNT; i++) {
@@ -315,9 +333,6 @@ public class Lights extends SubsystemBase {
         // Update the LEDs for this contiguous range
         candle.setLEDs(currentColor[0], currentColor[1], currentColor[2], 0, startIdx, count);
     }
-
-    // Clear ledRangeColours for the next update cycle
-    ledRangeColours.clear();
   }
 
   /**
@@ -326,8 +341,12 @@ public class Lights extends SubsystemBase {
    * @param color The color to set the ranges to
    */
   public void setProgressiveRanges(int level, LightColours color) {
-    // Clear any existing colors first
-    ledRangeColours.clear();
+    // Clear only the progressive range LEDs
+    for (LedRange range : LedRange.values()) {
+      if (range.name().startsWith("L") || range.name().startsWith("R")) {
+        ledRangeColours.remove(range);
+      }
+    }
     
     switch(level) {
       case 1:
@@ -347,8 +366,12 @@ public class Lights extends SubsystemBase {
         setLEDRangeGroup(LedRange.R4, color, color, false);
         break;
       default:
-        // Turn off all LEDs if invalid level
-        setAllLEDs(LightColours.BLACK);
+        // Turn off all progressive range LEDs if invalid level
+        for (LedRange range : LedRange.values()) {
+          if (range.name().startsWith("L") || range.name().startsWith("R")) {
+            setLEDRangeGroup(range, LightColours.BLACK, LightColours.BLACK, false);
+          }
+        }
         break;
     }
   }
@@ -359,5 +382,38 @@ public class Lights extends SubsystemBase {
    */
   public void setWhiteProgressiveRanges(int level) {
     setProgressiveRanges(level, LightColours.WHITE);
+  }
+
+  /**
+   * Clears all LEDs by setting them to black.
+   */
+  public void clearAllLEDs() {
+    for (int i = 0; i < LED_COUNT; i++) {
+      ledColors[i] = LightColours.BLACK.getRGBValues();
+    }
+    ledRangeColours.clear();
+    updateLedRanges();
+  }
+
+  /**
+   * Updates all lights based on current robot state.
+   * This method is called by the default command to handle standard lighting patterns.
+   */
+  public void updateLights() {
+    if(DriverStation.isDisabled()){
+      if(intakeSubsystem.isAlgaeLoaded()){
+        setLEDRange(0, 1, LightColours.DARKGREEN);
+      }
+      else{
+        setLEDRange(0, 1, LightColours.BLACK);
+      }
+      if(intakeSubsystem.isCoralLoaded()){
+        setLEDRange(1, 2, LightColours.WHITE);
+      }
+      else{
+        setLEDRange(1, 2, LightColours.BLACK);
+      }
+    }
+    updateLedRanges();
   }
 } 
