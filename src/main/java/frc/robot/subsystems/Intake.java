@@ -107,7 +107,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
     }
 
     public boolean isAlgaeLoaded() {
-        return algaeLoaded;
+        return Constants.ManipulatorConstants.ALGAE_LOADED_DISTANCE_UPPER_LIMIT >= laserCANDistance && laserCANDistance >= Constants.ManipulatorConstants.ALGAE_LOADED_DISTANCE_THRESHOLD;
     }
 
     /**

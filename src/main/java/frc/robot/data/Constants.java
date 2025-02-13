@@ -134,6 +134,8 @@ public final class Constants {
   public static class ManipulatorConstants {
     // Detection thresholds
     public static final double CORAL_LOADED_DISTANCE_THRESHOLD = 10.0; // mm
+    public static final double ALGAE_LOADED_DISTANCE_THRESHOLD = 100.0; // mm
+    public static final double ALGAE_LOADED_DISTANCE_UPPER_LIMIT = 130; // mm
     public static final double ALGAE_CURRENT_THRESHOLD = 34.0; // amps
 
     // Intake constants
