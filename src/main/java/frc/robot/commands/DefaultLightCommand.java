@@ -29,6 +29,7 @@ public class DefaultLightCommand extends Command {
   @Override
   public void execute() {
     // Update lights based on robot state
+    RobotContainer.lightsSubsystem.clearAllLEDs();
     RobotContainer.lightsSubsystem.updateLights();
   }
 

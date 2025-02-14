@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import static frc.robot.RobotContainer.pivotSubsystem;
+
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -113,7 +115,13 @@ public class Intake extends SubsystemBase implements NetworkUser{
     
     @Override
     public void periodic() {
-        intake.setControl(intakeControlRequest.withVelocity(intakeSpeed).withSlot(0));
+        
+        if(pivotSubsystem.getPivotSetpoint() == Constants.ManipulatorConstants.PivotPosition.L1.getDegrees()){
+            intake.setControl(intakeControlRequest.withVelocity(-intakeSpeed).withSlot(0));
+        }
+        else{
+            intake.setControl(intakeControlRequest.withVelocity(intakeSpeed).withSlot(0));
+        }
 
         updateCoralSensor();
     }

@@ -25,12 +25,15 @@ import com.ctre.phoenix.led.StrobeAnimation;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+import static frc.robot.RobotContainer.elevatorSubsystem;
 import static frc.robot.RobotContainer.intakeSubsystem;
 import frc.robot.data.Constants;
+import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 
 public class Lights extends SubsystemBase {
   private static final CANdle candle = new CANdle(Constants.CANIds.CANdle); 
-  private static final int LED_COUNT = 100;
+  private static final int LED_COUNT = 122;
 
   private static final Timer blinkTimer = new Timer();
   private boolean isBlinkColour = true;
@@ -43,18 +46,18 @@ public class Lights extends SubsystemBase {
   public enum LedRange {
     CANDLE(0,8),
     // Full sections
-    RIGHT_SIDE_FULL(8,38),
-    MIDDLE_FULL(38,62),
-    LEFT_SIDE_FULL(62,100),
+    RIGHT_SIDE_FULL(84,122),//37
+    MIDDLE_FULL(46,83),//36
+    LEFT_SIDE_FULL(8,45), //37
     // Right side sections and progressive ranges
     RIGHT_SIDE_TOP(8,15),
     RIGHT_SIDE_UPPER_MIDDLE(15,23),
     RIGHT_SIDE_LOWER_MIDDLE(23,31),
     RIGHT_SIDE_BOTTOM(31,38),
-    R1(31,38),      // Bottom only
-    R2(23,38),      // Bottom + lower middle
-    R3(15,38),      // Bottom + lower middle + upper middle
-    R4(8,38),       // All sections (same as RIGHT_SIDE_FULL)
+    R1(113,122),      // Bottom only
+    R2(104,122),      // Bottom + lower middle
+    R3(95,122),      // Bottom + lower middle + upper middle
+
     // Middle sections
     MIDDLE_TOP(38,46),
     MIDDLE_MIDDLE(46,54),
@@ -64,10 +67,10 @@ public class Lights extends SubsystemBase {
     LEFT_SIDE_UPPER_MIDDLE(71,80),
     LEFT_SIDE_LOWER_MIDDLE(80,89),
     LEFT_SIDE_BOTTOM(89,100),
-    L1(89,100),     // Bottom only
-    L2(80,100),     // Bottom + lower middle
-    L3(71,100),     // Bottom + lower middle + upper middle
-    L4(62,100);     // All sections (same as LEFT_SIDE_FULL)
+    L1(8,17),     // Bottom only
+    L2(8,26),     // Bottom + lower middle
+    L3(8,35);     // Bottom + lower middle + upper middle
+  
 
     private final int start;
     private final int end;
@@ -174,17 +177,15 @@ public class Lights extends SubsystemBase {
       if(intakeSubsystem.isAlgaeLoaded()){
         setLEDRange(0, 1, LightColours.DARKGREEN);
       }
+      else if(intakeSubsystem.isCoralLoaded()){
+        setLEDRange(0, 1, LightColours.WHITE);
+      }
       else{
         setLEDRange(0, 1, LightColours.BLACK);
       }
-      if(intakeSubsystem.isCoralLoaded()){
-        setLEDRange(1, 2, LightColours.WHITE);
-      }
-      else{
-        setLEDRange(1, 2, LightColours.BLACK);
-      }
-      setLEDRange(3, 138, LightColours.ORANGE);
-    
+      // setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.ORANGE, LightColours.WHITE, false);
+      // setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.BLUE, LightColours.PURPLE, false);
+      // setLEDRangeGroup(LedRange.MIDDLE_FULL, LightColours.GREEN, LightColours.BLACK, false);
       /* 
       LedAnimation currentAnimation = getLedAnimation();
       if (shooterSubsystem.isNote()){
@@ -339,54 +340,6 @@ public class Lights extends SubsystemBase {
     }
   }
 
-  /**
-   * Sets both left and right progressive ranges to the same color
-   * @param level The level (1-4) to set the progressive ranges to
-   * @param color The color to set the ranges to
-   */
-  public void setProgressiveRanges(int level, LightColours color) {
-    // Clear only the progressive range LEDs
-    for (LedRange range : LedRange.values()) {
-      if (range.name().startsWith("L") || range.name().startsWith("R")) {
-        ledRangeColours.remove(range);
-      }
-    }
-    
-    switch(level) {
-      case 1:
-        setLEDRangeGroup(LedRange.L1, color, color, false);
-        setLEDRangeGroup(LedRange.R1, color, color, false);
-        break;
-      case 2:
-        setLEDRangeGroup(LedRange.L2, color, color, false);
-        setLEDRangeGroup(LedRange.R2, color, color, false);
-        break;
-      case 3:
-        setLEDRangeGroup(LedRange.L3, color, color, false);
-        setLEDRangeGroup(LedRange.R3, color, color, false);
-        break;
-      case 4:
-        setLEDRangeGroup(LedRange.L4, color, color, false);
-        setLEDRangeGroup(LedRange.R4, color, color, false);
-        break;
-      default:
-        // Turn off all progressive range LEDs if invalid level
-        for (LedRange range : LedRange.values()) {
-          if (range.name().startsWith("L") || range.name().startsWith("R")) {
-            setLEDRangeGroup(range, LightColours.BLACK, LightColours.BLACK, false);
-          }
-        }
-        break;
-    }
-  }
-
-  /**
-   * Sets both left and right progressive ranges to white
-   * @param level The level (1-4) to set the progressive ranges to
-   */
-  public void setWhiteProgressiveRanges(int level) {
-    setProgressiveRanges(level, LightColours.WHITE);
-  }
 
   /**
    * Clears all LEDs by setting them to black.
@@ -416,6 +369,52 @@ public class Lights extends SubsystemBase {
       }
       else{
         setLEDRange(1, 2, LightColours.BLACK);
+      }
+    }
+    if(intakeSubsystem.isCoralLoaded()){
+      if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.L1){
+        setLEDRangeGroup(LedRange.L1, LightColours.WHITE, LightColours.WHITE, false);
+        setLEDRangeGroup(LedRange.R1, LightColours.WHITE, LightColours.WHITE, false);
+      }
+      else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.L2){
+        setLEDRangeGroup(LedRange.L2, LightColours.WHITE, LightColours.WHITE, false);
+        setLEDRangeGroup(LedRange.R2, LightColours.WHITE, LightColours.WHITE, false);
+      }
+      else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.L3){
+        setLEDRangeGroup(LedRange.L3, LightColours.WHITE, LightColours.WHITE, false);
+        setLEDRangeGroup(LedRange.R3, LightColours.WHITE, LightColours.WHITE, false);
+      }
+      else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.L4){
+        setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.WHITE, LightColours.WHITE, false);
+        setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.WHITE, LightColours.WHITE, false);
+      }
+      else{
+        setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
+        setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
+        
+      }
+    }
+    else{
+      if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.PROCESSOR){
+        setLEDRangeGroup(LedRange.L1, LightColours.DARKGREEN, LightColours.WHITE, false);
+        setLEDRangeGroup(LedRange.R1, LightColours.DARKGREEN, LightColours.WHITE, false);
+      }
+      else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.ALGAE_L1){
+        setLEDRangeGroup(LedRange.L2, LightColours.DARKGREEN, LightColours.WHITE, false);
+        setLEDRangeGroup(LedRange.R2, LightColours.DARKGREEN, LightColours.WHITE, false);
+      }
+      else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.ALGAE_L2){
+        setLEDRangeGroup(LedRange.L3, LightColours.DARKGREEN, LightColours.WHITE, false);
+        setLEDRangeGroup(LedRange.R3, LightColours.DARKGREEN, LightColours.WHITE, false);
+      }
+      else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.NET){
+        setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.DARKGREEN, LightColours.WHITE, false);
+        setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.DARKGREEN, LightColours.WHITE, false);
+      }
+      else{
+        setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
+        setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
+        
       }
     }
     updateLedRanges();

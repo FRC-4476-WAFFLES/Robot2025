@@ -27,6 +27,8 @@ import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
 
+import static frc.robot.RobotContainer.*;
+
 public class Elevator extends SubsystemBase implements NetworkUser {
   /**
    * Enum representing different types of potential collisions
@@ -157,7 +159,11 @@ public class Elevator extends SubsystemBase implements NetworkUser {
 
     // Main control logic
     if (!isZeroingElevator) {
-      if (currentCollisionPrediction == Elevator.CollisionType.NONE) {
+      if (getElevatorPositionMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER &&
+        intakeSubsystem.isAlgaeLoaded()){
+          elevatorMotorLeader.setControl(motionMagicRequest.withPosition(ElevatorConstants.ElevatorLevel.PROCESSOR.getHeight()).withSlot(0));
+        }
+      else if (currentCollisionPrediction == Elevator.CollisionType.NONE) {
         // Safe to move elevator
         // Move elevator to setpoint
         elevatorMotorLeader.setControl(motionMagicRequest.withPosition(elevatorSetpointMeters).withSlot(0));
@@ -201,6 +207,10 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    */
   private void setElevatorSetpointMeters(double setpoint){
     elevatorSetpointMeters = setpoint;
+  }
+
+  public ElevatorLevel getElevatorSetpointEnum(){
+    return targetPosition;
   }
 
   /**

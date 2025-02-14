@@ -28,6 +28,9 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
+
+import static frc.robot.RobotContainer.intakeSubsystem;
+import static frc.robot.RobotContainer.elevatorSubsystem;
 import static frc.robot.data.Constants.ManipulatorConstants.*;
 
 /**
@@ -148,8 +151,12 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
         double chosenPivotAngle = 0;
         Elevator.CollisionType collisionPrediction = RobotContainer.elevatorSubsystem.getCurrentCollisionPotential();
-
-        if (collisionPrediction == CollisionType.NONE || pivotSetpointAngle > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE) {
+        if (elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER &&
+        intakeSubsystem.isAlgaeLoaded()){
+            // if we have an algae, we can't fully retract when we are below the crossbar of the elevator
+            chosenPivotAngle = PivotPosition.PROCESSOR.getDegrees();
+        }
+        else if (collisionPrediction == CollisionType.NONE || pivotSetpointAngle > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE) {
             // Check for bumper collision, and limit angle if so
             if (isInBumperDangerZone() && pivotSetpointAngle > ManipulatorConstants.PIVOT_BUMPER_CLEARANCE_ANGLE) {
                 // Move to max safe angle
