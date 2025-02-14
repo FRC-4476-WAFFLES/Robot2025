@@ -91,6 +91,8 @@ public final class Constants {
     public static final double maxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
     public static final double maxAngularSpeed = 6; // Max Rad/s
 
+    public static final double withBumperBotHalfWidth = 0.464; // m
+
     // In number of motor rotations per mechanism rotation
     public static final double funnelReduction = 33.75; 
     public static final double pivotReduction = 52.5625; 
@@ -108,7 +110,7 @@ public final class Constants {
       L1(PivotPosition.L1, ElevatorLevel.L1),
       L2(PivotPosition.L2, ElevatorLevel.L2),
       L3(PivotPosition.L3, ElevatorLevel.L3),
-      L4(PivotPosition.L3, ElevatorLevel.L3),
+      L4(PivotPosition.L4, ElevatorLevel.L4),
       ALGEA_L1(PivotPosition.ALGAE_L1, ElevatorLevel.ALGAE_L1),
       ALGEA_L2(PivotPosition.ALGAE_L2, ElevatorLevel.ALGAE_L2),
       CORAL_INTAKE(PivotPosition.CORAL_INTAKE, ElevatorLevel.CORAL_INTAKE);
@@ -135,7 +137,7 @@ public final class Constants {
   public static class ManipulatorConstants {
     // Detection thresholds
     public static final double CORAL_LOADED_DISTANCE_THRESHOLD = 10.0; // mm
-    public static final double ALGAE_LOADED_DISTANCE_THRESHOLD = 100.0; // mm
+    public static final double ALGAE_LOADED_DISTANCE_THRESHOLD = 94.0; // mm
     public static final double ALGAE_LOADED_DISTANCE_UPPER_LIMIT = 130; // mm
     public static final double ALGAE_CURRENT_THRESHOLD = 34.0; // amps
 
@@ -148,6 +150,7 @@ public final class Constants {
     public static final double PIVOT_MIN_ANGLE = 0.0; // degrees
     public static final double PIVOT_MAX_ANGLE = 185.0; // degrees
     public static final double PIVOT_BUMPER_CLEARANCE_ANGLE = 144.4; // degrees
+    public static final double PIVOT_L4_CLEARANCE_ANGLE = 28;
 
     // Motor configuration
     public static final double PIVOT_MOTION_CRUISE_VELOCITY = 4.0;
@@ -165,7 +168,7 @@ public final class Constants {
     // Pivot Positions
     public enum PivotPosition {
         ZERO(0),
-        CLEARANCE_POSITION(28),
+        CLEARANCE_POSITION(22),
         ALGAE_L2(169.1),
         ALGAE_L1(178.5),
         PROCESSOR(189),
@@ -196,8 +199,11 @@ public final class Constants {
     public static final double STALL_CURRENT_THRESHOLD = 10.0; // Amperes
 
     // Elevator will not move if the pivot is not past this angle, to avoid collision with top bar
-    public static final double MIN_ELEVATOR_PIVOT_ANGLE = 25; 
+    public static final double MIN_ELEVATOR_PIVOT_ANGLE = 20; 
     public static final double PIVOT_BUMPER_CLEAR_HEIGHT = 0.180;
+
+    public static final double PIVOT_L4_CLEAR_HEIGHT_MIN = 0.74;
+    public static final double PIVOT_L4_CLEAR_HEIGHT_MAX = 1.1;
 
     public static final double MIN_ELEVATOR_HEIGHT = 0;
     public static final double MAX_ELEVATOR_HEIGHT = 1.46;
