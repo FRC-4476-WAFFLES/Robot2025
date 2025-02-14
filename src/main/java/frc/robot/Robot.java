@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import au.grapplerobotics.CanBridge;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -34,7 +35,7 @@ public class Robot extends TimedRobot {
     SubsystemNetworkManager.init(this);
 
     // Init something for laserCAN
-    //CanBridge.runTCP();
+    CanBridge.runTCP();
 
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.

@@ -24,6 +24,7 @@ import frc.robot.RobotContainer;
 import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.semiauto.PickupAlgea;
 import frc.robot.commands.semiauto.ScoreCoral;
+import frc.robot.data.Constants;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.utils.WafflesUtilities;
 
@@ -33,6 +34,7 @@ import frc.robot.utils.WafflesUtilities;
 public class DynamicPathingSubsystem extends SubsystemBase {
     /* Various distances */
     public static final double REEF_MIN_SCORING_DISTANCE = 2.5;
+    public static final double REEF_MAX_SCORING_DISTANCE = 0.3; // Don't try to score within this distance
     public static final double PROCCESSOR_MIN_SCORING_DISTANCE = 1.5;
     public static final double HUMAN_PLAYER_MIN_PICKUP_DISTANCE = 2;
 
@@ -48,7 +50,8 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     public static final double REEF_INRADIUS = 0.81901;
     public static final double REEF_PIPE_CENTER_OFFSET = Units.inchesToMeters(6.8); // Fudged
     // Offset from the edge of the reef to score from 
-    public static final double REEF_SCORING_POSITION_OFFSET = 0.464;
+    public static final double REEF_SCORING_POSITION_OFFSET = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.05; // Robot with bumpers
+    public static final double REEF_SCORING_POSITION_OFFSET_L1 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.34; // Robot with bumpers
 
     /* Human player station physical parameters */
     public static final Translation2d HUMAN_PLAYER_STATION_LEFT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(25.80));  
@@ -123,7 +126,10 @@ public class DynamicPathingSubsystem extends SubsystemBase {
      */
     public static boolean isRobotInRangeOfReefPathing() {
         var pose = WafflesUtilities.FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose());
-        return (pose.getTranslation().getDistance(REEF_CENTER_BLUE) <= REEF_INRADIUS + REEF_MIN_SCORING_DISTANCE);
+        return (
+            pose.getTranslation().getDistance(REEF_CENTER_BLUE) <= REEF_INRADIUS + REEF_MIN_SCORING_DISTANCE &&
+            pose.getTranslation().getDistance(REEF_CENTER_BLUE) >= REEF_INRADIUS + REEF_MAX_SCORING_DISTANCE
+        );
     }
 
     /**
@@ -282,6 +288,16 @@ public class DynamicPathingSubsystem extends SubsystemBase {
      * @param level the desired scoring level
      */
     public void setCoralScoringLevel(ScoringLevel level) {
+        if (level == coralScoringLevel) {
+            return;
+        }
+
+        // If switching to L1 from something else, or from L1 to something else while pathing, regenerate
+        if (isPathing && lastPathingSituation == DynamicPathingSituation.REEF_CORAL && (level == ScoringLevel.L1 || coralScoringLevel == ScoringLevel.L1)) {
+            regenerateCurrentCoralPath();
+            System.out.println("Regenerating path to go to L1");
+        }
+
         coralScoringLevel = level;
         System.out.println("Setting coral scoring sevel to: " + coralScoringLevel);
     }
@@ -292,6 +308,14 @@ public class DynamicPathingSubsystem extends SubsystemBase {
      */
     public ScoringLevel getCoralScoringLevel() {
         return coralScoringLevel;
+    }
+
+    /**
+     * Gets the last dynamic pathing situation
+     * @return a DynamicPathingSituation enum
+     */
+    public DynamicPathingSituation getLastPathingSituation() {
+        return lastPathingSituation;
     }
 
     /**
@@ -319,7 +343,8 @@ public class DynamicPathingSubsystem extends SubsystemBase {
      * @return The coordinates the robot can score from
      */
     public Pose2d getNearestCoralScoringLocation() {
-        return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), coralScoringRightSide, false);
+        double scoringPositionOffset =  coralScoringLevel == ScoringLevel.L1 ? REEF_SCORING_POSITION_OFFSET_L1 : REEF_SCORING_POSITION_OFFSET;
+        return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), coralScoringRightSide, false, scoringPositionOffset);
     }
 
     /**
@@ -327,7 +352,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
      * @return The coordinates the robot can score from
      */
     public Pose2d getNearestAlgaePickupLocation() {
-        return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), false, true);
+        return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), false, true, REEF_SCORING_POSITION_OFFSET);
     }
 
     /**
@@ -337,7 +362,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
      * @param scoringAlgae If true, rightSide is ignored and we path to the center of the reef face
      * @return The coordinates the robot can score from
      */
-    public static Pose2d getNearestReefLocationStatic(Pose2d robotPose, boolean rightSide, boolean scoringAlgae) {
+    public static Pose2d getNearestReefLocationStatic(Pose2d robotPose, boolean rightSide, boolean scoringAlgae, double offsetFromReef) {
         Pose2d pose = WafflesUtilities.FlipIfRedAlliance(robotPose);
 
         // SmartDashboard.putNumberArray("InProgress Target Pose", new double[] {
@@ -357,7 +382,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         int inRadiusAngle = (int)(angle / 60.0f) * 60;
         Translation2d inRadiusNormalized = new Translation2d(Math.cos(Math.toRadians(inRadiusAngle)), Math.sin(Math.toRadians(inRadiusAngle)));
         // Offset from center by correct amount to score, also offset out so that robot doesn't intersect reef
-        Translation2d outputTranslation = inRadiusNormalized.times(REEF_INRADIUS + REEF_SCORING_POSITION_OFFSET);
+        Translation2d outputTranslation = inRadiusNormalized.times(REEF_INRADIUS + offsetFromReef);
 
         Translation2d scoringPositionOffset = new Translation2d(Math.cos(Math.toRadians(inRadiusAngle + 90)), Math.sin(Math.toRadians(inRadiusAngle + 90)));
         scoringPositionOffset = scoringPositionOffset.times(REEF_PIPE_CENTER_OFFSET);

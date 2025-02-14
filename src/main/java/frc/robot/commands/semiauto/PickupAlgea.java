@@ -20,7 +20,7 @@ public class PickupAlgea extends SequentialCommandGroup {
     addCommands(
       new ParallelCommandGroup(
         driveCommand,
-        new PreparePickupAlgea(scoringLevel)
+        new ApplyScoringSetpoint(scoringLevel)
       ),
       new AlgeaIntake()
     );

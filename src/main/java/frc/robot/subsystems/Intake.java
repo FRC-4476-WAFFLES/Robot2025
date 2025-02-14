@@ -1,9 +1,16 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import au.grapplerobotics.LaserCan;
 import edu.wpi.first.networktables.BooleanPublisher;
@@ -12,6 +19,8 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.data.Constants;
+import frc.robot.data.Constants.ElevatorConstants;
+import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
 
@@ -27,7 +36,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private LaserCan laserCan;
 
     // Control Objects
-    private final DutyCycleOut intakeDutyCycle = new DutyCycleOut(0);
+    private final MotionMagicVelocityVoltage intakeControlRequest = new MotionMagicVelocityVoltage(0);
 
     // State Variables
     private double laserCANDistance = 0;
@@ -39,6 +48,8 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private final NetworkTable pivotTable = inst.getTable("Intake");
     private final DoublePublisher laserCanDistanceNT = pivotTable.getDoubleTopic("LaserCan Distance (mm)").publish();
     private final BooleanPublisher coralLoadedNT = pivotTable.getBooleanTopic("Coral Loaded").publish();
+    private final BooleanPublisher algeaLoadedNT = pivotTable.getBooleanTopic("Algea Loaded").publish();
+    private final DoublePublisher intakeSetpointNT = pivotTable.getDoubleTopic("Intake Setpoint").publish();
 
     public Intake() {
         SubsystemNetworkManager.RegisterNetworkUser(this);
@@ -59,7 +70,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
             laserCan = new LaserCan(Constants.CANIds.laserCan);
             laserCan.setRangingMode(LaserCan.RangingMode.SHORT);
             // laserCan.setRegionOfInterest(new LaserCan.RegionOfInterest(8, 8, 16, 16));
-            laserCan.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_33MS);
+            laserCan.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_20MS);
         } catch (Exception e) {
             // throw new RuntimeException("Failed to initialize LaserCan: " + e.getMessage());
             System.out.println("Failed to initialize LaserCan: " + e.getMessage());
@@ -75,13 +86,34 @@ public class Intake extends SubsystemBase implements NetworkUser{
         CurrentLimitsConfigs intakeCurrentLimit = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(Constants.ManipulatorConstants.STATOR_CURRENT_LIMIT)
             .withStatorCurrentLimitEnable(true);
+
+
         intakeConfigs.CurrentLimits = intakeCurrentLimit;
+
+        var slot0Configs = new Slot0Configs();
+        slot0Configs.kP = 0.3;
+        slot0Configs.kI = 0;
+        slot0Configs.kD = 0;
+        slot0Configs.kV = 0.2;
+
+        intakeConfigs.Slot0 = slot0Configs;
+
+        // Motion Magic
+        MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
+        motionMagicConfigs.MotionMagicAcceleration = 200;
+        motionMagicConfigs.MotionMagicJerk = 0;
+        intakeConfigs.MotionMagic = motionMagicConfigs;
+
+        intakeConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+
+        intakeConfigs.MotorOutput.DutyCycleNeutralDeadband = 0.01;
+
         intake.getConfigurator().apply(intakeConfigs);
     }
     
     @Override
     public void periodic() {
-        intake.setControl(intakeDutyCycle.withOutput(intakeSpeed));
+        intake.setControl(intakeControlRequest.withVelocity(intakeSpeed).withSlot(0));
 
         updateCoralSensor();
     }
@@ -152,6 +184,8 @@ public class Intake extends SubsystemBase implements NetworkUser{
     public void updateNetwork() {
         laserCanDistanceNT.set(laserCANDistance);
         coralLoadedNT.set(isCoralLoaded());
+        algeaLoadedNT.set(isAlgaeLoaded());
+        intakeSetpointNT.set(intakeSpeed);
     }
 
     @Override

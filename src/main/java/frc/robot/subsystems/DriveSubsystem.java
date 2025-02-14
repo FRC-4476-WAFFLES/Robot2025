@@ -294,7 +294,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
         LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LIMELIGHT_NAME);
         boolean doRejectUpdate = false;
         if (mt2 != null) {
-            if(Math.abs(getPigeon2().getAngularVelocityZWorld().getValueAsDouble()) > 360) // if our angular velocity is greater than 720 degrees per second, ignore vision updates
+            if(Math.abs(getPigeon2().getAngularVelocityZWorld().getValueAsDouble()) > 10) // if our angular velocity is greater than 720 degrees per second, ignore vision updates
             {
                 doRejectUpdate = true;
             }
@@ -320,7 +320,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
         LimelightHelpers.PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue(LIMELIGHT_NAME);
         boolean doRejectUpdateMT1 = false;
         if (mt1 != null) {
-            if(Math.abs(getPigeon2().getAngularVelocityZWorld().getValueAsDouble()) > 360) // if our angular velocity is greater than 720 degrees per second, ignore vision updates
+            if(Math.abs(getPigeon2().getAngularVelocityZWorld().getValueAsDouble()) > 10) // if our angular velocity is greater than 720 degrees per second, ignore vision updates
             {
                 doRejectUpdateMT1 = true;
             }

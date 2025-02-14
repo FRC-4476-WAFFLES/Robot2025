@@ -36,6 +36,7 @@ import frc.robot.subsystems.Telemetry;
 import frc.robot.commands.AxisIntakeControl;
 import frc.robot.commands.CoralIntake;
 import frc.robot.commands.SetPivotPos;
+import frc.robot.commands.semiauto.ApplyScoringSetpoint;
 import frc.robot.commands.DefaultPosition;
 import frc.robot.subsystems.Lights;
 import frc.robot.commands.DefaultLightCommand;
@@ -113,6 +114,7 @@ public class RobotContainer {
 
     Controls.rightJoystick.button(9).whileTrue(resetGyroHeading);
     Controls.operatorController.back().onTrue(new InstantCommand(() -> {elevatorSubsystem.zeroElevator();}));
+    
 
     // Normal mode button bindings
     inNormalMode.and(Controls.operatorController.a()).onTrue(
@@ -189,7 +191,13 @@ public class RobotContainer {
     // Axis intake control 
     intakeSubsystem.setDefaultCommand(axisIntakeControl);
 
-    inNormalMode.and(Controls.operatorController.rightStick()).whileTrue(new CoralIntake());
+    // Manual intake
+    inNormalMode.and(Controls.operatorController.leftBumper()).whileTrue(
+      Commands.parallel(
+        new CoralIntake(),
+        new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
+      )    
+    );
 
     // Dynamic pathing button
     Controls.dynamicPathingButton.whileTrue(

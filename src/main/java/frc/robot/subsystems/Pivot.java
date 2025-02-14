@@ -14,6 +14,8 @@ import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants;
 import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
+import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
+import frc.robot.subsystems.DynamicPathingSubsystem.DynamicPathingSituation;
 import frc.robot.subsystems.Elevator.CollisionType;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
@@ -143,27 +145,40 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     @Override
     public void periodic() {
         // Update motor controls
+
+        double chosenPivotAngle = 0;
         Elevator.CollisionType collisionPrediction = RobotContainer.elevatorSubsystem.getCurrentCollisionPotential();
-        if (RobotContainer.elevatorSubsystem.isZeroing()) {
-            // Not safe since zeroing
-            pivot.setControl(motionMagicRequest.withPosition(PivotPosition.CLEARANCE_POSITION.getDegrees() / 360).withSlot(0));
-        }
 
         if (collisionPrediction == CollisionType.NONE || pivotSetpointAngle > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE) {
-            
             // Check for bumper collision, and limit angle if so
             if (isInBumperDangerZone() && pivotSetpointAngle > ManipulatorConstants.PIVOT_BUMPER_CLEARANCE_ANGLE) {
                 // Move to max safe angle
-                pivot.setControl(motionMagicRequest.withPosition(ManipulatorConstants.PIVOT_BUMPER_CLEARANCE_ANGLE / 360).withSlot(0));
+                chosenPivotAngle = ManipulatorConstants.PIVOT_BUMPER_CLEARANCE_ANGLE;
             } else {
                 // If we're past the safety angle, or aren't in danger of hitting anything, move pivot normally
-                pivot.setControl(motionMagicRequest.withPosition(pivotSetpointAngle / 360).withSlot(0));
+                chosenPivotAngle = pivotSetpointAngle;
             }
         } else {
             // Not safe in some way, move pivot out of the way
-            pivot.setControl(motionMagicRequest.withPosition(PivotPosition.CLEARANCE_POSITION.getDegrees() / 360).withSlot(0));
-            // System.out.println(collisionPrediction);
+            chosenPivotAngle = PivotPosition.CLEARANCE_POSITION.getDegrees();
         }
+
+        // Auto dodge L4
+        if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4 && 
+            RobotContainer.dynamicPathingSubsystem.getLastPathingSituation() == DynamicPathingSituation.REEF_CORAL &&
+            !RobotContainer.isOperatorOverride) {
+            if (pivotSetpointAngle > ManipulatorConstants.PIVOT_L4_CLEARANCE_ANGLE && isInL4DangerZone()) {
+                chosenPivotAngle = ManipulatorConstants.PIVOT_L4_CLEARANCE_ANGLE;
+                System.out.println("DANGER ZONE L4");
+            }
+        }
+
+        if (RobotContainer.elevatorSubsystem.isZeroing()) {
+            // Not safe since zeroing
+            chosenPivotAngle = PivotPosition.CLEARANCE_POSITION.getDegrees();
+        }
+
+        pivot.setControl(motionMagicRequest.withPosition(chosenPivotAngle / 360).withSlot(0));
     }
 
     /**
@@ -236,5 +251,10 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
     public boolean isInBumperDangerZone() {
         return RobotContainer.elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT;
+    }
+
+    public boolean isInL4DangerZone() {
+        return RobotContainer.elevatorSubsystem.getElevatorPositionMeters() >= ElevatorConstants.PIVOT_L4_CLEAR_HEIGHT_MIN &&
+            RobotContainer.elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.PIVOT_L4_CLEAR_HEIGHT_MAX;
     }
 }
