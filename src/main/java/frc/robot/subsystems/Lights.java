@@ -13,6 +13,7 @@ import java.util.Map;
 import com.ctre.phoenix.led.Animation;
 import com.ctre.phoenix.led.CANdle;
 import com.ctre.phoenix.led.CANdle.LEDStripType;
+import com.ctre.phoenix.led.CANdle.VBatOutputMode;
 import com.ctre.phoenix.led.CANdleConfiguration;
 import com.ctre.phoenix.led.ColorFlowAnimation;
 import com.ctre.phoenix.led.ColorFlowAnimation.Direction;
@@ -24,9 +25,8 @@ import com.ctre.phoenix.led.StrobeAnimation;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import static frc.robot.RobotContainer.intakeSubsystem;
 import frc.robot.data.Constants;
-
-import static frc.robot.RobotContainer.*;
 
 public class Lights extends SubsystemBase {
   private static final CANdle candle = new CANdle(Constants.CANIds.CANdle); 
@@ -152,10 +152,13 @@ public class Lights extends SubsystemBase {
 
     CANdleConfiguration configAll = new CANdleConfiguration();
 
-    configAll.stripType = LEDStripType.GRB;
-    configAll.v5Enabled = true;
+    configAll.stripType = LEDStripType.RGB;
+    configAll.brightnessScalar = 1;
+    configAll.vBatOutputMode = VBatOutputMode.On;
 
-    candle.configAllSettings(configAll, 100);
+
+    candle.configAllSettings(configAll, 1000);
+    candle.configLEDType(LEDStripType.RGB);
 
     ledColors = new int[LED_COUNT][3];
   }
@@ -180,6 +183,7 @@ public class Lights extends SubsystemBase {
       else{
         setLEDRange(1, 2, LightColours.BLACK);
       }
+      setLEDRange(3, 138, LightColours.ORANGE);
     
       /* 
       LedAnimation currentAnimation = getLedAnimation();
