@@ -113,7 +113,7 @@ public final class Constants {
       L4(PivotPosition.L4, ElevatorLevel.L4),
       ALGEA_L1(PivotPosition.ALGAE_L1, ElevatorLevel.ALGAE_L1),
       ALGEA_L2(PivotPosition.ALGAE_L2, ElevatorLevel.ALGAE_L2),
-      CORAL_INTAKE(PivotPosition.CORAL_INTAKE, ElevatorLevel.CORAL_INTAKE);
+      CORAL_INTAKE(PivotPosition.CORAL_INTAKE, ElevatorLevel.REST_POSITION);
       
       private final PivotPosition pivotPosition;
       private final ElevatorLevel elevatorLevel;
@@ -196,7 +196,7 @@ public final class Constants {
     // Control constants
     public static final double ELEVATOR_DEAD_ZONE = 1;
     public static final double ZEROING_SPEED = -0.1; // Slow downward speed
-    public static final double STALL_CURRENT_THRESHOLD = 10.0; // Amperes
+    public static final double STALL_CURRENT_THRESHOLD = 20.0; // Amperes
 
     // Elevator will not move if the pivot is not past this angle, to avoid collision with top bar
     public static final double MIN_ELEVATOR_PIVOT_ANGLE = 20; 
@@ -231,7 +231,6 @@ public final class Constants {
       ALGAE_L2(0.809),
       ALGAE_L1(0.472),
       PROCESSOR(0.188),
-      CORAL_INTAKE(0.01),
       L4(1.251),
       L3(0.648),
       L2(0.272),

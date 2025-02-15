@@ -1,17 +1,12 @@
 package frc.robot.subsystems;
 
-import static frc.robot.RobotContainer.pivotSubsystem;
-
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
-import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import au.grapplerobotics.LaserCan;
@@ -20,9 +15,8 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import static frc.robot.RobotContainer.pivotSubsystem;
 import frc.robot.data.Constants;
-import frc.robot.data.Constants.ElevatorConstants;
-import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
 
@@ -39,11 +33,13 @@ public class Intake extends SubsystemBase implements NetworkUser{
 
     // Control Objects
     private final MotionMagicVelocityVoltage intakeControlRequest = new MotionMagicVelocityVoltage(0);
+    private final VoltageOut intakePositionRequest = new VoltageOut(0).withEnableFOC(true);
 
     // State Variables
     private double laserCANDistance = 0;
     private boolean algaeLoaded = false;
     private double intakeSpeed = 0;
+    private double lastPosition = 0;
 
     // Network Tables
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
@@ -97,6 +93,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
         slot0Configs.kI = 0;
         slot0Configs.kD = 0;
         slot0Configs.kV = 0.2;
+        slot0Configs.kG = 0.0;
 
         intakeConfigs.Slot0 = slot0Configs;
 
@@ -115,12 +112,18 @@ public class Intake extends SubsystemBase implements NetworkUser{
     
     @Override
     public void periodic() {
-        
-        if(pivotSubsystem.getPivotSetpoint() == Constants.ManipulatorConstants.PivotPosition.L1.getDegrees()){
-            intake.setControl(intakeControlRequest.withVelocity(-intakeSpeed).withSlot(0));
-        }
-        else{
-            intake.setControl(intakeControlRequest.withVelocity(intakeSpeed).withSlot(0));
+        if (Math.abs(intakeSpeed) < 0.01) {
+            // Hold position when speed is near zero
+            double currentPosition = intake.getPosition().getValueAsDouble();
+            lastPosition = currentPosition;
+            intake.setControl(intakePositionRequest.withOutput(0));
+        } else {
+            if(pivotSubsystem.getPivotSetpoint() == Constants.ManipulatorConstants.PivotPosition.L1.getDegrees()){
+                intake.setControl(intakeControlRequest.withVelocity(-intakeSpeed).withSlot(0));
+            }
+            else{
+                intake.setControl(intakeControlRequest.withVelocity(intakeSpeed).withSlot(0));
+            }
         }
 
         updateCoralSensor();

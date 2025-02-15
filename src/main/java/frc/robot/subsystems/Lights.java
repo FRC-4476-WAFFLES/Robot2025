@@ -25,13 +25,14 @@ import com.ctre.phoenix.led.StrobeAnimation;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
+import frc.robot.RobotContainer;
+import static frc.robot.RobotContainer.dynamicPathingSubsystem;
 import static frc.robot.RobotContainer.elevatorSubsystem;
 import static frc.robot.RobotContainer.intakeSubsystem;
-
-import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
+import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
+import frc.robot.subsystems.Lights.LightColours;
 
 public class Lights extends SubsystemBase {
   private static final CANdle candle = new CANdle(Constants.CANIds.CANdle); 
@@ -373,52 +374,97 @@ public class Lights extends SubsystemBase {
         setLEDRange(1, 2, LightColours.BLACK);
       }
     }
-    if(intakeSubsystem.isCoralLoaded()){
-      if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.L1){
-        setLEDRangeGroup(LedRange.L1, LightColours.WHITE, LightColours.WHITE, false);
-        setLEDRangeGroup(LedRange.R1, LightColours.WHITE, LightColours.WHITE, false);
+    if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.REST_POSITION){
+      if(dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L1){
+        if(dynamicPathingSubsystem.getCoralScoringSide()){
+          setLEDRangeGroup(LedRange.L1, LightColours.YELLOW, LightColours.WHITE, false);
+          setLEDRangeGroup(LedRange.R1, LightColours.YELLOW, LightColours.WHITE, false);
+        }
+        else{
+          setLEDRangeGroup(LedRange.R1, LightColours.PURPLE, LightColours.WHITE, false);
+          setLEDRangeGroup(LedRange.L1, LightColours.PURPLE, LightColours.WHITE, false);
+        }
       }
-      else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.L2){
-        setLEDRangeGroup(LedRange.L2, LightColours.WHITE, LightColours.WHITE, false);
-        setLEDRangeGroup(LedRange.R2, LightColours.WHITE, LightColours.WHITE, false);
+      else if(dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L2){
+        if(dynamicPathingSubsystem.getCoralScoringSide()){
+          setLEDRangeGroup(LedRange.L2, LightColours.YELLOW, LightColours.WHITE, false);
+          setLEDRangeGroup(LedRange.R2, LightColours.YELLOW, LightColours.WHITE, false);
+        }
+        else{
+          setLEDRangeGroup(LedRange.R2, LightColours.PURPLE, LightColours.WHITE, false);
+          setLEDRangeGroup(LedRange.L2, LightColours.PURPLE, LightColours.WHITE, false);
+        }
       }
-      else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.L3){
-        setLEDRangeGroup(LedRange.L3, LightColours.WHITE, LightColours.WHITE, false);
-        setLEDRangeGroup(LedRange.R3, LightColours.WHITE, LightColours.WHITE, false);
+      else if(dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L3){
+        if(dynamicPathingSubsystem.getCoralScoringSide()){
+          setLEDRangeGroup(LedRange.L3, LightColours.YELLOW, LightColours.WHITE, false);
+          setLEDRangeGroup(LedRange.R3, LightColours.YELLOW, LightColours.WHITE, false);
+        }
+        else{
+          setLEDRangeGroup(LedRange.R3, LightColours.PURPLE, LightColours.WHITE, false);
+          setLEDRangeGroup(LedRange.L3, LightColours.PURPLE, LightColours.WHITE, false);
+        }
       }
-      else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.L4){
-        setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.WHITE, LightColours.WHITE, false);
-        setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.WHITE, LightColours.WHITE, false);
-      }
-      else{
-        setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
-        setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
-        
+      else if(dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4){
+        if(dynamicPathingSubsystem.getCoralScoringSide()){
+          setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.YELLOW, LightColours.WHITE, false);
+          setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.YELLOW, LightColours.WHITE, false);
+        }
+        else{
+          setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.PURPLE, LightColours.WHITE, false);
+          setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.PURPLE, LightColours.WHITE, false);
+        }
       }
     }
     else{
-      if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.PROCESSOR){
-        setLEDRangeGroup(LedRange.L1, LightColours.DARKGREEN, LightColours.WHITE, false);
-        setLEDRangeGroup(LedRange.R1, LightColours.DARKGREEN, LightColours.WHITE, false);
-      }
-      else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.ALGAE_L1){
-        setLEDRangeGroup(LedRange.L2, LightColours.DARKGREEN, LightColours.WHITE, false);
-        setLEDRangeGroup(LedRange.R2, LightColours.DARKGREEN, LightColours.WHITE, false);
-      }
-      else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.ALGAE_L2){
-        setLEDRangeGroup(LedRange.L3, LightColours.DARKGREEN, LightColours.WHITE, false);
-        setLEDRangeGroup(LedRange.R3, LightColours.DARKGREEN, LightColours.WHITE, false);
-      }
-      else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.NET){
-        setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.DARKGREEN, LightColours.WHITE, false);
-        setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.DARKGREEN, LightColours.WHITE, false);
+      if(intakeSubsystem.isCoralLoaded()){
+        if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.L1){
+          setLEDRangeGroup(LedRange.L1, LightColours.WHITE, LightColours.WHITE, false);
+          setLEDRangeGroup(LedRange.R1, LightColours.WHITE, LightColours.WHITE, false);
+        }
+        else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.L2){
+          setLEDRangeGroup(LedRange.L2, LightColours.WHITE, LightColours.WHITE, false);
+          setLEDRangeGroup(LedRange.R2, LightColours.WHITE, LightColours.WHITE, false);
+        }
+        else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.L3){
+          setLEDRangeGroup(LedRange.L3, LightColours.WHITE, LightColours.WHITE, false);
+          setLEDRangeGroup(LedRange.R3, LightColours.WHITE, LightColours.WHITE, false);
+        }
+        else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.L4){
+          setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.WHITE, LightColours.WHITE, false);
+          setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.WHITE, LightColours.WHITE, false);
+        }
+        else{
+          setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
+          setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
+          
+        }
       }
       else{
-        setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
-        setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
-        
+        if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.PROCESSOR){
+          setLEDRangeGroup(LedRange.L1, LightColours.DARKGREEN, LightColours.WHITE, false);
+          setLEDRangeGroup(LedRange.R1, LightColours.DARKGREEN, LightColours.WHITE, false);
+        }
+        else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.ALGAE_L1){
+          setLEDRangeGroup(LedRange.L2, LightColours.DARKGREEN, LightColours.WHITE, false);
+          setLEDRangeGroup(LedRange.R2, LightColours.DARKGREEN, LightColours.WHITE, false);
+        }
+        else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.ALGAE_L2){
+          setLEDRangeGroup(LedRange.L3, LightColours.DARKGREEN, LightColours.WHITE, false);
+          setLEDRangeGroup(LedRange.R3, LightColours.DARKGREEN, LightColours.WHITE, false);
+        }
+        else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.NET){
+          setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.DARKGREEN, LightColours.WHITE, false);
+          setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.DARKGREEN, LightColours.WHITE, false);
+        }
+        else{
+          setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
+          setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
+          
+        }
       }
     }
+    
     if(DynamicPathingSubsystem.isRobotInRangeOfReefPathing()){
       if(intakeSubsystem.isCoralLoaded()){
         setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.WHITE, LightColours.BLACK, false);

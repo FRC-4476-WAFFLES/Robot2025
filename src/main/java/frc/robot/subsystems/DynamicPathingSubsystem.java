@@ -310,6 +310,10 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         return coralScoringLevel;
     }
 
+    public boolean getCoralScoringSide() {
+        return coralScoringRightSide;
+    }
+
     /**
      * Gets the last dynamic pathing situation
      * @return a DynamicPathingSituation enum
