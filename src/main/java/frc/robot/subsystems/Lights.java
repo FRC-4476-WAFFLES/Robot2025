@@ -33,17 +33,22 @@ import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.subsystems.Lights.LightColours;
+import frc.robot.utils.LimelightHelpers;
 
 public class Lights extends SubsystemBase {
-  private static final CANdle candle = new CANdle(Constants.CANIds.CANdle); 
+  // Constants
   private static final int LED_COUNT = 122;
-
+  private static final double DEFAULT_BLINK_RATE = 0.1;
+  
+  // Hardware
+  private static final CANdle candle = new CANdle(Constants.CANIds.CANdle);
+  
+  // State
   private static final Timer blinkTimer = new Timer();
   private boolean isBlinkColour = true;
   public boolean isEndgameWarning = false;
-  private double blinkRate = 0.1;
+  private double blinkRate = DEFAULT_BLINK_RATE;
   private int[][] ledColors;
-  
   private Map<LedRange, LightColours> ledRangeColours = new EnumMap<>(LedRange.class);
 
   public enum LedRange {
@@ -135,7 +140,8 @@ public class Lights extends SubsystemBase {
     STROBE(new StrobeAnimation(255, 0, 0, 0, 98.0 / 256.0, LED_COUNT)),
     LARSON(new LarsonAnimation(255, 255, 0, 0, 0.2, LED_COUNT, BounceMode.Front, 2)),
     COLOR_FLOW(new ColorFlowAnimation(255, 255, 0, 0, 0.05, LED_COUNT, Direction.Forward)),
-    RAINBOW(new RainbowAnimation(0.9, 0.1, LED_COUNT));
+    RAINBOW(new RainbowAnimation(0.9, 0.1, LED_COUNT)),
+    YELLOW_FLOW(new ColorFlowAnimation(255, 255, 0, 0, 0.1, LED_COUNT - 8, Direction.Forward));
 
     private final Animation animation;
 
@@ -175,45 +181,47 @@ public class Lights extends SubsystemBase {
    */
   @Override
   public void periodic() {
-    
-    if(DriverStation.isDisabled()){
-      if(intakeSubsystem.isAlgaeLoaded()){
-        setLEDRange(0, 1, LightColours.DARKGREEN);
-      }
-      else if(intakeSubsystem.isCoralLoaded()){
-        setLEDRange(0, 1, LightColours.WHITE);
-      }
-      else{
-        setLEDRange(0, 1, LightColours.BLACK);
-      }
-      // setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.ORANGE, LightColours.WHITE, false);
-      // setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.BLUE, LightColours.PURPLE, false);
-      // setLEDRangeGroup(LedRange.MIDDLE_FULL, LightColours.GREEN, LightColours.BLACK, false);
-      /* 
-      LedAnimation currentAnimation = getLedAnimation();
-      if (shooterSubsystem.isNote()){
-        setLEDRangeGroup(LedRange.RIGHT_SIDE_BOTTOM, LightColours.GREEN, LightColours.GREEN, false);
-      }
-      if (shooterSubsystem.isFullyInNote()){
-        setLEDRangeGroup(LedRange.LEFT_SIDE_BOTTOM, LightColours.GREEN, LightColours.GREEN, false);
-      }
-      if (elevatorSubsystem.getElevatorPosition() < -0.5 || anglerSubsystem.getAnglerDegrees() < -30.0) {
-        setLEDRangeGroup(LedRange.MIDDLE_FULL, LightColours.RED, LightColours.RED, false);
-      } else if (Math.abs(elevatorSubsystem.getElevatorPosition()) > 0.5 
-                 || Math.abs(anglerSubsystem.getAnglerDegrees()) > 1) {
-        setLEDRangeGroup(LedRange.MIDDLE_FULL, LightColours.YELLOW, LightColours.GREEN, false);
-      } else {
-        setLEDRangeGroup(LedRange.MIDDLE_FULL, LightColours.GREEN, LightColours.GREEN, false);
-      }*/
-      updateBlinkTimer();
-      updateLedRanges();
-      candle.animate(null);
-      //candle.animate(currentAnimation.getAnimation());
+    if (DriverStation.isDisabled()) {
+      handleDisabledState();
+    } else {
+      handleEnabledState();
     }
-    else{
-      candle.animate(null);
-      updateBlinkTimer();
-      updateLedRanges();
+  }
+
+  private void handleDisabledState() {
+    updateIntakeIndicators();
+    updateAprilTagIndicator();
+    updateBlinkTimer();
+    updateLedRanges();
+    // Apply yellow flow animation to LEDs after index 8
+    candle.animate(LedAnimation.YELLOW_FLOW.getAnimation(), 8);
+  }
+
+  private void handleEnabledState() {
+    candle.animate(null);
+    updateBlinkTimer();
+    updateLedRanges();
+  }
+
+  private void updateIntakeIndicators() {
+    if (intakeSubsystem.isAlgaeLoaded()) {
+      setLEDRange(0, 1, LightColours.DARKGREEN);
+    } else {
+      setLEDRange(0, 1, LightColours.BLACK);
+    }
+    
+    if (intakeSubsystem.isCoralLoaded()) {
+      setLEDRange(1, 2, LightColours.WHITE);
+    } else {
+      setLEDRange(1, 2, LightColours.BLACK);
+    }
+  }
+
+  private void updateAprilTagIndicator() {
+    if (LimelightHelpers.getTV("limelight-front")) {
+      setLEDRange(1, 2, LightColours.GREEN);
+    } else {
+      setLEDRange(1, 2, LightColours.BLACK);
     }
   }
 
@@ -222,15 +230,6 @@ public class Lights extends SubsystemBase {
    * @return The LedAnimation to be displayed
    */
   private LedAnimation getLedAnimation() {
-    /* 
-    if (elevatorSubsystem.getElevatorPosition() < -0.5 || anglerSubsystem.getAnglerDegrees() < -30.0) {
-        return LedAnimation.STROBE;
-    } else if (Math.abs(elevatorSubsystem.getElevatorPosition()) > 0.5 
-               || Math.abs(anglerSubsystem.getAnglerDegrees()) > 1) {
-        return LedAnimation.LARSON;
-    } else {
-        
-    }*/
     return LedAnimation.COLOR_FLOW;
   }
 
@@ -360,131 +359,100 @@ public class Lights extends SubsystemBase {
    * This method is called by the default command to handle standard lighting patterns.
    */
   public void updateLights() {
-    if(DriverStation.isDisabled()){
-      if(intakeSubsystem.isAlgaeLoaded()){
-        setLEDRange(0, 1, LightColours.DARKGREEN);
-      }
-      else{
-        setLEDRange(0, 1, LightColours.BLACK);
-      }
-      if(intakeSubsystem.isCoralLoaded()){
-        setLEDRange(1, 2, LightColours.WHITE);
-      }
-      else{
-        setLEDRange(1, 2, LightColours.BLACK);
-      }
-    }
-    if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.REST_POSITION){
-      if(dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L1){
-        if(dynamicPathingSubsystem.getCoralScoringSide()){
-          setLEDRangeGroup(LedRange.L1, LightColours.YELLOW, LightColours.WHITE, false);
-          setLEDRangeGroup(LedRange.R1, LightColours.YELLOW, LightColours.WHITE, false);
-        }
-        else{
-          setLEDRangeGroup(LedRange.R1, LightColours.PURPLE, LightColours.WHITE, false);
-          setLEDRangeGroup(LedRange.L1, LightColours.PURPLE, LightColours.WHITE, false);
-        }
-      }
-      else if(dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L2){
-        if(dynamicPathingSubsystem.getCoralScoringSide()){
-          setLEDRangeGroup(LedRange.L2, LightColours.YELLOW, LightColours.WHITE, false);
-          setLEDRangeGroup(LedRange.R2, LightColours.YELLOW, LightColours.WHITE, false);
-        }
-        else{
-          setLEDRangeGroup(LedRange.R2, LightColours.PURPLE, LightColours.WHITE, false);
-          setLEDRangeGroup(LedRange.L2, LightColours.PURPLE, LightColours.WHITE, false);
-        }
-      }
-      else if(dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L3){
-        if(dynamicPathingSubsystem.getCoralScoringSide()){
-          setLEDRangeGroup(LedRange.L3, LightColours.YELLOW, LightColours.WHITE, false);
-          setLEDRangeGroup(LedRange.R3, LightColours.YELLOW, LightColours.WHITE, false);
-        }
-        else{
-          setLEDRangeGroup(LedRange.R3, LightColours.PURPLE, LightColours.WHITE, false);
-          setLEDRangeGroup(LedRange.L3, LightColours.PURPLE, LightColours.WHITE, false);
-        }
-      }
-      else if(dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4){
-        if(dynamicPathingSubsystem.getCoralScoringSide()){
-          setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.YELLOW, LightColours.WHITE, false);
-          setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.YELLOW, LightColours.WHITE, false);
-        }
-        else{
-          setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.PURPLE, LightColours.WHITE, false);
-          setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.PURPLE, LightColours.WHITE, false);
-        }
-      }
-    }
-    else{
-      if(intakeSubsystem.isCoralLoaded()){
-        if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.L1){
-          setLEDRangeGroup(LedRange.L1, LightColours.WHITE, LightColours.WHITE, false);
-          setLEDRangeGroup(LedRange.R1, LightColours.WHITE, LightColours.WHITE, false);
-        }
-        else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.L2){
-          setLEDRangeGroup(LedRange.L2, LightColours.WHITE, LightColours.WHITE, false);
-          setLEDRangeGroup(LedRange.R2, LightColours.WHITE, LightColours.WHITE, false);
-        }
-        else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.L3){
-          setLEDRangeGroup(LedRange.L3, LightColours.WHITE, LightColours.WHITE, false);
-          setLEDRangeGroup(LedRange.R3, LightColours.WHITE, LightColours.WHITE, false);
-        }
-        else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.L4){
-          setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.WHITE, LightColours.WHITE, false);
-          setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.WHITE, LightColours.WHITE, false);
-        }
-        else{
-          setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
-          setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
-          
-        }
-      }
-      else{
-        if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.PROCESSOR){
-          setLEDRangeGroup(LedRange.L1, LightColours.DARKGREEN, LightColours.WHITE, false);
-          setLEDRangeGroup(LedRange.R1, LightColours.DARKGREEN, LightColours.WHITE, false);
-        }
-        else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.ALGAE_L1){
-          setLEDRangeGroup(LedRange.L2, LightColours.DARKGREEN, LightColours.WHITE, false);
-          setLEDRangeGroup(LedRange.R2, LightColours.DARKGREEN, LightColours.WHITE, false);
-        }
-        else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.ALGAE_L2){
-          setLEDRangeGroup(LedRange.L3, LightColours.DARKGREEN, LightColours.WHITE, false);
-          setLEDRangeGroup(LedRange.R3, LightColours.DARKGREEN, LightColours.WHITE, false);
-        }
-        else if(elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.NET){
-          setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.DARKGREEN, LightColours.WHITE, false);
-          setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.DARKGREEN, LightColours.WHITE, false);
-        }
-        else{
-          setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
-          setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
-          
-        }
-      }
+    if (elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.REST_POSITION) {
+      handleRestPositionLights();
+    } else {
+      handleElevatorPositionLights();
     }
     
-    if(DynamicPathingSubsystem.isRobotInRangeOfReefPathing()){
-      if(intakeSubsystem.isCoralLoaded()){
-        setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.WHITE, LightColours.BLACK, false);
-        setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.WHITE, LightColours.BLACK, false);
-      }
-      else{
-        setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.DARKGREEN, LightColours.BLACK, false);
-        setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.DARKGREEN, LightColours.BLACK, false);
-      }
+    updateReefPathingIndicators();
+    updateOperatorOverrideIndicator();
+    updateLedRanges();
+  }
+
+  private void handleRestPositionLights() {
+    ScoringLevel scoringLevel = dynamicPathingSubsystem.getCoralScoringLevel();
+    boolean isRightSide = dynamicPathingSubsystem.getCoralScoringSide();
+    
+    switch (scoringLevel) {
+      case L1:
+        setCoralScoringPattern(LedRange.L1, isRightSide);
+        setCoralScoringPattern(LedRange.R1, isRightSide);
+        break;
+      case L2:
+        setCoralScoringPattern(LedRange.L2, isRightSide);
+        setCoralScoringPattern(LedRange.R2, isRightSide);
+        break;
+      case L3:
+        setCoralScoringPattern(LedRange.L3, isRightSide);
+        setCoralScoringPattern(LedRange.R3, isRightSide);
+        break;
+      case L4:
+        setCoralScoringPattern(LedRange.LEFT_SIDE_FULL, isRightSide);
+        setCoralScoringPattern(LedRange.RIGHT_SIDE_FULL, isRightSide);
+        break;
     }
-    else{
+  }
+
+  private void handleElevatorPositionLights() {
+    ElevatorLevel elevatorLevel = elevatorSubsystem.getElevatorSetpointEnum();
+    boolean hasCoralLoaded = intakeSubsystem.isCoralLoaded();
+    setElevatorLevelPattern(elevatorLevel, hasCoralLoaded);
+  }
+
+  private void updateReefPathingIndicators() {
+    if (DynamicPathingSubsystem.isRobotInRangeOfReefPathing()) {
+      LightColours color = intakeSubsystem.isCoralLoaded() ? LightColours.WHITE : LightColours.DARKGREEN;
+      setLEDRangeGroup(LedRange.MIDDLE_LEFT, color, LightColours.BLACK, false);
+      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, color, LightColours.BLACK, false);
+    } else {
       setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.BLACK, LightColours.BLACK, false);
       setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.BLACK, LightColours.BLACK, false);
     }
-    if(RobotContainer.isOperatorOverride){
-      setLEDRangeGroup(LedRange.MIDDLE_MIDDLE, LightColours.GREEN, LightColours.BLACK, false);
+  }
+
+  private void updateOperatorOverrideIndicator() {
+    setLEDRangeGroup(LedRange.MIDDLE_MIDDLE, 
+      RobotContainer.isOperatorOverride ? LightColours.GREEN : LightColours.BLACK, 
+      LightColours.BLACK, 
+      false);
+  }
+
+  // Helper methods for LED patterns
+  private void setCoralScoringPattern(LedRange range, boolean isRightSide) {
+    LightColours color = isRightSide ? LightColours.PURPLE : LightColours.YELLOW;
+    setLEDRangeGroup(range, color, LightColours.WHITE, false);
+  }
+
+  private void setElevatorLevelPattern(ElevatorLevel level, boolean isCoralLoaded) {
+    LedRange leftRange = null;
+    LedRange rightRange = null;
+    LightColours color = isCoralLoaded ? LightColours.WHITE : LightColours.DARKGREEN;
+
+    switch (level) {
+      case L1:
+        leftRange = LedRange.L1;
+        rightRange = LedRange.R1;
+        break;
+      case L2:
+        leftRange = LedRange.L2;
+        rightRange = LedRange.R2;
+        break;
+      case L3:
+        leftRange = LedRange.L3;
+        rightRange = LedRange.R3;
+        break;
+      case L4:
+        leftRange = LedRange.LEFT_SIDE_FULL;
+        rightRange = LedRange.RIGHT_SIDE_FULL;
+        break;
+      default:
+        setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
+        setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
+        return;
     }
-    else{
-      setLEDRangeGroup(LedRange.MIDDLE_MIDDLE, LightColours.BLACK, LightColours.BLACK, false);
-    }
-    updateLedRanges();
+
+    setLEDRangeGroup(leftRange, color, LightColours.WHITE, false);
+    setLEDRangeGroup(rightRange, color, LightColours.WHITE, false);
   }
 } 
