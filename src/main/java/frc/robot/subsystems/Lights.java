@@ -50,6 +50,8 @@ public class Lights extends SubsystemBase {
   private double blinkRate = DEFAULT_BLINK_RATE;
   private int[][] ledColors;
   private Map<LedRange, LightColours> ledRangeColours = new EnumMap<>(LedRange.class);
+  private int flowPosition = 8; // Start flow at LED 8
+  private static final int FLOW_LENGTH = 20; // Length of the flowing section
 
   public enum LedRange {
     CANDLE(0,8),
@@ -140,8 +142,7 @@ public class Lights extends SubsystemBase {
     STROBE(new StrobeAnimation(255, 0, 0, 0, 98.0 / 256.0, LED_COUNT)),
     LARSON(new LarsonAnimation(255, 255, 0, 0, 0.2, LED_COUNT, BounceMode.Front, 2)),
     COLOR_FLOW(new ColorFlowAnimation(255, 255, 0, 0, 0.05, LED_COUNT, Direction.Forward)),
-    RAINBOW(new RainbowAnimation(0.9, 0.1, LED_COUNT)),
-    YELLOW_FLOW(new ColorFlowAnimation(255, 255, 0, 0, 0.1, LED_COUNT - 8, Direction.Forward));
+    RAINBOW(new RainbowAnimation(0.9, 0.1, LED_COUNT));
 
     private final Animation animation;
 
@@ -168,9 +169,14 @@ public class Lights extends SubsystemBase {
     configAll.brightnessScalar = 1;
     configAll.vBatOutputMode = VBatOutputMode.On;
 
-
     candle.configAllSettings(configAll, 1000);
     candle.configLEDType(LEDStripType.RGB);
+
+    // Explicitly disable all animations
+    for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
+      candle.clearAnimation(i);
+    }
+    candle.animate(null);
 
     ledColors = new int[LED_COUNT][3];
   }
@@ -189,16 +195,47 @@ public class Lights extends SubsystemBase {
   }
 
   private void handleDisabledState() {
+    // First update status indicators
     updateIntakeIndicators();
     updateAprilTagIndicator();
     updateBlinkTimer();
     updateLedRanges();
-    // Apply yellow flow animation to LEDs after index 8
-    candle.animate(LedAnimation.YELLOW_FLOW.getAnimation(), 8);
+    
+    // Make sure no animations are running
+    candle.animate(null);
+    
+    // Update flow position
+    if (blinkTimer.get() > 0.05) { // Control flow speed
+      // Calculate and clear previous tail LED
+      int tailPos = flowPosition - FLOW_LENGTH;
+      if (tailPos < 8) {
+        tailPos = LED_COUNT - (8 - tailPos);
+      }
+      if (tailPos >= 8 && tailPos < LED_COUNT) {
+        candle.setLEDs(0, 0, 0, 0, tailPos, 1);
+      }
+      
+      // Update position
+      flowPosition = (flowPosition + 1) % LED_COUNT;
+      if (flowPosition < 8) {
+        flowPosition = 8;
+      }
+      
+      // Set new head LED to full brightness
+      candle.setLEDs(255, 255, 0, 0, flowPosition, 1);
+      
+      blinkTimer.reset();
+    }
   }
 
   private void handleEnabledState() {
+    // Make sure no animations are running
     candle.animate(null);
+    for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
+      candle.clearAnimation(i);
+    }
+    
+    updateLights();  // Update standard LED patterns
     updateBlinkTimer();
     updateLedRanges();
   }
