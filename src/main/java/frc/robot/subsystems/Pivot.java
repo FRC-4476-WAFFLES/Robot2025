@@ -21,6 +21,7 @@ import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
 
 import com.ctre.phoenix6.configs.*;
+import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -45,7 +46,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     private final CANcoder pivotAbsoluteEncoder;
 
     // Control Objects
-    private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
+    private final DynamicMotionMagicVoltage motionMagicRequest = new DynamicMotionMagicVoltage(0, ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY, ManipulatorConstants.PIVOT_MOTION_ACCELERATION, ManipulatorConstants.PIVOT_MOTION_JERK);
 
     // State variables
     private double pivotSetpointAngle = 0;
@@ -131,6 +132,13 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         slot0Configs.kS = Constants.ManipulatorConstants.PIVOT_kS;
         pivotConfigs.Slot0 = slot0Configs;
 
+        Slot1Configs slot1Configs = new Slot1Configs();
+        slot1Configs.kP = Constants.ManipulatorConstants.PIVOT_kP_ALGEA_SLOW;
+        slot1Configs.kI = Constants.ManipulatorConstants.PIVOT_kI;
+        slot1Configs.kS = Constants.ManipulatorConstants.PIVOT_kS;
+        slot1Configs.kD = Constants.ManipulatorConstants.PIVOT_kD;
+        pivotConfigs.Slot1 = slot1Configs;
+
         pivotConfigs.MotorOutput.DutyCycleNeutralDeadband = PIVOT_MOTOR_DEADBAND;
 
         // For when CANCoder is not present
@@ -147,6 +155,15 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
     @Override
     public void periodic() {
+        // Real jank but ok
+        int slot = 0;
+        if (intakeSubsystem.isAlgaeLoaded()) {
+            // while algea is loaded, use a slower profile
+            // motionMagicRequest.Velocity = 0.00001; // rps
+            // motionMagicRequest.Acceleration = ManipulatorConstants.PIVOT_MOTION_ACCELERATION / 25; // rot/s^2
+            slot = 1;
+        }
+
         // Update motor controls
 
         double chosenPivotAngle = 0;
@@ -187,7 +204,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
             chosenPivotAngle = PivotPosition.CLEARANCE_POSITION.getDegrees();
         }
 
-        pivot.setControl(motionMagicRequest.withPosition(chosenPivotAngle / 360).withSlot(0));
+        pivot.setControl(motionMagicRequest.withPosition(chosenPivotAngle / 360).withSlot(slot));
     }
 
     /**

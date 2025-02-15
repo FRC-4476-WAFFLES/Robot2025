@@ -151,7 +151,7 @@ public final class Constants {
     // Intake constants
     public static final double INTAKE_SPEED_MULTIPLIER = 0.15;
     public static final double INTAKE_MAX_SPEED = 25; // Rps
-    public static final double ALGAE_HOLD_SPEED = 2; // Speed to hold algae in place
+    public static final double ALGAE_HOLD_SPEED = 4; // Speed to hold algae in place
 
     // Pivot constants
     public static final double PIVOT_ANGLE_DEADBAND = 1;
@@ -172,6 +172,8 @@ public final class Constants {
     public static final double PIVOT_kI = 0.0;
     public static final double PIVOT_kD = 0.0;
     public static final double PIVOT_kS = 0.0;
+
+    public static final double PIVOT_kP_ALGEA_SLOW = 40.0;
 
     // Pivot Positions
     public enum PivotPosition {
@@ -222,7 +224,7 @@ public final class Constants {
     public static final double COLLISION_ZONE_UPPER = 0.84; // meters
 
     // Motion Magic configuration
-    public static final double MOTION_CRUISE_VELOCITY = 0.2;
+    public static final double MOTION_CRUISE_VELOCITY = 4; // 4 usually
     public static final double MOTION_ACCELERATION = 8;
     public static final double MOTION_JERK = 2000;
 
