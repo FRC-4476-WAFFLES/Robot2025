@@ -46,17 +46,17 @@ public class Robot extends TimedRobot {
     m_robotContainer = new RobotContainer();
 
     // Start USB logging
-    // DataLogManager.start("/U/logs");  // Log to USB drive
+    DataLogManager.start("/U/logs");  // Log to USB drive
 
-    // // Record both DS control and joystick data
-    // DriverStation.startDataLog(DataLogManager.getLog());
+    // Record both DS control and joystick data
+    DriverStation.startDataLog(DataLogManager.getLog());
 
-    // // Start logging NetworkTables data
-    // NetworkTableInstance.getDefault().startEntryDataLog(DataLogManager.getLog(), "", "");
+    // Start logging NetworkTables data
+    NetworkTableInstance.getDefault().startEntryDataLog(DataLogManager.getLog(), "", "");
 
-    // // Log metadata about the build
-    // DataLogManager.log("Robot program starting");
-    // DataLogManager.log("Build date: " + BuildConstants.BUILD_DATE);
+    // Log metadata about the build
+    DataLogManager.log("Robot program starting");
+    DataLogManager.log("Build date: " + BuildConstants.BUILD_DATE);
   }
 
   /**

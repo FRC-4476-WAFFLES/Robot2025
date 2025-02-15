@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.RobotContainer;
 import frc.robot.data.Constants.VisionConstants;
 import frc.robot.data.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.LimelightHelpers;
@@ -290,6 +291,11 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
             return;
         }
 
+        // if (RobotContainer.dynamicPathingSubsystem.isPathing()) {
+        //     return;
+        // }
+
+        //System.out.println(getPigeon2().getAngularVelocityZWorld().getValueAsDouble());
         // Integrate position from mt2
         LimelightHelpers.PoseEstimate mt2Result = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LIMELIGHT_NAME);
         if (mt2Result != null) {
@@ -315,7 +321,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
             {
                 // Only accept in enabled if close to existing pose
                 // If disabled ignore distance heuristic
-                if (getRobotPose().getTranslation().getDistance(mt1Result.pose.getTranslation()) < VisionConstants.MT1_REJECT_DISTANCE || !DriverStation.isEnabled()) {
+                if (getRobotPose().getTranslation().getDistance(mt1Result.pose.getTranslation()) < VisionConstants.MT1_REJECT_DISTANCE || DriverStation.isDisabled()) {
 
                     addVisionMeasurement(
                         mt1Result.pose,
@@ -437,8 +443,8 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
                     .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
                 ), // Consumer of ChassisSpeeds to drive the robot
                 new PPHolonomicDriveController(
-                    new PIDConstants(4.7, 0, 0.1),
-                    new PIDConstants(6.1, 0, 0.1)
+                    new PIDConstants(3.5, 0, 0),
+                    new PIDConstants(3, 0, 0)
                 ),
                 PathPlannerConfig,
                 () -> {

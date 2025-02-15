@@ -19,9 +19,9 @@ public class PickupAlgea extends SequentialCommandGroup {
   private PickupAlgea(Command driveCommand, ScoringLevel scoringLevel) {
     addCommands(
       new ParallelCommandGroup(
-        driveCommand,
-        new ApplyScoringSetpoint(scoringLevel),
-        new AlgeaIntake()
+        driveCommand
+        //new ApplyScoringSetpoint(scoringLevel),
+        //new AlgeaIntake()
       )      
     );
   }

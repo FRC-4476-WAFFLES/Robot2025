@@ -89,7 +89,7 @@ public final class Constants {
     public static final double MT1_REJECT_DISTANCE = 1; // meters
 
     public static final int DISABLED_LL_IMU_MODE = 1; // Enables seeding
-    public static final int ENABLED_LL_IMU_MODE = 1; // Should be 3, but firmware isn't out yet, might use 2 if feeling like it
+    public static final int ENABLED_LL_IMU_MODE = 2; // Should be 3, but firmware isn't out yet, might use 2 if feeling like it
   }
 
   /* Physical */
