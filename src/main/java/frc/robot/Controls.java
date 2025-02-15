@@ -16,16 +16,14 @@ public class Controls {
     public static final CommandJoystick rightJoystick = new CommandJoystick(DriverConstants.rightJoystick);
     public static final CommandXboxController operatorController = new CommandXboxController(OperatorConstants.kOperatorControllerPort);
 
-    // This button is referenced in multiple places, and is defined here so it can be edited in one place
-    public static final Trigger dynamicPathingButton = rightJoystick.button(1);
-
-
+    // Constants
     private static final double JOYSTICK_DEADZONE_INNER = 0.025; // Below the inner value the input is zero
     private static final double JOYSTICK_DEADZONE_OUTER = 0.15; // Between the inner and outer value the input is interpolated towards it's actual value
-
-
-    public static final double MANUAL_ELEVATOR_CONTROL_MULTIPLIER = 2;  // Todo: Change this number
     public static final double AXIS_DEADBAND = 0.1;  // Deadband for controller axes to prevent unintended activation
+    public static final double MANUAL_ELEVATOR_CONTROL_MULTIPLIER = 2;  // Todo: Change this number
+
+    // This button is referenced in multiple places, and is defined here so it can be edited in one place
+    public static final Trigger dynamicPathingButton = rightJoystick.button(1);
 
     public static class DriverConstants {
         public static final int leftJoystick = 0;

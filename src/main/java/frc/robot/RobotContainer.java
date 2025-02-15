@@ -75,6 +75,9 @@ public class RobotContainer {
   private final SendableChooser<Command> autoChooser;
   public static boolean isOperatorOverride = false;
 
+  /* Triggers */
+  public static final Trigger doNotScore = Controls.operatorController.leftTrigger(Controls.AXIS_DEADBAND);
+
   /** The static entry point for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the trigger bindings
