@@ -151,6 +151,7 @@ public final class Constants {
     // Intake constants
     public static final double INTAKE_SPEED_MULTIPLIER = 0.15;
     public static final double INTAKE_MAX_SPEED = 25; // Rps
+    public static final double ALGAE_HOLD_SPEED = 0.1; // Speed to hold algae in place
 
     // Pivot constants
     public static final double PIVOT_ANGLE_DEADBAND = 1;

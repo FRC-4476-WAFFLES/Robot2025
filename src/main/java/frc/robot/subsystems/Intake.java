@@ -112,7 +112,10 @@ public class Intake extends SubsystemBase implements NetworkUser{
     
     @Override
     public void periodic() {
-        if (Math.abs(intakeSpeed) < 0.01) {
+        if (isAlgaeLoaded()) {
+            // When algae is loaded, run intake slowly inward
+            intake.setControl(intakeControlRequest.withVelocity(-Constants.ManipulatorConstants.ALGAE_HOLD_SPEED).withSlot(0));
+        } else if (Math.abs(intakeSpeed) < 0.01 && isCoralLoaded()) {
             // Hold position when speed is near zero
             double currentPosition = intake.getPosition().getValueAsDouble();
             lastPosition = currentPosition;
