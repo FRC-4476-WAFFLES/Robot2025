@@ -154,7 +154,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         if (elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER &&
         intakeSubsystem.isAlgaeLoaded()){
             // if we have an algae, we can't fully retract when we are below the crossbar of the elevator
-            chosenPivotAngle = PivotPosition.PROCESSOR.getDegrees();
+            chosenPivotAngle = PivotPosition.CLEARANCE_POSITION.getDegrees();
         }
         else if (collisionPrediction == CollisionType.NONE || pivotSetpointAngle > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE) {
             // Check for bumper collision, and limit angle if so

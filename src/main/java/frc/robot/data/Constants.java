@@ -218,7 +218,7 @@ public final class Constants {
 
     // Collision zone constants
     public static final double COLLISION_ZONE_LOWER = 0.12; // meters
-    public static final double COLLISION_ZONE_UPPER = 0.54; // meters
+    public static final double COLLISION_ZONE_UPPER = 0.84; // meters
 
     // Motion Magic configuration
     public static final double MOTION_CRUISE_VELOCITY = 4;
