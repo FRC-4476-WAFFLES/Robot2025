@@ -48,7 +48,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     /* Reef physical parameters */
     public static final Translation2d REEF_CENTER_BLUE = new Translation2d(Units.inchesToMeters(176.745), Units.inchesToMeters(158.50)); 
     public static final double REEF_INRADIUS = 0.81901;
-    public static final double REEF_PIPE_CENTER_OFFSET = Units.inchesToMeters(6.8); // Fudged
+    public static final double REEF_PIPE_CENTER_OFFSET = Units.inchesToMeters(6.5); // Fudged
     // Offset from the edge of the reef to score from 
     public static final double REEF_SCORING_POSITION_OFFSET = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.05; // Robot with bumpers
     public static final double REEF_SCORING_POSITION_OFFSET_L1 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.34; // Robot with bumpers

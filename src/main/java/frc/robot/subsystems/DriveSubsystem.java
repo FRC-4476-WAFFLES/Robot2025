@@ -291,10 +291,6 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
             return;
         }
 
-        // if (RobotContainer.dynamicPathingSubsystem.isPathing()) {
-        //     return;
-        // }
-
         //System.out.println(getPigeon2().getAngularVelocityZWorld().getValueAsDouble());
         // Integrate position from mt2
         LimelightHelpers.PoseEstimate mt2Result = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LIMELIGHT_NAME);
@@ -443,8 +439,8 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
                     .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
                 ), // Consumer of ChassisSpeeds to drive the robot
                 new PPHolonomicDriveController(
-                    new PIDConstants(3.5, 0, 0),
-                    new PIDConstants(3, 0, 0)
+                    new PIDConstants(4.5, 0, 0),
+                    new PIDConstants(3.5, 0, 0)
                 ),
                 PathPlannerConfig,
                 () -> {

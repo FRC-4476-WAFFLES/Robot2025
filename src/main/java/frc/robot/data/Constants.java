@@ -81,12 +81,12 @@ public final class Constants {
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 1);
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
 
-    public static final Matrix<N3, N1> kSingleTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 4);
-    public static final Matrix<N3, N1> kMultiTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 2);
+    public static final Matrix<N3, N1> kSingleTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 10);
+    public static final Matrix<N3, N1> kMultiTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 6);
 
     // Reject mt1 poses if further than this from current estimate, removes ambiguity noise
     // Only to be used when not seeding position
-    public static final double MT1_REJECT_DISTANCE = 1; // meters
+    public static final double MT1_REJECT_DISTANCE = 2; // meters
 
     public static final int DISABLED_LL_IMU_MODE = 1; // Enables seeding
     public static final int ENABLED_LL_IMU_MODE = 2; // Should be 3, but firmware isn't out yet, might use 2 if feeling like it
