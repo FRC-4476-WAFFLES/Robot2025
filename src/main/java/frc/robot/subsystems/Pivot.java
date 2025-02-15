@@ -151,10 +151,12 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
         double chosenPivotAngle = 0;
         Elevator.CollisionType collisionPrediction = RobotContainer.elevatorSubsystem.getCurrentCollisionPotential();
+
         if (elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER &&
-        intakeSubsystem.isAlgaeLoaded()){
+            intakeSubsystem.isAlgaeLoaded() && pivotSetpointAngle < PivotPosition.CLEARANCE_POSITION_ALGEA.getDegrees()) {
+
             // if we have an algae, we can't fully retract when we are below the crossbar of the elevator
-            chosenPivotAngle = PivotPosition.CLEARANCE_POSITION.getDegrees();
+            chosenPivotAngle = PivotPosition.CLEARANCE_POSITION_ALGEA.getDegrees();
         }
         else if (collisionPrediction == CollisionType.NONE || pivotSetpointAngle > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE) {
             // Check for bumper collision, and limit angle if so
@@ -257,7 +259,8 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     }
 
     public boolean isInBumperDangerZone() {
-        return RobotContainer.elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT;
+        return RobotContainer.elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT ||
+            RobotContainer.elevatorSubsystem.getElevatorSetpointMeters() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT;
     }
 
     public boolean isInL4DangerZone() {

@@ -159,11 +159,11 @@ public class Elevator extends SubsystemBase implements NetworkUser {
 
     // Main control logic
     if (!isZeroingElevator) {
-      if (getElevatorPositionMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER &&
-        intakeSubsystem.isAlgaeLoaded()){
-          elevatorMotorLeader.setControl(motionMagicRequest.withPosition(ElevatorConstants.ElevatorLevel.PROCESSOR.getHeight()).withSlot(0));
-        }
-      else if (currentCollisionPrediction == Elevator.CollisionType.NONE) {
+      // if (getElevatorPositionMeters() <=  &&
+      //   intakeSubsystem.isAlgaeLoaded() && elevatorSetpointMeters < ){
+      //     elevatorMotorLeader.setControl(motionMagicRequest.withPosition(ElevatorConstants.ElevatorLevel.PROCESSOR.getHeight()).withSlot(0));
+      //   }
+      if (currentCollisionPrediction == Elevator.CollisionType.NONE) {
         // Safe to move elevator
         // Move elevator to setpoint
         elevatorMotorLeader.setControl(motionMagicRequest.withPosition(elevatorSetpointMeters).withSlot(0));
