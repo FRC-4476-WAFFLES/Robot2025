@@ -28,6 +28,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import static frc.robot.RobotContainer.elevatorSubsystem;
 import static frc.robot.RobotContainer.intakeSubsystem;
+
+import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 
@@ -59,9 +61,9 @@ public class Lights extends SubsystemBase {
     R3(95,122),      // Bottom + lower middle + upper middle
 
     // Middle sections
-    MIDDLE_TOP(38,46),
-    MIDDLE_MIDDLE(46,54),
-    MIDDLE_BOTTOM(54,62),
+    MIDDLE_LEFT(46,58),
+    MIDDLE_MIDDLE(59,70),
+    MIDDLE_RIGHT(71,83),
     // Left side sections and progressive ranges
     LEFT_SIDE_TOP(62,71),
     LEFT_SIDE_UPPER_MIDDLE(71,80),
@@ -416,6 +418,26 @@ public class Lights extends SubsystemBase {
         setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
         
       }
+    }
+    if(DynamicPathingSubsystem.isRobotInRangeOfReefPathing()){
+      if(intakeSubsystem.isCoralLoaded()){
+        setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.WHITE, LightColours.BLACK, false);
+        setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.WHITE, LightColours.BLACK, false);
+      }
+      else{
+        setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.DARKGREEN, LightColours.BLACK, false);
+        setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.DARKGREEN, LightColours.BLACK, false);
+      }
+    }
+    else{
+      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.BLACK, LightColours.BLACK, false);
+      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.BLACK, LightColours.BLACK, false);
+    }
+    if(RobotContainer.isOperatorOverride){
+      setLEDRangeGroup(LedRange.MIDDLE_MIDDLE, LightColours.GREEN, LightColours.BLACK, false);
+    }
+    else{
+      setLEDRangeGroup(LedRange.MIDDLE_MIDDLE, LightColours.BLACK, LightColours.BLACK, false);
     }
     updateLedRanges();
   }

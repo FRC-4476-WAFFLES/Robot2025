@@ -143,7 +143,7 @@ public final class Constants {
 
     // Intake constants
     public static final double INTAKE_SPEED_MULTIPLIER = 0.15;
-    public static final double INTAKE_MAX_SPEED = 13; // Rps
+    public static final double INTAKE_MAX_SPEED = 25; // Rps
 
     // Pivot constants
     public static final double PIVOT_ANGLE_DEADBAND = 1;
@@ -177,7 +177,7 @@ public final class Constants {
         L4(44.5),
         L3(31.4),
         L2(31.4),
-        L1(143);
+        L1(153);
 
         private final double pivotDegrees;
 
@@ -235,7 +235,7 @@ public final class Constants {
       L4(1.251),
       L3(0.648),
       L2(0.272),
-      L1(0.248);
+      L1(0.341);
 
 
       private final double height;
