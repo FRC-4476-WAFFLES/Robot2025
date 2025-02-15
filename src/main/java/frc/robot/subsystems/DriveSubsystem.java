@@ -30,7 +30,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-
+import frc.robot.data.Constants.VisionConstants;
 import frc.robot.data.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.LimelightHelpers;
 import frc.robot.utils.VisionHelpers;
@@ -223,6 +223,8 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
     */
     private void setup() {
         configurePathPlanner();
+        // Sets IMU mode on limelight
+        onDisable();
     }
 
     /**
@@ -287,61 +289,60 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
         if (!isOdometryValid()) {
             return;
         }
-        
 
         // Integrate position from mt2
-        LimelightHelpers.SetRobotOrientation(LIMELIGHT_NAME, getRobotPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
-        LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LIMELIGHT_NAME);
-        boolean doRejectUpdate = false;
-        if (mt2 != null) {
-            if(Math.abs(getPigeon2().getAngularVelocityZWorld().getValueAsDouble()) > 10) // if our angular velocity is greater than 720 degrees per second, ignore vision updates
+        LimelightHelpers.PoseEstimate mt2Result = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LIMELIGHT_NAME);
+        if (mt2Result != null) {
+            if(Math.abs(getPigeon2().getAngularVelocityZWorld().getValueAsDouble()) < 90 && mt2Result.tagCount > 0) 
             {
-                doRejectUpdate = true;
-            }
-            if(mt2.tagCount == 0)
-            {
-                doRejectUpdate = true;
-            }
-            if(!doRejectUpdate)
-            {
-                setVisionMeasurementStdDevs(VecBuilder.fill(.7,.7,9999999));
                 addVisionMeasurement(
-                    mt2.pose,
-                    Utils.fpgaToCurrentTime(mt2.timestampSeconds));
+                    mt2Result.pose,
+                    Utils.fpgaToCurrentTime(mt2Result.timestampSeconds),
+                    VecBuilder.fill(.7,.7, Double.MAX_VALUE));
 
                 SmartDashboard.putNumberArray("LL Pose MT2", new double[] {
-                    mt2.pose.getX(),
-                    mt2.pose.getY(),
-                    mt2.pose.getRotation().getDegrees()
+                    mt2Result.pose.getX(),
+                    mt2Result.pose.getY(),
+                    mt2Result.pose.getRotation().getDegrees()
                 });
             }
         }
         // Integrate rotation from mt1
-        LimelightHelpers.PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue(LIMELIGHT_NAME);
-        boolean doRejectUpdateMT1 = false;
-        if (mt1 != null) {
-            if(Math.abs(getPigeon2().getAngularVelocityZWorld().getValueAsDouble()) > 10) // if our angular velocity is greater than 720 degrees per second, ignore vision updates
+        LimelightHelpers.PoseEstimate mt1Result = LimelightHelpers.getBotPoseEstimate_wpiBlue(LIMELIGHT_NAME);
+        if (mt1Result != null) {
+            // Only integrate mt1 rotation values when essentially not rotating
+            if(Math.abs(getPigeon2().getAngularVelocityZWorld().getValueAsDouble()) < 10 && mt1Result.tagCount > 0) 
             {
-                doRejectUpdateMT1 = true;
-            }
-            if(mt1.tagCount == 0)
-            {
-                doRejectUpdateMT1 = true;
-            }
-            if(!doRejectUpdateMT1)
-            {
-                setVisionMeasurementStdDevs(VisionHelpers.getEstimationStdDevsLimelight(mt1.pose, mt1.rawFiducials));
-                addVisionMeasurement(
-                    mt1.pose,
-                    Utils.fpgaToCurrentTime(mt1.timestampSeconds));
+                // Only accept in enabled if close to existing pose
+                // If disabled ignore distance heuristic
+                if (getRobotPose().getTranslation().getDistance(mt1Result.pose.getTranslation()) < VisionConstants.MT1_REJECT_DISTANCE || !DriverStation.isEnabled()) {
 
-                SmartDashboard.putNumberArray("LL Pose MT1", new double[] {
-                    mt1.pose.getX(),
-                    mt1.pose.getY(),
-                    mt1.pose.getRotation().getDegrees()
-                });
+                    addVisionMeasurement(
+                        mt1Result.pose,
+                        Utils.fpgaToCurrentTime(mt1Result.timestampSeconds),
+                        VisionHelpers.getEstimationStdDevsLimelight(mt1Result.pose, mt1Result.rawFiducials));
+    
+                    SmartDashboard.putNumberArray("LL Pose MT1", new double[] {
+                        mt1Result.pose.getX(),
+                        mt1Result.pose.getY(),
+                        mt1Result.pose.getRotation().getDegrees()
+                    });
+                }
             }
         }
+
+        // Fuse in angle to limelight
+        if (DriverStation.isEnabled()) {
+            // Only fuse when not moving
+            // Get rid of once IMU mode 3 becomes available
+            if (notMoving()) {
+                LimelightHelpers.SetRobotOrientation(LIMELIGHT_NAME, getRobotPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
+            }
+        } else {
+            // Seeding in disabled (Uses IMU mode 1)
+            LimelightHelpers.SetRobotOrientation(LIMELIGHT_NAME, getRobotPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
+        }
+        
 
 
 
@@ -408,6 +409,20 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
     }
 
     /**
+     * When the robot disables, configure vision modes
+     */
+    public void onDisable() {
+        LimelightHelpers.SetIMUMode(LIMELIGHT_NAME, VisionConstants.DISABLED_LL_IMU_MODE);
+    }
+
+    /**
+     * When the robot enables, configure vision modes
+     */
+    public void onEnable() {
+        LimelightHelpers.SetIMUMode(LIMELIGHT_NAME, VisionConstants.ENABLED_LL_IMU_MODE); 
+    }
+
+    /**
      * Setup PathPlanner
      */
     private void configurePathPlanner() {
@@ -451,9 +466,9 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
     */
     public boolean notMoving() {
         ChassisSpeeds speeds = getCurrentRobotChassisSpeeds();
-        return Math.abs(speeds.vxMetersPerSecond) < 0.1
-                && Math.abs(speeds.vyMetersPerSecond) < 0.1
-                && Math.abs(speeds.omegaRadiansPerSecond) < 0.4;
+        return Math.abs(speeds.vxMetersPerSecond) < 0.05
+                && Math.abs(speeds.vyMetersPerSecond) < 0.05
+                && Math.abs(speeds.omegaRadiansPerSecond) < 0.1;
     }
 
     /**
