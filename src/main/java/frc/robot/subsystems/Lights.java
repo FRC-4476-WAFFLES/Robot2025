@@ -253,11 +253,27 @@ public class Lights extends SubsystemBase {
     } else {
       setLEDRange(1, 2, LightColours.BLACK);
     }
+
+    // Add pivot position indicator on third LED
+    double pivotPosition = RobotContainer.pivotSubsystem.getPivotPosition();
+    if (Math.abs(pivotPosition) <= 2.0) { // Within 2 degrees of zero
+      setLEDRange(2, 3, LightColours.BLUE);
+    } else {
+      setLEDRange(2, 3, LightColours.BLACK);
+    }
+
+    // Add elevator position indicator on fourth LED
+    double elevatorPosition = RobotContainer.elevatorSubsystem.getElevatorPositionMeters();
+    if (Math.abs(elevatorPosition) <= 0.02) { // Within 2cm of zero
+      setLEDRange(3, 4, LightColours.CYAN);
+    } else {
+      setLEDRange(3, 4, LightColours.BLACK);
+    }
   }
 
   private void updateAprilTagIndicator() {
     if (LimelightHelpers.getTV("limelight-front")) {
-      setLEDRange(1, 2, LightColours.GREEN);
+      setLEDRange(1, 2, LightColours.PINK);
     } else {
       setLEDRange(1, 2, LightColours.BLACK);
     }
