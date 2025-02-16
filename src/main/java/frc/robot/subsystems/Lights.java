@@ -52,6 +52,7 @@ public class Lights extends SubsystemBase {
   private Map<LedRange, LightColours> ledRangeColours = new EnumMap<>(LedRange.class);
   private int flowPosition = 8; // Start flow at LED 8
   private static final int FLOW_LENGTH = 20; // Length of the flowing section
+  private boolean isCoralIntakeRunning = false; // Track when coral intake is running
 
   public enum LedRange {
     CANDLE(0,8),
@@ -438,7 +439,11 @@ public class Lights extends SubsystemBase {
   }
 
   private void updateReefPathingIndicators() {
-    if (DynamicPathingSubsystem.isRobotInRangeOfReefPathing()) {
+    if (isCoralIntakeRunning) {
+      // When coral intake is running, blink white lights
+      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.WHITE, LightColours.BLACK, true);
+      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.WHITE, LightColours.BLACK, true);
+    } else if (DynamicPathingSubsystem.isRobotInRangeOfReefPathing()) {
       LightColours color = intakeSubsystem.isCoralLoaded() ? LightColours.WHITE : LightColours.DARKGREEN;
       setLEDRangeGroup(LedRange.MIDDLE_LEFT, color, LightColours.BLACK, false);
       setLEDRangeGroup(LedRange.MIDDLE_RIGHT, color, LightColours.BLACK, false);
@@ -491,5 +496,9 @@ public class Lights extends SubsystemBase {
 
     setLEDRangeGroup(leftRange, color, LightColours.WHITE, false);
     setLEDRangeGroup(rightRange, color, LightColours.WHITE, false);
+  }
+
+  public void setCoralIntakeRunning(boolean running) {
+    isCoralIntakeRunning = running;
   }
 } 
