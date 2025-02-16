@@ -18,12 +18,12 @@ public class ScoreCoral extends SequentialCommandGroup {
   private ScoreCoral(Command driveCommand) {
     addCommands(
       new ParallelCommandGroup(
-        driveCommand
-        //new PrepareScoreCoral()
-      )
+        driveCommand,
+        new PrepareScoreCoral()
+      ),
       // Wait until doNotScore is released
-      //new WaitUntilCommand(() -> !RobotContainer.doNotScore.getAsBoolean()),
-      //new CoralOutake()
+      new WaitUntilCommand(() -> !RobotContainer.doNotScore.getAsBoolean()),
+      new CoralOutake()
     );
   }
 

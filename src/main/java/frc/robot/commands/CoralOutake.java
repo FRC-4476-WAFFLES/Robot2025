@@ -4,12 +4,14 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.ManipulatorConstants;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class CoralOutake extends Command {
+  Timer timer = new Timer();
   /** Creates a new CoralIntake. */
   public CoralOutake() {
     addRequirements(RobotContainer.intakeSubsystem);
@@ -18,12 +20,18 @@ public class CoralOutake extends Command {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    timer.stop();
+    timer.reset();
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
     RobotContainer.intakeSubsystem.setIntakeSpeed(-ManipulatorConstants.INTAKE_MAX_SPEED);
+    if (!RobotContainer.intakeSubsystem.isCoralLoaded() ) {
+      timer.start();
+    }
   }
 
   // Called once the command ends or is interrupted.
@@ -35,6 +43,6 @@ public class CoralOutake extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return !RobotContainer.intakeSubsystem.isCoralLoaded();
+    return timer.get() > 0.5;
   }
 }

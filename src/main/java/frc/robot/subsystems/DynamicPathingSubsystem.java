@@ -50,7 +50,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     public static final double REEF_INRADIUS = 0.81901;
     public static final double REEF_PIPE_CENTER_OFFSET = Units.inchesToMeters(6.5); // Fudged
     // Offset from the edge of the reef to score from 
-    public static final double REEF_SCORING_POSITION_OFFSET = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.05; // Robot with bumpers
+    public static final double REEF_SCORING_POSITION_OFFSET = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.1; // Robot with bumpers
     public static final double REEF_SCORING_POSITION_OFFSET_L1 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.34; // Robot with bumpers
 
     /* Human player station physical parameters */
@@ -73,7 +73,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
 
     /* Angular units are radians per second */
     public static final double MAX_ANGULAR_SPEED = 1 * Math.PI;
-    public static final double MAX_ANGULAR_ACCELERATION = 4 * Math.PI;
+    public static final double MAX_ANGULAR_ACCELERATION = 2 * Math.PI;
     
     private static final Intake intakeSubsystem = RobotContainer.intakeSubsystem;
 
@@ -452,7 +452,8 @@ public class DynamicPathingSubsystem extends SubsystemBase {
             return Optional.empty();
         }
 
-        double angleBetweenPoses = WafflesUtilities.AngleBetweenPoints(startingPose.getTranslation(), endingPose.getTranslation());
+        double angleBetweenPoses = WafflesUtilities.AngleBetweenPoints(endingPose.getTranslation(), startingPose.getTranslation());
+        SmartDashboard.putNumber("ANGLE ONE", angleBetweenPoses);
 
         // Get current chassis speeds for smooth transition
         var currentSpeeds = RobotContainer.driveSubsystem.getCurrentRobotChassisSpeeds();
@@ -469,8 +470,8 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         // Create a list of waypoints from poses. Each pose represents one waypoint.
         // The rotation component of the pose should be the direction of travel. Do not use holonomic rotation.
         List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(
-            new Pose2d(startingPose.getTranslation(), Rotation2d.fromDegrees(angleBetweenPoses)),
-            new Pose2d(endingPose.getTranslation(), Rotation2d.fromDegrees(angleBetweenPoses))
+            new Pose2d(startingPose.getTranslation(), Rotation2d.fromRadians(angleBetweenPoses)),
+            new Pose2d(endingPose.getTranslation(), Rotation2d.fromRadians(angleBetweenPoses))
         );
 
         // Create the path using the waypoints above with initial velocity
