@@ -8,6 +8,7 @@ import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
@@ -50,6 +51,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
     // State variables
     private double pivotSetpointAngle = 0;
+    private boolean isZeroingPivot = false;
 
     // Network Tables
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
@@ -57,6 +59,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     private final DoublePublisher pivotSetpointNT = pivotTable.getDoubleTopic("Setpoint (Degrees)").publish();
     private final DoublePublisher pivotAngleNT = pivotTable.getDoubleTopic("Current Angle (Degrees)").publish();
     private final BooleanPublisher isAtSetpointNT = pivotTable.getBooleanTopic("Pivot at Setpoint").publish();
+    private final BooleanPublisher isZeroingNT = pivotTable.getBooleanTopic("Is Zeroing").publish();
 
 
     // -------------------- Tuning Code --------------------
@@ -155,6 +158,28 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
     @Override
     public void periodic() {
+        // Handle zeroing first
+        if (isZeroingPivot) {
+            if (pivot.getStatorCurrent().getValueAsDouble() > Constants.ManipulatorConstants.PIVOT_CURRENT_THRESHOLD) { // Current threshold for zeroing
+                // Stop the pivot
+                pivot.set(0);
+
+                // Set the current position as the new zero
+                pivot.setPosition(0);
+
+                // Reset the target position
+                setPivotSetpoint(0);
+
+                isZeroingPivot = false;
+
+                DriverStation.reportWarning("Pivot zeroed successfully", false);
+                return;
+            }
+            // Continue moving slowly towards zero
+            pivot.set(-0.1); // Slow movement towards zero
+            return;
+        }
+
         // Real jank but ok
         int slot = 0;
         if (intakeSubsystem.isAlgaeLoaded()) {
@@ -255,7 +280,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     }
 
     private void resetInternalEncoder() {
-        setPivotSetpoint(Constants.ManipulatorConstants.PivotPosition.CLEARANCE_POSITION);
+        setPivotSetpoint(PivotPosition.ZERO);
     }
 
     /**
@@ -266,6 +291,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         isAtSetpointNT.set(isPivotAtSetpoint());
         pivotSetpointNT.set(pivotSetpointAngle);
         pivotAngleNT.set(getPivotPosition());
+        isZeroingNT.set(isZeroingPivot);
         // laserCanDistanceNT.set(laserCANDistance);
         // coralLoadedNT.set(isCoralLoaded());
     }
@@ -283,5 +309,28 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     public boolean isInL4DangerZone() {
         return RobotContainer.elevatorSubsystem.getElevatorPositionMeters() >= ElevatorConstants.PIVOT_L4_CLEAR_HEIGHT_MIN &&
             RobotContainer.elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.PIVOT_L4_CLEAR_HEIGHT_MAX;
+    }
+
+    /**
+     * Begins zeroing the pivot.
+     */
+    public void zeroPivot() {
+        if (isZeroingPivot) {
+            // Allow the operator to cancel zeroing pivot by pressing button again
+            isZeroingPivot = false;
+            pivot.set(0);
+            DriverStation.reportWarning("Pivot zeroing canceled", false);
+            return;
+        }
+
+        isZeroingPivot = true;
+    }
+
+    /**
+     * Checks if the pivot is currently performing its zeroing routine
+     * @return true if pivot is zeroing
+     */
+    public boolean isZeroing() {
+        return isZeroingPivot;
     }
 }
