@@ -52,6 +52,7 @@ public class Lights extends SubsystemBase {
   private Map<LedRange, LightColours> ledRangeColours = new EnumMap<>(LedRange.class);
   private int flowPosition = 8; // Start flow at LED 8
   private static final int FLOW_LENGTH = 20; // Length of the flowing section
+  private boolean isCoralIntakeRunning = false; // Track when coral intake is running
 
   public enum LedRange {
     CANDLE(0,8),
@@ -252,11 +253,27 @@ public class Lights extends SubsystemBase {
     } else {
       setLEDRange(1, 2, LightColours.BLACK);
     }
+
+    // Add pivot position indicator on third LED
+    double pivotPosition = RobotContainer.pivotSubsystem.getPivotPosition();
+    if (Math.abs(pivotPosition) <= 2.0) { // Within 2 degrees of zero
+      setLEDRange(2, 3, LightColours.BLUE);
+    } else {
+      setLEDRange(2, 3, LightColours.BLACK);
+    }
+
+    // Add elevator position indicator on fourth LED
+    double elevatorPosition = RobotContainer.elevatorSubsystem.getElevatorPositionMeters();
+    if (Math.abs(elevatorPosition) <= 0.02) { // Within 2cm of zero
+      setLEDRange(3, 4, LightColours.CYAN);
+    } else {
+      setLEDRange(3, 4, LightColours.BLACK);
+    }
   }
 
   private void updateAprilTagIndicator() {
     if (LimelightHelpers.getTV("limelight-front")) {
-      setLEDRange(1, 2, LightColours.GREEN);
+      setLEDRange(1, 2, LightColours.PINK);
     } else {
       setLEDRange(1, 2, LightColours.BLACK);
     }
@@ -445,7 +462,11 @@ public class Lights extends SubsystemBase {
   }
 
   private void updateReefPathingIndicators() {
-    if (DynamicPathingSubsystem.isRobotInRangeOfReefPathing()) {
+    if (isCoralIntakeRunning) {
+      // When coral intake is running, blink white lights
+      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.WHITE, LightColours.BLACK, true);
+      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.WHITE, LightColours.BLACK, true);
+    } else if (DynamicPathingSubsystem.isRobotInRangeOfReefPathing()) {
       LightColours color = intakeSubsystem.isCoralLoaded() ? LightColours.WHITE : LightColours.DARKGREEN;
       setLEDRangeGroup(LedRange.MIDDLE_LEFT, color, LightColours.BLACK, false);
       setLEDRangeGroup(LedRange.MIDDLE_RIGHT, color, LightColours.BLACK, false);
@@ -498,5 +519,9 @@ public class Lights extends SubsystemBase {
 
     setLEDRangeGroup(leftRange, color, LightColours.WHITE, false);
     setLEDRangeGroup(rightRange, color, LightColours.WHITE, false);
+  }
+
+  public void setCoralIntakeRunning(boolean running) {
+    isCoralIntakeRunning = running;
   }
 } 
