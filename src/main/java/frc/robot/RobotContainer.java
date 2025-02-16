@@ -7,6 +7,7 @@ package frc.robot;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathCommand;
 
@@ -16,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj.GenericHID;
 
 import frc.robot.commands.DriveTeleop;
@@ -134,6 +136,9 @@ public class RobotContainer {
     inNormalMode.and(Controls.operatorController.y()).onTrue(
       new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L4); })
     );
+
+    // SysID routines
+    // sysIDBindings();
     
     // Override mode immediately moves to position while held
     inOverrideMode.and(Controls.operatorController.a()).whileTrue(
@@ -244,6 +249,28 @@ public class RobotContainer {
   private static void toggleOperatorOverride() {
     isOperatorOverride = !isOperatorOverride;
     telemetry.publishOperatorOverrideInfo();
+  }
+
+  /** Binds controls to run drivetrain sysID */
+  private void sysIDBindings() {
+    Controls.operatorController.a().whileTrue(
+     driveSubsystem.sysIdQuasistatic(Direction.kForward)
+    );
+    Controls.operatorController.x().whileTrue(
+      driveSubsystem.sysIdQuasistatic(Direction.kReverse)
+    );
+    Controls.operatorController.b().whileTrue(
+      driveSubsystem.sysIdDynamic(Direction.kForward)
+    );
+    Controls.operatorController.y().whileTrue(
+      driveSubsystem.sysIdDynamic(Direction.kReverse)
+    );
+    Controls.operatorController.leftBumper().onTrue(
+      new InstantCommand(() -> {SignalLogger.start(); System.out.println("LOG START");})  
+    );
+    Controls.operatorController.rightBumper().onTrue(
+      new InstantCommand(() -> {SignalLogger.stop(); System.out.println("LOG STOP");})  
+    );
   }
 
   /**
