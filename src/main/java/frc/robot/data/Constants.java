@@ -78,13 +78,13 @@ public final class Constants {
 
   /* Vision */
   public static class VisionConstants {
-    public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 1);
+    public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(2, 2, 1);
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
 
     public static final Matrix<N3, N1> kSingleTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 5);
     public static final Matrix<N3, N1> kMultiTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 3);
 
-    public static final Matrix<N3, N1> kStdDevsMT2 = VecBuilder.fill(2,2, Double.MAX_VALUE);
+    public static final Matrix<N3, N1> kStdDevsMT2 = VecBuilder.fill(1,1, Double.MAX_VALUE);
 
     // Reject mt1 poses if further than this from current estimate, removes ambiguity noise
     // Only to be used when not seeding position
@@ -189,10 +189,10 @@ public final class Constants {
         PROCESSOR(189),
         CORAL_INTAKE(0.5),
         NET(10),
-        L4(44.5),
-        L3(31.4),
-        L2(31.4),
-        L1(153);
+        L4(51.8),
+        L3(47.0),
+        L2(47.0),
+        L1(13.0);
 
         private final double pivotDegrees;
 
@@ -246,10 +246,10 @@ public final class Constants {
       ALGAE_L2(1.0),
       ALGAE_L1(0.472),
       PROCESSOR(0.2),
-      L4(1.301),
-      L3(0.698),
-      L2(0.272),
-      L1(0.341);
+      L4(1.400),
+      L3(0.836),
+      L2(0.461),
+      L1(0.118);
 
 
       private final double height;
