@@ -68,11 +68,11 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     public static final Rotation2d NET_SCORING_ANGLE = Rotation2d.kZero;
 
     /* Path following parameters */
-    public static final double MAX_SPEED = 1.0f;
-    public static final double MAX_ACCELERATION = 3.0f;
+    public static final double MAX_SPEED = 1.5f;
+    public static final double MAX_ACCELERATION = 2.0f;
 
     /* Angular units are radians per second */
-    public static final double MAX_ANGULAR_SPEED = 2 * Math.PI;
+    public static final double MAX_ANGULAR_SPEED = 1 * Math.PI;
     public static final double MAX_ANGULAR_ACCELERATION = 4 * Math.PI;
     
     private static final Intake intakeSubsystem = RobotContainer.intakeSubsystem;
@@ -478,7 +478,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         PathPlannerPath path = new PathPlannerPath(
             waypoints,
             constraints,
-            new IdealStartingState(0, startingPose.getRotation()), // Use current velocity and direction as starting state
+            null,
             new GoalEndState(0.0, endingPose.getRotation()) // Goal end state with holonomic rotation
         );
         path.preventFlipping = true;
