@@ -6,6 +6,8 @@ package frc.robot.commands.semiauto;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
+import frc.robot.data.Constants;
+import frc.robot.data.Constants.ScoringConstants;
 
 /* Continuously adjusts position of elevator and pivot to desired scoring level */
 public class PrepareScoreCoral extends Command {
@@ -23,7 +25,7 @@ public class PrepareScoreCoral extends Command {
   public void execute() {
     var ScoringLevel = RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel();
     RobotContainer.elevatorSubsystem.setElevatorSetpoint(ScoringLevel.getElevatorLevel());
-    RobotContainer.pivotSubsystem.setPivotSetpoint(ScoringLevel.getPivotPosition());
+    RobotContainer.pivotSubsystem.setPivotSetpoint(ScoringLevel.getPivotPosition().getDegrees() - ScoringConstants.AUTO_SCORE_PIVOT_NUDGE);
   }
 
   // Called once the command ends or is interrupted.

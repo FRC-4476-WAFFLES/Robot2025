@@ -112,6 +112,7 @@ public final class Constants {
   }
 
   public static class ScoringConstants {
+    public static final double AUTO_SCORE_PIVOT_NUDGE = 8;
     /**
      * Maps scoring levels to their respective elevator and pivot enums
      */
@@ -145,7 +146,7 @@ public final class Constants {
   /* Manipulator Constants */
   public static class ManipulatorConstants {
     // Detection thresholds
-    public static final double CORAL_LOADED_DISTANCE_THRESHOLD = 10.0; // mm
+    public static final double CORAL_LOADED_DISTANCE_THRESHOLD = 22.0; // mm
     public static final double ALGAE_LOADED_DISTANCE_THRESHOLD = 94.0; // mm
     public static final double ALGAE_LOADED_DISTANCE_UPPER_LIMIT = 130; // mm
     public static final double ALGAE_CURRENT_THRESHOLD = 34.0; // amps
@@ -168,7 +169,7 @@ public final class Constants {
     public static final double PIVOT_MOTION_JERK = 2000.0;
     public static final double STATOR_CURRENT_LIMIT = 60.0; // amps
     public static final double PIVOT_MOTOR_DEADBAND = 0.001;
-    public static final double PIVOT_CURRENT_THRESHOLD = 20.0; // amps - Current threshold for zeroing
+    public static final double PIVOT_CURRENT_THRESHOLD = 10.0; // amps - Current threshold for zeroing
 
     // PID Values
     public static final double PIVOT_kP = 100.0;
