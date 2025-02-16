@@ -40,6 +40,7 @@ import frc.robot.commands.semiauto.ApplyScoringSetpoint;
 import frc.robot.commands.DefaultPosition;
 import frc.robot.subsystems.Lights;
 import frc.robot.commands.DefaultLightCommand;
+import frc.robot.commands.ZeroMechanisms;
 
 
 /**
@@ -116,7 +117,8 @@ public class RobotContainer {
     );
 
     Controls.rightJoystick.button(9).whileTrue(resetGyroHeading);
-    Controls.operatorController.back().onTrue(new InstantCommand(() -> {elevatorSubsystem.zeroElevator();}));
+    // Use the back button to zero both elevator and pivot in sequence
+    Controls.operatorController.back().onTrue(new ZeroMechanisms());
     
 
     // Normal mode button bindings
