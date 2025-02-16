@@ -83,6 +83,7 @@ public class Robot extends TimedRobot {
 
     // Used to confiure IMU modes
     RobotContainer.driveSubsystem.onDisable();
+    RobotContainer.lightsSubsystem.onDisable();
   }
 
   @Override

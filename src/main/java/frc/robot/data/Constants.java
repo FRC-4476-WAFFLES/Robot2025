@@ -211,7 +211,7 @@ public final class Constants {
 
     // Elevator will not move if the pivot is not past this angle, to avoid collision with top bar
     public static final double MIN_ELEVATOR_PIVOT_ANGLE = 20; 
-    public static final double PIVOT_BUMPER_CLEAR_HEIGHT = 0.180;
+    public static final double PIVOT_BUMPER_CLEAR_HEIGHT = 0.181;
 
     public static final double PIVOT_L4_CLEAR_HEIGHT_MIN = 0.74;
     public static final double PIVOT_L4_CLEAR_HEIGHT_MAX = 1.1;
@@ -239,9 +239,9 @@ public final class Constants {
     public enum ElevatorLevel {
       REST_POSITION(0.0),
       NET(1.0),
-      ALGAE_L2(0.809),
+      ALGAE_L2(1.0),
       ALGAE_L1(0.472),
-      PROCESSOR(0.188),
+      PROCESSOR(0.2),
       L4(1.301),
       L3(0.698),
       L2(0.272),

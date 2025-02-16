@@ -271,6 +271,13 @@ public class Lights extends SubsystemBase {
   }
 
   /**
+   * Called once when disabled
+   */
+  public void onDisable() {
+    setLEDRange(0, LED_COUNT, LightColours.BLACK);
+  }
+
+  /**
    * Updates the blink timer and toggles the blink state if necessary.
    */
   private void updateBlinkTimer() {
