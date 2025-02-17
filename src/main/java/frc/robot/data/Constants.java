@@ -100,7 +100,7 @@ public final class Constants {
     public static final double maxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
     public static final double maxAngularSpeed = 6; // Max Rad/s
 
-    public static final double withBumperBotHalfWidth = 0.464; // m
+    public static final double withBumperBotHalfWidth = 0.460; // m
 
     // In number of motor rotations per mechanism rotation
     public static final double funnelReduction = 33.75; 
@@ -168,8 +168,8 @@ public final class Constants {
     public static final double PIVOT_MOTION_ACCELERATION = 20.0;
     public static final double PIVOT_MOTION_JERK = 2000.0;
     public static final double STATOR_CURRENT_LIMIT = 60.0; // amps
-    public static final double PIVOT_MOTOR_DEADBAND = 0.001;
-    public static final double PIVOT_CURRENT_THRESHOLD = 10.0; // amps - Current threshold for zeroing
+    public static final double PIVOT_MOTOR_DEADBAND = 0.002;
+    public static final double PIVOT_CURRENT_THRESHOLD = 6.0; // amps - Current threshold for zeroing
 
     // PID Values
     public static final double PIVOT_kP = 100.0;
@@ -190,8 +190,8 @@ public final class Constants {
         CORAL_INTAKE(0.5),
         NET(10),
         L4(51.8),
-        L3(47.0),
-        L2(47.0),
+        L3(45.0),
+        L2(45.0),
         L1(13.0);
 
         private final double pivotDegrees;
@@ -247,9 +247,9 @@ public final class Constants {
       ALGAE_L1(0.472),
       PROCESSOR(0.2),
       L4(1.400),
-      L3(0.836),
-      L2(0.461),
-      L1(0.118);
+      L3(0.7376),
+      L2(0.36),
+      L1(0.118); 
 
 
       private final double height;

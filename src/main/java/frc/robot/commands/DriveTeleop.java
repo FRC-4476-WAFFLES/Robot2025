@@ -36,7 +36,7 @@ public class DriveTeleop extends Command {
   /* PID Controllers used if suppliers are interpreted as setpoints */
   private PIDController xPidController = new PIDController(4, 1, 0);
   private PIDController yPidController = new PIDController(4, 1, 0);
-  private PIDController thetaPidController = new PIDController(9.0, 1.5, 0.0);
+  private PIDController thetaPidController = new PIDController(4.0, 0, 0.1);
   private final SwerveSetpointGenerator setpointGenerator;
   private SwerveSetpoint previousSetpoint;
 

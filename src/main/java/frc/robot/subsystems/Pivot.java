@@ -165,7 +165,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
                 pivot.set(0);
 
                 // Set the current position as the new zero
-                pivot.setPosition(0);
+                pivot.setPosition(-0.001);
 
                 // Reset the target position
                 setPivotSetpoint(0);

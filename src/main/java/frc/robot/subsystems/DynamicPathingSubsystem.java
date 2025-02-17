@@ -18,10 +18,14 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
+import frc.robot.commands.CoralIntake;
 import frc.robot.commands.DriveTeleop;
+import frc.robot.commands.semiauto.ApplyScoringSetpoint;
 import frc.robot.commands.semiauto.PickupAlgea;
 import frc.robot.commands.semiauto.ScoreCoral;
 import frc.robot.data.Constants;
@@ -56,8 +60,8 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     /* Human player station physical parameters */
     public static final Translation2d HUMAN_PLAYER_STATION_LEFT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(25.80));  
     public static final Translation2d HUMAN_PLAYER_STATION_RIGHT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(291.20));  
-    public static final Rotation2d HUMAN_PLAYER_STATION_LEFT_SCORING_ANGLE = Rotation2d.fromDegrees(126);
-    public static final Rotation2d HUMAN_PLAYER_STATION_RIGHT_SCORING_ANGLE = Rotation2d.fromDegrees(234);
+    public static final Rotation2d HUMAN_PLAYER_STATION_LEFT_SCORING_ANGLE = Rotation2d.fromDegrees(126).rotateBy(Rotation2d.k180deg); //126
+    public static final Rotation2d HUMAN_PLAYER_STATION_RIGHT_SCORING_ANGLE = Rotation2d.fromDegrees(234).rotateBy(Rotation2d.k180deg);
 
     /* Processor physical parameters */
     public static final Translation2d PROCCESSOR_BLUE = new Translation2d(Units.inchesToMeters(235.73), Units.inchesToMeters(0.0));  
@@ -217,7 +221,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
 
                     new DriveTeleop(
                         () -> targetNetX, true, // a PID controller or smth lmao
-                        Controls::getDriveY, false,
+                        Controls::getDriveX, false,
                         () -> targetNetRotation, true
                     );
                 }
@@ -227,8 +231,8 @@ public class DynamicPathingSubsystem extends SubsystemBase {
                     Rotation2d targetProcessorRotation = WafflesUtilities.FlipAngleIfRedAlliance(PROCESSOR_SCORING_ANGLE);
 
                     cmd = new DriveTeleop(
-                        Controls::getDriveX, false,
                         Controls::getDriveY, false,
+                        Controls::getDriveX, false,
                         () -> targetProcessorRotation, true
                     );
                 }
@@ -237,10 +241,14 @@ public class DynamicPathingSubsystem extends SubsystemBase {
             case HUMAN_PICKUP: {
                     Rotation2d humanPickupRotation = WafflesUtilities.FlipAngleIfRedAlliance(getHumanPlayerPickupAngle());
 
-                    cmd = new DriveTeleop(
-                        Controls::getDriveX, false,
-                        Controls::getDriveY, false,
-                        () -> humanPickupRotation, true
+                    cmd = new ParallelRaceGroup(
+                        new DriveTeleop(
+                            Controls::getDriveY, false,
+                            Controls::getDriveX, false,
+                            () -> humanPickupRotation, true
+                        ),
+                        new CoralIntake(),
+                        new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
                     );
                 }
                 break;
