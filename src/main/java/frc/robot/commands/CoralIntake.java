@@ -25,7 +25,7 @@ public class CoralIntake extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    RobotContainer.intakeSubsystem.setIntakeSpeed(-10);
+    RobotContainer.intakeSubsystem.setIntakeSpeed(-12);
   }
 
   // Called once the command ends or is interrupted.

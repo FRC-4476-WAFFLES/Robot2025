@@ -48,6 +48,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private final BooleanPublisher coralLoadedNT = pivotTable.getBooleanTopic("Coral Loaded").publish();
     private final BooleanPublisher algeaLoadedNT = pivotTable.getBooleanTopic("Algea Loaded").publish();
     private final DoublePublisher intakeSetpointNT = pivotTable.getDoubleTopic("Intake Setpoint").publish();
+    private final DoublePublisher intakeCurrentDrawNT = pivotTable.getDoubleTopic("Intake Current Draw").publish();
 
     public Intake() {
         SubsystemNetworkManager.RegisterNetworkUser(this);
@@ -200,6 +201,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
         coralLoadedNT.set(isCoralLoaded());
         algeaLoadedNT.set(isAlgaeLoaded());
         intakeSetpointNT.set(intakeSpeed);
+        intakeCurrentDrawNT.set(intake.getStatorCurrent().getValueAsDouble());
     }
 
     @Override

@@ -26,9 +26,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
-import static frc.robot.RobotContainer.dynamicPathingSubsystem;
-import static frc.robot.RobotContainer.elevatorSubsystem;
-import static frc.robot.RobotContainer.intakeSubsystem;
+import static frc.robot.RobotContainer.*;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
@@ -421,6 +419,10 @@ public class Lights extends SubsystemBase {
    * This method is called by the default command to handle standard lighting patterns.
    */
   public void updateLights() {
+    if (RobotContainer.doNotScore.getAsBoolean()) {
+      // When "do not score" is active, set middle lights to red
+      setLEDRangeGroup(LedRange.MIDDLE_MIDDLE, LightColours.RED, LightColours.BLACK, false);
+    } 
     if (elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.REST_POSITION) {
       handleRestPositionLights();
     } else {
