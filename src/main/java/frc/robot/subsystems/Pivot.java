@@ -216,7 +216,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
         // Auto dodge L4
         if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4 && 
-            RobotContainer.dynamicPathingSubsystem.getLastPathingSituation() == DynamicPathingSituation.REEF_CORAL &&
+            RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.REEF_CORAL &&
             !RobotContainer.isOperatorOverride) {
             if (pivotSetpointAngle > ManipulatorConstants.PIVOT_L4_CLEARANCE_ANGLE && isInL4DangerZone()) {
                 chosenPivotAngle = ManipulatorConstants.PIVOT_L4_CLEARANCE_ANGLE;

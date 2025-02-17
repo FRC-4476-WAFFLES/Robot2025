@@ -32,6 +32,7 @@ import static frc.robot.RobotContainer.intakeSubsystem;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
+import frc.robot.subsystems.DynamicPathingSubsystem.DynamicPathingSituation;
 import frc.robot.subsystems.Lights.LightColours;
 import frc.robot.utils.LimelightHelpers;
 
@@ -462,14 +463,25 @@ public class Lights extends SubsystemBase {
   }
 
   private void updateReefPathingIndicators() {
+    var pathingSituation = RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation();
+
     if (isCoralIntakeRunning) {
       // When coral intake is running, blink white lights
       setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.WHITE, LightColours.BLACK, true);
       setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.WHITE, LightColours.BLACK, true);
-    } else if (DynamicPathingSubsystem.isRobotInRangeOfReefPathing()) {
-      LightColours color = intakeSubsystem.isCoralLoaded() ? LightColours.WHITE : LightColours.DARKGREEN;
-      setLEDRangeGroup(LedRange.MIDDLE_LEFT, color, LightColours.BLACK, false);
-      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, color, LightColours.BLACK, false);
+
+    } else if (pathingSituation == DynamicPathingSituation.REEF_CORAL) {
+      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.WHITE, LightColours.BLACK, false);
+      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.WHITE, LightColours.BLACK, false);
+
+    } else if (pathingSituation == DynamicPathingSituation.REEF_ALGAE) {
+      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.DARKGREEN, LightColours.BLACK, false);
+      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.DARKGREEN, LightColours.BLACK, false);
+    
+    } else if (pathingSituation == DynamicPathingSituation.HUMAN_PICKUP) {
+      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.RED, LightColours.BLACK, false);
+      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.RED, LightColours.BLACK, false);
+
     } else {
       setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.BLACK, LightColours.BLACK, false);
       setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.BLACK, LightColours.BLACK, false);

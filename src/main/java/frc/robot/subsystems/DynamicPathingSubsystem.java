@@ -82,7 +82,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     private boolean isPathing;
     // Only used for coral scoring, level can be determined automatically in every other situation
     private ScoringLevel coralScoringLevel = ScoringLevel.L3;
-    private DynamicPathingSituation lastPathingSituation = DynamicPathingSituation.NONE;
+    private DynamicPathingSituation currentPathingSituation = DynamicPathingSituation.NONE;
 
     enum DynamicPathingSituation {
         NONE, // None of the conditions for other situations are met
@@ -93,10 +93,16 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         HUMAN_PICKUP // Picking up coral from human player -> has no coral and in range of human player
     }
 
+    @Override
+    public void periodic() {
+        currentPathingSituation = getDynamicPathingSituation();
+        SmartDashboard.putString("Pathing Situation", currentPathingSituation.toString());
+    }
+
     /**
      * Returns the current DynamicPathingSituation
      */
-    public static DynamicPathingSituation getDynamicPathingSituation() {
+    private static DynamicPathingSituation getDynamicPathingSituation() {
         if (isRobotInRangeOfReefPathing()) {
             if (intakeSubsystem.isCoralLoaded()) {
                 return DynamicPathingSituation.REEF_CORAL;
@@ -168,11 +174,11 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     public Command getCurrentDynamicPathCommand() {
         Command cmd = new InstantCommand(); // Do nothing fallback in case something goes wrong
         
-        DynamicPathingSituation currentSituation = getDynamicPathingSituation();
-        SmartDashboard.putString("Pathing Situation", currentSituation.toString());
-        lastPathingSituation = currentSituation;
+        // DynamicPathingSituation currentSituation = getDynamicPathingSituation();
+        // SmartDashboard.putString("Pathing Situation", currentSituation.toString());
+        // lastPathingSituation = currentSituation;
 
-        switch (currentSituation) {
+        switch (currentPathingSituation) {
             case REEF_CORAL:  { // extra curly brackets to keep scopes seperate
                     Pose2d targetCoralPose = getNearestCoralScoringLocation();
                     SmartDashboard.putNumberArray("TargetPose Reef", new double[] {
@@ -255,7 +261,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
             coralScoringRightSide = rightSide;
             System.out.println("Setting coral scoring to right side: " + coralScoringRightSide);
             // If we're currently pathing, regenerate the path
-            if (isPathing && lastPathingSituation == DynamicPathingSituation.REEF_CORAL) {
+            if (isPathing && currentPathingSituation == DynamicPathingSituation.REEF_CORAL) {
                 regenerateCurrentCoralPath();
             }
         }
@@ -293,7 +299,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         }
 
         // If switching to L1 from something else, or from L1 to something else while pathing, regenerate
-        if (isPathing && lastPathingSituation == DynamicPathingSituation.REEF_CORAL && (level == ScoringLevel.L1 || coralScoringLevel == ScoringLevel.L1)) {
+        if (isPathing && currentPathingSituation == DynamicPathingSituation.REEF_CORAL && (level == ScoringLevel.L1 || coralScoringLevel == ScoringLevel.L1)) {
             regenerateCurrentCoralPath();
             System.out.println("Regenerating path to go to L1");
         }
@@ -315,11 +321,11 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     }
 
     /**
-     * Gets the last dynamic pathing situation
+     * Gets the current dynamic pathing situation
      * @return a DynamicPathingSituation enum
      */
-    public DynamicPathingSituation getLastPathingSituation() {
-        return lastPathingSituation;
+    public DynamicPathingSituation getCurrentPathingSituation() {
+        return currentPathingSituation;
     }
 
     /**
