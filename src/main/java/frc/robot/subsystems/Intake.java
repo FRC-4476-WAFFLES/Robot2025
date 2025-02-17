@@ -122,12 +122,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
             lastPosition = currentPosition;
             intake.setControl(intakePositionRequest.withOutput(0));
         } else {
-            if(pivotSubsystem.getPivotSetpoint() == Constants.ManipulatorConstants.PivotPosition.L1.getDegrees()){
-                intake.setControl(intakeControlRequest.withVelocity(-intakeSpeed).withSlot(0));
-            }
-            else{
-                intake.setControl(intakeControlRequest.withVelocity(intakeSpeed).withSlot(0));
-            }
+            intake.setControl(intakeControlRequest.withVelocity(intakeSpeed).withSlot(0));
         }
 
         updateCoralSensor();

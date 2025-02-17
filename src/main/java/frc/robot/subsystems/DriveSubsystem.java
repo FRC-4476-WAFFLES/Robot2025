@@ -317,19 +317,19 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
             {
                 // Only accept in enabled if close to existing pose
                 // If disabled ignore distance heuristic
-                if (getRobotPose().getTranslation().getDistance(mt1Result.pose.getTranslation()) < VisionConstants.MT1_REJECT_DISTANCE || DriverStation.isDisabled()) {
+                // if (getRobotPose().getTranslation().getDistance(mt1Result.pose.getTranslation()) < VisionConstants.MT1_REJECT_DISTANCE || DriverStation.isDisabled()) {
 
-                    addVisionMeasurement(
-                        mt1Result.pose,
-                        Utils.fpgaToCurrentTime(mt1Result.timestampSeconds),
-                        VisionHelpers.getEstimationStdDevsLimelight(mt1Result.pose, mt1Result.rawFiducials));
-    
-                    SmartDashboard.putNumberArray("LL Pose MT1", new double[] {
-                        mt1Result.pose.getX(),
-                        mt1Result.pose.getY(),
-                        mt1Result.pose.getRotation().getDegrees()
-                    });
-                }
+                addVisionMeasurement(
+                    mt1Result.pose,
+                    Utils.fpgaToCurrentTime(mt1Result.timestampSeconds),
+                    VisionHelpers.getEstimationStdDevsLimelight(mt1Result.pose, mt1Result.rawFiducials));
+
+                SmartDashboard.putNumberArray("LL Pose MT1", new double[] {
+                    mt1Result.pose.getX(),
+                    mt1Result.pose.getY(),
+                    mt1Result.pose.getRotation().getDegrees()
+                });
+                // }
             }
         }
 

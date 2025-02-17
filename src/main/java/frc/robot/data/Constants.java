@@ -247,8 +247,8 @@ public final class Constants {
       ALGAE_L1(0.472),
       PROCESSOR(0.2),
       L4(1.400),
-      L3(0.756),
-      L2(0.361),
+      L3(0.726),
+      L2(0.331),
       L1(0.118); 
 
 
