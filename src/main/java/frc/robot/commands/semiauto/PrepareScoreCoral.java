@@ -25,7 +25,7 @@ public class PrepareScoreCoral extends Command {
   public void execute() {
     var ScoringLevel = RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel();
     RobotContainer.elevatorSubsystem.setElevatorSetpoint(ScoringLevel.getElevatorLevel());
-    RobotContainer.pivotSubsystem.setPivotSetpoint(ScoringLevel.getPivotPosition().getDegrees() - ScoringConstants.AUTO_SCORE_PIVOT_NUDGE);
+    RobotContainer.pivotSubsystem.setPivotSetpoint(ScoringLevel.getPivotPosition().getDegrees());
   }
 
   // Called once the command ends or is interrupted.
