@@ -419,10 +419,6 @@ public class Lights extends SubsystemBase {
    * This method is called by the default command to handle standard lighting patterns.
    */
   public void updateLights() {
-    if (RobotContainer.doNotScore.getAsBoolean()) {
-      // When "do not score" is active, set middle lights to red
-      setLEDRangeGroup(LedRange.MIDDLE_MIDDLE, LightColours.RED, LightColours.BLACK, false);
-    } 
     if (elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.REST_POSITION) {
       handleRestPositionLights();
     } else {
@@ -430,7 +426,13 @@ public class Lights extends SubsystemBase {
     }
     
     updateReefPathingIndicators();
-    updateOperatorOverrideIndicator();
+    if (RobotContainer.doNotScore.getAsBoolean() && !RobotContainer.isOperatorOverride) {
+      // When "do not score" is active, and we are in normal mode, set middle lights to red
+      setLEDRangeGroup(LedRange.MIDDLE_MIDDLE, LightColours.RED, LightColours.BLACK, false);
+    } else {
+      updateOperatorOverrideIndicator();
+    }
+    
     updateLedRanges();
   }
 
@@ -454,6 +456,8 @@ public class Lights extends SubsystemBase {
       case L4:
         setCoralScoringPattern(LedRange.LEFT_SIDE_FULL, isRightSide);
         setCoralScoringPattern(LedRange.RIGHT_SIDE_FULL, isRightSide);
+        break;
+      default:
         break;
     }
   }

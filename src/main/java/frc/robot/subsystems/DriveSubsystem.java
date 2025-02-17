@@ -300,7 +300,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
                 addVisionMeasurement(
                     mt2Result.pose,
                     Utils.fpgaToCurrentTime(mt2Result.timestampSeconds),
-                    VisionConstants.kStdDevsMT2);
+                    VisionHelpers.getEstimationStdDevsLimelightMT2(mt2Result.rawFiducials));
 
                 SmartDashboard.putNumberArray("LL Pose MT2", new double[] {
                     mt2Result.pose.getX(),

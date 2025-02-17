@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Controls;
@@ -241,13 +242,13 @@ public class DynamicPathingSubsystem extends SubsystemBase {
             case HUMAN_PICKUP: {
                     Rotation2d humanPickupRotation = WafflesUtilities.FlipAngleIfRedAlliance(getHumanPlayerPickupAngle());
 
-                    cmd = new ParallelRaceGroup(
+                    cmd = new ParallelDeadlineGroup(
+                        new CoralIntake(),
                         new DriveTeleop(
                             Controls::getDriveY, false,
                             Controls::getDriveX, false,
                             () -> humanPickupRotation, true
                         ),
-                        new CoralIntake(),
                         new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
                     );
                 }

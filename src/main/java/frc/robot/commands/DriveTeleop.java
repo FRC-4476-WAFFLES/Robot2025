@@ -6,6 +6,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -36,7 +37,7 @@ public class DriveTeleop extends Command {
   /* PID Controllers used if suppliers are interpreted as setpoints */
   private PIDController xPidController = new PIDController(4, 1, 0);
   private PIDController yPidController = new PIDController(4, 1, 0);
-  private PIDController thetaPidController = new PIDController(4.0, 0, 0.1);
+  private PIDController thetaPidController = new PIDController(7.0, 0, 0.1);
   private final SwerveSetpointGenerator setpointGenerator;
   private SwerveSetpoint previousSetpoint;
 
@@ -97,6 +98,12 @@ public class DriveTeleop extends Command {
     double xVelocity = isSetpointX ? xPidController.calculate(currentPose.getX(), xSupplier.getAsDouble()) : xSupplier.getAsDouble();
     double yVelocity = isSetpointY ? yPidController.calculate(currentPose.getY(), ySupplier.getAsDouble()) : ySupplier.getAsDouble();
     double thetaVelocity = isSetpointTheta ? thetaPidController.calculate(currentPose.getRotation().getRadians(), thetaSupplier.get().getRadians()) : thetaSupplier.get().getRadians();
+
+    SmartDashboard.putNumber("ThetaVelocity", thetaVelocity);
+    
+    SmartDashboard.putNumber("setpointTheta", thetaSupplier.get().getRadians());
+    
+    SmartDashboard.putNumber("currentTheta", currentPose.getRotation().getRadians());
 
     driveSubsystem.setControl(
       new SwerveRequest.FieldCentric()

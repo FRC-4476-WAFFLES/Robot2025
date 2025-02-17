@@ -4,6 +4,7 @@ import static frc.robot.data.Constants.VisionConstants.kMultiTagStdDevs;
 import static frc.robot.data.Constants.VisionConstants.kMultiTagStdDevsMT1;
 import static frc.robot.data.Constants.VisionConstants.kSingleTagStdDevs;
 import static frc.robot.data.Constants.VisionConstants.kSingleTagStdDevsMT1;
+import static frc.robot.data.Constants.VisionConstants.kStdDevsMT2;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -42,6 +43,39 @@ public class VisionHelpers {
             estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
         else
             estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
+
+        return estStdDevs;
+    }
+
+    /**
+     * The standard deviations of the estimated pose from
+     * {@link #getEstimatedGlobalPose()}, for use
+     * with {@link edu.wpi.first.math.estimator.SwerveDrivePoseEstimator
+     * SwerveDrivePoseEstimator}.
+     * This should only be used when there are targets visible.
+     */
+    public static Matrix<N3, N1> getEstimationStdDevsLimelightMT2(RawFiducial[] tags) {
+        var estStdDevs = kStdDevsMT2;
+
+        int numTags = 0;
+        double avgDist = 0;
+        for (var tgt : tags) {
+            numTags++;
+            avgDist += tgt.distToCamera;
+        }
+        if (numTags == 0)
+            return estStdDevs;
+        avgDist /= numTags;
+
+        // Decrease std devs if multiple targets are visible
+        if (numTags > 1)
+            estStdDevs.times(0.7);
+
+        // Increase std devs based on (average) distance
+        if (numTags == 1 && avgDist > 5)
+            estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
+        else
+            estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 7));
 
         return estStdDevs;
     }
