@@ -84,7 +84,7 @@ public final class Constants {
     public static final Matrix<N3, N1> kSingleTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 5);
     public static final Matrix<N3, N1> kMultiTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 3);
 
-    public static final Matrix<N3, N1> kStdDevsMT2 = VecBuilder.fill(0.3,0.3, Double.MAX_VALUE);
+    public static final Matrix<N3, N1> kStdDevsMT2 = VecBuilder.fill(0.05,0.05, Double.MAX_VALUE);
 
     // Reject mt1 poses if further than this from current estimate, removes ambiguity noise
     // Only to be used when not seeding position

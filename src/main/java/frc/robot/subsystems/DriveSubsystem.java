@@ -295,7 +295,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
         // Integrate position from mt2
         LimelightHelpers.PoseEstimate mt2Result = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LIMELIGHT_NAME);
         if (mt2Result != null) {
-            if(Math.abs(Math.toDegrees(getCurrentRobotChassisSpeeds().omegaRadiansPerSecond)) < 10 && mt2Result.tagCount > 0) 
+            if( mt2Result.tagCount > 0) //Math.abs(Math.toDegrees(getCurrentRobotChassisSpeeds().omegaRadiansPerSecond)) < 10 &&
             {
                 addVisionMeasurement(
                     mt2Result.pose,
@@ -446,8 +446,8 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
                     .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
                 ), // Consumer of ChassisSpeeds to drive the robot
                 new PPHolonomicDriveController(
-                    new PIDConstants(4.5, 0, 0),
-                    new PIDConstants(3.5, 0, 0)
+                    new PIDConstants(4.7, 0, 0),
+                    new PIDConstants(3.8, 0, 0)
                 ),
                 PathPlannerConfig,
                 () -> {
