@@ -313,7 +313,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
         LimelightHelpers.PoseEstimate mt1Result = LimelightHelpers.getBotPoseEstimate_wpiBlue(LIMELIGHT_NAME);
         if (mt1Result != null) {
             // Only integrate mt1 rotation values when essentially not rotating
-            if(Math.abs(getPigeon2().getAngularVelocityZWorld().getValueAsDouble()) < 90 && mt1Result.tagCount > 0) 
+            if(mt1Result.tagCount > 0) 
             {
                 // Only accept in enabled if close to existing pose
                 // If disabled ignore distance heuristic
@@ -335,14 +335,10 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
 
         // Fuse in angle to limelight
         if (DriverStation.isEnabled()) {
-            // onEnable();
-            // Only fuse when not moving
-            // Get rid of once IMU mode 3 becomes available
-            
             if (notMoving()) {
                 onDisable();
             } else {
-                onEnable();
+                onEnable(); // Use IMU mode 2 while moving to avoid latency issues
             }
 
             LimelightHelpers.SetRobotOrientation(LIMELIGHT_NAME, getRobotPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
