@@ -116,10 +116,14 @@ public class WafflesUtilities {
     }
 
     /**
-     * Returns the angle from p1 to p2
+     * Returns the angle from p1 to p2 from the x axis with positive being up
     */
-    public static double AngleBetweenPoints(Translation2d p1, Translation2d p2) {
-        return Math.atan2(p2.getY() - p1.getY(), p2.getX() - p1.getX());
+    public static Rotation2d AngleBetweenPoints(Translation2d p1, Translation2d p2) {
+        // Trig implementation
+        // return Rotation2d.fromRadians(Math.atan2(p2.getY() - p1.getY(), p2.getX() - p1.getX()));
+
+        // WPILIB implementation
+        return p2.minus(p1).getAngle();
     }
 
     /**

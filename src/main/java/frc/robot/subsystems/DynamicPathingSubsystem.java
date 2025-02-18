@@ -11,9 +11,11 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
 import com.pathplanner.lib.util.FlippingUtil;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -73,6 +75,8 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     public static final Rotation2d NET_SCORING_ANGLE = Rotation2d.kZero;
 
     /* Path following parameters */
+    public static boolean ALWAYS_PATH_STRAIGHT = false;
+
     public static final double MAX_SPEED = 1.5f;
     public static final double MAX_ACCELERATION = 2.0f;
 
@@ -192,7 +196,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
                         targetCoralPose.getRotation().getDegrees()
                     });
 
-                    var path = DynamicPathingSubsystem.simplePathToPose(targetCoralPose);
+                    var path = DynamicPathingSubsystem.simplePathToPose(targetCoralPose, ALWAYS_PATH_STRAIGHT);
                     if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
                         var pathingCommand = getDynamicPathingWrapperCommand(AutoBuilder.followPath(path.get()));
                         cmd = ScoreCoral.scoreCoralWithPath(pathingCommand);
@@ -208,7 +212,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
                         targetAlgaePose.getRotation().getDegrees()
                     });
 
-                    var path = DynamicPathingSubsystem.simplePathToPose(targetAlgaePose);
+                    var path = DynamicPathingSubsystem.simplePathToPose(targetAlgaePose, ALWAYS_PATH_STRAIGHT);
                     if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
                         var pathingCommand = getDynamicPathingWrapperCommand(AutoBuilder.followPath(path.get()));
                         cmd = PickupAlgea.pickupAlgeaWithPath(pathingCommand, getAlgeaScoringLevel(RobotContainer.driveSubsystem.getRobotPose()));
@@ -284,7 +288,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         Pose2d newTargetPose = getNearestCoralScoringLocation();
         
         // Generate a new path from our current position
-        var newPath = simplePathToPose(newTargetPose);
+        var newPath = simplePathToPose(newTargetPose, ALWAYS_PATH_STRAIGHT);
         
         if (newPath.isPresent()) {
             // Create and schedule the new scoring command
@@ -435,6 +439,11 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         return outputPose;
     }
 
+    /**
+     * Gets the height of the algea on a given side of the reef, based on robot pose 
+     * @param robotPose the field centric pose of the robot
+     * @return A ScoringLevel for the height of the algea target
+     */
     public static ScoringLevel getAlgeaScoringLevel(Pose2d robotPose) {
         Pose2d pose = WafflesUtilities.FlipIfRedAlliance(robotPose);
 
@@ -459,7 +468,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
      * @param endingPose The target end pose
      * @return The PathPlannerPath
      */
-    public static Optional<PathPlannerPath> simplePathToPose(Pose2d endingPose) {
+    public static Optional<PathPlannerPath> simplePathToPose(Pose2d endingPose, boolean straightPath) {
         Pose2d startingPose = RobotContainer.driveSubsystem.getRobotPose();
         
         // If distance to target is less than some epsilon (1/2 cm in this case), don't even try.
@@ -467,13 +476,6 @@ public class DynamicPathingSubsystem extends SubsystemBase {
             return Optional.empty();
         }
 
-        double angleBetweenPoses = WafflesUtilities.AngleBetweenPoints(endingPose.getTranslation(), startingPose.getTranslation());
-        SmartDashboard.putNumber("ANGLE ONE", angleBetweenPoses);
-
-        // Get current chassis speeds for smooth transition
-        var currentSpeeds = RobotContainer.driveSubsystem.getCurrentRobotChassisSpeeds();
-        double currentVelocity = Math.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
-        
         // Use consistent constraints regardless of current speed
         PathConstraints constraints = new PathConstraints(
             MAX_SPEED,
@@ -482,12 +484,28 @@ public class DynamicPathingSubsystem extends SubsystemBase {
             MAX_ANGULAR_ACCELERATION
         );
 
-        // Create a list of waypoints from poses. Each pose represents one waypoint.
+        // A list of waypoints from poses. Each pose represents one waypoint.
         // The rotation component of the pose should be the direction of travel. Do not use holonomic rotation.
-        List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(
-            new Pose2d(startingPose.getTranslation(), Rotation2d.fromRadians(angleBetweenPoses)),
-            new Pose2d(endingPose.getTranslation(), Rotation2d.fromRadians(angleBetweenPoses))
-        );
+        List<Waypoint> waypoints;
+
+        if (straightPath) { 
+            // Drive in a straight line towards pose, may not be optimal if travelling at speed
+            Rotation2d angleBetweenPoses = WafflesUtilities.AngleBetweenPoints(startingPose.getTranslation(), endingPose.getTranslation()); 
+
+            waypoints = PathPlannerPath.waypointsFromPoses(
+                new Pose2d(startingPose.getTranslation(), angleBetweenPoses),
+                new Pose2d(endingPose.getTranslation(), angleBetweenPoses.rotateBy(Rotation2d.k180deg))
+            );
+        } else { 
+            // If coming at speed create curved path to allow for deceleration
+            ChassisSpeeds currentSpeeds = RobotContainer.driveSubsystem.getCurrentRobotChassisSpeeds();
+
+            waypoints = PathPlannerPath.waypointsFromPoses(
+                new Pose2d(startingPose.getTranslation(), getOptimalPathHeading(startingPose, endingPose, currentSpeeds)),
+                new Pose2d(endingPose.getTranslation(), endingPose.getRotation())
+            );
+        }
+        
 
         // Create the path using the waypoints above with initial velocity
         // The path will naturally slow down to MAX_SPEED using the consistent constraints
@@ -501,6 +519,23 @@ public class DynamicPathingSubsystem extends SubsystemBase {
 
         return Optional.of(path);
     }
+
+    /**
+     * Gets a direction of travel for pathing to point, taking into account velocity
+     * If traveling at speed, do not travel in straight line to target and curve out of it
+     * 
+     * @return a Rotation2d
+     */
+    private static Rotation2d getOptimalPathHeading(Pose2d start, Pose2d target, ChassisSpeeds speeds) {
+        double velocityMagnitude = Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
+        if (velocityMagnitude < 0.01) {
+            // Not moving, use linear direction
+            return WafflesUtilities.AngleBetweenPoints(start.getTranslation(), target.getTranslation());
+        }
+        
+        // use current velocity as angle
+        return new Rotation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
+    }   
 
     /**
      * Wraps a pathing command with setters for isPathing 
