@@ -494,7 +494,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
 
             waypoints = PathPlannerPath.waypointsFromPoses(
                 new Pose2d(startingPose.getTranslation(), angleBetweenPoses),
-                new Pose2d(endingPose.getTranslation(), angleBetweenPoses.rotateBy(Rotation2d.k180deg))
+                new Pose2d(endingPose.getTranslation(), angleBetweenPoses)
             );
         } else { 
             // If coming at speed create curved path to allow for deceleration
