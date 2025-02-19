@@ -48,6 +48,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
     // Control Objects
     private final DynamicMotionMagicVoltage motionMagicRequest = new DynamicMotionMagicVoltage(0, ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY, ManipulatorConstants.PIVOT_MOTION_ACCELERATION, ManipulatorConstants.PIVOT_MOTION_JERK);
+    private final DynamicMotionMagicVoltage slowMotionMagicRequest = new DynamicMotionMagicVoltage(0, ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY / 25, ManipulatorConstants.PIVOT_MOTION_ACCELERATION / 25, ManipulatorConstants.PIVOT_MOTION_JERK / 25);
 
     // State variables
     private double pivotSetpointAngle = 0;
@@ -153,6 +154,11 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         pivotConfigs.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         pivotConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
+        // Add voltage compensation
+        pivotConfigs.Voltage.PeakForwardVoltage = 12.0; // 12V compensation
+        pivotConfigs.Voltage.PeakReverseVoltage = -12.0;
+        pivotConfigs.Voltage.SupplyVoltageTimeConstant = 0.1;
+
         pivot.getConfigurator().apply(pivotConfigs);
     }
 
@@ -160,23 +166,15 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     public void periodic() {
         // Handle zeroing first
         if (isZeroingPivot) {
-            if (pivot.getStatorCurrent().getValueAsDouble() > Constants.ManipulatorConstants.PIVOT_CURRENT_THRESHOLD) { // Current threshold for zeroing
-                // Stop the pivot
+            if (pivot.getStatorCurrent().getValueAsDouble() > Constants.ManipulatorConstants.PIVOT_CURRENT_THRESHOLD) {
                 pivot.set(0);
-
-                // Set the current position as the new zero
-                pivot.setPosition(-0.001);
-
-                // Reset the target position
+                pivot.setPosition(-0.002);
                 setPivotSetpoint(0);
-
                 isZeroingPivot = false;
-
                 DriverStation.reportWarning("Pivot zeroed successfully", false);
                 return;
             }
-            // Continue moving slowly towards zero
-            pivot.set(-0.1); // Slow movement towards zero
+            pivot.set(-0.1);
             return;
         }
 
@@ -316,7 +314,6 @@ public class Pivot extends SubsystemBase implements NetworkUser {
      */
     public void zeroPivot() {
         if (isZeroingPivot) {
-            // Allow the operator to cancel zeroing pivot by pressing button again
             isZeroingPivot = false;
             pivot.set(0);
             DriverStation.reportWarning("Pivot zeroing canceled", false);
