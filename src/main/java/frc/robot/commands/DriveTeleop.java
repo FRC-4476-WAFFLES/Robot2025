@@ -99,11 +99,11 @@ public class DriveTeleop extends Command {
     double yVelocity = isSetpointY ? yPidController.calculate(currentPose.getY(), ySupplier.getAsDouble()) : ySupplier.getAsDouble();
     double thetaVelocity = isSetpointTheta ? thetaPidController.calculate(currentPose.getRotation().getRadians(), thetaSupplier.get().getRadians()) : thetaSupplier.get().getRadians();
 
-    SmartDashboard.putNumber("ThetaVelocity", thetaVelocity);
+    // SmartDashboard.putNumber("ThetaVelocity", thetaVelocity);
     
-    SmartDashboard.putNumber("setpointTheta", thetaSupplier.get().getRadians());
+    // SmartDashboard.putNumber("setpointTheta", thetaSupplier.get().getRadians());
     
-    SmartDashboard.putNumber("currentTheta", currentPose.getRotation().getRadians());
+    // SmartDashboard.putNumber("currentTheta", currentPose.getRotation().getRadians());
 
     driveSubsystem.setControl(
       new SwerveRequest.FieldCentric()

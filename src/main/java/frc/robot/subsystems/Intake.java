@@ -125,6 +125,10 @@ public class Intake extends SubsystemBase implements NetworkUser{
             intake.setControl(intakeControlRequest.withVelocity(intakeSpeed).withSlot(0));
         }
 
+        if (Math.abs(intakeSpeed) > 0) {
+            detectAlgaeLoaded();
+        }
+        
         updateCoralSensor();
     }
     /**
@@ -140,7 +144,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
      * @return true if algae is detected
      */
     public void detectAlgaeLoaded() {
-        if (intake.getStatorCurrent().getValueAsDouble() > Constants.ManipulatorConstants.ALGAE_CURRENT_THRESHOLD && isIntakingAlgae()) {
+        if (intake.getStatorCurrent().getValueAsDouble() > Constants.ManipulatorConstants.ALGAE_CURRENT_THRESHOLD && isIntakingAlgae() && !isCoralLoaded()) {
           algaeLoaded = true;
         }
         else if(isOuttakingAlgae()) {
@@ -149,7 +153,8 @@ public class Intake extends SubsystemBase implements NetworkUser{
     }
 
     public boolean isAlgaeLoaded() {
-        return Constants.ManipulatorConstants.ALGAE_LOADED_DISTANCE_UPPER_LIMIT >= laserCANDistance && laserCANDistance >= Constants.ManipulatorConstants.ALGAE_LOADED_DISTANCE_THRESHOLD;
+        return algaeLoaded;
+        // return Constants.ManipulatorConstants.ALGAE_LOADED_DISTANCE_UPPER_LIMIT >= laserCANDistance && laserCANDistance >= Constants.ManipulatorConstants.ALGAE_LOADED_DISTANCE_THRESHOLD;
     }
 
     /**

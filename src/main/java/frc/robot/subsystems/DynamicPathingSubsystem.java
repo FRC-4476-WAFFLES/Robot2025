@@ -235,11 +235,16 @@ public class DynamicPathingSubsystem extends SubsystemBase {
             case PROCESSOR: {
                     Rotation2d targetProcessorRotation = WafflesUtilities.FlipAngleIfRedAlliance(PROCESSOR_SCORING_ANGLE);
 
-                    cmd = new DriveTeleop(
-                        Controls::getDriveY, false,
-                        Controls::getDriveX, false,
-                        () -> targetProcessorRotation, true
+                    cmd = new ParallelCommandGroup(
+                        new DriveTeleop(
+                            Controls::getDriveY, false,
+                            Controls::getDriveX, false,
+                            () -> targetProcessorRotation, true
+                        ),
+                        new ApplyScoringSetpoint(ScoringLevel.ALGEA_L1)
                     );
+                    
+
                 }
                 break;
 
@@ -366,8 +371,10 @@ public class DynamicPathingSubsystem extends SubsystemBase {
      * @return The coordinates the robot can score from
      */
     public Pose2d getNearestCoralScoringLocation() {
-        double scoringPositionOffset =  coralScoringLevel == ScoringLevel.L1 ? REEF_SCORING_POSITION_OFFSET_L1 : REEF_SCORING_POSITION_OFFSET;
-        return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), coralScoringRightSide, false, scoringPositionOffset);
+        if (coralScoringLevel == ScoringLevel.L1 ) {
+            return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), coralScoringRightSide, true, REEF_SCORING_POSITION_OFFSET);
+        }
+        return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), coralScoringRightSide, false, REEF_SCORING_POSITION_OFFSET);
     }
 
     /**
@@ -498,7 +505,10 @@ public class DynamicPathingSubsystem extends SubsystemBase {
             );
         } else { 
             // If coming at speed create curved path to allow for deceleration
-            ChassisSpeeds currentSpeeds = RobotContainer.driveSubsystem.getCurrentRobotChassisSpeeds();
+            ChassisSpeeds currentSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(
+                RobotContainer.driveSubsystem.getCurrentRobotChassisSpeeds(),
+                startingPose.getRotation()
+            );
 
             waypoints = PathPlannerPath.waypointsFromPoses(
                 new Pose2d(startingPose.getTranslation(), getOptimalPathHeading(startingPose, endingPose, currentSpeeds)),
@@ -527,14 +537,20 @@ public class DynamicPathingSubsystem extends SubsystemBase {
      * @return a Rotation2d
      */
     private static Rotation2d getOptimalPathHeading(Pose2d start, Pose2d target, ChassisSpeeds speeds) {
+        Rotation2d straightAngle = WafflesUtilities.AngleBetweenPoints(start.getTranslation(), target.getTranslation());
         double velocityMagnitude = Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
         if (velocityMagnitude < 0.01) {
             // Not moving, use linear direction
-            return WafflesUtilities.AngleBetweenPoints(start.getTranslation(), target.getTranslation());
+            return straightAngle;
         }
         
-        // use current velocity as angle
-        return new Rotation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
+        // If driving away from target, make initial heading inverted velocity
+        Rotation2d speedDirection = new Rotation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
+        if (Math.abs(speedDirection.minus(straightAngle).getDegrees()) > 90) {
+            return speedDirection.plus(Rotation2d.k180deg);
+        }
+
+        return speedDirection;
     }   
 
     /**

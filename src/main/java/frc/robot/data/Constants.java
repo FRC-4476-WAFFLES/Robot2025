@@ -123,7 +123,8 @@ public final class Constants {
       L4(PivotPosition.L4, ElevatorLevel.L4),
       ALGEA_L1(PivotPosition.ALGAE_L1, ElevatorLevel.ALGAE_L1),
       ALGEA_L2(PivotPosition.ALGAE_L2, ElevatorLevel.ALGAE_L2),
-      CORAL_INTAKE(PivotPosition.CORAL_INTAKE, ElevatorLevel.REST_POSITION);
+      CORAL_INTAKE(PivotPosition.CORAL_INTAKE, ElevatorLevel.REST_POSITION),
+      PROCESSOR(PivotPosition.PROCESSOR, ElevatorLevel.PROCESSOR);
       
       private final PivotPosition pivotPosition;
       private final ElevatorLevel elevatorLevel;
@@ -157,7 +158,7 @@ public final class Constants {
     public static final double ALGAE_HOLD_SPEED = 4; // Speed to hold algae in place
 
     // Pivot constants
-    public static final double PIVOT_ANGLE_DEADBAND = 1;
+    public static final double PIVOT_ANGLE_DEADBAND = 1.3;
     public static final double PIVOT_MIN_ANGLE = 0.0; // degrees
     public static final double PIVOT_MAX_ANGLE = 185.0; // degrees
     public static final double PIVOT_BUMPER_CLEARANCE_ANGLE = 144.4; // degrees
@@ -172,7 +173,7 @@ public final class Constants {
     public static final double PIVOT_CURRENT_THRESHOLD =  14.0; // amps - Current threshold for zeroing
 
     // PID Values
-    public static final double PIVOT_kP = 100.0;
+    public static final double PIVOT_kP = 110.0;
     public static final double PIVOT_kI = 0.0;
     public static final double PIVOT_kD = 0.0;
     public static final double PIVOT_kS = 0.0;
@@ -189,7 +190,7 @@ public final class Constants {
         PROCESSOR(189),
         CORAL_INTAKE(0.5),
         NET(10),
-        L4(51.8),
+        L4(55.0),
         L3(41.5),
         L2(41.5),
         L1(13.0);
@@ -209,7 +210,7 @@ public final class Constants {
   /* Elevator Constants */
   public static class ElevatorConstants {
     // Control constants
-    public static final double ELEVATOR_DEAD_ZONE = 1;
+    public static final double ELEVATOR_DEAD_ZONE = 0.015;
     public static final double ZEROING_SPEED = -0.1; // Slow downward speed
     public static final double STALL_CURRENT_THRESHOLD = 20.0; // Amperes
 
@@ -217,11 +218,11 @@ public final class Constants {
     public static final double MIN_ELEVATOR_PIVOT_ANGLE = 20; 
     public static final double PIVOT_BUMPER_CLEAR_HEIGHT = 0.181;
 
-    public static final double PIVOT_L4_CLEAR_HEIGHT_MIN = 0.74;
-    public static final double PIVOT_L4_CLEAR_HEIGHT_MAX = 1.1;
+    public static final double PIVOT_L4_CLEAR_HEIGHT_MIN = 0.70;
+    public static final double PIVOT_L4_CLEAR_HEIGHT_MAX = 1.2;
 
     public static final double MIN_ELEVATOR_HEIGHT = 0;
-    public static final double MAX_ELEVATOR_HEIGHT = 1.46;
+    public static final double MAX_ELEVATOR_HEIGHT = 1.48;
 
     // Collision zone constants
     public static final double COLLISION_ZONE_LOWER = 0.12; // meters
@@ -246,10 +247,10 @@ public final class Constants {
       ALGAE_L2(1.0),
       ALGAE_L1(0.472),
       PROCESSOR(0.2),
-      L4(1.400),
+      L4(1.440),
       L3(0.726),
       L2(0.331),
-      L1(0.118); 
+      L1(0.11); 
 
 
       private final double height;

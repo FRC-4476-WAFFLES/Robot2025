@@ -11,6 +11,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.utils.LimelightHelpers.RawFiducial;
 
 public class VisionHelpers {
@@ -28,16 +29,29 @@ public class VisionHelpers {
 
         int numTags = 0;
         double avgDist = 0;
+        double avgAmbiguity = 0;
         for (var tgt : tags) {
             numTags++;
             avgDist += tgt.distToCamera;
+            avgAmbiguity += tgt.ambiguity;
         }
         if (numTags == 0)
             return estStdDevs;
+        
         avgDist /= numTags;
+        avgAmbiguity /= numTags;
+
         // Decrease std devs if multiple targets are visible
         if (numTags > 1)
             estStdDevs = kMultiTagStdDevsMT1;
+        
+        if (avgAmbiguity > 0.7) {
+            return VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
+        }
+
+        estStdDevs.times((1 + avgAmbiguity) * 5);
+        SmartDashboard.putNumber("LL MT1 Ambiguity", avgAmbiguity);
+        
         // Increase std devs based on (average) distance
         if (numTags == 1 && avgDist > 4)
             estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);

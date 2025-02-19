@@ -487,6 +487,10 @@ public class Lights extends SubsystemBase {
     } else if (pathingSituation == DynamicPathingSituation.HUMAN_PICKUP) {
       setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.RED, LightColours.BLACK, false);
       setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.RED, LightColours.BLACK, false);
+    
+    } else if (pathingSituation == DynamicPathingSituation.PROCESSOR) {
+      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.LIGHTBLUE, LightColours.BLACK, false);
+      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.LIGHTBLUE, LightColours.BLACK, false);
 
     } else {
       setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.BLACK, LightColours.BLACK, false);
