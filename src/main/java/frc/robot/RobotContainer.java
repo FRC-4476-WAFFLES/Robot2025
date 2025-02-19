@@ -43,6 +43,7 @@ import frc.robot.commands.DefaultPosition;
 import frc.robot.subsystems.Lights;
 import frc.robot.commands.DefaultLightCommand;
 import frc.robot.commands.ZeroMechanisms;
+import frc.robot.subsystems.MechanismPoses;
 
 
 /**
@@ -62,6 +63,7 @@ public class RobotContainer {
   // public static final Funnel funnelSubsystem = new Funnel();
   public static final Climber climberSubsystem = null; //  new Climber()
   public static final Lights lightsSubsystem = new Lights();
+  public static final MechanismPoses mechanismPoses = new MechanismPoses();
 
   public static final DynamicPathingSubsystem dynamicPathingSubsystem = new DynamicPathingSubsystem();
   public static final Telemetry telemetry = new Telemetry(PhysicalConstants.maxSpeed);
