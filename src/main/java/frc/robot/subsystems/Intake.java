@@ -15,7 +15,6 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import static frc.robot.RobotContainer.pivotSubsystem;
 import frc.robot.data.Constants;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
@@ -40,16 +39,17 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private boolean algaeLoaded = false;
     private double intakeSpeed = 0;
     private double lastPosition = 0;
+    private int algaeDetectionCounter = 0;  // Counter for debouncing
+    private static final int ALGAE_DETECTION_THRESHOLD_COUNT = 5;  // Number of cycles to confirm detection
 
     // Network Tables
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    private final NetworkTable intakeTable = inst.getTable("Intake");
-    private final DoublePublisher laserCanDistanceNT = intakeTable.getDoubleTopic("LaserCan Distance (mm)").publish();
-    private final BooleanPublisher coralLoadedNT = intakeTable.getBooleanTopic("Coral Loaded").publish();
-    private final BooleanPublisher algeaLoadedNT = intakeTable.getBooleanTopic("Algea Loaded").publish();
-    private final DoublePublisher intakeSetpointNT = intakeTable.getDoubleTopic("Intake Setpoint").publish();
-    private final DoublePublisher intakeCurrentDrawNT = intakeTable.getDoubleTopic("Intake Current Draw").publish();
-    private final DoublePublisher intakeVelocityNT = intakeTable.getDoubleTopic("Intake Velocity").publish();
+    private final NetworkTable pivotTable = inst.getTable("Intake");
+    private final DoublePublisher laserCanDistanceNT = pivotTable.getDoubleTopic("LaserCan Distance (mm)").publish();
+    private final BooleanPublisher coralLoadedNT = pivotTable.getBooleanTopic("Coral Loaded").publish();
+    private final BooleanPublisher algeaLoadedNT = pivotTable.getBooleanTopic("Algea Loaded").publish();
+    private final DoublePublisher intakeSetpointNT = pivotTable.getDoubleTopic("Intake Setpoint").publish();
+    private final DoublePublisher intakeCurrentDrawNT = pivotTable.getDoubleTopic("Intake Current Draw").publish();
 
     public Intake() {
         SubsystemNetworkManager.RegisterNetworkUser(this);
@@ -126,13 +126,20 @@ public class Intake extends SubsystemBase implements NetworkUser{
             intake.setControl(intakeControlRequest.withVelocity(intakeSpeed).withSlot(0));
         }
 
+        // Only check for algae when actively intaking (moving inward)
+        if (isIntakingAlgae()) {
+            detectAlgaeLoaded();
+        } else if (isOuttakingAlgae()) {
+            // Reset algae state when intentionally outtaking
+            algaeLoaded = false;
+            algaeDetectionCounter = 0;
+        }
         
-        detectAlgaeLoaded();
         updateCoralSensor();
     }
     /**
      * Sets the intake motor speed
-     * @param speed Speed value (rotations/s)
+     * @param speed Speed value between -1.0 and 1.0
      */
     public void setIntakeSpeed(double speed) {
         this.intakeSpeed = speed;
@@ -140,14 +147,21 @@ public class Intake extends SubsystemBase implements NetworkUser{
 
     /**
      * Checks if algae is present in the intake based on current draw
-     * @return true if algae is detected
+     * Only called when actively intaking
      */
     public void detectAlgaeLoaded() {
-        if (intake.getStatorCurrent().getValueAsDouble() > Constants.ManipulatorConstants.ALGAE_CURRENT_THRESHOLD && isIntakingAlgae() && !isCoralLoaded()) {
-          algaeLoaded = true;
-        }
-        else if(isOuttakingAlgae()) {
-          algaeLoaded = false;
+        double currentDraw = intake.getStatorCurrent().getValueAsDouble();
+        
+        // Check for stall condition indicating algae presence
+        if (!algaeLoaded && currentDraw > Constants.ManipulatorConstants.ALGAE_CURRENT_THRESHOLD && !isCoralLoaded()) {
+            algaeDetectionCounter++;
+            if (algaeDetectionCounter >= ALGAE_DETECTION_THRESHOLD_COUNT) {
+                algaeLoaded = true;
+                algaeDetectionCounter = 0;
+            }
+        } else {
+            // Reset counter if conditions aren't met
+            algaeDetectionCounter = 0;
         }
     }
 
@@ -180,11 +194,12 @@ public class Intake extends SubsystemBase implements NetworkUser{
     }
 
     public boolean isIntakingAlgae() {
-        return !isAlgaeLoaded() && intake.getVelocity().getValueAsDouble() > 10;
+        // Check if we're moving inward (negative velocity) and no coral is present
+        return intake.getVelocity().getValueAsDouble() < 0 && !isCoralLoaded();
     }
 
     public boolean isOuttakingAlgae() {
-        return isAlgaeLoaded() && intake.getVelocity().getValueAsDouble() < -12;
+        return isAlgaeLoaded() && intake.getVelocity().getValueAsDouble() > 0;
     }
 
     public boolean isOuttakingCoral() {
@@ -201,7 +216,6 @@ public class Intake extends SubsystemBase implements NetworkUser{
         algeaLoadedNT.set(isAlgaeLoaded());
         intakeSetpointNT.set(intakeSpeed);
         intakeCurrentDrawNT.set(intake.getStatorCurrent().getValueAsDouble());
-        intakeVelocityNT.set(intake.getVelocity().getValueAsDouble());
     }
 
     @Override
