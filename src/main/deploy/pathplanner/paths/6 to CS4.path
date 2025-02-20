@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.982924742489234,
-        "y": 3.2019402049626793
+        "x": 2.5179127367281966,
+        "y": 2.596605148131748
       },
       "isLocked": false,
       "linkedName": "Reef A"
@@ -20,8 +20,8 @@
         "y": 0.6862664473684208
       },
       "prevControl": {
-        "x": 2.5134769709995313,
-        "y": 2.2358551570122964
+        "x": 2.671655070616444,
+        "y": 2.0908254158706576
       },
       "nextControl": null,
       "isLocked": false,
@@ -33,10 +33,10 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
-    "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 720.0,
+    "maxVelocity": 4.1,
+    "maxAcceleration": 6.0,
+    "maxAngularVelocity": 800.0,
+    "maxAngularAcceleration": 1200.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },

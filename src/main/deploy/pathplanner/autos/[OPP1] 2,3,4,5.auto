@@ -45,6 +45,12 @@
           "data": {
             "pathName": "CS4 to 5"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "5 to CS4"
+          }
         }
       ]
     }

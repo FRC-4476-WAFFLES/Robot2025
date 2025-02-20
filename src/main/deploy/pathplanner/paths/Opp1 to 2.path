@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.4849206554639,
-        "y": 3.087013065515991
+        "x": 6.976587324796398,
+        "y": 2.84072007770216
       },
       "isLocked": false,
       "linkedName": "Opp1"
@@ -20,8 +20,8 @@
         "y": 2.799374357674557
       },
       "prevControl": {
-        "x": 4.7515984746844655,
-        "y": 2.7763957576053357
+        "x": 5.610245901639344,
+        "y": 2.982069672131148
       },
       "nextControl": null,
       "isLocked": false,
@@ -33,10 +33,10 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
-    "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 720.0,
+    "maxVelocity": 4.1,
+    "maxAcceleration": 6.0,
+    "maxAngularVelocity": 800.0,
+    "maxAngularAcceleration": 1200.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },
@@ -45,7 +45,7 @@
     "rotation": 119.74488129694222
   },
   "reversed": false,
-  "folder": "New Folder",
+  "folder": "OPP1",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0
