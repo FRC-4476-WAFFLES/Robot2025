@@ -1,0 +1,43 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Opp1 to 2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "2 to CS4"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "CS4 to 3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3 to CS4"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "CS4 to 4"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

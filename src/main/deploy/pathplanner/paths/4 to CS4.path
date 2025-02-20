@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.38866056959711,
-        "y": 2.0017337353570794
+        "x": 2.539066808585022,
+        "y": 1.6998600967237856
       },
       "isLocked": false,
       "linkedName": "Reef C"
@@ -20,8 +20,8 @@
         "y": 0.6862664473684208
       },
       "prevControl": {
-        "x": 2.653779659909713,
-        "y": 3.1136000654024523
+        "x": 3.0819877807629728,
+        "y": 2.2864938593749113
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,10 +42,10 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -126.66563548264217
+    "rotation": 54.591013070833
   },
   "reversed": false,
-  "folder": "Reef to Bottom Left",
+  "folder": "Reef to CS4",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 59.139108311650524

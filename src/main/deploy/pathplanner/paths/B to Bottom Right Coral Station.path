@@ -42,10 +42,10 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -126.66563548264217
+    "rotation": 54.591013070833
   },
   "reversed": false,
-  "folder": "Reef to bottom right",
+  "folder": "Reef to CS4",
   "idealStartingState": {
     "velocity": 0,
     "rotation": -0.2893701634405953

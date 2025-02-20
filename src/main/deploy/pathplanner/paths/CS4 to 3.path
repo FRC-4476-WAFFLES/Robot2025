@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.338904306494262,
-        "y": 1.7338650920490175
+        "x": 2.3466005943499213,
+        "y": 1.3244787685207577
       },
       "isLocked": false,
       "linkedName": "Bottom Right Coral Station"
     },
     {
       "anchor": {
-        "x": 3.165542763157894,
-        "y": 4.198190789473684
+        "x": 3.973766447368421,
+        "y": 2.8030427631578947
       },
       "prevControl": {
-        "x": 2.429058496185608,
-        "y": 2.115813817403179
+        "x": 3.180349302679174,
+        "y": 2.0731288573207083
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Reef A"
+      "linkedName": "Reef D"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -0.2893701634405953
+    "rotation": 59.139108311650524
   },
   "reversed": false,
-  "folder": "Bottom right to reef",
+  "folder": "CS4 to Reef",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -126.66563548264217
+    "rotation": 54.591013070833
   },
   "useDefaultConstraints": true
 }
