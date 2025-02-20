@@ -43,12 +43,13 @@ public class Intake extends SubsystemBase implements NetworkUser{
 
     // Network Tables
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    private final NetworkTable pivotTable = inst.getTable("Intake");
-    private final DoublePublisher laserCanDistanceNT = pivotTable.getDoubleTopic("LaserCan Distance (mm)").publish();
-    private final BooleanPublisher coralLoadedNT = pivotTable.getBooleanTopic("Coral Loaded").publish();
-    private final BooleanPublisher algeaLoadedNT = pivotTable.getBooleanTopic("Algea Loaded").publish();
-    private final DoublePublisher intakeSetpointNT = pivotTable.getDoubleTopic("Intake Setpoint").publish();
-    private final DoublePublisher intakeCurrentDrawNT = pivotTable.getDoubleTopic("Intake Current Draw").publish();
+    private final NetworkTable intakeTable = inst.getTable("Intake");
+    private final DoublePublisher laserCanDistanceNT = intakeTable.getDoubleTopic("LaserCan Distance (mm)").publish();
+    private final BooleanPublisher coralLoadedNT = intakeTable.getBooleanTopic("Coral Loaded").publish();
+    private final BooleanPublisher algeaLoadedNT = intakeTable.getBooleanTopic("Algea Loaded").publish();
+    private final DoublePublisher intakeSetpointNT = intakeTable.getDoubleTopic("Intake Setpoint").publish();
+    private final DoublePublisher intakeCurrentDrawNT = intakeTable.getDoubleTopic("Intake Current Draw").publish();
+    private final DoublePublisher intakeVelocityNT = intakeTable.getDoubleTopic("Intake Velocity").publish();
 
     public Intake() {
         SubsystemNetworkManager.RegisterNetworkUser(this);
@@ -125,15 +126,13 @@ public class Intake extends SubsystemBase implements NetworkUser{
             intake.setControl(intakeControlRequest.withVelocity(intakeSpeed).withSlot(0));
         }
 
-        if (Math.abs(intakeSpeed) > 0) {
-            detectAlgaeLoaded();
-        }
         
+        detectAlgaeLoaded();
         updateCoralSensor();
     }
     /**
      * Sets the intake motor speed
-     * @param speed Speed value between -1.0 and 1.0
+     * @param speed Speed value (rotations/s)
      */
     public void setIntakeSpeed(double speed) {
         this.intakeSpeed = speed;
@@ -181,11 +180,11 @@ public class Intake extends SubsystemBase implements NetworkUser{
     }
 
     public boolean isIntakingAlgae() {
-        return !isAlgaeLoaded() && intake.getVelocity().getValueAsDouble() < 0;
+        return !isAlgaeLoaded() && intake.getVelocity().getValueAsDouble() > 10;
     }
 
     public boolean isOuttakingAlgae() {
-        return isAlgaeLoaded() && intake.getVelocity().getValueAsDouble() > 0;
+        return isAlgaeLoaded() && intake.getVelocity().getValueAsDouble() < -12;
     }
 
     public boolean isOuttakingCoral() {
@@ -202,6 +201,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
         algeaLoadedNT.set(isAlgaeLoaded());
         intakeSetpointNT.set(intakeSpeed);
         intakeCurrentDrawNT.set(intake.getStatorCurrent().getValueAsDouble());
+        intakeVelocityNT.set(intake.getVelocity().getValueAsDouble());
     }
 
     @Override

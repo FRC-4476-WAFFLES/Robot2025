@@ -35,6 +35,7 @@ import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Telemetry;
+import frc.robot.commands.AlgeaOutake;
 import frc.robot.commands.AxisIntakeControl;
 import frc.robot.commands.CoralIntake;
 import frc.robot.commands.SetPivotPos;
@@ -209,6 +210,11 @@ public class RobotContainer {
         new CoralIntake(),
         new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
       )    
+    );
+
+    // Operator Algea out
+    Controls.operatorController.rightBumper().whileTrue(
+      new AlgeaOutake()
     );
 
     // Dynamic pathing button

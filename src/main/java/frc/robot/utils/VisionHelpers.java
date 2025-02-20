@@ -5,6 +5,7 @@ import static frc.robot.data.Constants.VisionConstants.kMultiTagStdDevsMT1;
 import static frc.robot.data.Constants.VisionConstants.kSingleTagStdDevs;
 import static frc.robot.data.Constants.VisionConstants.kSingleTagStdDevsMT1;
 import static frc.robot.data.Constants.VisionConstants.kStdDevsMT2;
+import static frc.robot.data.Constants.VisionConstants.kStdDevsMT2ReefTargeting;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -12,6 +13,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.RobotContainer;
+import frc.robot.subsystems.DynamicPathingSubsystem.DynamicPathingSituation;
 import frc.robot.utils.LimelightHelpers.RawFiducial;
 
 public class VisionHelpers {
@@ -69,7 +72,13 @@ public class VisionHelpers {
      * This should only be used when there are targets visible.
      */
     public static Matrix<N3, N1> getEstimationStdDevsLimelightMT2(RawFiducial[] tags) {
-        var estStdDevs = kStdDevsMT2;
+        var estStdDevs = kStdDevsMT2ReefTargeting;
+
+        // var pathingSituation = RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation();
+        // if (pathingSituation == DynamicPathingSituation.REEF_ALGAE || pathingSituation == DynamicPathingSituation.REEF_CORAL) {
+        //     estStdDevs = kStdDevsMT2ReefTargeting;
+        // }
+        
 
         int numTags = 0;
         double avgDist = 0;

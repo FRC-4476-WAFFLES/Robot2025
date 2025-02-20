@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,6 +33,8 @@ import frc.robot.commands.semiauto.ApplyScoringSetpoint;
 import frc.robot.commands.semiauto.PickupAlgea;
 import frc.robot.commands.semiauto.ScoreCoral;
 import frc.robot.data.Constants;
+import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
+import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.utils.WafflesUtilities;
 
@@ -57,6 +60,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     public static final double REEF_INRADIUS = 0.81901;
     public static final double REEF_PIPE_CENTER_OFFSET = Units.inchesToMeters(6.5); // Fudged
     // Offset from the edge of the reef to score from 
+    public static final double REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.6; // Robot with bumpers
     public static final double REEF_SCORING_POSITION_OFFSET = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.15; // Robot with bumpers
     public static final double REEF_SCORING_POSITION_OFFSET_L1 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.34; // Robot with bumpers
 
@@ -68,7 +72,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
 
     /* Processor physical parameters */
     public static final Translation2d PROCCESSOR_BLUE = new Translation2d(Units.inchesToMeters(235.73), Units.inchesToMeters(0.0));  
-    public static final Rotation2d PROCESSOR_SCORING_ANGLE = Rotation2d.fromDegrees(90);
+    public static final Rotation2d PROCESSOR_SCORING_ANGLE = Rotation2d.fromDegrees(-90);
 
     /* Net physical parameters */
     public static final double NET_LINE_X_BLUE = Units.inchesToMeters(204.0);
@@ -93,7 +97,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     private ScoringLevel coralScoringLevel = ScoringLevel.L3;
     private DynamicPathingSituation currentPathingSituation = DynamicPathingSituation.NONE;
 
-    enum DynamicPathingSituation {
+    public enum DynamicPathingSituation {
         NONE, // None of the conditions for other situations are met
         REEF_CORAL, // Scoring coral -> has coral loaded and in range of reef
         REEF_ALGAE, // Picking up algae -> has no coral or algae and is in range of reef
@@ -212,7 +216,8 @@ public class DynamicPathingSubsystem extends SubsystemBase {
                         targetAlgaePose.getRotation().getDegrees()
                     });
 
-                    var path = DynamicPathingSubsystem.simplePathToPose(targetAlgaePose, ALWAYS_PATH_STRAIGHT);
+                    Translation2d clearancePosition = getNearestAlgaeClearanceLocation().getTranslation();
+                    var path = DynamicPathingSubsystem.simplePathToPose(targetAlgaePose, ALWAYS_PATH_STRAIGHT, new Translation2d[] {clearancePosition});
                     if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
                         var pathingCommand = getDynamicPathingWrapperCommand(AutoBuilder.followPath(path.get()));
                         cmd = PickupAlgea.pickupAlgeaWithPath(pathingCommand, getAlgeaScoringLevel(RobotContainer.driveSubsystem.getRobotPose()));
@@ -241,8 +246,11 @@ public class DynamicPathingSubsystem extends SubsystemBase {
                             Controls::getDriveX, false,
                             () -> targetProcessorRotation, true
                         ),
-                        new ApplyScoringSetpoint(ScoringLevel.ALGEA_L1)
-                    );
+                        new ApplyScoringSetpoint(ScoringLevel.PROCESSOR)
+                    ).finallyDo(() -> {
+                        RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
+                        RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
+                    });
                     
 
                 }
@@ -378,11 +386,19 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     }
 
     /**
-     * Gets coordinates in field space to the nearest coral scoring position.
-     * @return The coordinates the robot can score from
+     * Gets coordinates in field space to the nearest algae scoring position.
+     * @return The coordinates the robot can pickup from
      */
     public Pose2d getNearestAlgaePickupLocation() {
         return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), false, true, REEF_SCORING_POSITION_OFFSET);
+    }
+
+    /**
+     * Gets coordinates in field space to the nearest algae clearance position
+     * @return The coordinates 
+     */
+    public Pose2d getNearestAlgaeClearanceLocation() {
+        return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), false, true, REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE);
     }
 
     /**
@@ -473,9 +489,21 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     /**
      * Creates a simple, straight path for PathPlanner which moves the robot to a point.
      * @param endingPose The target end pose
+     * @param straightPath Force pathing in a straight line
      * @return The PathPlannerPath
      */
     public static Optional<PathPlannerPath> simplePathToPose(Pose2d endingPose, boolean straightPath) {
+        return simplePathToPose(endingPose, straightPath, null);
+    }
+
+    /**
+     * Creates a simple, straight path for PathPlanner which moves the robot to a point.
+     * @param endingPose The target end pose
+     * @param straightPath Force pathing in a straight line
+     * @param intermediatePoses An array of poses to travel through
+     * @return The PathPlannerPath
+     */
+    public static Optional<PathPlannerPath> simplePathToPose(Pose2d endingPose, boolean straightPath, Translation2d[] intermediatePoses) {
         Pose2d startingPose = RobotContainer.driveSubsystem.getRobotPose();
         
         // If distance to target is less than some epsilon (1/2 cm in this case), don't even try.
@@ -494,15 +522,20 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         // A list of waypoints from poses. Each pose represents one waypoint.
         // The rotation component of the pose should be the direction of travel. Do not use holonomic rotation.
         List<Waypoint> waypoints;
+        
+        Translation2d secondPose = endingPose.getTranslation();
+        if (intermediatePoses != null) {
+            secondPose = intermediatePoses[0];
+        }
 
+        List<Pose2d> fullPoseSet = new ArrayList<Pose2d>();
         if (straightPath) { 
             // Drive in a straight line towards pose, may not be optimal if travelling at speed
-            Rotation2d angleBetweenPoses = WafflesUtilities.AngleBetweenPoints(startingPose.getTranslation(), endingPose.getTranslation()); 
+            Rotation2d angleBetweenPoses = WafflesUtilities.AngleBetweenPoints(startingPose.getTranslation(), secondPose); 
 
-            waypoints = PathPlannerPath.waypointsFromPoses(
-                new Pose2d(startingPose.getTranslation(), angleBetweenPoses),
-                new Pose2d(endingPose.getTranslation(), angleBetweenPoses)
-            );
+            // Add start and end pose
+            fullPoseSet.add(new Pose2d(startingPose.getTranslation(), angleBetweenPoses));
+            fullPoseSet.add(new Pose2d(endingPose.getTranslation(), angleBetweenPoses));
         } else { 
             // If coming at speed create curved path to allow for deceleration
             ChassisSpeeds currentSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(
@@ -510,11 +543,37 @@ public class DynamicPathingSubsystem extends SubsystemBase {
                 startingPose.getRotation()
             );
 
-            waypoints = PathPlannerPath.waypointsFromPoses(
-                new Pose2d(startingPose.getTranslation(), getOptimalPathHeading(startingPose, endingPose, currentSpeeds)),
-                new Pose2d(endingPose.getTranslation(), endingPose.getRotation())
-            );
+            // Add start and end pose
+            fullPoseSet.add(new Pose2d(startingPose.getTranslation(), getOptimalPathHeading(startingPose.getTranslation(), secondPose, currentSpeeds)));
+            fullPoseSet.add(new Pose2d(endingPose.getTranslation(), endingPose.getRotation()));
         }
+
+        if (intermediatePoses != null) {
+            List<Pose2d> intermediateWaypoints = new ArrayList<>();
+
+            int i = 0;
+            for (Translation2d pose : intermediatePoses) {
+                Translation2d nextPose;
+
+                if (i == (intermediatePoses.length - 1)) {
+                    nextPose = endingPose.getTranslation();
+                } else {
+                    nextPose = intermediatePoses[i + 1];
+                }
+
+                Rotation2d rot = WafflesUtilities.AngleBetweenPoints(pose, nextPose); 
+                intermediateWaypoints.add(new Pose2d(pose, rot));
+                
+                i++;
+            }
+
+            fullPoseSet.addAll(1, intermediateWaypoints);
+        }
+        
+
+        waypoints = PathPlannerPath.waypointsFromPoses(
+            fullPoseSet
+        );
         
 
         // Create the path using the waypoints above with initial velocity
@@ -536,8 +595,8 @@ public class DynamicPathingSubsystem extends SubsystemBase {
      * 
      * @return a Rotation2d
      */
-    private static Rotation2d getOptimalPathHeading(Pose2d start, Pose2d target, ChassisSpeeds speeds) {
-        Rotation2d straightAngle = WafflesUtilities.AngleBetweenPoints(start.getTranslation(), target.getTranslation());
+    private static Rotation2d getOptimalPathHeading(Translation2d start, Translation2d target, ChassisSpeeds speeds) {
+        Rotation2d straightAngle = WafflesUtilities.AngleBetweenPoints(start, target);
         double velocityMagnitude = Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
         if (velocityMagnitude < 0.01) {
             // Not moving, use linear direction

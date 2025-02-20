@@ -84,7 +84,8 @@ public final class Constants {
     public static final Matrix<N3, N1> kSingleTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 5);
     public static final Matrix<N3, N1> kMultiTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 3);
 
-    public static final Matrix<N3, N1> kStdDevsMT2 = VecBuilder.fill(0.05,0.05, Double.MAX_VALUE);
+    public static final Matrix<N3, N1> kStdDevsMT2ReefTargeting = VecBuilder.fill(0.05,0.05, Double.MAX_VALUE);
+    public static final Matrix<N3, N1> kStdDevsMT2 = VecBuilder.fill(0.25,0.25, Double.MAX_VALUE);
 
     // Reject mt1 poses if further than this from current estimate, removes ambiguity noise
     // Only to be used when not seeding position
@@ -150,7 +151,7 @@ public final class Constants {
     public static final double CORAL_LOADED_DISTANCE_THRESHOLD = 22.0; // mm
     public static final double ALGAE_LOADED_DISTANCE_THRESHOLD = 94.0; // mm
     public static final double ALGAE_LOADED_DISTANCE_UPPER_LIMIT = 130; // mm
-    public static final double ALGAE_CURRENT_THRESHOLD = 34.0; // amps
+    public static final double ALGAE_CURRENT_THRESHOLD = 30.0; // amps
 
     // Intake constants
     public static final double INTAKE_SPEED_MULTIPLIER = 0.15;
@@ -244,7 +245,7 @@ public final class Constants {
     public enum ElevatorLevel {
       REST_POSITION(0.0),
       NET(1.0),
-      ALGAE_L2(1.0),
+      ALGAE_L2(0.92),
       ALGAE_L1(0.472),
       PROCESSOR(0.2),
       L4(1.440),
