@@ -62,7 +62,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     // Offset from the edge of the reef to score from 
     public static final double REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.6; // Robot with bumpers
     public static final double REEF_SCORING_POSITION_OFFSET = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.15; // Robot with bumpers
-    public static final double REEF_SCORING_POSITION_OFFSET_L1 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.34; // Robot with bumpers
+    public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.10; // Robot with bumpers
 
     /* Human player station physical parameters */
     public static final Translation2d HUMAN_PLAYER_STATION_LEFT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(25.80));  
@@ -210,7 +210,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
                         targetCoralPose.getRotation().getDegrees()
                     });
 
-                    var path = DynamicPathingSubsystem.simplePathToPose(targetCoralPose, ALWAYS_PATH_STRAIGHT);
+                    var path = DynamicPathingSubsystem.simplePathToPose(targetCoralPose);
                     if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
                         var pathingCommand = getDynamicPathingWrapperCommand(AutoBuilder.followPath(path.get()));
                         cmd = ScoreCoral.scoreCoralWithPath(pathingCommand);
@@ -220,17 +220,25 @@ public class DynamicPathingSubsystem extends SubsystemBase {
 
             case REEF_ALGAE: {
                     Pose2d targetAlgaePose = getNearestAlgaePickupLocation();
+                    Pose2d clearancePose = getNearestAlgaeClearanceLocation();
+
                     SmartDashboard.putNumberArray("TargetPose Reef", new double[] {
                         targetAlgaePose.getX(),
                         targetAlgaePose.getY(),
                         targetAlgaePose.getRotation().getDegrees()
                     });
 
-                    Translation2d clearancePosition = getNearestAlgaeClearanceLocation().getTranslation();
-                    var path = DynamicPathingSubsystem.simplePathToPose(targetAlgaePose, ALWAYS_PATH_STRAIGHT, new Translation2d[] {clearancePosition});
-                    if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
-                        var pathingCommand = getDynamicPathingWrapperCommand(AutoBuilder.followPath(path.get()));
-                        cmd = PickupAlgea.pickupAlgeaWithPath(pathingCommand, getAlgeaScoringLevel(RobotContainer.driveSubsystem.getRobotPose()));
+
+                    var startingPose = RobotContainer.driveSubsystem.getRobotPose();
+
+                    var pickupPath = DynamicPathingSubsystem.generateComplexPath(startingPose, new Translation2d[] {clearancePose.getTranslation()}, targetAlgaePose);
+                    var backOffPath = DynamicPathingSubsystem.generateComplexPath(targetAlgaePose, null, clearancePose);
+                    
+
+                    if (pickupPath.isPresent() && backOffPath.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
+                        var pathingCommand = getDynamicPathingWrapperCommand(AutoBuilder.followPath(pickupPath.get()));
+                        var backoffPathingCommand = getDynamicPathingWrapperCommand(AutoBuilder.followPath(backOffPath.get()));
+                        cmd = PickupAlgea.pickupAlgeaWithPath(pathingCommand, getAlgeaScoringLevel(RobotContainer.driveSubsystem.getRobotPose()), backoffPathingCommand);
                     }
                 }
                 break;
@@ -311,7 +319,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         Pose2d newTargetPose = getNearestCoralScoringLocation();
         
         // Generate a new path from our current position
-        var newPath = simplePathToPose(newTargetPose, ALWAYS_PATH_STRAIGHT);
+        var newPath = simplePathToPose(newTargetPose);
         
         if (newPath.isPresent()) {
             // Create and schedule the new scoring command
@@ -404,7 +412,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
      * @return The coordinates the robot can pickup from
      */
     public Pose2d getNearestAlgaePickupLocation() {
-        return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), false, true, REEF_SCORING_POSITION_OFFSET);
+        return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), false, true, REEF_PICKUP_POSITION_OFFSET_ALGAE);
     }
 
     /**
@@ -501,28 +509,35 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     }
 
     /**
-     * Creates a simple, straight path for PathPlanner which moves the robot to a point.
+     * Creates a simple, path for PathPlanner which moves the robot to a point.
+     * Assumes starting at the robot's current position
      * @param endingPose The target end pose
      * @param straightPath Force pathing in a straight line
      * @return The PathPlannerPath
      */
-    public static Optional<PathPlannerPath> simplePathToPose(Pose2d endingPose, boolean straightPath) {
-        return simplePathToPose(endingPose, straightPath, null);
+    public static Optional<PathPlannerPath> simplePathToPose(Pose2d endingPose) {
+        Pose2d startingPose = RobotContainer.driveSubsystem.getRobotPose();
+        
+        return generateComplexPath(startingPose, null, endingPose);
     }
 
     /**
-     * Creates a simple, straight path for PathPlanner which moves the robot to a point.
+     * Creates a path for PathPlanner which moves the robot to a point, passing through an optional set of other points
+     * @param startingPose The starting pose
      * @param endingPose The target end pose
-     * @param straightPath Force pathing in a straight line
-     * @param intermediatePoses An array of poses to travel through
+     * @param intermediatePoses An array of positions to travel through
      * @return The PathPlannerPath
      */
-    public static Optional<PathPlannerPath> simplePathToPose(Pose2d endingPose, boolean straightPath, Translation2d[] intermediatePoses) {
-        Pose2d startingPose = RobotContainer.driveSubsystem.getRobotPose();
-        
+    public static Optional<PathPlannerPath> generateComplexPath(Pose2d startingPose, Translation2d[] intermediatePoses, Pose2d endingPose) {
         // If distance to target is less than some epsilon (1/2 cm in this case), don't even try.
         if (startingPose.getTranslation().getDistance(endingPose.getTranslation()) < 0.005) {
             return Optional.empty();
+        }
+        
+        // Second pose may change depending on if intermediate poses are supplied
+        Translation2d secondPose = endingPose.getTranslation();
+        if (intermediatePoses != null) {
+            secondPose = intermediatePoses[0];
         }
 
         // Use consistent constraints regardless of current speed
@@ -533,35 +548,19 @@ public class DynamicPathingSubsystem extends SubsystemBase {
             MAX_ANGULAR_ACCELERATION
         );
 
-        // A list of waypoints from poses. Each pose represents one waypoint.
-        // The rotation component of the pose should be the direction of travel. Do not use holonomic rotation.
-        List<Waypoint> waypoints;
-        
-        Translation2d secondPose = endingPose.getTranslation();
-        if (intermediatePoses != null) {
-            secondPose = intermediatePoses[0];
-        }
-
         List<Pose2d> fullPoseSet = new ArrayList<Pose2d>();
-        if (straightPath) { 
-            // Drive in a straight line towards pose, may not be optimal if travelling at speed
-            Rotation2d angleBetweenPoses = WafflesUtilities.AngleBetweenPoints(startingPose.getTranslation(), secondPose); 
 
-            // Add start and end pose
-            fullPoseSet.add(new Pose2d(startingPose.getTranslation(), angleBetweenPoses));
-            fullPoseSet.add(new Pose2d(endingPose.getTranslation(), angleBetweenPoses));
-        } else { 
-            // If coming at speed create curved path to allow for deceleration
-            ChassisSpeeds currentSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(
-                RobotContainer.driveSubsystem.getCurrentRobotChassisSpeeds(),
-                startingPose.getRotation()
-            );
+        // If coming at speed create curved path to allow for deceleration
+        ChassisSpeeds currentSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(
+            RobotContainer.driveSubsystem.getCurrentRobotChassisSpeeds(),
+            startingPose.getRotation()
+        );
 
-            // Add start and end pose
-            fullPoseSet.add(new Pose2d(startingPose.getTranslation(), getOptimalPathHeading(startingPose.getTranslation(), secondPose, currentSpeeds)));
-            fullPoseSet.add(new Pose2d(endingPose.getTranslation(), endingPose.getRotation()));
-        }
-
+        // Add start and end pose
+        fullPoseSet.add(new Pose2d(startingPose.getTranslation(), getOptimalPathHeading(startingPose.getTranslation(), secondPose, currentSpeeds)));
+        fullPoseSet.add(new Pose2d(endingPose.getTranslation(), endingPose.getRotation()));
+    
+        // Insert interediate poses if needed
         if (intermediatePoses != null) {
             List<Pose2d> intermediateWaypoints = new ArrayList<>();
 
@@ -584,8 +583,10 @@ public class DynamicPathingSubsystem extends SubsystemBase {
             fullPoseSet.addAll(1, intermediateWaypoints);
         }
         
-
-        waypoints = PathPlannerPath.waypointsFromPoses(
+        // A list of waypoints from poses. Each pose represents one waypoint.
+        // The rotation component of the pose should be the direction of travel. Do not use holonomic rotation.
+        // Generate path waypoints
+        List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(
             fullPoseSet
         );
         
