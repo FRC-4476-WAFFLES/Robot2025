@@ -15,7 +15,6 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import static frc.robot.RobotContainer.pivotSubsystem;
 import frc.robot.data.Constants;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
@@ -40,6 +39,10 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private boolean algaeLoaded = false;
     private double intakeSpeed = 0;
     private double lastPosition = 0;
+
+    // Debouncing variables for algae detection
+    private long algaeDetectionStartTime = 0;
+    private static final long ALGAE_DETECTION_DEBOUNCE_TIME = 100; // 100ms debounce time
 
     // Network Tables
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
@@ -146,11 +149,24 @@ public class Intake extends SubsystemBase implements NetworkUser{
      * @return true if algae is detected
      */
     public void detectAlgaeLoaded() {
-        if (intake.getStatorCurrent().getValueAsDouble() > Constants.ManipulatorConstants.ALGAE_CURRENT_THRESHOLD && isIntakingAlgae() && !isCoralLoaded()) {
-          algaeLoaded = true;
-        }
-        else if(isOuttakingAlgae()) {
-          algaeLoaded = false;
+        boolean currentThresholdMet = intake.getStatorCurrent().getValueAsDouble() > Constants.ManipulatorConstants.ALGAE_CURRENT_THRESHOLD 
+            && isIntakingAlgae() && !isCoralLoaded();
+
+        if (currentThresholdMet) {
+            // If we haven't started timing yet, start now
+            if (algaeDetectionStartTime == 0) {
+                algaeDetectionStartTime = System.currentTimeMillis();
+            }
+            // Check if we've exceeded the debounce time
+            else if (System.currentTimeMillis() - algaeDetectionStartTime >= ALGAE_DETECTION_DEBOUNCE_TIME) {
+                algaeLoaded = true;
+            }
+        } else {
+            // Reset the timer if conditions aren't met
+            algaeDetectionStartTime = 0;
+            if (isOuttakingAlgae()) {
+                algaeLoaded = false;
+            }
         }
     }
 
