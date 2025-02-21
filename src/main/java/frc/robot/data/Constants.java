@@ -125,7 +125,8 @@ public final class Constants {
       ALGEA_L1(PivotPosition.ALGAE_L1, ElevatorLevel.ALGAE_L1),
       ALGEA_L2(PivotPosition.ALGAE_L2, ElevatorLevel.ALGAE_L2),
       CORAL_INTAKE(PivotPosition.CORAL_INTAKE, ElevatorLevel.REST_POSITION),
-      PROCESSOR(PivotPosition.PROCESSOR, ElevatorLevel.PROCESSOR);
+      PROCESSOR(PivotPosition.PROCESSOR, ElevatorLevel.PROCESSOR),
+      NET(PivotPosition.NET, ElevatorLevel.NET);
       
       private final PivotPosition pivotPosition;
       private final ElevatorLevel elevatorLevel;
@@ -156,7 +157,7 @@ public final class Constants {
     // Intake constants
     public static final double INTAKE_SPEED_MULTIPLIER = 0.15;
     public static final double INTAKE_MAX_SPEED = 25; // Rps
-    public static final double ALGAE_HOLD_SPEED = 4; // Speed to hold algae in place
+    public static final double ALGAE_HOLD_SPEED = 2; // Speed to hold algae in place
 
     // Pivot constants
     public static final double PIVOT_ANGLE_DEADBAND = 1.3;
@@ -190,7 +191,7 @@ public final class Constants {
         ALGAE_L1(178.5),
         PROCESSOR(189),
         CORAL_INTAKE(0.5),
-        NET(10),
+        NET(30),
         L4(55.0),
         L3(41.5),
         L2(41.5),
@@ -244,9 +245,9 @@ public final class Constants {
     // Predefined heights for the elevator (in meters)
     public enum ElevatorLevel {
       REST_POSITION(0.0),
-      NET(1.0),
+      NET(1.4),
       ALGAE_L2(0.92),
-      ALGAE_L1(0.472),
+      ALGAE_L1(0.55),
       PROCESSOR(0.2),
       L4(1.440),
       L3(0.726),

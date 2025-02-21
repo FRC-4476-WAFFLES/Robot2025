@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
-
+import frc.robot.RobotContainer;
 import frc.robot.data.Constants.PhysicalConstants;
 
 import java.util.function.DoubleSupplier;
@@ -35,8 +35,8 @@ public class DriveTeleop extends Command {
   private final boolean isSetpointX, isSetpointY, isSetpointTheta;
 
   /* PID Controllers used if suppliers are interpreted as setpoints */
-  private PIDController xPidController = new PIDController(4, 0, 0.1);
-  private PIDController yPidController = new PIDController(4, 0, 0.1);
+  private PIDController xPidController = new PIDController(3, 0, 0.1);
+  private PIDController yPidController = new PIDController(3, 0, 0.1);
   private PIDController thetaPidController = new PIDController(7.0, 0, 0.1);
   private final SwerveSetpointGenerator setpointGenerator;
   private SwerveSetpoint previousSetpoint;
@@ -94,9 +94,15 @@ public class DriveTeleop extends Command {
     double speedDeadband = PhysicalConstants.maxSpeed * 0.05;
     double rotationDeadband = PhysicalConstants.maxAngularSpeed * 0.01;
 
+    int sign = 1;
+    if (Math.abs(RobotContainer.driveSubsystem.getOperatorForwardDirection().getDegrees()) > 90) {
+      // probably fipped controls lmao
+      sign = -1;
+    }
+
     var currentPose = driveSubsystem.getRobotPose();
-    double xVelocity = isSetpointX ? xPidController.calculate(currentPose.getX(), xSupplier.getAsDouble()) : xSupplier.getAsDouble();
-    double yVelocity = isSetpointY ? yPidController.calculate(currentPose.getY(), ySupplier.getAsDouble()) : ySupplier.getAsDouble();
+    double xVelocity = isSetpointX ? (sign * xPidController.calculate(currentPose.getX(), xSupplier.getAsDouble())) : xSupplier.getAsDouble();
+    double yVelocity = isSetpointY ? (sign * yPidController.calculate(currentPose.getY(), ySupplier.getAsDouble())) : ySupplier.getAsDouble();
     double thetaVelocity = isSetpointTheta ? thetaPidController.calculate(currentPose.getRotation().getRadians(), thetaSupplier.get().getRadians()) : thetaSupplier.get().getRadians();
 
     // SmartDashboard.putNumber("ThetaVelocity", thetaVelocity);

@@ -49,10 +49,10 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     public static final double HUMAN_PLAYER_MIN_PICKUP_DISTANCE = 2.5;
 
     /* Net AABB bounds */
-    public static final double NET_MIN_SCORING_X = Units.inchesToMeters(200);
+    public static final double NET_MIN_SCORING_X = Units.inchesToMeters(220);
     public static final double NET_MIN_SCORING_Y = Units.inchesToMeters(158.50);
 
-    public static final double NET_MAX_SCORING_X = Units.inchesToMeters(245);
+    public static final double NET_MAX_SCORING_X = Units.inchesToMeters(340);
     public static final double NET_MAX_SCORING_Y = Units.inchesToMeters(317);
 
     /* Reef physical parameters */
@@ -75,8 +75,8 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     public static final Rotation2d PROCESSOR_SCORING_ANGLE = Rotation2d.fromDegrees(-90);
 
     /* Net physical parameters */
-    public static final double NET_LINE_X_BLUE = Units.inchesToMeters(204.0);
-    public static final Rotation2d NET_SCORING_ANGLE = Rotation2d.kZero;
+    public static final double NET_LINE_X_BLUE = Units.inchesToMeters(300.0);
+    public static final Rotation2d NET_SCORING_ANGLE = Rotation2d.k180deg;
 
     /* Path following parameters */
     public static boolean ALWAYS_PATH_STRAIGHT = false;
@@ -215,7 +215,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
                         var pathingCommand = getDynamicPathingWrapperCommand(AutoBuilder.followPath(path.get()));
                         cmd = ScoreCoral.scoreCoralWithPath(pathingCommand);
                     }
-                    
+
                 }
                 break;
 
@@ -249,11 +249,17 @@ public class DynamicPathingSubsystem extends SubsystemBase {
                     Rotation2d targetNetRotation = WafflesUtilities.FlipAngleIfRedAlliance(NET_SCORING_ANGLE);
                     double targetNetX = WafflesUtilities.FlipXIfRedAlliance(NET_LINE_X_BLUE); 
 
-                    cmd = new DriveTeleop(
-                        () -> targetNetX, true, // a PID controller or smth lmao
-                        Controls::getDriveX, false,
-                        () -> targetNetRotation, true
-                    );
+                    cmd = new ParallelCommandGroup(
+                        new DriveTeleop(
+                            () -> targetNetX, true, // a PID controller or smth lmao
+                            Controls::getDriveX, false,
+                            () -> targetNetRotation, true
+                        ),
+                        new ApplyScoringSetpoint(ScoringLevel.NET)
+                    ).finallyDo(() -> {
+                        RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
+                        RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
+                    });
 
                 }
                 break;
