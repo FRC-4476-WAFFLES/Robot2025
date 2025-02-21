@@ -17,22 +17,23 @@ import frc.robot.subsystems.DynamicPathingSubsystem;
 
 public class PickupAlgea extends SequentialCommandGroup {
   /** Creates a new ScoreCoral. */
-  private PickupAlgea(Command driveCommand, ScoringLevel scoringLevel) {
+  private PickupAlgea(Command driveCommand, ScoringLevel scoringLevel, Command pathAwayCommand) {
     addCommands(
       new ParallelCommandGroup(
         driveCommand,
         new ApplyScoringSetpoint(scoringLevel),
         new AlgeaIntake()
-      )
+      ),
+      pathAwayCommand
     );
   }
 
-  public static boolean isOutOfReefRetractionDangerZone() {
-    return DynamicPathingSubsystem.getDistanceToReef() > DynamicPathingSubsystem.REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE;
-  }
+  // public static boolean isOutOfReefRetractionDangerZone() {
+  //   return DynamicPathingSubsystem.getDistanceToReef() > DynamicPathingSubsystem.REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE;
+  // }
 
-  public static Command pickupAlgeaWithPath(Command driveCommand, ScoringLevel scoringLevel) {
-    return new PickupAlgea(driveCommand, scoringLevel).finallyDo(() -> {
+  public static Command pickupAlgeaWithPath(Command driveCommand, ScoringLevel scoringLevel, Command pathAwayCommand) {
+    return new PickupAlgea(driveCommand, scoringLevel, pathAwayCommand).finallyDo(() -> {
       RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
       RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
     });
