@@ -215,6 +215,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
                         var pathingCommand = getDynamicPathingWrapperCommand(AutoBuilder.followPath(path.get()));
                         cmd = ScoreCoral.scoreCoralWithPath(pathingCommand);
                     }
+                    
                 }
                 break;
 
@@ -240,6 +241,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
                         var backoffPathingCommand = getDynamicPathingWrapperCommand(AutoBuilder.followPath(backOffPath.get()));
                         cmd = PickupAlgea.pickupAlgeaWithPath(pathingCommand, getAlgeaScoringLevel(RobotContainer.driveSubsystem.getRobotPose()), backoffPathingCommand);
                     }
+
                 }
                 break;
 
@@ -247,11 +249,12 @@ public class DynamicPathingSubsystem extends SubsystemBase {
                     Rotation2d targetNetRotation = WafflesUtilities.FlipAngleIfRedAlliance(NET_SCORING_ANGLE);
                     double targetNetX = WafflesUtilities.FlipXIfRedAlliance(NET_LINE_X_BLUE); 
 
-                    new DriveTeleop(
+                    cmd = new DriveTeleop(
                         () -> targetNetX, true, // a PID controller or smth lmao
                         Controls::getDriveX, false,
                         () -> targetNetRotation, true
                     );
+
                 }
                 break;
 
@@ -270,7 +273,6 @@ public class DynamicPathingSubsystem extends SubsystemBase {
                         RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
                     });
                     
-
                 }
                 break;
 
@@ -286,6 +288,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
                         ),
                         new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
                     );
+
                 }
                 break;
                 
