@@ -51,6 +51,9 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private final DoublePublisher intakeCurrentDrawNT = intakeTable.getDoubleTopic("Intake Current Draw").publish();
     private final DoublePublisher intakeVelocityNT = intakeTable.getDoubleTopic("Intake Velocity").publish();
 
+    private final BooleanPublisher isIntakingAlgaeNT = intakeTable.getBooleanTopic("IsIntaking").publish();
+    private final BooleanPublisher isOutakingAlgaeNT = intakeTable.getBooleanTopic("IsOutaking").publish();
+
     public Intake() {
         SubsystemNetworkManager.RegisterNetworkUser(this);
 
@@ -202,6 +205,9 @@ public class Intake extends SubsystemBase implements NetworkUser{
         intakeSetpointNT.set(intakeSpeed);
         intakeCurrentDrawNT.set(intake.getStatorCurrent().getValueAsDouble());
         intakeVelocityNT.set(intake.getVelocity().getValueAsDouble());
+
+        isIntakingAlgaeNT.set(isIntakingAlgae());
+        isOutakingAlgaeNT.set(isOuttakingAlgae());
     }
 
     @Override

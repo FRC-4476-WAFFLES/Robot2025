@@ -45,7 +45,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     /* Various distances */
     public static final double REEF_MIN_SCORING_DISTANCE = 2.2;
     public static final double REEF_MAX_SCORING_DISTANCE = 0.3; // Don't try to score within this distance
-    public static final double PROCCESSOR_MIN_SCORING_DISTANCE = 1.5;
+    public static final double PROCCESSOR_MIN_SCORING_DISTANCE = 2.5;
     public static final double HUMAN_PLAYER_MIN_PICKUP_DISTANCE = 2.5;
 
     /* Net AABB bounds */
@@ -178,6 +178,16 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         boolean inRangeLeft = (pose.getTranslation().getDistance(HUMAN_PLAYER_STATION_LEFT_BLUE) <= HUMAN_PLAYER_MIN_PICKUP_DISTANCE);
         boolean inRangeRight = (pose.getTranslation().getDistance(HUMAN_PLAYER_STATION_RIGHT_BLUE) <= HUMAN_PLAYER_MIN_PICKUP_DISTANCE);
         return inRangeLeft || inRangeRight;
+    }
+
+    /**
+     * Is the robot within a certain distance of the human player station
+     * @return a boolean
+     */
+    public static double getDistanceToReef() {
+        var pose = WafflesUtilities.FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose());
+        
+        return pose.getTranslation().getDistance(REEF_CENTER_BLUE);
     }
 
     /**
@@ -342,6 +352,10 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         return coralScoringLevel;
     }
 
+    /**
+     * Gets the coral scoring side set by the operator
+     * @return if scoring on the right side 
+     */
     public boolean getCoralScoringSide() {
         return coralScoringRightSide;
     }

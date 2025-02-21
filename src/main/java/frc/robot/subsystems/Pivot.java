@@ -192,8 +192,10 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         double chosenPivotAngle = 0;
         Elevator.CollisionType collisionPrediction = RobotContainer.elevatorSubsystem.getCurrentCollisionPotential();
 
-        if (elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER &&
-            intakeSubsystem.isAlgaeLoaded() && pivotSetpointAngle < PivotPosition.CLEARANCE_POSITION_ALGEA.getDegrees()) {
+        if (isInAlgaeDangerZone() &&
+            intakeSubsystem.isAlgaeLoaded() && 
+            pivotSetpointAngle < PivotPosition.CLEARANCE_POSITION_ALGEA.getDegrees()
+        ) {
 
             // if we have an algae, we can't fully retract when we are below the crossbar of the elevator
             chosenPivotAngle = PivotPosition.CLEARANCE_POSITION_ALGEA.getDegrees();
@@ -218,7 +220,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
             !RobotContainer.isOperatorOverride) {
             if (pivotSetpointAngle > ManipulatorConstants.PIVOT_L4_CLEARANCE_ANGLE && isInL4DangerZone()) {
                 chosenPivotAngle = ManipulatorConstants.PIVOT_L4_CLEARANCE_ANGLE;
-                System.out.println("DANGER ZONE L4");
+                // System.out.println("DANGER ZONE L4");
             }
         }
 
@@ -307,6 +309,11 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     public boolean isInL4DangerZone() {
         return RobotContainer.elevatorSubsystem.getElevatorPositionMeters() >= ElevatorConstants.PIVOT_L4_CLEAR_HEIGHT_MIN &&
             RobotContainer.elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.PIVOT_L4_CLEAR_HEIGHT_MAX;
+    }
+
+    public boolean isInAlgaeDangerZone() {
+        return elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER ||
+        elevatorSubsystem.getElevatorSetpointMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER;
     }
 
     /**
