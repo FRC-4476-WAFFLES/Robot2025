@@ -41,7 +41,7 @@ public class DriveTeleop extends Command {
   private final SwerveSetpointGenerator setpointGenerator;
   private SwerveSetpoint previousSetpoint;
 
-  private SwerveRequest.ApplyRobotSpeeds driveRequest = new SwerveRequest.ApplyRobotSpeeds();
+  private SwerveRequest.FieldCentric driveRequest = new SwerveRequest.FieldCentric();
 
   /** 
    * Command that drives the robot field-oriented following velocities given by suppliers 
@@ -112,7 +112,7 @@ public class DriveTeleop extends Command {
     // SmartDashboard.putNumber("currentTheta", currentPose.getRotation().getRadians());
 
     driveSubsystem.setControl(
-      new SwerveRequest.FieldCentric()
+      driveRequest
         .withDeadband(speedDeadband)
         .withRotationalDeadband(rotationDeadband)
         .withDriveRequestType(DriveRequestType.Velocity)

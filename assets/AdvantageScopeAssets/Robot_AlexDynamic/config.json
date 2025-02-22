@@ -1,0 +1,57 @@
+{
+  "name": "AlexDynamic",
+  "sourceUrl": "https://wafflesrobotics.com",
+  "rotations": [
+    { "axis": "x", "degrees": 180 },
+    { "axis": "z", "degrees": 90 }
+  ],
+  "position": [-0.46355, 0, 0],
+  "cameras": [],
+  "components": [
+    {
+      "zeroedRotations": [
+        { "axis": "x", "degrees": 180 },
+        { "axis": "z", "degrees": 90 },
+        {"axis": "y", "degrees": 192.8}
+      ],
+      "zeroedPosition": [
+        -0.067, 
+        0, 
+        0.173
+    ]
+    },
+    {
+      "zeroedRotations": [
+        { "axis": "x", "degrees": 180 },
+        { "axis": "z", "degrees": 90 }
+      ],
+      "zeroedPosition": [
+        0, 
+        0, 
+        0
+    ]
+    },
+    {
+      "zeroedRotations": [
+        { "axis": "x", "degrees": 180 },
+        { "axis": "z", "degrees": 90 }
+      ],
+      "zeroedPosition": [
+        0, 
+        0, 
+        0
+    ]
+    },
+    {
+      "zeroedRotations": [
+        { "axis": "x", "degrees": 180 },
+        { "axis": "z", "degrees": 90 }
+      ],
+      "zeroedPosition": [
+        0, 
+        0, 
+        0.17
+    ]
+    }
+  ]
+}

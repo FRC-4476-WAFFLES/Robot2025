@@ -295,7 +295,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
         // Integrate position from mt2
         LimelightHelpers.PoseEstimate mt2Result = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LIMELIGHT_NAME);
         if (mt2Result != null) {
-            if( mt2Result.tagCount > 0) //Math.abs(Math.toDegrees(getCurrentRobotChassisSpeeds().omegaRadiansPerSecond)) < 10 &&
+            if(mt2Result.tagCount > 0) //Math.abs(Math.toDegrees(getCurrentRobotChassisSpeeds().omegaRadiansPerSecond)) < 10 &&
             {
                 addVisionMeasurement(
                     mt2Result.pose,

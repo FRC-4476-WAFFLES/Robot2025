@@ -1,0 +1,58 @@
+{
+  "name": "AlexStatic",
+  "sourceUrl": "https://wafflesrobotics.com",
+  "rotations": [
+    { "axis": "x", "degrees": 180 },
+    { "axis": "z", "degrees": 90 }
+  ],
+  "position": [-0.46355, 0, 0],
+  "cameras": [
+    {
+      "name": "Reef Alignment Virtual Stuff",
+      "rotations": [
+        {
+          "axis": "x",
+          "degrees": 0
+        },
+        {
+          "axis": "z",
+          "degrees": 0
+        }
+      ],
+      "position": [
+        -0.5,
+        0,
+        0.5
+      ],
+      "resolution": [
+        1600,
+        1200
+      ],
+      "fov": 75
+    },
+    {
+      "name": "Limelight Right Front",
+      "rotations": [
+        {
+          "axis": "y",
+          "degrees": -20
+        },
+        {
+          "axis": "z",
+          "degrees": 5
+        }
+      ],
+      "position": [
+        0.26186,
+        -0.18583,
+        0.22745154
+      ],
+      "resolution": [
+        1280,
+        800
+      ],
+      "fov": 85
+    }
+  ],
+  "components": []
+}

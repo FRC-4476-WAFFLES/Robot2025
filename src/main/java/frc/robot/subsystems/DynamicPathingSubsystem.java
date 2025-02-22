@@ -46,7 +46,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     public static final double REEF_MIN_SCORING_DISTANCE = 2.2;
     public static final double REEF_MAX_SCORING_DISTANCE = 0.3; // Don't try to score within this distance
     public static final double PROCCESSOR_MIN_SCORING_DISTANCE = 2.5;
-    public static final double HUMAN_PLAYER_MIN_PICKUP_DISTANCE = 2.5;
+    public static final double HUMAN_PLAYER_MIN_PICKUP_DISTANCE = 2;
 
     /* Net AABB bounds */
     public static final double NET_MIN_SCORING_X = Units.inchesToMeters(220);
@@ -81,7 +81,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     /* Path following parameters */
     public static boolean ALWAYS_PATH_STRAIGHT = false;
 
-    public static final double MAX_SPEED = 3.0f;
+    public static final double MAX_SPEED = 2.0f;
     public static final double MAX_ACCELERATION = 4.0f;
 
     /* Angular units are radians per second */
@@ -213,7 +213,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
                     var path = DynamicPathingSubsystem.simplePathToPose(targetCoralPose);
                     if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
                         var pathingCommand = getDynamicPathingWrapperCommand(AutoBuilder.followPath(path.get()));
-                        cmd = ScoreCoral.scoreCoralWithPath(pathingCommand);
+                        cmd = ScoreCoral.scoreCoralWithPath(pathingCommand, targetCoralPose);
                     }
 
                 }
@@ -337,7 +337,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
             // Different from normal pathing command.
             // Since started from outside button based scheduling, letting go of the dynamic pathing button would fail to cancel it
             // .onlyWhile() ensures it can still be canceled by letting go of the button
-            Command cmd = ScoreCoral.scoreCoralWithPath(pathCommand).onlyWhile(() -> Controls.dynamicPathingButton.getAsBoolean());
+            Command cmd = ScoreCoral.scoreCoralWithPath(pathCommand, newTargetPose).onlyWhile(() -> Controls.dynamicPathingButton.getAsBoolean());
             cmd.schedule();
         }
     }

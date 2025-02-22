@@ -95,7 +95,7 @@ public class VisionHelpers {
             estStdDevs.times(0.7);
 
         // Increase std devs based on (average) distance
-        if (numTags == 1 && avgDist > 5)
+        if (numTags == 1 && avgDist > 6)
             estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
         else
             estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 7));

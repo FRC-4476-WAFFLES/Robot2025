@@ -4,6 +4,7 @@
 
 package frc.robot.commands.semiauto;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -19,10 +20,13 @@ public class ScoreCoral extends SequentialCommandGroup {
   private static final double waitBeforeScore = 0.25;
 
   /** Creates a new ScoreCoral. */
-  private ScoreCoral(Command driveCommand) {
+  private ScoreCoral(Command driveCommand, Pose2d finalAlignPose) {
     addCommands(
       new ParallelCommandGroup(
-        driveCommand,
+        new SequentialCommandGroup(
+          driveCommand,
+          new FinalAlignCoral(finalAlignPose)
+        ),
         new PrepareScoreCoral()
       ),
       // Wait until doNotScore is released
@@ -32,9 +36,10 @@ public class ScoreCoral extends SequentialCommandGroup {
     );
   }
 
-  public static Command scoreCoralWithPath(Command driveCommand) {
-    return new ScoreCoral(driveCommand).finallyDo(() -> {
+  public static Command scoreCoralWithPath(Command driveCommand, Pose2d finalAlignPose) {
+    return new ScoreCoral(driveCommand, finalAlignPose).finallyDo(() -> {
       RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
+      
       if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4) {
         RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.ZERO);
       } else {

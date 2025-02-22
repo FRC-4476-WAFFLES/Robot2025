@@ -192,7 +192,7 @@ public final class Constants {
         PROCESSOR(189),
         CORAL_INTAKE(0.5),
         NET(30),
-        L4(40),
+        L4(45),
         L3(28),
         L2(38),
         L1(10.01);
@@ -256,7 +256,7 @@ public final class Constants {
       ALGAE_L2(0.92),
       ALGAE_L1(0.55),
       PROCESSOR(0.2),
-      L4(1.428),
+      L4(1.45),
       L3(0.76),
       L2(0.41),
       L1(0.108); 
