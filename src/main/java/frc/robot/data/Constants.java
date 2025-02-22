@@ -191,7 +191,7 @@ public final class Constants {
         ALGAE_L1(178.5),
         PROCESSOR(189),
         CORAL_INTAKE(0.5),
-        NET(30),
+        NET(40),
         L4(45),
         L3(28),
         L2(38),
