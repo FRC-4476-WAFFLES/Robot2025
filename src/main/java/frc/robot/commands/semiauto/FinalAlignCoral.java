@@ -57,7 +57,7 @@ public class FinalAlignCoral extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    SmartDashboard.putBoolean("FinalAling", true);
+    SmartDashboard.putBoolean("TerminalCoralAlignment", true);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -98,7 +98,7 @@ public class FinalAlignCoral extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    SmartDashboard.putBoolean("FinalAling", false);
+    SmartDashboard.putBoolean("TerminalCoralAlignment", false);
 
     driveSubsystem.setControl(
       driveRequest

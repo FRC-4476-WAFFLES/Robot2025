@@ -210,6 +210,13 @@ public class DynamicPathingSubsystem extends SubsystemBase {
                         targetCoralPose.getRotation().getDegrees()
                     });
 
+                    Pose2d debugFlippedPose = FlippingUtil.flipFieldPose(targetCoralPose);
+                    SmartDashboard.putNumberArray("TargetPose Reef_Flipped", new double[] {
+                        debugFlippedPose.getX(),
+                        debugFlippedPose.getY(),
+                        debugFlippedPose.getRotation().getDegrees()
+                    });
+
                     var path = DynamicPathingSubsystem.simplePathToPose(targetCoralPose);
                     if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
                         var pathingCommand = getDynamicPathingWrapperCommand(AutoBuilder.followPath(path.get()));

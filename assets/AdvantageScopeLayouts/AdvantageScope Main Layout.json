@@ -1,0 +1,400 @@
+{
+  "hubs": [
+    {
+      "x": -7,
+      "y": -7,
+      "width": 1454,
+      "height": 866,
+      "state": {
+        "sidebar": {
+          "width": 216,
+          "expanded": [
+            "/Intake",
+            "/Mechanism",
+            "/Mechanism/elevatorFirstStagePose",
+            "/Mechanism/pivotPose",
+            "/Pose/robotPose",
+            "/Mechanism3d",
+            "/Pose",
+            "/SmartDashboard",
+            "/SmartDashboard/LL Pose MT1",
+            "/SmartDashboard/LL Pose MT2",
+            "/SmartDashboard/TargetPose Reef"
+          ]
+        },
+        "tabs": {
+          "selected": 7,
+          "tabs": [
+            {
+              "type": 0,
+              "title": "",
+              "controller": null,
+              "controllerUUID": "27s34l1st94nfsfka6wnsci5i3gmt3gg",
+              "renderer": "#/",
+              "controlsHeight": 0
+            },
+            {
+              "type": 1,
+              "title": "Line Graph",
+              "controller": {
+                "leftSources": [],
+                "rightSources": [],
+                "discreteSources": [],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "type": null,
+                  "factor": 1
+                },
+                "rightUnitConversion": {
+                  "type": null,
+                  "factor": 1
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "mhsi2oapve9yr8js8h0894adeqyjwn8y",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 1,
+              "title": "Line Graph",
+              "controller": {
+                "leftSources": [],
+                "rightSources": [],
+                "discreteSources": [],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "type": null,
+                  "factor": 1
+                },
+                "rightUnitConversion": {
+                  "type": null,
+                  "factor": 1
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "2alssnb6p9cyd7vq4zj9m42kirexne7p",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 2,
+              "title": "Odometry",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "robotLegacy",
+                    "logKey": "NT:/Pose/robotPose",
+                    "logType": "NumberArray",
+                    "visible": true,
+                    "options": {
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  },
+                  {
+                    "type": "ghostLegacy",
+                    "logKey": "NT:/SmartDashboard/LL Pose MT1",
+                    "logType": "NumberArray",
+                    "visible": true,
+                    "options": {
+                      "color": "#00ff00",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  },
+                  {
+                    "type": "ghostLegacy",
+                    "logKey": "NT:/SmartDashboard/LL Pose MT2",
+                    "logType": "NumberArray",
+                    "visible": true,
+                    "options": {
+                      "color": "#ff00ff",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  }
+                ],
+                "game": "2025 Field (Welded)",
+                "bumpers": "auto",
+                "origin": "blue",
+                "orientation": 0,
+                "size": 30
+              },
+              "controllerUUID": "zu1p67196hex4mt4p78e20uijgzrpxff",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 3,
+              "title": "Alignment POV",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "robotLegacy",
+                    "logKey": "NT:/Pose/robotPose",
+                    "logType": "NumberArray",
+                    "visible": true,
+                    "options": {
+                      "model": "AlexStatic",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  },
+                  {
+                    "type": "ghostLegacy",
+                    "logKey": "NT:/SmartDashboard/LL Pose MT2",
+                    "logType": "NumberArray",
+                    "visible": false,
+                    "options": {
+                      "model": "AlexStatic",
+                      "color": "#0000ff",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  }
+                ],
+                "game": "2025 Field (Welded)",
+                "origin": "blue"
+              },
+              "controllerUUID": "s9jj2c0rtopc37733i57n6lhr5vpxn67",
+              "renderer": {
+                "cameraIndex": 0,
+                "orbitFov": 50,
+                "cameraPosition": [
+                  -6.201314821041697,
+                  0.5000000000000002,
+                  0.15916389044930693
+                ],
+                "cameraTarget": [
+                  -5.201385348775629,
+                  0.5000000000000001,
+                  0.17104035851447313
+                ]
+              },
+              "controlsHeight": 200
+            },
+            {
+              "type": 3,
+              "title": "Driver Station POV",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "robotLegacy",
+                    "logKey": "NT:/Pose/robotPose",
+                    "logType": "NumberArray",
+                    "visible": true,
+                    "options": {
+                      "model": "AlexStatic",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  }
+                ],
+                "game": "2025 Field (Welded)",
+                "origin": "blue"
+              },
+              "controllerUUID": "py0ejii7z58c35iaxr59pdrw6lg0unmy",
+              "renderer": {
+                "cameraIndex": -3,
+                "orbitFov": 50,
+                "cameraPosition": [
+                  -10.28116,
+                  1.5748000000000002,
+                  -1.88861845282827e-15
+                ],
+                "cameraTarget": [
+                  0,
+                  0.5,
+                  0
+                ]
+              },
+              "controlsHeight": 200
+            },
+            {
+              "type": 3,
+              "title": "Dynamic Alex",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "robotLegacy",
+                    "logKey": "NT:/Pose/robotPose",
+                    "logType": "NumberArray",
+                    "visible": true,
+                    "options": {
+                      "model": "AlexDynamic",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  },
+                  {
+                    "type": "component",
+                    "logKey": "NT:/Mechanism3d/pivot",
+                    "logType": "Pose3d",
+                    "visible": true,
+                    "options": {}
+                  },
+                  {
+                    "type": "component",
+                    "logKey": "NT:/Mechanism3d/zerocalib",
+                    "logType": "Pose3d",
+                    "visible": true,
+                    "options": {}
+                  },
+                  {
+                    "type": "component",
+                    "logKey": "NT:/Mechanism3d/elevatorCarriage",
+                    "logType": "Pose3d",
+                    "visible": true,
+                    "options": {}
+                  },
+                  {
+                    "type": "component",
+                    "logKey": "NT:/Mechanism3d/elevatorFirstStage",
+                    "logType": "Pose3d",
+                    "visible": true,
+                    "options": {}
+                  }
+                ],
+                "game": "2025 Field (Welded)",
+                "origin": "blue"
+              },
+              "controllerUUID": "a4gjibvmy15p7gpzatuwtiv3tiwnaxz9",
+              "renderer": {
+                "cameraIndex": -1,
+                "orbitFov": 50,
+                "cameraPosition": [
+                  -5.428329509067611,
+                  2.2947573647814834,
+                  -4.439115200372083
+                ],
+                "cameraTarget": [
+                  -5.637831687281655,
+                  1.9912738509250048,
+                  -3.5026063406911496
+                ]
+              },
+              "controlsHeight": 189
+            },
+            {
+              "type": 3,
+              "title": "3D Odometry",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "robotLegacy",
+                    "logKey": "NT:/Pose/robotPose",
+                    "logType": "NumberArray",
+                    "visible": true,
+                    "options": {
+                      "model": "AlexStatic",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  },
+                  {
+                    "type": "ghostLegacy",
+                    "logKey": "NT:/SmartDashboard/LL Pose MT1",
+                    "logType": "NumberArray",
+                    "visible": true,
+                    "options": {
+                      "model": "AlexStatic",
+                      "color": "#ff0000",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  },
+                  {
+                    "type": "ghostLegacy",
+                    "logKey": "NT:/SmartDashboard/LL Pose MT2",
+                    "logType": "NumberArray",
+                    "visible": true,
+                    "options": {
+                      "model": "AlexStatic",
+                      "color": "#0000ff",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  },
+                  {
+                    "type": "ghostLegacy",
+                    "logKey": "NT:/SmartDashboard/TargetPose Reef",
+                    "logType": "NumberArray",
+                    "visible": true,
+                    "options": {
+                      "model": "AlexStatic",
+                      "color": "#00ff00",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  }
+                ],
+                "game": "2025 Field (Welded)",
+                "origin": "blue"
+              },
+              "controllerUUID": "a6asef3llg0tqxap4o20dsoxv96vw4nl",
+              "renderer": {
+                "cameraIndex": -1,
+                "orbitFov": 50,
+                "cameraPosition": [
+                  -8.142252648975717,
+                  3.1901684659477403,
+                  0.08557733434179585
+                ],
+                "cameraTarget": [
+                  -5.288331714755649,
+                  0.6659394313116794,
+                  0.33159985013983495
+                ]
+              },
+              "controlsHeight": 200
+            },
+            {
+              "type": 3,
+              "title": "Mess around",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "robotLegacy",
+                    "logKey": "NT:/Pose/robotPose",
+                    "logType": "NumberArray",
+                    "visible": true,
+                    "options": {
+                      "model": "2025 KitBot",
+                      "format": "Pose2d",
+                      "units": "radians"
+                    }
+                  }
+                ],
+                "game": "2025 Field (Welded)",
+                "origin": "blue"
+              },
+              "controllerUUID": "kfd8q00ob4lhtf4grobpdvehlag43g0b",
+              "renderer": {
+                "cameraIndex": -1,
+                "orbitFov": 50,
+                "cameraPosition": [
+                  -5.6176149012365535,
+                  4.134598180434732,
+                  -5.896372672186556
+                ],
+                "cameraTarget": [
+                  -5.0312386321515605,
+                  0.2255071775561544,
+                  -0.23412041254144914
+                ]
+              },
+              "controlsHeight": 200
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "satellites": [],
+  "version": "4.1.2"
+}
