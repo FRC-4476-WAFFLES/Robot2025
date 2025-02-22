@@ -195,14 +195,13 @@ public final class Constants {
         L4(45),
         L3(28),
         L2(38),
-        L1(10.01);
-
+        L1(10.01),
 
         // Maybe manual mode
-        // L4(55.0),
-        // L3(41.5),
-        // L2(41.5),
-        // L1(13.0);
+        MANUAL_L4(55.0),
+        MANUAL_L3(41.5),
+        MANUAL_L2(41.5),
+        MANUAL_L1(13.0);
 
         private final double pivotDegrees;
 
@@ -259,12 +258,12 @@ public final class Constants {
       L4(1.45),
       L3(0.76),
       L2(0.41),
-      L1(0.108); 
+      L1(0.108),
 
-      // L4(1.440),
-      // L3(0.726),
-      // L2(0.331),
-      // L1(0.11); 
+      MANUAL_L4(1.440),
+      MANUAL_L3(0.726),
+      MANUAL_L2(0.331),
+      MANUAL_L1(0.11); 
 
 
       private final double height;

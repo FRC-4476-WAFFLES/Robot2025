@@ -149,8 +149,8 @@ public class RobotContainer {
     inOverrideMode.and(Controls.operatorController.a()).whileTrue(
       Commands.either(
         Commands.parallel(
-          new SetElevatorPos(ElevatorLevel.L1),
-          new SetPivotPos(PivotPosition.L1)
+          new SetElevatorPos(ElevatorLevel.MANUAL_L1),
+          new SetPivotPos(PivotPosition.MANUAL_L1)
         ), 
         Commands.parallel(
           new SetElevatorPos(ElevatorLevel.PROCESSOR),
@@ -163,8 +163,8 @@ public class RobotContainer {
     inOverrideMode.and(Controls.operatorController.x()).whileTrue(
       Commands.either(
         Commands.parallel(
-          new SetElevatorPos(ElevatorLevel.L2),
-          new SetPivotPos(PivotPosition.L2)
+          new SetElevatorPos(ElevatorLevel.MANUAL_L2),
+          new SetPivotPos(PivotPosition.MANUAL_L2)
         ), 
         Commands.parallel(
           new SetElevatorPos(ElevatorLevel.ALGAE_L1),
@@ -177,8 +177,8 @@ public class RobotContainer {
     inOverrideMode.and(Controls.operatorController.b()).whileTrue(
       Commands.either(
         Commands.parallel(
-          new SetElevatorPos(ElevatorLevel.L3),
-          new SetPivotPos(PivotPosition.L3)
+          new SetElevatorPos(ElevatorLevel.MANUAL_L3),
+          new SetPivotPos(PivotPosition.MANUAL_L3)
         ), 
         Commands.parallel(
           new SetElevatorPos(ElevatorLevel.ALGAE_L2),
@@ -191,8 +191,8 @@ public class RobotContainer {
     inOverrideMode.and(Controls.operatorController.y()).whileTrue(
       Commands.either(
         Commands.parallel(
-          new SetElevatorPos(ElevatorLevel.L4),
-          new SetPivotPos(PivotPosition.L4)
+          new SetElevatorPos(ElevatorLevel.MANUAL_L4),
+          new SetPivotPos(PivotPosition.MANUAL_L4)
         ), 
         Commands.parallel(
           new SetElevatorPos(ElevatorLevel.NET),
