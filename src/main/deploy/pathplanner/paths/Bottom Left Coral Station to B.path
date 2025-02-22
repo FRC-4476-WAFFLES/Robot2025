@@ -16,11 +16,11 @@
     },
     {
       "anchor": {
-        "x": 3.165542763157894,
+        "x": 3.06,
         "y": 3.8518092105263158
       },
       "prevControl": {
-        "x": 1.7679954285766106,
+        "x": 1.6624526654187166,
         "y": 1.9324611330127597
       },
       "nextControl": null,
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -0.2893701634405953
+    "rotation": 0.0
   },
   "reversed": false,
   "folder": "CS3 to Reef",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -126.66563548264217
+    "rotation": 54.59100000000001
   },
   "useDefaultConstraints": true
 }

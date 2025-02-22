@@ -48,7 +48,7 @@
   "folder": "CS3 to Reef",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -126.66563548264217
+    "rotation": 54.59100000000001
   },
   "useDefaultConstraints": true
 }

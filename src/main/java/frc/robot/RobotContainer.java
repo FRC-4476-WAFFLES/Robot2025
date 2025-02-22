@@ -9,6 +9,7 @@ import java.util.HashSet;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -40,6 +41,7 @@ import frc.robot.commands.AxisIntakeControl;
 import frc.robot.commands.CoralIntake;
 import frc.robot.commands.SetPivotPos;
 import frc.robot.commands.semiauto.ApplyScoringSetpoint;
+import frc.robot.commands.semiauto.ScoreCoral;
 import frc.robot.commands.DefaultPosition;
 import frc.robot.subsystems.Lights;
 import frc.robot.commands.DefaultLightCommand;
@@ -289,6 +291,17 @@ public class RobotContainer {
     // Register Named Commands
     // Add other commands to be able to run them in autos
     // NamedCommands.registerCommand("exampleCommand", exampleCommand);
+    var scoringCommandRequirements = new HashSet<>(Arrays.asList(driveSubsystem, pivotSubsystem, elevatorSubsystem, intakeSubsystem));
+    
+    // L4 Right
+    NamedCommands.registerCommand("Autoscore L4 Right", Commands.defer(
+      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L4, true), scoringCommandRequirements)
+    );
+
+    // L4 Left
+    NamedCommands.registerCommand("Autoscore L4 Left", Commands.defer(
+      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L4, false), scoringCommandRequirements)
+    );
   }
 
   /**

@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.3466005943499213,
-        "y": 1.3244787685207577
+        "x": 2.3466004346212523,
+        "y": 1.3244789488518283
       },
       "isLocked": false,
       "linkedName": "Bottom Right Coral Station"
@@ -48,7 +48,7 @@
   "folder": "CS4 to Reef",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 54.591013070833
+    "rotation": 54.59100000000001
   },
   "useDefaultConstraints": true
 }
