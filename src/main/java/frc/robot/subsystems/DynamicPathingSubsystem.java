@@ -82,7 +82,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     public static boolean ALWAYS_PATH_STRAIGHT = false;
 
     public static final double MAX_SPEED = 3.0f;
-    public static final double MAX_ACCELERATION = 5.0f;
+    public static final double MAX_ACCELERATION = 4.0f;
 
     /* Angular units are radians per second */
     public static final double MAX_ANGULAR_SPEED = 1 * Math.PI;
