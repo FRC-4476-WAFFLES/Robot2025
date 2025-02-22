@@ -10,6 +10,9 @@ import frc.robot.data.Constants.ManipulatorConstants;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class CoralIntake extends Command {
+  private boolean hasDetectedCoral = false;
+  private double targetPosition = 0;
+
   /** Creates a new CoralIntake. */
   public CoralIntake() {
     addRequirements(RobotContainer.intakeSubsystem);
@@ -20,24 +23,37 @@ public class CoralIntake extends Command {
   @Override
   public void initialize() {
     RobotContainer.lightsSubsystem.setCoralIntakeRunning(true);
+    hasDetectedCoral = false;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    RobotContainer.intakeSubsystem.setIntakeSpeed(-15);
+    if (!hasDetectedCoral) {
+      RobotContainer.intakeSubsystem.setIntakeSpeed(-15);
+      
+      // Check if coral is detected for the first time
+      if (RobotContainer.intakeSubsystem.isCoralLoaded()) {
+        hasDetectedCoral = true;
+        targetPosition = RobotContainer.intakeSubsystem.getCurrentPosition();
+        RobotContainer.intakeSubsystem.setTargetPosition(targetPosition);
+      }
+    }
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
     RobotContainer.intakeSubsystem.setIntakeSpeed(0);
+    RobotContainer.intakeSubsystem.disablePositionControl();
     RobotContainer.lightsSubsystem.setCoralIntakeRunning(false);
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return RobotContainer.intakeSubsystem.isCoralLoaded();
+    return RobotContainer.intakeSubsystem.isCoralLoaded() && 
+    RobotContainer.intakeSubsystem.isAtTargetPosition() && 
+    RobotContainer.intakeSubsystem.isIntakeStopped();
   }
 }
