@@ -293,14 +293,36 @@ public class RobotContainer {
     // NamedCommands.registerCommand("exampleCommand", exampleCommand);
     var scoringCommandRequirements = new HashSet<>(Arrays.asList(driveSubsystem, pivotSubsystem, elevatorSubsystem, intakeSubsystem));
     
-    // L4 Right
+    // L4 
     NamedCommands.registerCommand("Autoscore L4 Right", Commands.defer(
       () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L4, true), scoringCommandRequirements)
     );
-
-    // L4 Left
     NamedCommands.registerCommand("Autoscore L4 Left", Commands.defer(
       () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L4, false), scoringCommandRequirements)
+    );
+
+    // L3
+    NamedCommands.registerCommand("Autoscore L3 Right", Commands.defer(
+      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L3, true), scoringCommandRequirements)
+    );
+    NamedCommands.registerCommand("Autoscore L3 Left", Commands.defer(
+      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L3, false), scoringCommandRequirements)
+    );
+
+    // L2
+    NamedCommands.registerCommand("Autoscore L2 Right", Commands.defer(
+      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L2, true), scoringCommandRequirements)
+    );
+    NamedCommands.registerCommand("Autoscore L2 Left", Commands.defer(
+      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L2, false), scoringCommandRequirements)
+    );
+
+    // L1
+    NamedCommands.registerCommand("Autoscore L1 Right", Commands.defer(
+      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L1, true), scoringCommandRequirements)
+    );
+    NamedCommands.registerCommand("Autoscore L1 Left", Commands.defer(
+      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L1, false), scoringCommandRequirements)
     );
   }
 
