@@ -12,7 +12,7 @@
         "y": 6.709968534158778
       },
       "isLocked": false,
-      "linkedName": "Top Right Coral Station"
+      "linkedName": "CS1"
     },
     {
       "anchor": {
@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "L"
+      "linkedName": "Post 7"
     }
   ],
   "rotationTargets": [],
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -57.42594286542748
+    "rotation": 125.00000000000001
   },
   "reversed": false,
   "folder": "CS1 to Reef",

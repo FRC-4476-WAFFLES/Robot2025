@@ -12,7 +12,7 @@
         "y": 4.661907640556098
       },
       "isLocked": false,
-      "linkedName": "Starting Line Bottom"
+      "linkedName": "US3"
     },
     {
       "anchor": {
@@ -20,12 +20,12 @@
         "y": 2.799374357674557
       },
       "prevControl": {
-        "x": 5.859621710526316,
-        "y": 2.4181743421052637
+        "x": 5.575093774111497,
+        "y": 2.4663944469602703
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Reef E"
+      "linkedName": "Post 2"
     }
   ],
   "rotationTargets": [

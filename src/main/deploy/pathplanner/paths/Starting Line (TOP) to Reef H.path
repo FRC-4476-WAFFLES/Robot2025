@@ -8,11 +8,11 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.820940347515388,
-        "y": 5.989665711701335
+        "x": 6.4322607417205955,
+        "y": 5.818950693763989
       },
       "isLocked": false,
-      "linkedName": "Starting Line Top"
+      "linkedName": "US1"
     },
     {
       "anchor": {
@@ -20,12 +20,12 @@
         "y": 4.1903918838518575
       },
       "prevControl": {
-        "x": 6.545054445654116,
-        "y": 6.10668141604599
+        "x": 6.380643912203931,
+        "y": 3.857411973137571
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "H"
+      "linkedName": "Post 11"
     }
   ],
   "rotationTargets": [

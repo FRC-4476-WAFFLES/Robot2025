@@ -12,7 +12,7 @@
         "y": 7.503468873048287
       },
       "isLocked": false,
-      "linkedName": "Top Right Coral Station"
+      "linkedName": "CS1"
     },
     {
       "anchor": {
@@ -20,12 +20,12 @@
         "y": 5.08775
       },
       "prevControl": {
-        "x": 6.015749999996592,
-        "y": 4.814749999994179
+        "x": 5.810303571428573,
+        "y": 4.754770089285714
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "I"
+      "linkedName": "Post 10"
     }
   ],
   "rotationTargets": [

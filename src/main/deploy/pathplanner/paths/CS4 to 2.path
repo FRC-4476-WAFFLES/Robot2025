@@ -8,11 +8,11 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.5483606557377048,
-        "y": 1.8672131147540996
+        "x": 2.338904306494262,
+        "y": 1.7338650920490175
       },
       "isLocked": false,
-      "linkedName": "Bottom Right Coral Station"
+      "linkedName": "CS4"
     },
     {
       "anchor": {
@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Reef E"
+      "linkedName": "Post 2"
     }
   ],
   "rotationTargets": [],

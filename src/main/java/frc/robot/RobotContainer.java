@@ -12,6 +12,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
 
+import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -19,34 +20,32 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import edu.wpi.first.wpilibj.GenericHID;
-
+import frc.robot.commands.AlgeaOutake;
+import frc.robot.commands.AxisIntakeControl;
+import frc.robot.commands.CoralIntake;
+import frc.robot.commands.DefaultLightCommand;
+import frc.robot.commands.DefaultPosition;
 import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.ResetGyroHeading;
 import frc.robot.commands.SetElevatorPos;
+import frc.robot.commands.SetPivotPos;
+import frc.robot.commands.ZeroMechanisms;
+import frc.robot.commands.semiauto.ApplyScoringSetpoint;
+import frc.robot.commands.semiauto.ScoreCoral;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
-import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.data.Constants.PhysicalConstants;
+import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.data.TunerConstants;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.DynamicPathingSubsystem;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Lights;
+import frc.robot.subsystems.MechanismPoses;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Telemetry;
-import frc.robot.commands.AlgeaOutake;
-import frc.robot.commands.AxisIntakeControl;
-import frc.robot.commands.CoralIntake;
-import frc.robot.commands.SetPivotPos;
-import frc.robot.commands.semiauto.ApplyScoringSetpoint;
-import frc.robot.commands.semiauto.ScoreCoral;
-import frc.robot.commands.DefaultPosition;
-import frc.robot.subsystems.Lights;
-import frc.robot.commands.DefaultLightCommand;
-import frc.robot.commands.ZeroMechanisms;
-import frc.robot.subsystems.MechanismPoses;
 
 
 /**
@@ -292,6 +291,40 @@ public class RobotContainer {
     // Add other commands to be able to run them in autos
     // NamedCommands.registerCommand("exampleCommand", exampleCommand);
     var scoringCommandRequirements = new HashSet<>(Arrays.asList(driveSubsystem, pivotSubsystem, elevatorSubsystem, intakeSubsystem));
+    
+    // Direct position commands for both elevator and pivot
+    NamedCommands.registerCommand("Set Position L1", Commands.parallel(
+      new SetElevatorPos(ElevatorLevel.L1),
+      new SetPivotPos(PivotPosition.L1)
+    ));
+    NamedCommands.registerCommand("Set Position L2", Commands.parallel(
+      new SetElevatorPos(ElevatorLevel.L2),
+      new SetPivotPos(PivotPosition.L2)
+    ));
+    NamedCommands.registerCommand("Set Position L3", Commands.parallel(
+      new SetElevatorPos(ElevatorLevel.L3),
+      new SetPivotPos(PivotPosition.L3)
+    ));
+    NamedCommands.registerCommand("Set Position L4", Commands.parallel(
+      new SetElevatorPos(ElevatorLevel.L4),
+      new SetPivotPos(PivotPosition.L4)
+    ));
+    NamedCommands.registerCommand("Set Position Processor", Commands.parallel(
+      new SetElevatorPos(ElevatorLevel.PROCESSOR),
+      new SetPivotPos(PivotPosition.PROCESSOR)
+    ));
+    NamedCommands.registerCommand("Set Position Net", Commands.parallel(
+      new SetElevatorPos(ElevatorLevel.NET),
+      new SetPivotPos(PivotPosition.NET)
+    ));
+    NamedCommands.registerCommand("Set Position Algae L1", Commands.parallel(
+      new SetElevatorPos(ElevatorLevel.ALGAE_L1),
+      new SetPivotPos(PivotPosition.ALGAE_L1)
+    ));
+    NamedCommands.registerCommand("Set Position Algae L2", Commands.parallel(
+      new SetElevatorPos(ElevatorLevel.ALGAE_L2),
+      new SetPivotPos(PivotPosition.ALGAE_L2)
+    ));
     
     // L4 
     NamedCommands.registerCommand("Autoscore L4 Right", Commands.defer(

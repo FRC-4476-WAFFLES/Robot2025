@@ -12,7 +12,7 @@
         "y": 5.731250000004712
       },
       "isLocked": false,
-      "linkedName": "L"
+      "linkedName": "Post 7"
     },
     {
       "anchor": {
@@ -25,7 +25,20 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Top Right Coral Station"
+      "linkedName": "CS1"
+    },
+    {
+      "anchor": {
+        "x": 3.705,
+        "y": 5.077999999999999
+      },
+      "prevControl": {
+        "x": 4.227321428570974,
+        "y": 5.13676116071019
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Post 7"
     }
   ],
   "rotationTargets": [],

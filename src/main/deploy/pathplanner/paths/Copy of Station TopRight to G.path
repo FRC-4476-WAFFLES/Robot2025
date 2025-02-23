@@ -8,11 +8,11 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.478739864864862,
-        "y": 6.880168918918919
+        "x": 1.4215612934358388,
+        "y": 6.8901800796291095
       },
       "isLocked": false,
-      "linkedName": "Top Left Coral Station"
+      "linkedName": "CS2"
     },
     {
       "anchor": {
@@ -20,12 +20,12 @@
         "y": 3.8495
       },
       "prevControl": {
-        "x": 6.97652027027027,
-        "y": 6.169341216216216
+        "x": 6.343071428570975,
+        "y": 3.9082611607101905
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "G"
+      "linkedName": "Post 12"
     }
   ],
   "rotationTargets": [],

@@ -12,7 +12,7 @@
         "y": 5.742582051884558
       },
       "isLocked": false,
-      "linkedName": "Starting Line Top"
+      "linkedName": "US1"
     },
     {
       "anchor": {
@@ -20,12 +20,12 @@
         "y": 5.08775
       },
       "prevControl": {
-        "x": 5.9305612753649655,
-        "y": 5.803722219842714
+        "x": 5.810303571428573,
+        "y": 4.754770089285714
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "I"
+      "linkedName": "Post 10"
     }
   ],
   "rotationTargets": [

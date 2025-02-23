@@ -8,11 +8,11 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.32380109491485,
-        "y": 4.716672970338558
+        "x": 6.276800622567857,
+        "y": 4.67959558315478
       },
       "isLocked": false,
-      "linkedName": "Starting Line Bottom"
+      "linkedName": "US3"
     },
     {
       "anchor": {
@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Reef F"
+      "linkedName": "Post 1"
     }
   ],
   "rotationTargets": [

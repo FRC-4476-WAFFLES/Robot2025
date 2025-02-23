@@ -12,7 +12,7 @@
         "y": 4.96343093028072
       },
       "isLocked": false,
-      "linkedName": "Starting Line Bottom"
+      "linkedName": "US3"
     },
     {
       "anchor": {
@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "G"
+      "linkedName": "Post 12"
     }
   ],
   "rotationTargets": [

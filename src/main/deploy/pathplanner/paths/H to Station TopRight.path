@@ -8,24 +8,11 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.385590340775359,
-        "y": 4.2391418838518575
+        "x": 6.380643912203931,
+        "y": 3.857411973137571
       },
       "isLocked": false,
-      "linkedName": "H"
-    },
-    {
-      "anchor": {
-        "x": 1.6769999999999998,
-        "y": 7.369249999999999
-      },
-      "prevControl": {
-        "x": 2.574000000000001,
-        "y": 8.724499999999999
-      },
-      "nextControl": null,
-      "isLocked": false,
-      "linkedName": "Top Right Coral Station"
+      "linkedName": "Post 11"
     }
   ],
   "rotationTargets": [],
