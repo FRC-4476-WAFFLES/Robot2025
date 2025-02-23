@@ -3,35 +3,43 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.6769999999999998,
-        "y": 7.369249999999999
+        "x": 7.205250000000001,
+        "y": 6.17
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.4660846280669717,
-        "y": 7.503468873048287
+        "x": 7.147139830735882,
+        "y": 5.92684735611535
       },
       "isLocked": false,
-      "linkedName": "CS1"
+      "linkedName": "US2"
     },
     {
       "anchor": {
-        "x": 5.23575,
-        "y": 5.08775
+        "x": 5.0895,
+        "y": 5.34125
       },
       "prevControl": {
-        "x": 5.810303571428573,
-        "y": 4.754770089285714
+        "x": 5.647175474693576,
+        "y": 6.236589868422712
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Post 10"
+      "linkedName": "Post 9"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.6304568527918768,
-      "rotationDegrees": -119.99999999999999
+      "waypointRelativePos": 0,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 0,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 0,
+      "rotationDegrees": 0.0
     }
   ],
   "constraintZones": [],
@@ -50,10 +58,10 @@
     "rotation": -119.99999999999999
   },
   "reversed": false,
-  "folder": "CS1 to Reef",
+  "folder": "Starting Line (MID)",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 125.00000000000001
+    "rotation": 180.0
   },
   "useDefaultConstraints": true
 }

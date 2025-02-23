@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 5.000540202682925,
-        "y": 2.799374357674557
+        "x": 5.07,
+        "y": 2.679499999999999
       },
       "prevControl": {
-        "x": 5.610245901639344,
-        "y": 2.982069672131148
+        "x": 5.679705698956419,
+        "y": 2.8621953144565904
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Reef 2"
+      "linkedName": "Post 2"
     }
   ],
   "rotationTargets": [],
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 119.74488129694222
+    "rotation": 122.0053832080836
   },
   "reversed": false,
   "folder": "OPP1",

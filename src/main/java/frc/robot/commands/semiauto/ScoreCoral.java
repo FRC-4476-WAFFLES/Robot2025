@@ -17,6 +17,7 @@ import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.subsystems.DynamicPathingSubsystem;
+import frc.robot.commands.semiauto.FinalAlignCoral;
 
 public class ScoreCoral extends SequentialCommandGroup {
   private static final double waitBeforeScore = 0.25;

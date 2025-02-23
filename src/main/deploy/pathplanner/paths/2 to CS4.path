@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.000540202682925,
-        "y": 2.799374357674557
+        "x": 5.07,
+        "y": 2.679499999999999
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.1247949027526944,
-        "y": 2.068091417380289
+        "x": 4.19425470006977,
+        "y": 1.9482170597057311
       },
       "isLocked": false,
       "linkedName": "Post 2"
     },
     {
       "anchor": {
-        "x": 1.6260690789473682,
-        "y": 0.6862664473684208
+        "x": 1.6575,
+        "y": 0.6807499999999993
       },
       "prevControl": {
-        "x": 2.3131493610039158,
-        "y": 1.1677397104113372
+        "x": 2.3445802820565476,
+        "y": 1.162223263042916
       },
       "nextControl": null,
       "isLocked": false,
@@ -48,7 +48,7 @@
   "folder": "Reef to CS4",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 119.74488129694222
+    "rotation": 122.0053832080836
   },
   "useDefaultConstraints": true
 }

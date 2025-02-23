@@ -357,6 +357,12 @@ public class RobotContainer {
     NamedCommands.registerCommand("Autoscore L1 Left", Commands.defer(
       () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L1, false), scoringCommandRequirements)
     );
+
+    // Coral Intake
+    NamedCommands.registerCommand("Coral Intake", Commands.parallel(
+      new CoralIntake(),
+      new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
+    ));
   }
 
   /**

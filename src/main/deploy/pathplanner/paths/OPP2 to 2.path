@@ -3,37 +3,32 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.6769999999999998,
-        "y": 7.369249999999999
+        "x": 7.1857500000000005,
+        "y": 1.8897499999999992
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.4660846280669717,
-        "y": 7.503468873048287
+        "x": 6.114230106487857,
+        "y": 1.7991502538751423
       },
       "isLocked": false,
-      "linkedName": "CS1"
+      "linkedName": "OPP2"
     },
     {
       "anchor": {
-        "x": 5.23575,
-        "y": 5.08775
+        "x": 5.07,
+        "y": 2.679499999999999
       },
       "prevControl": {
-        "x": 5.810303571428573,
-        "y": 4.754770089285714
+        "x": 5.525817661302625,
+        "y": 2.2814993395539807
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Post 10"
+      "linkedName": "Post 2"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.6304568527918768,
-      "rotationDegrees": -119.99999999999999
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
@@ -47,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -119.99999999999999
+    "rotation": 122.0053832080836
   },
   "reversed": false,
-  "folder": "CS1 to Reef",
+  "folder": "OPP2",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 125.00000000000001
+    "rotation": -179.11859600341782
   },
   "useDefaultConstraints": true
 }

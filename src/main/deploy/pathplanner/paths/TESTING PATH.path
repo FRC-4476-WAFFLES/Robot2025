@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.6260690789473682,
-        "y": 0.6862664473684208
+        "x": 5.937750000000001,
+        "y": 3.86
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.1676332408509182,
-        "y": 1.6187873220597915
+        "x": 6.479314161903551,
+        "y": 4.7925208746913714
       },
       "isLocked": false,
-      "linkedName": "CS4"
+      "linkedName": "Post 12"
     },
     {
       "anchor": {
@@ -48,7 +48,7 @@
   "folder": "Debug Paths",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 54.591013070833
+    "rotation": 180.0
   },
   "useDefaultConstraints": true
 }
