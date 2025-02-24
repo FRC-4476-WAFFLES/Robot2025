@@ -79,8 +79,6 @@ public class DynamicPathingSubsystem extends SubsystemBase {
     public static final Rotation2d NET_SCORING_ANGLE = Rotation2d.k180deg;
 
     /* Path following parameters */
-    public static boolean ALWAYS_PATH_STRAIGHT = false;
-
     public static final double MAX_SPEED = 2.0f;
     public static final double MAX_ACCELERATION = 4.0f;
 

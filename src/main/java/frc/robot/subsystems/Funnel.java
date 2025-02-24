@@ -120,13 +120,13 @@ public class Funnel extends SubsystemBase implements NetworkUser {
   /* Networktables methods */
 
   /**
-     * This method is called automatically by the SubsystemNetworkManager
-     */
-    @Override
-    public void updateNetwork() {
-      funnelPivotSetpointNT.set(funnelAngleSetpoint);
-      funnelPivotAngleNT.set(getfunnelDegrees());
-    }
+   * This method is called automatically by the SubsystemNetworkManager
+   */
+  @Override
+  public void updateNetwork() {
+    funnelPivotSetpointNT.set(funnelAngleSetpoint);
+    funnelPivotAngleNT.set(getfunnelDegrees());
+  }
 
   public void initializeNetwork() {
     // Could be used to make shuffleboard layouts programatically
