@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
+import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.ElevatorConstants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.utils.NetworkUser;
@@ -101,7 +102,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   // }
 
   public Elevator() {
-    SubsystemNetworkManager.RegisterNetworkUser(this, true, 5);
+    SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
 
     elevatorMotorLeader = new TalonFX(Constants.CANIds.elevator1);
     elevatorMotorFollower = new TalonFX(Constants.CANIds.elevator2);
@@ -128,8 +129,8 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     slot0Configs.kP = ElevatorConstants.kP;
     slot0Configs.kI = ElevatorConstants.kI;
     slot0Configs.kD = ElevatorConstants.kD;
-    slot0Configs.kG = ElevatorConstants.kG;
-    slot0Configs.GravityType = GravityTypeValue.Elevator_Static;
+    // slot0Configs.kG = ElevatorConstants.kG;
+    // slot0Configs.GravityType = GravityTypeValue.Elevator_Static;
 
     elevatorConfig.Slot0 = slot0Configs;
 
@@ -155,33 +156,60 @@ public class Elevator extends SubsystemBase implements NetworkUser {
 
   @Override
   public void periodic() {
+    // Updated always so pivot always gets accurate information
     currentCollisionPrediction = isCollisionPredicted(elevatorSetpointMeters);
 
-    // Main control logic
-    if (!isZeroingElevator) {
-      // if (getElevatorPositionMeters() <=  &&
-      //   intakeSubsystem.isAlgaeLoaded() && elevatorSetpointMeters < ){
-      //     elevatorMotorLeader.setControl(motionMagicRequest.withPosition(ElevatorConstants.ElevatorLevel.PROCESSOR.getHeight()).withSlot(0));
-      //   }
+    if (isZeroingElevator) {
+      handleElevatorZeroPeriodic();
+
+    } else {
+      // Main control logic
+      double chosenElevatorPosition = elevatorSetpointMeters;
+
       if (currentCollisionPrediction == Elevator.CollisionType.NONE) {
         // Safe to move elevator
         // Move elevator to setpoint
-        elevatorMotorLeader.setControl(motionMagicRequest.withPosition(elevatorSetpointMeters).withSlot(0));
+        chosenElevatorPosition = elevatorSetpointMeters; // not nessesary but sanity check I guess
+
       } 
       else if(currentCollisionPrediction == Elevator.CollisionType.ENTERING_FROM_ABOVE) {
-        // move to safe setpoint
-        elevatorMotorLeader.setControl(motionMagicRequest.withPosition(ElevatorConstants.COLLISION_ZONE_UPPER).withSlot(0));
+        // Move to safe setpoint
+        chosenElevatorPosition = ElevatorConstants.COLLISION_ZONE_UPPER;
+
       }
       else if(currentCollisionPrediction == Elevator.CollisionType.ENTERING_FROM_BELOW) {
-        // move to safe setpoint
-        elevatorMotorLeader.setControl(motionMagicRequest.withPosition(ElevatorConstants.COLLISION_ZONE_LOWER).withSlot(0));
+        // Move to safe setpoint
+        chosenElevatorPosition = ElevatorConstants.COLLISION_ZONE_LOWER;
+
       }
       else {
-        // try to stop motor
-        elevatorMotorLeader.setControl(motionMagicRequest.withPosition(getElevatorPositionMeters()).withSlot(0));
+        // Try to stop motor
+        chosenElevatorPosition = getElevatorPositionMeters();
+
       }
+
+
+      // If elevator is hig enough to use first stage, apply feedforward
+      // Not needed for carraige only motion due to CF springs
+      double chosenFeedforward = 0;
+      if (getElevatorPositionMeters() > ElevatorConstants.FIRST_STAGE_START_HEIGHT) {
+        chosenFeedforward = ElevatorConstants.kG;
+      }
+
+      // Apply chosen setpoint
+      elevatorMotorLeader.setControl(motionMagicRequest.withPosition(chosenElevatorPosition).withSlot(0).withFeedForward(chosenFeedforward));
     }
-  
+
+    
+
+    // Update network tables
+    updateNetwork();
+  }
+
+  /**
+   * Run periodically while zeroing elevator
+   */
+  private void handleElevatorZeroPeriodic() {
     if (elevatorMotorLeader.getStatorCurrent().getValueAsDouble() > ElevatorConstants.STALL_CURRENT_THRESHOLD && isZeroingElevator) {
       // Stop the elevator
       elevatorMotorLeader.set(0);
@@ -196,9 +224,6 @@ public class Elevator extends SubsystemBase implements NetworkUser {
 
       DriverStation.reportWarning("Elevator zeroed successfully", false);
     }
-
-    // Update network tables
-    updateNetwork();
   }
 
   /**

@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
+import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.ElevatorConstants;
 import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
@@ -48,7 +49,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
     // Control Objects
     private final DynamicMotionMagicVoltage motionMagicRequest = new DynamicMotionMagicVoltage(0, ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY, ManipulatorConstants.PIVOT_MOTION_ACCELERATION, ManipulatorConstants.PIVOT_MOTION_JERK);
-    private final DynamicMotionMagicVoltage slowMotionMagicRequest = new DynamicMotionMagicVoltage(0, ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY / 25, ManipulatorConstants.PIVOT_MOTION_ACCELERATION / 25, ManipulatorConstants.PIVOT_MOTION_JERK / 25);
+    // private final DynamicMotionMagicVoltage slowMotionMagicRequest = new DynamicMotionMagicVoltage(0, ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY / 25, ManipulatorConstants.PIVOT_MOTION_ACCELERATION / 25, ManipulatorConstants.PIVOT_MOTION_JERK / 25);
 
     // State variables
     private double pivotSetpointAngle = 0;
@@ -86,7 +87,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     // }
 
     public Pivot() {
-        SubsystemNetworkManager.RegisterNetworkUser(this);
+        SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
 
         // Initialize hardware
         pivot = new TalonFX(Constants.CANIds.pivotMotor);
@@ -166,15 +167,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     public void periodic() {
         // Handle zeroing first
         if (isZeroingPivot) {
-            if (pivot.getStatorCurrent().getValueAsDouble() > Constants.ManipulatorConstants.PIVOT_CURRENT_THRESHOLD) {
-                pivot.set(0);
-                pivot.setPosition(-0.002);
-                setPivotSetpoint(0);
-                isZeroingPivot = false;
-                DriverStation.reportWarning("Pivot zeroed successfully", false);
-                return;
-            }
-            pivot.set(-0.1);
+            handlePivotZeroPeriodic();
             return;
         }
 
@@ -182,8 +175,6 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         int slot = 0;
         if (intakeSubsystem.isAlgaeLoaded()) {
             // while algea is loaded, use a slower profile
-            // motionMagicRequest.Velocity = 0.00001; // rps
-            // motionMagicRequest.Acceleration = ManipulatorConstants.PIVOT_MOTION_ACCELERATION / 25; // rot/s^2
             slot = 1;
         }
 
@@ -233,6 +224,24 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     }
 
     /**
+     * Run periodically while zeroing pivot
+     */
+    private void handlePivotZeroPeriodic() {
+        if (pivot.getStatorCurrent().getValueAsDouble() > Constants.ManipulatorConstants.PIVOT_CURRENT_THRESHOLD) {
+
+            pivot.set(0);
+            pivot.setPosition(-0.002);
+            setPivotSetpoint(0);
+            
+            isZeroingPivot = false;
+            DriverStation.reportWarning("Pivot zeroed successfully", false);
+            
+            return;
+        }
+        pivot.set(-0.1);
+    }
+
+    /**
      * Sets the target angle of the pivot mechanism
      * @param setpoint Target position in degrees or a PivotPosition enum
      * 
@@ -279,6 +288,9 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         return Math.abs(getPivotPosition() - pivotSetpointAngle) < Constants.ManipulatorConstants.PIVOT_ANGLE_DEADBAND;
     }
 
+    /*
+     * Zero pivot encoder
+     */
     private void resetInternalEncoder() {
         setPivotSetpoint(PivotPosition.ZERO);
     }
@@ -292,8 +304,6 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         pivotSetpointNT.set(pivotSetpointAngle);
         pivotAngleNT.set(getPivotPosition());
         isZeroingNT.set(isZeroingPivot);
-        // laserCanDistanceNT.set(laserCANDistance);
-        // coralLoadedNT.set(isCoralLoaded());
     }
 
     @Override
@@ -301,16 +311,25 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         // Network initialization if needed
     }
 
+    /*
+     * Returns if the elevator is (or will be) in a situation where the pivot can hit the bumpers
+     */
     public boolean isInBumperDangerZone() {
         return RobotContainer.elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT ||
             RobotContainer.elevatorSubsystem.getElevatorSetpointMeters() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT;
     }
 
+    /*
+     * Returns if the elevator is (or will be) in a situation where the pivot can hit the L4 posts
+     */
     public boolean isInL4DangerZone() {
         return RobotContainer.elevatorSubsystem.getElevatorPositionMeters() >= ElevatorConstants.PIVOT_L4_CLEAR_HEIGHT_MIN &&
             RobotContainer.elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.PIVOT_L4_CLEAR_HEIGHT_MAX;
     }
 
+    /*
+     * Returns if the elevator is (or will be) in a situation where the pivot with algae can hit the robot's structure
+     */
     public boolean isInAlgaeDangerZone() {
         return elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER ||
         elevatorSubsystem.getElevatorSetpointMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER;
@@ -322,11 +341,14 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     public void zeroPivot() {
         if (isZeroingPivot) {
             isZeroingPivot = false;
+
             pivot.set(0);
             DriverStation.reportWarning("Pivot zeroing canceled", false);
+            
             return;
         }
 
+        // Cancel if called again
         isZeroingPivot = true;
     }
 

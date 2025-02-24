@@ -9,6 +9,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.data.Constants;
+import frc.robot.data.Constants.CodeConstants;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
 
@@ -43,7 +44,7 @@ public class Funnel extends SubsystemBase implements NetworkUser {
 
   /** Creates a new funnelSubsystem. */
   public Funnel() {
-    SubsystemNetworkManager.RegisterNetworkUser(this, true, 5);
+    SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
 
     // Initialize hardware
     funnelPivotMotor = new TalonFX(Constants.CANIds.funnelMotor);

@@ -35,8 +35,6 @@ public class MechanismPoses extends SubsystemBase {
         new Rotation3d(0, 0, 0)
     );
 
-    // Constants for elevator stages
-    private static final double FIRST_STAGE_START_HEIGHT = ElevatorConstants.MAX_ELEVATOR_HEIGHT / 2.0; // Height where first stage starts moving
 
     public MechanismPoses() {
         // Publish zeroed calibration pose
@@ -56,15 +54,15 @@ public class MechanismPoses extends SubsystemBase {
         double carriageHeight;
         double firstStageHeight;
 
-        if (elevatorHeight <= FIRST_STAGE_START_HEIGHT) {
+        if (elevatorHeight <= ElevatorConstants.FIRST_STAGE_START_HEIGHT) {
             // Only carriage moves in first half
             carriageHeight = elevatorHeight + 0.0254;
             firstStageHeight = 0;
         } else {
             // First stage starts moving in second half
-            double remainingHeight = elevatorHeight - FIRST_STAGE_START_HEIGHT;
+            double remainingHeight = elevatorHeight - ElevatorConstants.FIRST_STAGE_START_HEIGHT;
             firstStageHeight = remainingHeight;
-            carriageHeight = FIRST_STAGE_START_HEIGHT + remainingHeight + 0.0254;
+            carriageHeight = ElevatorConstants.FIRST_STAGE_START_HEIGHT + remainingHeight + 0.0254;
         }
 
         // Create first stage pose

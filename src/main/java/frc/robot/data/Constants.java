@@ -76,6 +76,11 @@ public final class Constants {
     public static final int coastModeSwitch = 4; // Limit Switch
   }
 
+  /* Code */
+  public static class CodeConstants {
+    public static final int SUBSYSTEM_NT_UPDATE_RATE = 20; // How many times a second subsystems will publish to NT. Reduce if performance is suffering.
+  }
+
   /* Vision */
   public static class VisionConstants {
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(2, 2, 1);
@@ -236,6 +241,9 @@ public final class Constants {
     public static final double COLLISION_ZONE_LOWER = 0.12; // meters
     public static final double COLLISION_ZONE_UPPER = 0.84; // meters
 
+    // Height where first stage starts moving
+    public static final double FIRST_STAGE_START_HEIGHT = ElevatorConstants.MAX_ELEVATOR_HEIGHT / 2.0; 
+
     // Motion Magic configuration
     public static final double MOTION_CRUISE_VELOCITY = 4; // 4 usually
     public static final double MOTION_ACCELERATION = 8;
@@ -246,7 +254,7 @@ public final class Constants {
     public static final double kI = 0.0;
     public static final double kD = 0.01;
     public static final double kS = 0.0;
-    public static final double kG = 0.18; // Volts of feedforward was 0.36 but halved with constant force springs
+    public static final double kG = 0.36; // Volts of feedforward. Not put in kG gain slot since only applies when elevator is past constant force springs
 
     // Predefined heights for the elevator (in meters)
     public enum ElevatorLevel {
