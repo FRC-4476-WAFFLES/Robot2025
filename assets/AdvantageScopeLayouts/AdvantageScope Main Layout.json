@@ -7,7 +7,7 @@
       "height": 866,
       "state": {
         "sidebar": {
-          "width": 216,
+          "width": 358,
           "expanded": [
             "/Intake",
             "/Mechanism",
@@ -23,7 +23,7 @@
           ]
         },
         "tabs": {
-          "selected": 7,
+          "selected": 6,
           "tabs": [
             {
               "type": 0,
@@ -247,14 +247,14 @@
                   },
                   {
                     "type": "component",
-                    "logKey": "NT:/Mechanism3d/elevatorCarriage",
+                    "logKey": "NT:/Mechanism3d/elevatorFirstStage",
                     "logType": "Pose3d",
                     "visible": true,
                     "options": {}
                   },
                   {
                     "type": "component",
-                    "logKey": "NT:/Mechanism3d/elevatorFirstStage",
+                    "logKey": "NT:/Mechanism3d/elevatorCarriage",
                     "logType": "Pose3d",
                     "visible": true,
                     "options": {}
@@ -268,14 +268,14 @@
                 "cameraIndex": -1,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  -5.428329509067611,
-                  2.2947573647814834,
-                  -4.439115200372083
+                  -5.002764233319744,
+                  1.0193511953978014,
+                  3.0361981532012985
                 ],
                 "cameraTarget": [
-                  -5.637831687281655,
-                  1.9912738509250048,
-                  -3.5026063406911496
+                  -5.045648556116226,
+                  0.9194370469488035,
+                  1.1097640526186305
                 ]
               },
               "controlsHeight": 189
@@ -368,6 +368,18 @@
                       "format": "Pose2d",
                       "units": "radians"
                     }
+                  },
+                  {
+                    "type": "ghostLegacy",
+                    "logKey": "NT:/SmartDashboard/TargetPose Reef_Flipped",
+                    "logType": "NumberArray",
+                    "visible": true,
+                    "options": {
+                      "model": "AlexStatic",
+                      "color": "#00ff00",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
                   }
                 ],
                 "game": "2025 Field (Welded)",
@@ -378,14 +390,14 @@
                 "cameraIndex": -1,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  -5.6176149012365535,
-                  4.134598180434732,
-                  -5.896372672186556
+                  7.633768879291303,
+                  1.8514118694066077,
+                  -0.12774662150218333
                 ],
                 "cameraTarget": [
-                  -5.0312386321515605,
-                  0.2255071775561544,
-                  -0.23412041254144914
+                  5.044348880559897,
+                  0.7178998982543824,
+                  -0.17228515257854365
                 ]
               },
               "controlsHeight": 200

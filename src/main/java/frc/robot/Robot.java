@@ -8,6 +8,7 @@ import au.grapplerobotics.CanBridge;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -84,6 +85,9 @@ public class Robot extends TimedRobot {
     // Used to confiure IMU modes
     RobotContainer.driveSubsystem.onDisable();
     RobotContainer.lightsSubsystem.onDisable();
+
+    // Disable controller vibration in case disabled while pathing
+    Controls.operatorController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0);
   }
 
   @Override
