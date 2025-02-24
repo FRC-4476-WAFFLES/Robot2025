@@ -66,7 +66,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   private final DoublePublisher leaderCurrentDrawNT = elevatorTable.getDoubleTopic("Leader Motor Current (Amps)").publish();
   private final DoublePublisher followerCurrentDrawNT = elevatorTable.getDoubleTopic("Follower Motor Current (Amps)").publish();
 
-  private ElevatorLevel targetPosition = ElevatorLevel.REST_POSITION;
+  private ElevatorLevel currentSetpointEnum = ElevatorLevel.REST_POSITION; 
   private CollisionType currentCollisionPrediction = CollisionType.NONE;
   private CollisionType potentialCollisionPrediction = CollisionType.NONE; // If the movement could induce collision
 
@@ -234,10 +234,6 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     elevatorSetpointMeters = setpoint;
   }
 
-  public ElevatorLevel getElevatorSetpointEnum(){
-    return targetPosition;
-  }
-
   /**
    * Sets the target position of the elevator.
    * Can take either a direct height value in meters or a predefined ElevatorLevel position.
@@ -248,19 +244,31 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     if (setpoint instanceof ElevatorConstants.ElevatorLevel) {
       ElevatorConstants.ElevatorLevel levelSetpoint = (ElevatorConstants.ElevatorLevel) setpoint;
       setElevatorSetpointMeters(levelSetpoint.getHeight());
-      targetPosition = levelSetpoint;
+      currentSetpointEnum = levelSetpoint;
+
     } else if (setpoint instanceof Double || setpoint instanceof Integer) {
       double heightSetpoint = ((Number) setpoint).doubleValue();
       setElevatorSetpointMeters(heightSetpoint);
-      // When using direct meter values, we don't update targetPosition since it doesn't correspond to a predefined level
+      // When using direct meter values, we don't update currentSetpointEnum since it doesn't correspond to a predefined level
+      // This is yucky but I do not have the will to make a system that figures out which enum to use if the value is within a certain epsilon
+      // Just assume it'll always be used with a setpoint enum 
+
     } else {
       throw new IllegalArgumentException("Setpoint must be either an ElevatorLevel or a numeric height in meters");
     }
   }
 
   /**
+   * Get the last defined setpoint the elevator was set to
+   * @return
+   */
+  public ElevatorLevel getElevatorSetpointEnum(){
+    return currentSetpointEnum;
+  }
+
+  /**
    * Gets the target position of the elevator.
-   * @return the setpoint Target position in rotations.
+   * @return the setpoint Target position in meters.
    */
   public double getElevatorSetpointMeters(){
     return elevatorSetpointMeters;
@@ -275,8 +283,8 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   }
 
   /**
-   * Gets if the elevator in a state that it will hit something
-   * @return
+   * Gets if the elevator is in a state that it will hit itself
+   * @return a CollisionType enum
    */
   public CollisionType getCurrentCollisionPrediction() {
     return currentCollisionPrediction;
@@ -348,23 +356,6 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     isAtSetpointNT.set(isElevatorAtSetpoint());
     leaderCurrentDrawNT.set(elevatorMotorLeader.getStatorCurrent().getValueAsDouble());
     followerCurrentDrawNT.set(elevatorMotorFollower.getStatorCurrent().getValueAsDouble());
-  }
-
-  /**
-   * Sets the target position for the elevator using an ElevatorLevel enum.
-   * This is used to track the desired position state of the elevator.
-   * @param position The target ElevatorLevel position
-   */
-  public void setTargetPosition(ElevatorLevel position) {
-    targetPosition = position;
-  }
-
-  /**
-   * Gets the current target position of the elevator.
-   * @return The current target ElevatorLevel position
-   */
-  public ElevatorLevel getTargetPosition() {
-    return targetPosition;
   }
 
   /**
