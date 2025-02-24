@@ -20,7 +20,7 @@ public class PickupAlgea extends SequentialCommandGroup {
   private PickupAlgea(Command driveCommand, ScoringLevel scoringLevel, Command pathAwayCommand) {
     addCommands(
       new ParallelCommandGroup(
-        driveCommand,
+        RobotContainer.dynamicPathingSubsystem.wrapPathingCommand(driveCommand),
         new ApplyScoringSetpoint(scoringLevel),
         new AlgeaIntake()
       ),

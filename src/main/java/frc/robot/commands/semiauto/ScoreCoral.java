@@ -24,16 +24,19 @@ public class ScoreCoral extends SequentialCommandGroup {
 
   /** Creates a new ScoreCoral. */
   private ScoreCoral(Command driveCommand, Pose2d finalAlignPose) {
+    var pathingSubsystem = RobotContainer.dynamicPathingSubsystem;
     addCommands(
       new ParallelCommandGroup(
-        new SequentialCommandGroup(
-          driveCommand,
-          new FinalAlignCoral(finalAlignPose)
+        pathingSubsystem.wrapPathingCommand(
+          new SequentialCommandGroup(
+            driveCommand,
+            new FinalAlignCoral(finalAlignPose)
+          )
         ),
         new PrepareScoreCoral()
       ),
       // Wait until doNotScore is released
-      new WaitCommand(waitBeforeScore).onlyIf(() -> RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4),
+      new WaitCommand(waitBeforeScore).onlyIf(() -> pathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4),
       new WaitUntilCommand(() -> !RobotContainer.doNotScore.getAsBoolean()),
       new CoralOutake()
     );
@@ -69,15 +72,7 @@ public class ScoreCoral extends SequentialCommandGroup {
    * @return The command to score coral
    */
   public static Command scoreCoralWithPose(Pose2d finalAlignPose) {
-    return new ScoreCoral(new InstantCommand(), finalAlignPose).finallyDo(() -> {
-      RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
-
-      if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4) {
-        RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.ZERO);
-      } else {
-        RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
-      }
-    });
+    return scoreCoralWithPath(new InstantCommand(), finalAlignPose);
   }
 
   /**

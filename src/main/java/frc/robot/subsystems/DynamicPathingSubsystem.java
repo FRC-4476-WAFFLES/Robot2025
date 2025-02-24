@@ -219,7 +219,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
 
                     var path = DynamicPathingSubsystem.simplePathToPose(targetCoralPose);
                     if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
-                        var pathingCommand = getDynamicPathingWrapperCommand(AutoBuilder.followPath(path.get()));
+                        var pathingCommand = AutoBuilder.followPath(path.get());
                         cmd = ScoreCoral.scoreCoralWithPath(pathingCommand, targetCoralPose);
                     }
 
@@ -244,8 +244,8 @@ public class DynamicPathingSubsystem extends SubsystemBase {
                     
 
                     if (pickupPath.isPresent() && backOffPath.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
-                        var pathingCommand = getDynamicPathingWrapperCommand(AutoBuilder.followPath(pickupPath.get()));
-                        var backoffPathingCommand = getDynamicPathingWrapperCommand(AutoBuilder.followPath(backOffPath.get()));
+                        var pathingCommand = AutoBuilder.followPath(pickupPath.get());
+                        var backoffPathingCommand = AutoBuilder.followPath(backOffPath.get());
                         cmd = PickupAlgea.pickupAlgeaWithPath(pathingCommand, getAlgeaScoringLevel(RobotContainer.driveSubsystem.getRobotPose()), backoffPathingCommand);
                     }
 
@@ -339,7 +339,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
         
         if (newPath.isPresent()) {
             // Create and schedule the new scoring command
-            var pathCommand = getDynamicPathingWrapperCommand(AutoBuilder.followPath(newPath.get()));
+            var pathCommand = AutoBuilder.followPath(newPath.get());
 
             // Different from normal pathing command.
             // Since started from outside button based scheduling, letting go of the dynamic pathing button would fail to cancel it
@@ -648,7 +648,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
      * @param pathingCommand command to wrap
      * @return the wrapped command
      */
-    private Command getDynamicPathingWrapperCommand(Command pathingCommand) {
+    public Command wrapPathingCommand(Command pathingCommand) {
         return pathingCommand.beforeStarting(() -> {isPathing = true;}).finallyDo(() -> {isPathing = false;});
     }
 }
