@@ -389,6 +389,8 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    * @return The type of collision predicted, or NONE if movement is safe or pivot is in safe position
    */
   public CollisionType isCollisionPredicted(double setpoint) {
+    potentialCollisionPrediction = predictedPotentialCollision(setpoint);
+    
     // Check if funnel is blocking elevator movement
     if (isFunnelBlockingElevator() && setpoint > ElevatorConstants.COLLISION_ZONE_LOWER) {
       return CollisionType.FUNNEL_BLOCKING;
@@ -397,7 +399,6 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     // Check if pivot is in safe position
     boolean pivotSafe = RobotContainer.pivotSubsystem.getPivotPosition() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE;
                         // RobotContainer.manipulatorSubsystem.getPivotSetpoint() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE;
-    potentialCollisionPrediction = predictedPotentialCollision(setpoint);
 
     // If pivot is safe, no collision possible
     if (pivotSafe) {

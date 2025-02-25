@@ -5,7 +5,7 @@
 package frc.robot.commands.climb;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.Climber.ClimberAngle;
+import frc.robot.data.Constants.ClimberConstants.ClimberPosition;
 
 import static frc.robot.RobotContainer.*;
 
@@ -23,7 +23,7 @@ public class ClimberExtend extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    climberSubsystem.setClimberSetpoint(ClimberAngle.DeployedAngle);
+    climberSubsystem.setClimberPosition(ClimberPosition.DEPLOYED);
   }
 
   // Called once the command ends or is interrupted.

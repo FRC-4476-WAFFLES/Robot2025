@@ -93,7 +93,7 @@ public class Funnel extends SubsystemBase implements NetworkUser {
     funnelConfig.Feedback.SensorToMechanismRatio = Constants.PhysicalConstants.funnelReduction;
     
     // Set neutral mode to brake
-    funnelConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    funnelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     
     // Add voltage compensation
     funnelConfig.Voltage.PeakForwardVoltage = 12.0; // 12V compensation

@@ -69,6 +69,7 @@ public class RobotContainer {
 
   /* Software Subsystems */
   /* Do not control harware, but have state and periodic methods */
+  /* Can be required by commands to mutex lock actions like pathing */
   public static final DynamicPathing dynamicPathingSubsystem = new DynamicPathing();
   public static final Telemetry telemetry = new Telemetry(PhysicalConstants.maxSpeed);
   public static final MechanismPoses mechanismPoses = new MechanismPoses();
