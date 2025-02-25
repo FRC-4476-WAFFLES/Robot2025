@@ -16,7 +16,7 @@ import frc.robot.RobotContainer;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
-import frc.robot.subsystems.DynamicPathingSubsystem;
+import frc.robot.subsystems.DynamicPathing;
 import frc.robot.commands.intake.CoralOutake;
 import frc.robot.commands.scoring.FinalAlignCoral;
 

@@ -39,8 +39,9 @@ import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.data.TunerConstants;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.DynamicPathingSubsystem;
+import frc.robot.subsystems.DynamicPathing;
 import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.Funnel;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Lights;
 import frc.robot.subsystems.MechanismPoses;
@@ -57,20 +58,20 @@ import frc.robot.subsystems.Telemetry;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
 
-  /* Subsystems */
+  /* Hardware Subsystems */
   public static final DriveSubsystem driveSubsystem = TunerConstants.createDrivetrain();
   public static final Pivot pivotSubsystem = new Pivot();
   public static final Intake intakeSubsystem = new Intake();
   public static final Elevator elevatorSubsystem = new Elevator();
-  // public static final Funnel funnelSubsystem = new Funnel();
-  public static final Climber climberSubsystem = null; //  new Climber()
+  public static final Funnel funnelSubsystem = new Funnel();
+  public static final Climber climberSubsystem = new Climber();
   public static final Lights lightsSubsystem = new Lights();
-  public static final MechanismPoses mechanismPoses = new MechanismPoses();
 
   /* Software Subsystems */
   /* Do not control harware, but have state and periodic methods */
-  public static final DynamicPathingSubsystem dynamicPathingSubsystem = new DynamicPathingSubsystem();
+  public static final DynamicPathing dynamicPathingSubsystem = new DynamicPathing();
   public static final Telemetry telemetry = new Telemetry(PhysicalConstants.maxSpeed);
+  public static final MechanismPoses mechanismPoses = new MechanismPoses();
 
   /* Commands */
   private final ResetGyroHeading resetGyroHeading = new ResetGyroHeading();
@@ -273,18 +274,21 @@ public class RobotContainer {
 
   /** Binds controls to run drivetrain sysID */
   private void sysIDBindings() {
-    Controls.operatorController.a().whileTrue(
-     driveSubsystem.sysIdQuasistatic(Direction.kForward)
-    );
-    Controls.operatorController.x().whileTrue(
-      driveSubsystem.sysIdQuasistatic(Direction.kReverse)
-    );
-    Controls.operatorController.b().whileTrue(
-      driveSubsystem.sysIdDynamic(Direction.kForward)
-    );
-    Controls.operatorController.y().whileTrue(
-      driveSubsystem.sysIdDynamic(Direction.kReverse)
-    );
+    // Drive bindings
+    // Controls.operatorController.a().whileTrue(
+    //  driveSubsystem.sysIdQuasistatic(Direction.kForward)
+    // );
+    // Controls.operatorController.x().whileTrue(
+    //   driveSubsystem.sysIdQuasistatic(Direction.kReverse)
+    // );
+    // Controls.operatorController.b().whileTrue(
+    //   driveSubsystem.sysIdDynamic(Direction.kForward)
+    // );
+    // Controls.operatorController.y().whileTrue(
+    //   driveSubsystem.sysIdDynamic(Direction.kReverse)
+    // );
+
+    // Datalog controls needed by sysID
     Controls.operatorController.leftBumper().onTrue(
       new InstantCommand(() -> {SignalLogger.start(); System.out.println("LOG START");})  
     );

@@ -14,7 +14,7 @@ import frc.robot.commands.superstructure.ApplyScoringSetpoint;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
-import frc.robot.subsystems.DynamicPathingSubsystem;
+import frc.robot.subsystems.DynamicPathing;
 
 public class PickupAlgea extends SequentialCommandGroup {
   /** Creates a new ScoreCoral. */

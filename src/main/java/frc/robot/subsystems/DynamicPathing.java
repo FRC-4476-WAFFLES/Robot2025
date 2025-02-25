@@ -41,7 +41,7 @@ import frc.robot.utils.WafflesUtilities;
 /**
  * All units are meters unless otherwise stated. The origin is on the blue alliance side, and coordinates are returned relative to the blue alliance
 */
-public class DynamicPathingSubsystem extends SubsystemBase {
+public class DynamicPathing extends SubsystemBase {
     /* Various distances */
     public static final double REEF_MIN_SCORING_DISTANCE = 2.2;
     public static final double REEF_MAX_SCORING_DISTANCE = 0.3; // Don't try to score within this distance
@@ -215,7 +215,7 @@ public class DynamicPathingSubsystem extends SubsystemBase {
                         debugFlippedPose.getRotation().getDegrees()
                     });
 
-                    var path = DynamicPathingSubsystem.simplePathToPose(targetCoralPose);
+                    var path = DynamicPathing.simplePathToPose(targetCoralPose);
                     if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
                         var pathingCommand = AutoBuilder.followPath(path.get());
                         cmd = ScoreCoral.scoreCoralWithPath(pathingCommand, targetCoralPose);
@@ -237,8 +237,8 @@ public class DynamicPathingSubsystem extends SubsystemBase {
 
                     var startingPose = RobotContainer.driveSubsystem.getRobotPose();
 
-                    var pickupPath = DynamicPathingSubsystem.generateComplexPath(startingPose, new Translation2d[] {clearancePose.getTranslation()}, targetAlgaePose);
-                    var backOffPath = DynamicPathingSubsystem.generateComplexPath(targetAlgaePose, null, clearancePose);
+                    var pickupPath = DynamicPathing.generateComplexPath(startingPose, new Translation2d[] {clearancePose.getTranslation()}, targetAlgaePose);
+                    var backOffPath = DynamicPathing.generateComplexPath(targetAlgaePose, null, clearancePose);
                     
 
                     if (pickupPath.isPresent() && backOffPath.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
