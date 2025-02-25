@@ -1,4 +1,4 @@
-package frc.robot.commands.semiauto;
+package frc.robot.commands.superstructure;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;

@@ -2,17 +2,16 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.commands;
+package frc.robot.commands.climb;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Climber.ClimberAngle;
 
 import static frc.robot.RobotContainer.*;
-
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class ClimberExtend extends Command {
+public class ClimberRetract extends Command {
   /** Creates a new ClimberIn. */
-  public ClimberExtend() {
+  public ClimberRetract() {
     addRequirements(climberSubsystem);// Use addRequirements() here to declare subsystem dependencies.
   }
 
@@ -23,7 +22,7 @@ public class ClimberExtend extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    climberSubsystem.setClimberSetpoint(ClimberAngle.DeployedAngle);
+    climberSubsystem.setClimberSetpoint(ClimberAngle.RetractedAngle);
   }
 
   // Called once the command ends or is interrupted.

@@ -25,6 +25,7 @@ import com.ctre.phoenix.led.StrobeAnimation;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
@@ -441,7 +442,7 @@ public class Lights extends SubsystemBase {
     }
     
     updateReefPathingIndicators();
-    if (RobotContainer.doNotScore.getAsBoolean() && !RobotContainer.isOperatorOverride) {
+    if (Controls.doNotScore.getAsBoolean() && !RobotContainer.isOperatorOverride) {
       // When "do not score" is active, and we are in normal mode, set middle lights to red
       setLEDRangeGroup(LedRange.MIDDLE_MIDDLE, LightColours.RED, LightColours.BLACK, false);
     } else {

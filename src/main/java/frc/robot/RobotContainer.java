@@ -20,18 +20,18 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.AlgeaOutake;
-import frc.robot.commands.AxisIntakeControl;
-import frc.robot.commands.CoralIntake;
 import frc.robot.commands.DefaultLightCommand;
-import frc.robot.commands.DefaultPosition;
 import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.ResetGyroHeading;
-import frc.robot.commands.SetElevatorPos;
-import frc.robot.commands.SetPivotPos;
-import frc.robot.commands.ZeroMechanisms;
-import frc.robot.commands.semiauto.ApplyScoringSetpoint;
-import frc.robot.commands.semiauto.ScoreCoral;
+import frc.robot.commands.intake.AlgeaOutake;
+import frc.robot.commands.intake.AxisIntakeControl;
+import frc.robot.commands.intake.CoralIntake;
+import frc.robot.commands.scoring.ScoreCoral;
+import frc.robot.commands.superstructure.ApplyScoringSetpoint;
+import frc.robot.commands.superstructure.SetElevatorPos;
+import frc.robot.commands.superstructure.SetPivotPos;
+import frc.robot.commands.superstructure.SuperstructureControl;
+import frc.robot.commands.superstructure.ZeroMechanisms;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.PhysicalConstants;
@@ -67,23 +67,24 @@ public class RobotContainer {
   public static final Lights lightsSubsystem = new Lights();
   public static final MechanismPoses mechanismPoses = new MechanismPoses();
 
+  /* Software Subsystems */
+  /* Do not control harware, but have state and periodic methods */
   public static final DynamicPathingSubsystem dynamicPathingSubsystem = new DynamicPathingSubsystem();
   public static final Telemetry telemetry = new Telemetry(PhysicalConstants.maxSpeed);
 
   /* Commands */
+  private final ResetGyroHeading resetGyroHeading = new ResetGyroHeading();
+  private final Command restPosition = SuperstructureControl.RestPositionCommand();
   private final AxisIntakeControl axisIntakeControl = new AxisIntakeControl(
     Controls.operatorController::getRightTriggerAxis,
     Controls.operatorController::getLeftTriggerAxis
   );
-  private final ResetGyroHeading resetGyroHeading = new ResetGyroHeading();
-  private final DefaultPosition defaultPosition = new DefaultPosition();
 
   /* Global Robot State */
   private final SendableChooser<Command> autoChooser;
   public static boolean isOperatorOverride = false;
 
-  /* Triggers */
-  public static final Trigger doNotScore = Controls.operatorController.leftTrigger(Controls.AXIS_DEADBAND);
+
 
   /** The static entry point for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -101,6 +102,10 @@ public class RobotContainer {
     // Set default command for lights
     lightsSubsystem.setDefaultCommand(new DefaultLightCommand());
 
+    // Default superstructure commands
+    pivotSubsystem.setDefaultCommand(SuperstructureControl.PivotDefaultCommand());
+    elevatorSubsystem.setDefaultCommand(SuperstructureControl.ElevatorDefaultCommand());
+
     // Register commands to be used by pathplanner autos
     registerNamedCommands();
 
@@ -112,6 +117,9 @@ public class RobotContainer {
     FollowPathCommand.warmupCommand().schedule();
   }
 
+  /**
+   * Binds controls
+   */
   private void configureBindings() {
     // Create conditional triggers based on operator override state
     Trigger inNormalMode = new Trigger(() -> !isOperatorOverride);
@@ -157,7 +165,7 @@ public class RobotContainer {
         ), 
         () -> intakeSubsystem.isCoralLoaded()
       )
-    ).onFalse(defaultPosition);
+    ).onFalse(restPosition);
 
     inOverrideMode.and(Controls.operatorController.x()).whileTrue(
       Commands.either(
@@ -171,7 +179,7 @@ public class RobotContainer {
         ), 
         () -> intakeSubsystem.isCoralLoaded()
       )
-    ).onFalse(defaultPosition);
+    ).onFalse(restPosition);
 
     inOverrideMode.and(Controls.operatorController.b()).whileTrue(
       Commands.either(
@@ -185,7 +193,7 @@ public class RobotContainer {
         ), 
         () -> intakeSubsystem.isCoralLoaded()
       )
-    ).onFalse(defaultPosition);
+    ).onFalse(restPosition);
 
     inOverrideMode.and(Controls.operatorController.y()).whileTrue(
       Commands.either(
@@ -199,7 +207,7 @@ public class RobotContainer {
         ), 
         () -> intakeSubsystem.isCoralLoaded()
       )
-    ).onFalse(defaultPosition);
+    ).onFalse(restPosition);
 
 
     // Axis intake control 
@@ -255,6 +263,9 @@ public class RobotContainer {
     );
   }
 
+  /**
+   * Toggles operator override mode, and updates it's value on networktables
+   */
   private static void toggleOperatorOverride() {
     isOperatorOverride = !isOperatorOverride;
     telemetry.publishOperatorOverrideInfo();

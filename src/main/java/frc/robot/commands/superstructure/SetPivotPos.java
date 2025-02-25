@@ -2,39 +2,45 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.commands;
+package frc.robot.commands.superstructure;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.ManipulatorConstants;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class AlgeaIntake extends Command {
-  /** Creates a new AlgeaIntake. */
-  public AlgeaIntake() {
-    addRequirements(RobotContainer.intakeSubsystem);
+public class SetPivotPos extends Command {
+  private ManipulatorConstants.PivotPosition chosenPosition;
+
+  /** Creates a new SetPivotPos. */
+  public SetPivotPos(ManipulatorConstants.PivotPosition position) {
     // Use addRequirements() here to declare subsystem dependencies.
+
+    addRequirements(RobotContainer.pivotSubsystem);
+    chosenPosition = position;
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    RobotContainer.pivotSubsystem.setPivotSetpoint(chosenPosition);
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    RobotContainer.intakeSubsystem.setIntakeSpeed(ManipulatorConstants.INTAKE_MAX_SPEED);
+    
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    RobotContainer.intakeSubsystem.setIntakeSpeed(0);
+    // RobotContainer.manipulatorSubsystem.setPivotSetpoint(PivotPosition.REST_POSITION);
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return RobotContainer.intakeSubsystem.isAlgaeLoaded();
+    return RobotContainer.pivotSubsystem.isPivotAtSetpoint();
   }
 }

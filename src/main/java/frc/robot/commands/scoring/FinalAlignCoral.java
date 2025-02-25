@@ -2,10 +2,8 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.commands.semiauto;
+package frc.robot.commands.scoring;
 
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -14,16 +12,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.PhysicalConstants;
 
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
-
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-
-import com.pathplanner.lib.util.DriveFeedforwards;
-import com.pathplanner.lib.util.swerve.SwerveSetpoint;
-import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 
 
 import static frc.robot.RobotContainer.*;
@@ -43,7 +34,7 @@ public class FinalAlignCoral extends Command {
 
 
   /** 
-   * Command that drives the robot field-oriented following velocities given by suppliers, with the option of making suppliers setpoints 
+   * Command that drives the robot to align with coral scoring
    */
   public FinalAlignCoral(Pose2d targetPose) {
     // Use addRequirements() here to declare subsystem dependencies.
@@ -76,12 +67,6 @@ public class FinalAlignCoral extends Command {
     double xVelocity = (sign * xPidController.calculate(currentPose.getX(), targetPose2d.getX()));
     double yVelocity = (sign * yPidController.calculate(currentPose.getY(), targetPose2d.getY()));
     double thetaVelocity = thetaPidController.calculate(currentPose.getRotation().getRadians(), targetPose2d.getRotation().getRadians());
-
-    // SmartDashboard.putNumber("ThetaVelocity", thetaVelocity);
-    
-    // SmartDashboard.putNumber("setpointTheta", thetaSupplier.get().getRadians());
-    
-    // SmartDashboard.putNumber("currentTheta", currentPose.getRotation().getRadians());
 
     driveSubsystem.setControl(
       driveRequest

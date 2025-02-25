@@ -22,8 +22,10 @@ public class Controls {
     public static final double AXIS_DEADBAND = 0.1;  // Deadband for controller axes to prevent unintended activation
     public static final double MANUAL_ELEVATOR_CONTROL_MULTIPLIER = 2;  // Todo: Change this number
 
-    // This button is referenced in multiple places, and is defined here so it can be edited in one place
+    /* Triggers */
+    /* When triggers are referenced in multiple places, they are defined here to have a single source of truth */
     public static final Trigger dynamicPathingButton = rightJoystick.button(1);
+    public static final Trigger doNotScore = Controls.operatorController.leftTrigger(Controls.AXIS_DEADBAND);
 
     public static class DriverConstants {
         public static final int leftJoystick = 0;

@@ -8,9 +8,11 @@ import org.opencv.core.Point;
 
 import edu.wpi.first.math.MathUtil;
 
-/** Hastily assembled 1D Natural spline generator from Numerical Recipes.
- *  Source is borderline unreadable due to having been transcribed verbatim
- *  from Fortran code included in the second edition of Numerical Recipes */
+/** 
+ * Hastily assembled 1D Natural spline generator.
+ * Source is borderline unreadable due to having been transcribed verbatim
+ * from Fortran code included in the second edition of Numerical Recipes 
+ */
 public class Spline1D {
     Point[] nodes;
     public double[] derivatives;

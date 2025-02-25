@@ -2,36 +2,28 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.commands;
+package frc.robot.commands.intake;
 
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.ManipulatorConstants;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class CoralOutake extends Command {
-  Timer timer = new Timer();
-  /** Creates a new CoralIntake. */
-  public CoralOutake() {
+public class AlgeaIntake extends Command {
+  /** Creates a new AlgeaIntake. */
+  public AlgeaIntake() {
     addRequirements(RobotContainer.intakeSubsystem);
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {
-    timer.stop();
-    timer.reset();
-  }
+  public void initialize() {}
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    RobotContainer.intakeSubsystem.setIntakeSpeed(-60.0);
-    if (!RobotContainer.intakeSubsystem.isCoralLoaded() ) {
-      timer.start();
-    }
+    RobotContainer.intakeSubsystem.setIntakeSpeed(ManipulatorConstants.INTAKE_MAX_SPEED);
   }
 
   // Called once the command ends or is interrupted.
@@ -43,6 +35,6 @@ public class CoralOutake extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return timer.get() > 0.25;
+    return RobotContainer.intakeSubsystem.isAlgaeLoaded();
   }
 }
