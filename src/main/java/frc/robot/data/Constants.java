@@ -8,11 +8,9 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
-
-import static edu.wpi.first.units.Units.MetersPerSecond;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -109,12 +107,49 @@ public final class Constants {
     public static final double withBumperBotHalfWidth = 0.460; // m
 
     // In number of motor rotations per mechanism rotation
-    public static final double funnelReduction = 33.75; 
+    public static final double funnelReduction = 40.0; 
     public static final double pivotReduction = 52.5625; 
-    public static final double ClimberReduction = -1; // We don't have a climber yet lol
+    public static final double ClimberReduction = 341.3333333;
     public static final double elevatorReductionToMeters = 52.1602684; // Motor rotations to elevator height in meters
 
     public static final double pivotAbsoluteEncoderOffset = 0;
+  }
+
+  /* Funnel Constants */
+  public static class FunnelConstants {
+    // Control constants
+    public static final double FUNNEL_DEAD_ZONE = 1.0; // In degrees
+    public static final double FUNNEL_MIN_ANGLE = 0.0; // Minimum angle in degrees
+    public static final double FUNNEL_MAX_ANGLE = 150.0; // Maximum angle in degrees - adjust as needed
+    public static final double FUNNEL_BLOCKING_THRESHOLD = 45.0; // Angle threshold where funnel starts to interfere with elevator movement
+
+    // Motor configuration
+    public static final double STATOR_CURRENT_LIMIT = 40.0; // amps
+    public static final double MOTION_CRUISE_VELOCITY = 110.0; 
+    public static final double MOTION_ACCELERATION = 190.0; 
+    public static final double MOTION_JERK = 1900.0; 
+
+    // PID Values
+    public static final double kP = 2.0;
+    public static final double kI = 0.0;
+    public static final double kD = 0.01;
+    public static final double kS = 0.0;
+
+    // Predefined positions for the funnel (in degrees)
+    public enum FunnelPosition {
+      DOWN(0.0),
+      UP(150.0);
+
+      private final double degrees;
+
+      FunnelPosition(double degrees) {
+        this.degrees = degrees;
+      }
+
+      public double getDegrees() {
+        return degrees;
+      }
+    }
   }
 
   public static class ScoringConstants {

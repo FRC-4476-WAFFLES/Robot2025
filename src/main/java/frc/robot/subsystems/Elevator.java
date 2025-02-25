@@ -24,6 +24,7 @@ import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.ElevatorConstants;
+import frc.robot.data.Constants.FunnelConstants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
@@ -42,7 +43,9 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     /** Will enter collision zone from below */
     ENTERING_FROM_BELOW,
     /** Will enter collision zone from above */
-    ENTERING_FROM_ABOVE
+    ENTERING_FROM_ABOVE,
+    /** Funnel is up, preventing elevator movement */
+    FUNNEL_BLOCKING
   }
 
   // Hardware Components
@@ -65,6 +68,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   private final BooleanPublisher isAtSetpointNT = elevatorTable.getBooleanTopic("Elevator at Setpoint").publish();
   private final DoublePublisher leaderCurrentDrawNT = elevatorTable.getDoubleTopic("Leader Motor Current (Amps)").publish();
   private final DoublePublisher followerCurrentDrawNT = elevatorTable.getDoubleTopic("Follower Motor Current (Amps)").publish();
+  private final BooleanPublisher funnelBlockingElevatorNT = elevatorTable.getBooleanTopic("Funnel Blocking Elevator").publish();
 
   private ElevatorLevel currentSetpointEnum = ElevatorLevel.REST_POSITION; 
   private CollisionType currentCollisionPrediction = CollisionType.NONE;
@@ -154,43 +158,50 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     elevatorMotorFollower.setControl(new Follower(Constants.CANIds.elevator1, false));
   }
 
+  /**
+   * Checks if the funnel is in a position that would block elevator movement
+   * @return true if funnel is blocking elevator movement
+   */
+  public boolean isFunnelBlockingElevator() {
+  
+    return RobotContainer.funnelSubsystem.getFunnelDegrees() > Constants.FunnelConstants.FUNNEL_BLOCKING_THRESHOLD;
+  }
+
   @Override
   public void periodic() {
     // Updated always so pivot always gets accurate information
     currentCollisionPrediction = isCollisionPredicted(elevatorSetpointMeters);
 
+    // Check if funnel is blocking elevator movement
+    boolean funnelBlocking = isFunnelBlockingElevator();
+    funnelBlockingElevatorNT.set(funnelBlocking);
+
     if (isZeroingElevator) {
       handleElevatorZeroPeriodic();
-
     } else {
       // Main control logic
       double chosenElevatorPosition = elevatorSetpointMeters;
 
-      if (currentCollisionPrediction == Elevator.CollisionType.NONE) {
+      if (funnelBlocking && elevatorSetpointMeters > ElevatorConstants.COLLISION_ZONE_LOWER) {
+        // If funnel is up and we're trying to move above the collision zone, limit to collision zone lower
+        chosenElevatorPosition = ElevatorConstants.COLLISION_ZONE_LOWER;
+      } else if (currentCollisionPrediction == Elevator.CollisionType.NONE) {
         // Safe to move elevator
         // Move elevator to setpoint
-        chosenElevatorPosition = elevatorSetpointMeters; // not nessesary but sanity check I guess
-
-      } 
-      else if(currentCollisionPrediction == Elevator.CollisionType.ENTERING_FROM_ABOVE) {
+        chosenElevatorPosition = elevatorSetpointMeters; // not necessary but sanity check I guess
+      } else if(currentCollisionPrediction == Elevator.CollisionType.ENTERING_FROM_ABOVE) {
         // Move to safe setpoint
         chosenElevatorPosition = ElevatorConstants.COLLISION_ZONE_UPPER;
-
-      }
-      else if(currentCollisionPrediction == Elevator.CollisionType.ENTERING_FROM_BELOW) {
+      } else if(currentCollisionPrediction == Elevator.CollisionType.ENTERING_FROM_BELOW) {
         // Move to safe setpoint
         chosenElevatorPosition = ElevatorConstants.COLLISION_ZONE_LOWER;
-
-      }
-      else {
+      } else {
         // Try to stop motor
         chosenElevatorPosition = getElevatorPositionMeters();
-
       }
 
-
-      // If elevator is hig enough to use first stage, apply feedforward
-      // Not needed for carraige only motion due to CF springs
+      // If elevator is high enough to use first stage, apply feedforward
+      // Not needed for carriage only motion due to CF springs
       double chosenFeedforward = 0;
       if (getElevatorPositionMeters() > ElevatorConstants.FIRST_STAGE_START_HEIGHT) {
         chosenFeedforward = ElevatorConstants.kG;
@@ -199,8 +210,6 @@ public class Elevator extends SubsystemBase implements NetworkUser {
       // Apply chosen setpoint
       elevatorMotorLeader.setControl(motionMagicRequest.withPosition(chosenElevatorPosition).withSlot(0).withFeedForward(chosenFeedforward));
     }
-
-    
 
     // Update network tables
     updateNetwork();
@@ -380,6 +389,11 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    * @return The type of collision predicted, or NONE if movement is safe or pivot is in safe position
    */
   public CollisionType isCollisionPredicted(double setpoint) {
+    // Check if funnel is blocking elevator movement
+    if (isFunnelBlockingElevator() && setpoint > ElevatorConstants.COLLISION_ZONE_LOWER) {
+      return CollisionType.FUNNEL_BLOCKING;
+    }
+    
     // Check if pivot is in safe position
     boolean pivotSafe = RobotContainer.pivotSubsystem.getPivotPosition() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE;
                         // RobotContainer.manipulatorSubsystem.getPivotSetpoint() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE;

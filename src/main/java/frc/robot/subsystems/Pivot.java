@@ -16,15 +16,12 @@ import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.ElevatorConstants;
 import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
-import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
-import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
 import frc.robot.subsystems.Elevator.CollisionType;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
 
 import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
