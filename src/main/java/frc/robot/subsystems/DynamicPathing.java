@@ -627,7 +627,9 @@ public class DynamicPathing extends SubsystemBase {
     private static Rotation2d getOptimalPathHeading(Translation2d start, Translation2d target, ChassisSpeeds speeds) {
         Rotation2d straightAngle = WafflesUtilities.AngleBetweenPoints(start, target);
         double velocityMagnitude = Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
-        if (velocityMagnitude < 0.01) {
+
+        // If too close or slow enough, use a straight path to avoid shaking
+        if (velocityMagnitude < 0.05 || start.getDistance(target) < 1.25) {
             // Not moving, use linear direction
             return straightAngle;
         }
