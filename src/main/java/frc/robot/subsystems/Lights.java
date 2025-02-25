@@ -30,8 +30,10 @@ import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
-import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
+import frc.robot.data.Constants.LightsConstants;
+import frc.robot.subsystems.DynamicPathing;
 import frc.robot.utils.LimelightHelpers;
+import frc.robot.utils.WafflesUtilities;
 
 import static frc.robot.RobotContainer.*;
 
@@ -76,9 +78,9 @@ public class Lights extends SubsystemBase {
     R3(95,122),      // Bottom + lower middle + upper middle
 
     // Middle sections
-    MIDDLE_LEFT(46,58),
-    MIDDLE_MIDDLE(59,70),
-    MIDDLE_RIGHT(71,83),
+    MIDDLE_LEFT(46,56),
+    MIDDLE_MIDDLE(56,73),
+    MIDDLE_RIGHT(73,83),
     // Left side sections and progressive ranges
     LEFT_SIDE_TOP(62,71),
     LEFT_SIDE_UPPER_MIDDLE(71,80),
@@ -294,14 +296,6 @@ public class Lights extends SubsystemBase {
   }
 
   /**
-   * Determines the appropriate LED animation based on the robot's state.
-   * @return The LedAnimation to be displayed
-   */
-  private LedAnimation getLedAnimation() {
-    return LedAnimation.COLOR_FLOW;
-  }
-
-  /**
    * Called once when disabled
    */
   public void onDisable() {
@@ -488,33 +482,98 @@ public class Lights extends SubsystemBase {
     var pathingSituation = RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation();
 
     if (isCoralIntakeRunning) {
-      // When coral intake is running, blink white lights
+      // When coral intake is running, blink white lights on the sides
       setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.WHITE, LightColours.BLACK, true);
       setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.WHITE, LightColours.BLACK, true);
+      
+      // Calculate distance to human player station and fill middle section accordingly
+      double distanceToHumanPlayer = getDistanceToHumanPlayerStation();
+      fillMiddleBasedOnDistance(distanceToHumanPlayer);
 
-    } else if (pathingSituation == DynamicPathingSituation.REEF_CORAL) {
+    } else if (pathingSituation == DynamicPathing.DynamicPathingSituation.REEF_CORAL) {
       setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.WHITE, LightColours.BLACK, false);
       setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.WHITE, LightColours.BLACK, false);
 
-    } else if (pathingSituation == DynamicPathingSituation.REEF_ALGAE) {
+    } else if (pathingSituation == DynamicPathing.DynamicPathingSituation.REEF_ALGAE) {
       setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.DARKGREEN, LightColours.BLACK, false);
       setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.DARKGREEN, LightColours.BLACK, false);
     
-    } else if (pathingSituation == DynamicPathingSituation.HUMAN_PICKUP) {
+    } else if (pathingSituation == DynamicPathing.DynamicPathingSituation.HUMAN_PICKUP) {
       setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.RED, LightColours.BLACK, false);
       setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.RED, LightColours.BLACK, false);
     
-    } else if (pathingSituation == DynamicPathingSituation.PROCESSOR) {
+    } else if (pathingSituation == DynamicPathing.DynamicPathingSituation.PROCESSOR) {
       setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.BLUE, LightColours.BLACK, false);
       setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.BLUE, LightColours.BLACK, false);
 
-    } else if (pathingSituation == DynamicPathingSituation.NET) {
+    } else if (pathingSituation == DynamicPathing.DynamicPathingSituation.NET) {
       setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.PINK, LightColours.BLACK, false);
       setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.PINK, LightColours.BLACK, false);
 
     } else {
       setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.BLACK, LightColours.BLACK, false);
       setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.BLACK, LightColours.BLACK, false);
+    }
+  }
+
+  /**
+   * Calculates the minimum distance to either human player station
+   * @return Distance in meters to the nearest human player station
+   */
+  private double getDistanceToHumanPlayerStation() {
+    var pose = WafflesUtilities.FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose());
+    double distanceLeft = pose.getTranslation().getDistance(DynamicPathing.HUMAN_PLAYER_STATION_LEFT_BLUE);
+    double distanceRight = pose.getTranslation().getDistance(DynamicPathing.HUMAN_PLAYER_STATION_RIGHT_BLUE);
+    return Math.min(distanceLeft, distanceRight);
+  }
+
+  /**
+   * Fills the MIDDLE_MIDDLE LED range with pink color based on distance to human player station
+   * @param distance Distance to human player station in meters
+   */
+  private void fillMiddleBasedOnDistance(double distance) {
+    // Get the MIDDLE_MIDDLE range
+    int startLed = LedRange.MIDDLE_MIDDLE.getStart();
+    int endLed = LedRange.MIDDLE_MIDDLE.getEnd();
+    int totalLeds = endLed - startLed;
+    
+    // Calculate how many LEDs to light up based on distance
+    // Max distance is defined by HUMAN_PLAYER_LED_FILL_DISTANCE, min distance is 0m
+    double maxDistance = LightsConstants.HUMAN_PLAYER_LED_FILL_DISTANCE;
+    double minDistance = LightsConstants.HUMAN_PLAYER_LED_FILL_MIN_DISTANCE;
+    
+    // Calculate fill ratio based on distance
+    double fillRatio;
+    
+    // If closer than min distance, fill all LEDs
+    if (distance <= minDistance) {
+      fillRatio = 1.0;
+    } else {
+      // Otherwise calculate fill ratio based on distance between min and max
+      double adjustedDistance = distance - minDistance;
+      double adjustedMaxDistance = maxDistance - minDistance;
+      fillRatio = 1.0 - Math.min(1.0, Math.max(0.0, adjustedDistance / adjustedMaxDistance));
+    }
+    
+    int ledsToLight = (int)(fillRatio * totalLeds);
+    
+    if (ledsToLight > 0) {
+      // Light up the calculated number of LEDs with pink
+      candle.setLEDs(
+          LightColours.PINK.red, 
+          LightColours.PINK.green, 
+          LightColours.PINK.blue, 
+          0, 
+          startLed, 
+          ledsToLight);
+      
+      // Set the rest to black
+      if (ledsToLight < totalLeds) {
+        candle.setLEDs(0, 0, 0, 0, startLed + ledsToLight, totalLeds - ledsToLight);
+      }
+    } else {
+      // If no LEDs to light, set all to black
+      candle.setLEDs(0, 0, 0, 0, startLed, totalLeds);
     }
   }
 
@@ -578,6 +637,12 @@ public class Lights extends SubsystemBase {
     setLEDRangeGroup(rightRange, color, LightColours.WHITE, false);
   }
 
+  /**
+   * Sets whether the coral intake is currently running.
+   * This affects the LED patterns displayed.
+   * 
+   * @param running true if the coral intake is running
+   */
   public void setCoralIntakeRunning(boolean running) {
     isCoralIntakeRunning = running;
   }
