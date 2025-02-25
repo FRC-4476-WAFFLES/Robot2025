@@ -320,4 +320,40 @@ public final class Constants {
       }
     }
   }
+
+  /* Climber Constants */
+  public static class ClimberConstants {
+    // Control constants
+    public static final double CLIMBER_DEAD_ZONE = 1.0; // In degrees
+    public static final double CLIMBER_MIN_ANGLE = 0.0; // Minimum angle in degrees
+    public static final double CLIMBER_MAX_ANGLE = 30.0; // Maximum angle in degrees
+
+    // Motor configuration
+    public static final double STATOR_CURRENT_LIMIT = 60.0; // amps
+    public static final double MOTION_CRUISE_VELOCITY = 110.0; 
+    public static final double MOTION_ACCELERATION = 190.0; 
+    public static final double MOTION_JERK = 1900.0; 
+
+    // PID Values
+    public static final double kP = 2.0;
+    public static final double kI = 0.0;
+    public static final double kD = 0.01;
+    public static final double kS = 0.0;
+
+    // Predefined positions for the climber (in degrees)
+    public enum ClimberPosition {
+      RETRACTED(0.0),
+      DEPLOYED(30.0);
+
+      private final double degrees;
+
+      ClimberPosition(double degrees) {
+        this.degrees = degrees;
+      }
+
+      public double getDegrees() {
+        return degrees;
+      }
+    }
+  }
 }

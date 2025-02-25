@@ -4,137 +4,184 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.data.Constants;
-
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
-public class Climber extends SubsystemBase {
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.data.Constants;
+import frc.robot.data.Constants.CANIds;
+import frc.robot.data.Constants.ClimberConstants;
+import frc.robot.data.Constants.ClimberConstants.ClimberPosition;
+import frc.robot.data.Constants.CodeConstants;
+import frc.robot.utils.NetworkUser;
+import frc.robot.utils.SubsystemNetworkManager;
+
+/**
+ * The Climber subsystem is responsible for controlling the robot's climbing mechanism.
+ * It controls a leader motor and a follower motor for synchronized movement.
+ */
+public class Climber extends SubsystemBase implements NetworkUser {
+  // Hardware Components
   private final TalonFX climberMotorLeader;
   private final TalonFX climberMotorFollower;
 
-  private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
-
+  // Instance Variables
   private double climberSetpointAngle = 0;
-
-  private static final double CLIMBER_DEAD_ZONE = 1;
+  private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
   
-  public enum ClimberAngle {
-    DeployedAngle(30),
-    RetractedAngle(0);
+  // Networktables Variables 
+  private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+  private final NetworkTable climberTable = inst.getTable("Climber");
 
-    private final double angle;
+  private final DoublePublisher climberSetpointNT = climberTable.getDoubleTopic("Setpoint (Degrees)").publish();
+  private final DoublePublisher climberAngleNT = climberTable.getDoubleTopic("Current Angle (Degrees)").publish();
+  private final DoublePublisher climberAtSetpointNT = climberTable.getDoubleTopic("At Setpoint").publish();
 
-    ClimberAngle(double angle) {
-      this.angle = angle;
-    }
+  /** Creates a new Climber subsystem. */
+  public Climber() {
+    SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
 
-    public double getAngle() {
-      return angle;
-    }
+    // Initialize hardware
+    climberMotorLeader = new TalonFX(CANIds.climberLeader);
+    climberMotorFollower = new TalonFX(CANIds.climberFollower);
+
+    // Configure hardware
+    configureClimberMotors();
   }
 
-  /** Creates a new ClimberSubsystem. */
-  public Climber()
-  {
-    climberMotorLeader = new TalonFX(Constants.CANIds.climberLeader);
-    climberMotorFollower = new TalonFX(Constants.CANIds.climberLeader);
-    // climber motor follower is inverted
-    climberMotorFollower.setControl(new Follower(Constants.CANIds.climberLeader, true));
-
-    // create a configuration object for the climber motor
+  /**
+   * Configures the climber motors with appropriate settings
+   */
+  private void configureClimberMotors() {
+    // Create a configuration object for the climber motors
     TalonFXConfiguration climberConfig = new TalonFXConfiguration();
-    TalonFXConfiguration alignmentConfig = new TalonFXConfiguration();
 
+    // Current Limits
     CurrentLimitsConfigs climberCurrentLimits = new CurrentLimitsConfigs();
-    CurrentLimitsConfigs alignmentCurrentLimit= new CurrentLimitsConfigs();
-    
-    //climber configs:
-    // current limits
-    climberCurrentLimits.StatorCurrentLimit = 60;
+    climberCurrentLimits.StatorCurrentLimit = ClimberConstants.STATOR_CURRENT_LIMIT;
     climberCurrentLimits.StatorCurrentLimitEnable = true;
-    
-    // apply the configuration to the climber motor
+
     climberConfig.CurrentLimits = climberCurrentLimits;
     
+    // PID Gains
     var climberSlot0Configs = new Slot0Configs();
-    climberSlot0Configs.kS = 0;
-    climberSlot0Configs.kP = 2;
-    climberSlot0Configs.kI = 0;
-    climberSlot0Configs.kD = 0.01; 
+    climberSlot0Configs.kS = ClimberConstants.kS;
+    climberSlot0Configs.kP = ClimberConstants.kP;
+    climberSlot0Configs.kI = ClimberConstants.kI;
+    climberSlot0Configs.kD = ClimberConstants.kD;
 
     climberConfig.Slot0 = climberSlot0Configs;
 
-    // Configure MotionMagic
+    // Motion Magic
     MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
-    motionMagicConfigs.MotionMagicCruiseVelocity = 110; // Using the existing velocity value
-    motionMagicConfigs.MotionMagicAcceleration = 190; // Using the existing acceleration value
-    motionMagicConfigs.MotionMagicJerk = 1900; // Setting jerk to 10x acceleration as a starting point
+    motionMagicConfigs.MotionMagicCruiseVelocity = ClimberConstants.MOTION_CRUISE_VELOCITY;
+    motionMagicConfigs.MotionMagicAcceleration = ClimberConstants.MOTION_ACCELERATION;
+    motionMagicConfigs.MotionMagicJerk = ClimberConstants.MOTION_JERK;
     climberConfig.MotionMagic = motionMagicConfigs;
-    
-    
-    //allignment configs:
-    alignmentCurrentLimit.StatorCurrentLimit=60;
-    alignmentCurrentLimit.StatorCurrentLimitEnable=true;
-    
-    // apply the configuration to the climber motor
-    alignmentConfig.CurrentLimits = alignmentCurrentLimit;
 
-    var allignmentSlot0Configs = new Slot0Configs();
-    allignmentSlot0Configs.kS = 0;
-    allignmentSlot0Configs.kP = 2;
-    allignmentSlot0Configs.kI = 0;
-    allignmentSlot0Configs.kD = 0.01; 
-    climberMotorLeader.setPosition(0);
-    alignmentConfig.Slot0 = allignmentSlot0Configs;
+    // Configure Mechanism Reduction
+    climberConfig.Feedback.SensorToMechanismRatio = Constants.PhysicalConstants.ClimberReduction;
+    
+    // Set neutral mode to brake
+    climberConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    
+    // Add voltage compensation
+    climberConfig.Voltage.PeakForwardVoltage = 12.0; // 12V compensation
+    climberConfig.Voltage.PeakReverseVoltage = -12.0;
+    climberConfig.Voltage.SupplyVoltageTimeConstant = 0.1;
 
+    // Apply Configuration to leader
     climberMotorLeader.getConfigurator().apply(climberConfig);
+    
+    // Reset the position to zero at startup
+    climberMotorLeader.setPosition(0);
+    
+    // Configure follower
+    climberMotorFollower.getConfigurator().apply(climberConfig);
+    climberMotorFollower.setControl(new Follower(CANIds.climberLeader, false));
   }
 
   @Override
-  public void periodic()
-  {
-    // This method will be called once per scheduler run
-    climberMotorLeader.setControl(motionMagicRequest.withPosition(climberSetpointAngle).withSlot(0));
-  }
-
-
-
-  /**
-   * Sets the target position of the climber.
-   * @param position Target position in degrees.
-   */
-  public void setClimberSetpoint(double angle){
-    climberSetpointAngle = angle;
+  public void periodic() {
+    // Convert degrees to rotations for motion magic
+    double targetRotations = climberSetpointAngle / 360.0;
+    
+    // Apply motion magic control
+    climberMotorLeader.setControl(motionMagicRequest.withPosition(targetRotations).withSlot(0));
+    
+    // Update network tables
+    climberAtSetpointNT.set(isClimberAtSetpoint() ? 1.0 : 0.0);
   }
 
   /**
-   * Sets the target position of the climber.
-   * @param position Target position from an enum
+   * Sets the angle setpoint for the climber
+   * 
+   * @param setpoint the setpoint in degrees
    */
-  public void setClimberSetpoint(ClimberAngle angle){
-    climberSetpointAngle = angle.getAngle();
+  public void setClimberSetpoint(double setpoint) {
+    // Clamp the setpoint to valid range
+    climberSetpointAngle = MathUtil.clamp(setpoint, ClimberConstants.CLIMBER_MIN_ANGLE, ClimberConstants.CLIMBER_MAX_ANGLE);
   }
-  
+
+  /**
+   * Sets the climber position using a predefined ClimberPosition enum
+   * 
+   * @param position The ClimberPosition enum value
+   */
+  public void setClimberPosition(ClimberPosition position) {
+    setClimberSetpoint(position.getDegrees());
+  }
+
   /**
    * Gets the current angle of the climber in degrees.
+   * 
    * @return The current angle in degrees.
    */
   public double getClimberDegrees() {
-    return climberMotorLeader.getPosition().getValueAsDouble() * 360 * Constants.PhysicalConstants.ClimberReduction;
+    // Get the position in rotations and convert to degrees
+    return climberMotorLeader.getPosition().getValueAsDouble() * 360.0;
   }
 
   /**
-   * Gets if the current angle of the climber is within a an allowable deadzone of it's setpoint.
-   * @return A boolean.
+   * Checks if the climber is within a deadband of the desired setpoint
+   * @return true if climber is at setpoint
    */
-  public boolean isClimberRightPosition(){
-    return Math.abs(climberSetpointAngle - getClimberDegrees()) < CLIMBER_DEAD_ZONE;
+  public boolean isClimberAtSetpoint() {
+    return Math.abs(climberSetpointAngle - getClimberDegrees()) < ClimberConstants.CLIMBER_DEAD_ZONE;
+  }
+
+  /**
+   * Gets the current climber setpoint
+   * @return Current setpoint angle in degrees
+   */
+  public double getClimberSetpoint() {
+    return climberSetpointAngle;
+  }
+
+  /* Networktables methods */
+
+  /**
+   * This method is called automatically by the SubsystemNetworkManager
+   */
+  @Override
+  public void updateNetwork() {
+    climberSetpointNT.set(climberSetpointAngle);
+    climberAngleNT.set(getClimberDegrees());
+  }
+
+  @Override
+  public void initializeNetwork() {
+    // Could be used to make shuffleboard layouts programatically
+    // Currently unused
   }
 }
