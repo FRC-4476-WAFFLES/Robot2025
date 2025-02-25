@@ -205,15 +205,17 @@ public class Pivot extends SubsystemBase implements NetworkUser {
             chosenPivotAngle = PivotPosition.CLEARANCE_POSITION.getDegrees();
         }
 
-        // Auto dodge L4
-        if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4 && 
-            RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.REEF_CORAL &&
-            !RobotContainer.isOperatorOverride) {
-            if (pivotSetpointAngle > ManipulatorConstants.PIVOT_L4_CLEARANCE_ANGLE && isInL4DangerZone()) {
-                chosenPivotAngle = ManipulatorConstants.PIVOT_L4_CLEARANCE_ANGLE;
-                // System.out.println("DANGER ZONE L4");
-            }
-        }
+
+        // Don't think we need this anymore since we are far away when autopathing for L4. Will help with stability of the pivot when scoring L4.
+        // // Auto dodge L4
+        // if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4 && 
+        //     RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.REEF_CORAL &&
+        //     !RobotContainer.isOperatorOverride) {
+        //     if (pivotSetpointAngle > ManipulatorConstants.PIVOT_L4_CLEARANCE_ANGLE && isInL4DangerZone()) {
+        //         chosenPivotAngle = ManipulatorConstants.PIVOT_L4_CLEARANCE_ANGLE;
+        //         // System.out.println("DANGER ZONE L4");
+        //     }
+        // }
 
         if (RobotContainer.elevatorSubsystem.isZeroing()) {
             // Not safe since zeroing
