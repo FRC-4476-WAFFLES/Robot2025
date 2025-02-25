@@ -541,7 +541,14 @@ public class Lights extends SubsystemBase {
         leftRange = LedRange.L1;
         rightRange = LedRange.R1;
         break;
+      case PROCESSOR:
+        leftRange = LedRange.L1;
+        rightRange = LedRange.R1;
       case L2:
+        leftRange = LedRange.L2;
+        rightRange = LedRange.R2;
+        break;
+      case ALGAE_L1:
         leftRange = LedRange.L2;
         rightRange = LedRange.R2;
         break;
@@ -549,7 +556,15 @@ public class Lights extends SubsystemBase {
         leftRange = LedRange.L3;
         rightRange = LedRange.R3;
         break;
+      case ALGAE_L2:
+        leftRange = LedRange.L3;
+        rightRange = LedRange.R3;
+        break;
       case L4:
+        leftRange = LedRange.LEFT_SIDE_FULL;
+        rightRange = LedRange.RIGHT_SIDE_FULL;
+        break;
+      case NET:
         leftRange = LedRange.LEFT_SIDE_FULL;
         rightRange = LedRange.RIGHT_SIDE_FULL;
         break;
