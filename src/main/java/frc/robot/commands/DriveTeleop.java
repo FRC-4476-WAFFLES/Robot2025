@@ -116,7 +116,7 @@ public class DriveTeleop extends Command {
         .withDeadband(speedDeadband)
         .withRotationalDeadband(rotationDeadband)
         .withDriveRequestType(DriveRequestType.Velocity)
-        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+        .withSteerRequestType(SteerRequestType.Position)
         .withVelocityX(xVelocity)
         .withVelocityY(yVelocity)
         .withRotationalRate(thetaVelocity)
