@@ -82,8 +82,6 @@ public class Robot extends TimedRobot {
   public void disabledInit() {
     System.gc();
 
-    // Used to confiure IMU modes
-    RobotContainer.driveSubsystem.onDisable();
     RobotContainer.lightsSubsystem.onDisable();
 
     // Disable controller vibration in case disabled while pathing
@@ -98,9 +96,6 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    // Used to confiure IMU modes
-    RobotContainer.driveSubsystem.onEnable();
-
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     // schedule the autonomous command (example)
@@ -122,9 +117,6 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-
-    // Used to confiure IMU modes
-    RobotContainer.driveSubsystem.onEnable();
 
     NetworkConfiguredPID.onEnable();
   }

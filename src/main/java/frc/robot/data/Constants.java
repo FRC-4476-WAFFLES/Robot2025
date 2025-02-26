@@ -94,8 +94,22 @@ public final class Constants {
     // Only to be used when not seeding position
     public static final double MT1_REJECT_DISTANCE = 2; // meters
 
-    public static final int DISABLED_LL_IMU_MODE = 1; // Enables seeding
-    public static final int ENABLED_LL_IMU_MODE = 2; // Should be 3, but firmware isn't out yet, might use 2 if feeling like it
+    public static final int SEDING_LL_IMU_MODE = 1; // Enables seeding
+    public static final int MOVING_LL_IMU_MODE = 2; // Should be 3, but firmware isn't out yet, might use 2 if feeling like it
+
+    // Names of limelights
+    public static final String LIMELIGHT_NAME_L = "limelight-right";
+    public static final String LIMELIGHT_NAME_R = "limelight-left"; 
+
+    // Exclusively rely on reef tags for megatag
+    // Prob want to expand this a lot later, but for terminal guidance this is all we should care about
+    public static final int[] RED_VALID_REEF_TAG_IDs = {
+      6, 7, 8, 9, 10, 11 
+    };
+
+    public static final int[] BLUE_VALID_REEF_TAG_IDs = {
+      17, 18, 19, 20, 21, 22  
+    };
   }
 
   /* Physical */

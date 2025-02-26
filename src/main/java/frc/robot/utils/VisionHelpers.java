@@ -12,12 +12,31 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.RobotContainer;
+import frc.robot.data.Constants.VisionConstants;
 import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
 import frc.robot.utils.LimelightHelpers.RawFiducial;
 
 public class VisionHelpers {
+
+    /**
+     * Depending on the state of the robot, get which tags to localize off of 
+     * @return an int array of valid tag IDs
+     */
+    public static int[] getValidTagIDs() {
+        // Expand to allow other tags while not coral pathing, but for now is ok
+        var alliance = DriverStation.getAlliance();
+        if (alliance.isPresent()) {
+            if (alliance.get() == Alliance.Red) {
+                return VisionConstants.RED_VALID_REEF_TAG_IDs;
+            }
+        }
+        return VisionConstants.BLUE_VALID_REEF_TAG_IDs;
+    }
+
      /**
      * The standard deviations of the estimated pose from
      * {@link #getEstimatedGlobalPose()}, for use

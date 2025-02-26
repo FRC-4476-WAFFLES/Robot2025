@@ -33,7 +33,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.VisionConstants;
 import frc.robot.data.TunerConstants.TunerSwerveDrivetrain;
-import frc.robot.utils.LimelightHelpers;
+import frc.robot.utils.LimelightContainer;
 import frc.robot.utils.VisionHelpers;
 
 /**
@@ -63,7 +63,8 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
     //     frc.robot.data.VisionConstants.kRobotToLeftCamera);
     // private Vision visionRight = new Vision(frc.robot.data.VisionConstants.kCameraRight,
     //     frc.robot.data.VisionConstants.kRobotToRightCamera);
-    public static final String LIMELIGHT_NAME = "limelight-front";
+    private final LimelightContainer leftLimelight = new LimelightContainer(VisionConstants.LIMELIGHT_NAME_L, this);
+    private final LimelightContainer rightLimelight = new LimelightContainer(VisionConstants.LIMELIGHT_NAME_R, this);
 
     /* Swerve request used for autos */
     private final SwerveRequest.ApplyRobotSpeeds autoRequest = new SwerveRequest.ApplyRobotSpeeds()
@@ -225,7 +226,8 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
     private void setup() {
         configurePathPlanner();
         // Sets IMU mode on limelight
-        onDisable();
+        leftLimelight.onSeeding();
+        rightLimelight.onSeeding();
     }
 
     /**
@@ -291,63 +293,9 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
             return;
         }
 
-        //System.out.println(getPigeon2().getAngularVelocityZWorld().getValueAsDouble());
-        // Integrate position from mt2
-        LimelightHelpers.PoseEstimate mt2Result = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LIMELIGHT_NAME);
-        if (mt2Result != null) {
-            if(mt2Result.tagCount > 0) //Math.abs(Math.toDegrees(getCurrentRobotChassisSpeeds().omegaRadiansPerSecond)) < 10 &&
-            {
-                addVisionMeasurement(
-                    mt2Result.pose,
-                    Utils.fpgaToCurrentTime(mt2Result.timestampSeconds),
-                    VisionHelpers.getEstimationStdDevsLimelightMT2(mt2Result.rawFiducials));
-
-                SmartDashboard.putNumberArray("LL Pose MT2", new double[] {
-                    mt2Result.pose.getX(),
-                    mt2Result.pose.getY(),
-                    mt2Result.pose.getRotation().getDegrees()
-                });
-            }
-        }
-        // Integrate rotation from mt1
-        LimelightHelpers.PoseEstimate mt1Result = LimelightHelpers.getBotPoseEstimate_wpiBlue(LIMELIGHT_NAME);
-        if (mt1Result != null) {
-            // Only integrate mt1 rotation values when essentially not rotating
-            if(mt1Result.tagCount > 0) 
-            {
-                // Only accept in enabled if close to existing pose
-                // If disabled ignore distance heuristic
-                // if (getRobotPose().getTranslation().getDistance(mt1Result.pose.getTranslation()) < VisionConstants.MT1_REJECT_DISTANCE || DriverStation.isDisabled()) {
-
-                addVisionMeasurement(
-                    mt1Result.pose,
-                    Utils.fpgaToCurrentTime(mt1Result.timestampSeconds),
-                    VisionHelpers.getEstimationStdDevsLimelight(mt1Result.pose, mt1Result.rawFiducials));
-
-                SmartDashboard.putNumberArray("LL Pose MT1", new double[] {
-                    mt1Result.pose.getX(),
-                    mt1Result.pose.getY(),
-                    mt1Result.pose.getRotation().getDegrees()
-                });
-                // }
-            }
-        }
-
-        // Fuse in angle to limelight
-        if (DriverStation.isEnabled()) {
-            if (notMoving()) {
-                onDisable();
-            } else {
-                onEnable(); // Use IMU mode 2 while moving to avoid latency issues
-            }
-
-            LimelightHelpers.SetRobotOrientation(LIMELIGHT_NAME, getRobotPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
-        } else {
-            onDisable();
-            // Seeding in disabled (Uses IMU mode 1)
-            LimelightHelpers.SetRobotOrientation(LIMELIGHT_NAME, getRobotPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
-        }
         
+        leftLimelight.update();
+        rightLimelight.update();
 
 
 
@@ -414,20 +362,6 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
     }
 
     /**
-     * When the robot disables, configure vision modes
-     */
-    public void onDisable() {
-        LimelightHelpers.SetIMUMode(LIMELIGHT_NAME, VisionConstants.DISABLED_LL_IMU_MODE);
-    }
-
-    /**
-     * When the robot enables, configure vision modes
-     */
-    public void onEnable() {
-        LimelightHelpers.SetIMUMode(LIMELIGHT_NAME, VisionConstants.ENABLED_LL_IMU_MODE); 
-    }
-
-    /**
      * Setup PathPlanner
      */
     private void configurePathPlanner() {
@@ -477,6 +411,14 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
     }
 
     /**
+     * Checks if the robot is not rotating.
+     * @return true if the robot is not rotating, false otherwise.
+    */
+    public boolean notRotating() {
+        return Math.abs(getCurrentRobotChassisSpeeds().omegaRadiansPerSecond) < 0.1;
+    }
+
+    /**
      * Checks if the robot is moving slowly. (Sub 1 m/s, not normalized)
      * @return true if the robot is moving slowly, false otherwise.
     */
@@ -485,6 +427,14 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
         return Math.abs(speeds.vxMetersPerSecond) < 1
                 && Math.abs(speeds.vyMetersPerSecond) < 1
                 && Math.abs(speeds.omegaRadiansPerSecond) < 1;
+    }
+
+    /**
+     * Checks if both limelights see a tag, used for pit debugging
+     * @return true if both limelights see a tag
+     */
+    public boolean limelightsSeeTag() {
+        return leftLimelight.canSeeTag() && rightLimelight.canSeeTag();
     }
 
     /**

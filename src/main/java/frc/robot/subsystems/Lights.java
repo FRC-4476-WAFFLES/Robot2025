@@ -31,6 +31,7 @@ import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.data.Constants.LightsConstants;
+import frc.robot.data.Constants.VisionConstants;
 import frc.robot.subsystems.DynamicPathing;
 import frc.robot.utils.LimelightHelpers;
 import frc.robot.utils.WafflesUtilities;
@@ -288,7 +289,7 @@ public class Lights extends SubsystemBase {
   }
 
   private void updateAprilTagIndicator() {
-    if (LimelightHelpers.getTV("limelight-front")) {
+    if (driveSubsystem.limelightsSeeTag()) {
       setLEDRange(1, 2, LightColours.PINK);
     } else {
       setLEDRange(1, 2, LightColours.BLACK);
