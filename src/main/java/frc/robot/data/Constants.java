@@ -265,9 +265,9 @@ public final class Constants {
         L1(10.01),
 
         // Maybe manual mode
-        MANUAL_L4(55.0),
-        MANUAL_L3(41.5),
-        MANUAL_L2(41.5),
+        MANUAL_L4(71.0),
+        MANUAL_L3(24.0),
+        MANUAL_L2(24.0),
         MANUAL_L1(13.0);
 
         private final double pivotDegrees;
@@ -331,8 +331,8 @@ public final class Constants {
       L1(0.108),
 
       MANUAL_L4(1.440),
-      MANUAL_L3(0.726),
-      MANUAL_L2(0.331),
+      MANUAL_L3(0.6772),
+      MANUAL_L2(0.280),
       MANUAL_L1(0.11); 
 
 
