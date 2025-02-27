@@ -129,19 +129,6 @@ public final class Constants {
     public static final double pivotAbsoluteEncoderOffset = 0;
   }
 
-  /* Lights Constants */
-  public static class LightsConstants {
-    // Distance at which the LED fill effect for human player station proximity starts (in meters)
-    // At this distance, no LEDs are lit. As the robot gets closer, more LEDs light up.
-    // At 0 meters, all LEDs in the range are lit.
-    public static final double HUMAN_PLAYER_LED_FILL_DISTANCE = 2.0;
-    
-    // Minimum distance threshold for LED fill effect (in meters)
-    // When the robot is closer than this distance, all LEDs will be fully lit
-    // This prevents flickering when very close to the station
-    public static final double HUMAN_PLAYER_LED_FILL_MIN_DISTANCE = 0.2;
-  }
-
   /* Funnel Constants */
   public static class FunnelConstants {
     // Control constants
