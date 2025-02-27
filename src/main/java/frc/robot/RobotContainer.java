@@ -108,8 +108,8 @@ public class RobotContainer {
     intakeSubsystem.setDefaultCommand(axisIntakeControl);
 
     // Default superstructure commands
-    pivotSubsystem.setDefaultCommand(SuperstructureControl.PivotDefaultCommand());
-    elevatorSubsystem.setDefaultCommand(SuperstructureControl.ElevatorDefaultCommand());
+    // pivotSubsystem.setDefaultCommand(SuperstructureControl.PivotDefaultCommand());
+    // elevatorSubsystem.setDefaultCommand(SuperstructureControl.ElevatorDefaultCommand());
 
     // Register commands to be used by pathplanner autos
     registerNamedCommands();

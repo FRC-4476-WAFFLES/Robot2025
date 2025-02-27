@@ -9,12 +9,6 @@
           "data": {
             "pathName": "TESTING PATH"
           }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Autoscore L4 Right"
-          }
         }
       ]
     }

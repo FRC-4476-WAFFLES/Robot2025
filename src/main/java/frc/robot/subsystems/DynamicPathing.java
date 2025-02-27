@@ -43,10 +43,10 @@ import frc.robot.utils.WafflesUtilities;
 */
 public class DynamicPathing extends SubsystemBase {
     /* Various distances */
-    public static final double REEF_MIN_SCORING_DISTANCE = 2.2;
+    public static final double REEF_MIN_SCORING_DISTANCE = 2.7;
     public static final double REEF_MAX_SCORING_DISTANCE = 0.3; // Don't try to score within this distance
     public static final double PROCCESSOR_MIN_SCORING_DISTANCE = 2.5;
-    public static final double HUMAN_PLAYER_MIN_PICKUP_DISTANCE = 2;
+    public static final double HUMAN_PLAYER_MIN_PICKUP_DISTANCE = 3;
 
     /* Net AABB bounds */
     public static final double NET_MIN_SCORING_X = Units.inchesToMeters(220);

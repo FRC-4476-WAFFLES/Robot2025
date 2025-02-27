@@ -248,7 +248,7 @@ public final class Constants {
         NET(40),
         L4(45),
         L3(28),
-        L2(38),
+        L2(35),
         L1(10.01),
 
         // Maybe manual mode
