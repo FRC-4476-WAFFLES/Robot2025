@@ -104,6 +104,9 @@ public class RobotContainer {
     // Set default command for lights
     lightsSubsystem.setDefaultCommand(new DefaultLightCommand());
 
+    // Axis intake control 
+    intakeSubsystem.setDefaultCommand(axisIntakeControl);
+
     // Default superstructure commands
     pivotSubsystem.setDefaultCommand(SuperstructureControl.PivotDefaultCommand());
     elevatorSubsystem.setDefaultCommand(SuperstructureControl.ElevatorDefaultCommand());
@@ -153,6 +156,19 @@ public class RobotContainer {
 
     // SysID routines
     // sysIDBindings();
+
+    // Manual auto intake
+    Controls.operatorController.leftBumper().whileTrue(
+      Commands.parallel(
+        new CoralIntake(),
+        new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
+      )    
+    );
+
+    // Operator Algea out
+    Controls.operatorController.rightBumper().whileTrue(
+      new AlgeaOutake()
+    );
     
     // Override mode immediately moves to position while held
     inOverrideMode.and(Controls.operatorController.a()).whileTrue(
@@ -211,23 +227,6 @@ public class RobotContainer {
       )
     ).onFalse(restPosition);
 
-
-    // Axis intake control 
-    intakeSubsystem.setDefaultCommand(axisIntakeControl);
-
-    // Manual auto intake
-    Controls.operatorController.leftBumper().whileTrue(
-      Commands.parallel(
-        new CoralIntake(),
-        new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
-      )    
-    );
-
-    // Operator Algea out
-    Controls.operatorController.rightBumper().whileTrue(
-      new AlgeaOutake()
-    );
-
     // Dynamic pathing button
     Controls.dynamicPathingButton.whileTrue(
       Commands.defer(
@@ -276,18 +275,18 @@ public class RobotContainer {
   /** Binds controls to run drivetrain sysID */
   private void sysIDBindings() {
     // Drive bindings
-    // Controls.operatorController.a().whileTrue(
-    //  driveSubsystem.sysIdQuasistatic(Direction.kForward)
-    // );
-    // Controls.operatorController.x().whileTrue(
-    //   driveSubsystem.sysIdQuasistatic(Direction.kReverse)
-    // );
-    // Controls.operatorController.b().whileTrue(
-    //   driveSubsystem.sysIdDynamic(Direction.kForward)
-    // );
-    // Controls.operatorController.y().whileTrue(
-    //   driveSubsystem.sysIdDynamic(Direction.kReverse)
-    // );
+    Controls.operatorController.a().whileTrue(
+     driveSubsystem.sysIdQuasistatic(Direction.kForward)
+    );
+    Controls.operatorController.x().whileTrue(
+      driveSubsystem.sysIdQuasistatic(Direction.kReverse)
+    );
+    Controls.operatorController.b().whileTrue(
+      driveSubsystem.sysIdDynamic(Direction.kForward)
+    );
+    Controls.operatorController.y().whileTrue(
+      driveSubsystem.sysIdDynamic(Direction.kReverse)
+    );
 
     // Datalog controls needed by sysID
     Controls.operatorController.leftBumper().onTrue(

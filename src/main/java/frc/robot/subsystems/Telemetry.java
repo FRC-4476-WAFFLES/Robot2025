@@ -11,6 +11,7 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
@@ -188,11 +189,15 @@ public class Telemetry extends SubsystemBase {
      * Publish data about power usage to networktables for monitoring
      */
     public void publishPDHInfo() {
-        busVoltage.set(powerDistributionHub.getVoltage());
-        temperature.set(powerDistributionHub.getTemperature());
-        currentDraw.set(powerDistributionHub.getTotalCurrent());
-        powerDraw.set(powerDistributionHub.getTotalPower());
-        energyUsage.set(powerDistributionHub.getTotalEnergy());
+        try {
+            // busVoltage.set(powerDistributionHub.getVoltage());
+            // temperature.set(powerDistributionHub.getTemperature());
+            // currentDraw.set(powerDistributionHub.getTotalCurrent());
+            // powerDraw.set(powerDistributionHub.getTotalPower());
+            // energyUsage.set(powerDistributionHub.getTotalEnergy());
+        } catch (Exception e){
+            DriverStation.reportWarning("PDH Firmware Failure.", false);
+        }
     }
 
     /**
