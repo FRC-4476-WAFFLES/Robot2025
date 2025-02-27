@@ -30,7 +30,6 @@ import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
-import frc.robot.data.Constants.LightsConstants;
 import frc.robot.data.Constants.VisionConstants;
 import frc.robot.subsystems.DynamicPathing;
 import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
