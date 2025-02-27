@@ -100,7 +100,7 @@ public class Funnel extends SubsystemBase implements NetworkUser {
     funnelConfig.Voltage.PeakForwardVoltage = 12.0; // 12V compensation
     funnelConfig.Voltage.PeakReverseVoltage = -12.0;
     funnelConfig.Voltage.SupplyVoltageTimeConstant = 0.1;
-    funnelConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    funnelConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     // Apply Configuration
     funnelPivotMotor.getConfigurator().apply(funnelConfig);
