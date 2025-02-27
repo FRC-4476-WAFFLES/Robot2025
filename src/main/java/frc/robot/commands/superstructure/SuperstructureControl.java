@@ -32,7 +32,7 @@ public class SuperstructureControl {
                     RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
                 }
             }, 
-            null, 
+            (interrupted) -> {},
             () -> false, 
             RobotContainer.elevatorSubsystem
         );
@@ -53,7 +53,7 @@ public class SuperstructureControl {
                     RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.ZERO);
                 }
             }, 
-            null, 
+            (interrupted) -> {},
             () -> false, 
             RobotContainer.pivotSubsystem
         );
