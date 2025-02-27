@@ -4,11 +4,15 @@
 
 package frc.robot.commands.scoring;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Controls;
@@ -21,7 +25,14 @@ import frc.robot.commands.intake.CoralOutake;
 import frc.robot.commands.scoring.FinalAlignCoral;
 
 public class ScoreCoral extends SequentialCommandGroup {
-  private static final double waitBeforeScore = 0.25;
+  private static final double waitBeforeScoreL4 = 0.25;
+  // All scoring commands require these subsystems
+  public static final HashSet<Subsystem> commandRequirements = new HashSet<>(Arrays.asList(
+    RobotContainer.driveSubsystem, 
+    RobotContainer.pivotSubsystem, 
+    RobotContainer.elevatorSubsystem, 
+    RobotContainer.intakeSubsystem
+  ));
 
   /** Creates a new ScoreCoral. */
   private ScoreCoral(Command driveCommand, Pose2d finalAlignPose) {
@@ -37,7 +48,7 @@ public class ScoreCoral extends SequentialCommandGroup {
         new PrepareScoreCoral()
       ),
       // Wait until doNotScore is released
-      new WaitCommand(waitBeforeScore).onlyIf(() -> pathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4),
+      new WaitCommand(waitBeforeScoreL4).onlyIf(() -> pathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4),
       new WaitUntilCommand(() -> !Controls.doNotScore.getAsBoolean()),
       new CoralOutake()
     );

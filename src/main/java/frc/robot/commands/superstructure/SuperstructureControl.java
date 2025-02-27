@@ -29,7 +29,7 @@ public class SuperstructureControl {
                 if (RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.REEF_CORAL) {
                     RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.L2);
                 } else {
-                    // RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
+                    RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
                 }
             }, 
             (interrupted) -> {},
@@ -50,7 +50,7 @@ public class SuperstructureControl {
                 if (RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.REEF_CORAL) {
                     RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.L2);
                 } else {
-                    // RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.ZERO);
+                    RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.ZERO);
                 }
             }, 
             (interrupted) -> {},

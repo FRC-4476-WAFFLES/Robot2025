@@ -108,8 +108,8 @@ public class RobotContainer {
     intakeSubsystem.setDefaultCommand(axisIntakeControl);
 
     // Default superstructure commands
-    // pivotSubsystem.setDefaultCommand(SuperstructureControl.PivotDefaultCommand());
-    // elevatorSubsystem.setDefaultCommand(SuperstructureControl.ElevatorDefaultCommand());
+    pivotSubsystem.setDefaultCommand(SuperstructureControl.PivotDefaultCommand());
+    elevatorSubsystem.setDefaultCommand(SuperstructureControl.ElevatorDefaultCommand());
 
     // Register commands to be used by pathplanner autos
     registerNamedCommands();
@@ -231,7 +231,7 @@ public class RobotContainer {
     Controls.dynamicPathingButton.whileTrue(
       Commands.defer(
         () -> dynamicPathingSubsystem.getCurrentDynamicPathCommand(), 
-        new HashSet<>(Arrays.asList(driveSubsystem))
+        ScoreCoral.commandRequirements
       )
       // On start - Begin rumble and start dynamic pathing
       .beforeStarting(() -> Controls.operatorController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.5))
@@ -305,7 +305,7 @@ public class RobotContainer {
     // Register Named Commands
     // Add other commands to be able to run them in autos
     // NamedCommands.registerCommand("exampleCommand", exampleCommand);
-    var scoringCommandRequirements = new HashSet<>(Arrays.asList(driveSubsystem, pivotSubsystem, elevatorSubsystem, intakeSubsystem));
+    
     
     // Direct position commands for both elevator and pivot
     NamedCommands.registerCommand("Set Position L1", Commands.parallel(
@@ -343,34 +343,34 @@ public class RobotContainer {
     
     // L4 
     NamedCommands.registerCommand("Autoscore L4 Right", Commands.defer(
-      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L4, true), scoringCommandRequirements)
+      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L4, true), ScoreCoral.commandRequirements)
     );
     NamedCommands.registerCommand("Autoscore L4 Left", Commands.defer(
-      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L4, false), scoringCommandRequirements)
+      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L4, false), ScoreCoral.commandRequirements)
     );
 
     // L3
     NamedCommands.registerCommand("Autoscore L3 Right", Commands.defer(
-      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L3, true), scoringCommandRequirements)
+      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L3, true), ScoreCoral.commandRequirements)
     );
     NamedCommands.registerCommand("Autoscore L3 Left", Commands.defer(
-      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L3, false), scoringCommandRequirements)
+      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L3, false), ScoreCoral.commandRequirements)
     );
 
     // L2
     NamedCommands.registerCommand("Autoscore L2 Right", Commands.defer(
-      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L2, true), scoringCommandRequirements)
+      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L2, true), ScoreCoral.commandRequirements)
     );
     NamedCommands.registerCommand("Autoscore L2 Left", Commands.defer(
-      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L2, false), scoringCommandRequirements)
+      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L2, false), ScoreCoral.commandRequirements)
     );
 
     // L1
     NamedCommands.registerCommand("Autoscore L1 Right", Commands.defer(
-      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L1, true), scoringCommandRequirements)
+      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L1, true), ScoreCoral.commandRequirements)
     );
     NamedCommands.registerCommand("Autoscore L1 Left", Commands.defer(
-      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L1, false), scoringCommandRequirements)
+      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L1, false), ScoreCoral.commandRequirements)
     );
 
     // Coral Intake
