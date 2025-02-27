@@ -27,41 +27,35 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
+import static frc.robot.RobotContainer.*;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
+import frc.robot.subsystems.Lights.LightColours;
 import frc.robot.data.Constants.VisionConstants;
 import frc.robot.subsystems.DynamicPathing;
 import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
 import frc.robot.utils.LimelightHelpers;
 
-import static frc.robot.RobotContainer.*;
-
 public class Lights extends SubsystemBase {
-  /*Constants */
+  // Constants
   private static final int LED_COUNT = 122;
   private static final double DEFAULT_BLINK_RATE = 0.1;
-  private static final int FLOW_LENGTH = 20; // Length of the flowing section
   
-  /* Hardware */
+  // Hardware
   private static final CANdle candle = new CANdle(Constants.CANIds.CANdle);
   
-  /* State */ 
-  private Map<LedRange, LightColours> ledRangeColours = new EnumMap<>(LedRange.class);
-  private List<Map.Entry<LedRange, LightColours>> entriesList = new ArrayList<>(); // Allocated once here to avoid allocating in periodic
-  private int[][] ledColors;
-
+  // State
   private static final Timer blinkTimer = new Timer();
   private boolean isBlinkColour = true;
+  public boolean isEndgameWarning = false;
   private double blinkRate = DEFAULT_BLINK_RATE;
-  
+  private int[][] ledColors;
+  private Map<LedRange, LightColours> ledRangeColours = new EnumMap<>(LedRange.class);
   private int flowPosition = 8; // Start flow at LED 8
+  private static final int FLOW_LENGTH = 20; // Length of the flowing section
   private boolean isCoralIntakeRunning = false; // Track when coral intake is running
 
-
-  /**
-   * Enum containing start and and indicies for various defined LED groups
-   */
   public enum LedRange {
     CANDLE(0,8),
     // Full sections
@@ -108,9 +102,6 @@ public class Lights extends SubsystemBase {
     }
   }
 
-  /**
-   * Enum containing commonly used RGB colors
-   */
   public enum LightColours {
     BLACK(0, 0, 0),
     BROWN(96, 32, 8),
@@ -139,19 +130,14 @@ public class Lights extends SubsystemBase {
     private final int green;
     private final int blue;
 
-    private int[] packedColors;
-
     LightColours(int red, int green, int blue) {
       this.red = red;
       this.green = green;
       this.blue = blue;
-
-      // cache array to reduce allocations
-      this.packedColors = new int[]{red, green, blue};
     }
 
     public int[] getRGBValues() {
-      return packedColors;
+      return new int[]{red, green, blue};
     }
   }
 
@@ -382,18 +368,17 @@ public class Lights extends SubsystemBase {
     }
 
     // Convert ledRangeColours entries to a list for sorting
-    entriesList.clear();
-    entriesList.addAll(ledRangeColours.entrySet());
+    List<Map.Entry<LedRange, LightColours>> entries = new ArrayList<>(ledRangeColours.entrySet());
 
     // Sort ranges from largest to smallest to give precedence to smaller ranges
-    entriesList.sort((entry1, entry2) -> {
+    entries.sort((entry1, entry2) -> {
         int size1 = entry1.getKey().getEnd() - entry1.getKey().getStart();
         int size2 = entry2.getKey().getEnd() - entry2.getKey().getStart();
         return Integer.compare(size2, size1); // Largest size first
     });
 
     // Apply colors to ledColors[] array
-    for (Map.Entry<LedRange, LightColours> entry : entriesList) {
+    for (Map.Entry<LedRange, LightColours> entry : entries) {
         LedRange range = entry.getKey();
         LightColours colour = entry.getValue();
         int[] rgb = colour.getRGBValues();
