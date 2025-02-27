@@ -190,11 +190,11 @@ public class Telemetry extends SubsystemBase {
      */
     public void publishPDHInfo() {
         try {
-            // busVoltage.set(powerDistributionHub.getVoltage());
-            // temperature.set(powerDistributionHub.getTemperature());
-            // currentDraw.set(powerDistributionHub.getTotalCurrent());
-            // powerDraw.set(powerDistributionHub.getTotalPower());
-            // energyUsage.set(powerDistributionHub.getTotalEnergy());
+            busVoltage.set(powerDistributionHub.getVoltage());
+            temperature.set(powerDistributionHub.getTemperature());
+            currentDraw.set(powerDistributionHub.getTotalCurrent());
+            powerDraw.set(powerDistributionHub.getTotalPower());
+            energyUsage.set(powerDistributionHub.getTotalEnergy());
         } catch (Exception e){
             DriverStation.reportWarning("PDH Firmware Failure.", false);
         }

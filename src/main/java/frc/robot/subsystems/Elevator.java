@@ -162,9 +162,9 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    * Checks if the funnel is in a position that would block elevator movement
    * @return true if funnel is blocking elevator movement
    */
-  public boolean isFunnelBlockingElevator() {
-  
-    return RobotContainer.funnelSubsystem.getFunnelDegrees() > Constants.FunnelConstants.FUNNEL_BLOCKING_THRESHOLD;
+  public boolean isFunnelBlockingElevator() { 
+    return false;
+    // return RobotContainer.funnelSubsystem.getFunnelDegrees() > Constants.FunnelConstants.FUNNEL_BLOCKING_THRESHOLD;
   }
 
   @Override

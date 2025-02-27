@@ -63,7 +63,7 @@ public class RobotContainer {
   public static final Pivot pivotSubsystem = new Pivot();
   public static final Intake intakeSubsystem = new Intake();
   public static final Elevator elevatorSubsystem = new Elevator();
-  public static final Funnel funnelSubsystem = new Funnel();
+  // public static final Funnel funnelSubsystem = new Funnel();
   public static final Climber climberSubsystem = new Climber();
   public static final Lights lightsSubsystem = new Lights();
 
