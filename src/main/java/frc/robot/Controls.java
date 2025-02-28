@@ -26,6 +26,7 @@ public class Controls {
     /* When triggers are referenced in multiple places, they are defined here to have a single source of truth */
     public static final Trigger dynamicPathingButton = rightJoystick.button(1);
     public static final Trigger doNotScore = Controls.operatorController.leftTrigger(Controls.AXIS_DEADBAND);
+    public static final Trigger algaeOut = operatorController.rightBumper();
 
     public static class DriverConstants {
         public static final int leftJoystick = 0;

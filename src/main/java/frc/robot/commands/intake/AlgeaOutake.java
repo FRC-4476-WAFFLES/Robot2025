@@ -6,13 +6,15 @@ package frc.robot.commands.intake;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.ManipulatorConstants;
+import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class AlgeaOutake extends Command {
   Timer timer = new Timer();
-  /** Creates a new CoralIntake. */
+  /** Creates a new AlgeaOutake. */
   public AlgeaOutake() {
     addRequirements(RobotContainer.intakeSubsystem);
     // Use addRequirements() here to declare subsystem dependencies.
@@ -28,10 +30,17 @@ public class AlgeaOutake extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    RobotContainer.intakeSubsystem.setIntakeSpeed(-60.0);
-    if (!RobotContainer.intakeSubsystem.isAlgaeLoaded() ) {
-      timer.start();
-    }
+    if (Controls.algaeOut.getAsBoolean()) {
+      if (RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.NET) {
+        RobotContainer.intakeSubsystem.setIntakeSpeed(-280.0);
+      } else {
+        RobotContainer.intakeSubsystem.setIntakeSpeed(-60.0);
+      }
+      
+      if (!RobotContainer.intakeSubsystem.isAlgaeLoaded() ) {
+        timer.start();
+      }
+    } 
   }
 
   // Called once the command ends or is interrupted.
@@ -43,6 +52,6 @@ public class AlgeaOutake extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return timer.get() > 0.2;
+    return timer.get() > 0.3;
   }
 }

@@ -422,7 +422,7 @@ public class Lights extends SubsystemBase {
    * This method is called by the default command to handle standard lighting patterns.
    */
   public void updateLights() {
-    if (elevatorSubsystem.getElevatorSetpointEnum() == ElevatorLevel.REST_POSITION) {
+    if (!RobotContainer.isOperatorOverride) {
       handleRestPositionLights();
     } else {
       handleElevatorPositionLights();
@@ -466,7 +466,7 @@ public class Lights extends SubsystemBase {
   }
 
   private void handleElevatorPositionLights() {
-    ElevatorLevel elevatorLevel = elevatorSubsystem.getElevatorSetpointEnum();
+    ElevatorLevel elevatorLevel =  elevatorSubsystem.getElevatorSetpointEnum();
     boolean hasCoralLoaded = intakeSubsystem.isCoralLoaded();
     setElevatorLevelPattern(elevatorLevel, hasCoralLoaded);
   }

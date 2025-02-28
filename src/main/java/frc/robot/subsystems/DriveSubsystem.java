@@ -377,7 +377,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
                 ), // Consumer of ChassisSpeeds to drive the robot
                 new PPHolonomicDriveController(
                     new PIDConstants(4.0, 0, 0),
-                    new PIDConstants(2.5, 0, 0)
+                    new PIDConstants(3.0, 0, 0)
                 ),
                 PathPlannerConfig,
                 () -> {

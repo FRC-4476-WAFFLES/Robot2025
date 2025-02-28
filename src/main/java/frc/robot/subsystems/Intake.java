@@ -46,6 +46,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private double lastPosition = 0;
     private double targetPosition = 0;
     private boolean usePositionControl = false;
+    private boolean noAlgaeFlag = false;
 
     // Debouncing variables for algae detection
     private long algaeDetectionStartTime = 0;
@@ -166,6 +167,10 @@ public class Intake extends SubsystemBase implements NetworkUser{
         this.intakeSpeed = speed;
     }
 
+    public void setNoAlgaeFlag(boolean val) {
+        noAlgaeFlag = val;
+    }
+
     /**
      * Checks if algae is present in the intake based on current draw
      * @return true if algae is detected
@@ -221,7 +226,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
     }
 
     public boolean isIntakingAlgae() {
-        return !isAlgaeLoaded() && intake.getVelocity().getValueAsDouble() > 10;
+        return !isAlgaeLoaded() && intake.getVelocity().getValueAsDouble() > 10 && !noAlgaeFlag;
     }
 
     public boolean isOuttakingAlgae() {

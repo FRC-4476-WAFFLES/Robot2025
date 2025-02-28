@@ -166,9 +166,9 @@ public class RobotContainer {
     );
 
     // Operator Algea out
-    Controls.operatorController.rightBumper().whileTrue(
-      new AlgeaOutake()
-    );
+    // Controls.operatorController.rightBumper().whileTrue(
+    //   new AlgeaOutake()
+    // );
     
     // Override mode immediately moves to position while held
     inOverrideMode.and(Controls.operatorController.a()).whileTrue(

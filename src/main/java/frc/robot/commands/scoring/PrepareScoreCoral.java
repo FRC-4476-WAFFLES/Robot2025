@@ -4,10 +4,14 @@
 
 package frc.robot.commands.scoring;
 
+import static frc.robot.RobotContainer.dynamicPathingSubsystem;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ScoringConstants;
+import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
+import frc.robot.subsystems.DynamicPathing;
 
 /* Continuously adjusts position of elevator and pivot to desired scoring level */
 public class PrepareScoreCoral extends Command {
@@ -23,9 +27,14 @@ public class PrepareScoreCoral extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    var ScoringLevel = RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel();
-    RobotContainer.elevatorSubsystem.setElevatorSetpoint(ScoringLevel.getElevatorLevel());
-    RobotContainer.pivotSubsystem.setPivotSetpoint(ScoringLevel.getPivotPosition().getDegrees());
+    var scoringLevel = RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel();
+    if (scoringLevel == ScoringLevel.L1) {
+      if (DynamicPathing.getDistanceToReef() < DynamicPathing.REEF_MIN_SCORING_DISTANCE_L1) {
+        return;
+      }
+    }
+    RobotContainer.elevatorSubsystem.setElevatorSetpoint(scoringLevel.getElevatorLevel());
+    RobotContainer.pivotSubsystem.setPivotSetpoint(scoringLevel.getPivotPosition().getDegrees());
   }
 
   // Called once the command ends or is interrupted.

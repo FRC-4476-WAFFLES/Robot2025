@@ -208,7 +208,7 @@ public final class Constants {
     public static final double ALGAE_LOADED_DISTANCE_UPPER_LIMIT = 130; // mm
     public static final double ALGAE_CURRENT_THRESHOLD = 30.0; // amps
 
-    // Intake constants
+    // Intake constantsd
     public static final double INTAKE_SPEED_MULTIPLIER = 0.15;
     public static final double INTAKE_MAX_SPEED = 25; // Rps
     public static final double ALGAE_HOLD_SPEED = 2; // Speed to hold algae in place
@@ -224,7 +224,7 @@ public final class Constants {
     public static final double PIVOT_MOTION_CRUISE_VELOCITY = 4.0;
     public static final double PIVOT_MOTION_ACCELERATION = 20.0;
     public static final double PIVOT_MOTION_JERK = 2000.0;
-    public static final double STATOR_CURRENT_LIMIT = 60.0; // amps
+    public static final double STATOR_CURRENT_LIMIT = 45.0; // amps
     public static final double PIVOT_MOTOR_DEADBAND = 0.002;
     public static final double PIVOT_CURRENT_THRESHOLD =  14.0; // amps - Current threshold for zeroing
 
@@ -245,17 +245,17 @@ public final class Constants {
         ALGAE_L1(178.5),
         PROCESSOR(189),
         CORAL_INTAKE(0.5),
-        NET(40),
+        NET(64),
         L4(45),
         L3(28),
         L2(35),
-        L1(10.01),
+        L1(150),
 
         // Maybe manual mode
         MANUAL_L4(71.0),
         MANUAL_L3(24.0),
         MANUAL_L2(24.0),
-        MANUAL_L1(13.0);
+        MANUAL_L1(0.0);
 
         private final double pivotDegrees;
 
@@ -284,11 +284,11 @@ public final class Constants {
     public static final double PIVOT_L4_CLEAR_HEIGHT_MAX = 1.2;
 
     public static final double MIN_ELEVATOR_HEIGHT = 0;
-    public static final double MAX_ELEVATOR_HEIGHT = 1.48;
+    public static final double MAX_ELEVATOR_HEIGHT = 1.47;
 
     // Collision zone constants
     public static final double COLLISION_ZONE_LOWER = 0.12; // meters
-    public static final double COLLISION_ZONE_UPPER = 0.84; // meters
+    public static final double COLLISION_ZONE_UPPER = 0.56; // meters
 
     // Height where first stage starts moving
     public static final double FIRST_STAGE_START_HEIGHT = ElevatorConstants.MAX_ELEVATOR_HEIGHT / 2.0; 
@@ -308,19 +308,19 @@ public final class Constants {
     // Predefined heights for the elevator (in meters)
     public enum ElevatorLevel {
       REST_POSITION(0.0),
-      NET(1.4),
-      ALGAE_L2(0.92),
+      NET(1.45),
+      ALGAE_L2(0.89),
       ALGAE_L1(0.55),
       PROCESSOR(0.2),
       L4(1.45),
-      L3(0.76),
+      L3(0.772),
       L2(0.41),
-      L1(0.108),
+      L1(0.44),
 
       MANUAL_L4(1.440),
       MANUAL_L3(0.6772),
       MANUAL_L2(0.280),
-      MANUAL_L1(0.11); 
+      MANUAL_L1(0.22); 
 
 
       private final double height;

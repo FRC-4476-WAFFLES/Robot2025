@@ -156,6 +156,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         pivotConfigs.Voltage.PeakForwardVoltage = 12.0; // 12V compensation
         pivotConfigs.Voltage.PeakReverseVoltage = -12.0;
         pivotConfigs.Voltage.SupplyVoltageTimeConstant = 0.1;
+        pivotConfigs.CurrentLimits.StatorCurrentLimit = 40;
 
         pivot.getConfigurator().apply(pivotConfigs);
     }

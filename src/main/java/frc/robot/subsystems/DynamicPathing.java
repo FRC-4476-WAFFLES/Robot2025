@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.commands.DriveTeleop;
+import frc.robot.commands.intake.AlgeaOutake;
 import frc.robot.commands.intake.CoralIntake;
 import frc.robot.commands.scoring.PickupAlgea;
 import frc.robot.commands.scoring.ScoreCoral;
@@ -45,8 +46,9 @@ public class DynamicPathing extends SubsystemBase {
     /* Various distances */
     public static final double REEF_MIN_SCORING_DISTANCE = 2.7;
     public static final double REEF_MAX_SCORING_DISTANCE = 0.3; // Don't try to score within this distance
+    public static final double REEF_MIN_SCORING_DISTANCE_L1 = 0.78; // Don't try to score within this distance
     public static final double PROCCESSOR_MIN_SCORING_DISTANCE = 2.5;
-    public static final double HUMAN_PLAYER_MIN_PICKUP_DISTANCE = 3;
+    public static final double HUMAN_PLAYER_MIN_PICKUP_DISTANCE = 2;
 
     /* Net AABB bounds */
     public static final double NET_MIN_SCORING_X = Units.inchesToMeters(220);
@@ -62,7 +64,8 @@ public class DynamicPathing extends SubsystemBase {
     // Offset from the edge of the reef to score from 
     public static final double REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.6; // Robot with bumpers
     public static final double REEF_SCORING_POSITION_OFFSET = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.15; // Robot with bumpers
-    public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.10; // Robot with bumpers
+    public static final double REEF_SCORING_POSITION_OFFSET_L1 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.37; // Robot with bumpers
+    public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.05; // Robot with bumpers
 
     /* Human player station physical parameters */
     public static final Translation2d HUMAN_PLAYER_STATION_LEFT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(25.80));  
@@ -114,7 +117,7 @@ public class DynamicPathing extends SubsystemBase {
      * Returns the current DynamicPathingSituation
      */
     private static DynamicPathingSituation getDynamicPathingSituation() {
-        if (!intakeSubsystem.isCoralLoaded() && isRobotInRangeOfHumanPlayer()) {
+        if (!intakeSubsystem.isCoralLoaded() && !intakeSubsystem.isAlgaeLoaded() && isRobotInRangeOfHumanPlayer()) {
             return DynamicPathingSituation.HUMAN_PICKUP;
         }
 
@@ -278,7 +281,8 @@ public class DynamicPathing extends SubsystemBase {
                             Controls::getDriveX, false,
                             () -> targetProcessorRotation, true
                         ),
-                        new ApplyScoringSetpoint(ScoringLevel.PROCESSOR)
+                        new ApplyScoringSetpoint(ScoringLevel.PROCESSOR),
+                        new AlgeaOutake()
                     ).finallyDo(() -> {
                         RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
                         RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
@@ -415,8 +419,8 @@ public class DynamicPathing extends SubsystemBase {
      * @return The coordinates the robot can score from
      */
     public Pose2d getNearestCoralScoringLocation() {
-        if (coralScoringLevel == ScoringLevel.L1 ) {
-            return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), coralScoringRightSide, true, REEF_SCORING_POSITION_OFFSET);
+        if (coralScoringLevel == ScoringLevel.L1) {
+            return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), coralScoringRightSide, true, REEF_SCORING_POSITION_OFFSET_L1);
         }
         return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), coralScoringRightSide, false, REEF_SCORING_POSITION_OFFSET);
     }
