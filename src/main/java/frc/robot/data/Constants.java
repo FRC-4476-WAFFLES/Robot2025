@@ -246,7 +246,7 @@ public final class Constants {
         PROCESSOR(189),
         CORAL_INTAKE(0.5),
         NET(64),
-        L4(46),
+        L4(49),
         L3(28),
         L2(35),
         L1(150),

@@ -25,6 +25,10 @@ public class SuperstructureControl {
         return new FunctionalCommand(
             () -> {}, 
             () -> {
+                if (RobotContainer.isOperatorOverride) {
+                    return;
+                }
+
                 // Go to L2 automatically if in range to speed up motion
                 if (RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.REEF_CORAL) {
                     RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.L2);
@@ -46,6 +50,10 @@ public class SuperstructureControl {
         return new FunctionalCommand(
             () -> {}, 
             () -> {
+                if (RobotContainer.isOperatorOverride) {
+                    return;
+                }
+                
                 // Go to L2 automatically if in range to speed up motion
                 if (RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.REEF_CORAL) {
                     RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.L2);
