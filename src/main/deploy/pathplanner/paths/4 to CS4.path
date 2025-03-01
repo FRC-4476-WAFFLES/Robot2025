@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 1.6575,
-        "y": 0.6807499999999993
+        "x": 1.6453125,
+        "y": 0.6595880681818176
       },
       "prevControl": {
-        "x": 3.1134187018156045,
-        "y": 2.2809774120064894
+        "x": 3.1012312018156045,
+        "y": 2.2598154801883075
       },
       "nextControl": null,
       "isLocked": false,
@@ -45,7 +45,7 @@
     "rotation": 54.591013070833
   },
   "reversed": false,
-  "folder": "Reef to CS4",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
     "rotation": 59.139108311650524

@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.880102040816327,
-        "y": 5.371843112244898
+        "x": 4.00725,
+        "y": 5.273
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.9887284496647286,
-        "y": 6.1939131595806876
+        "x": 3.1158764088484014,
+        "y": 6.095070047335789
       },
       "isLocked": false,
       "linkedName": "Post 8"
     },
     {
       "anchor": {
-        "x": 1.7022540983606556,
-        "y": 7.345594262295082
+        "x": 1.6652556818181818,
+        "y": 7.380440340909091
       },
       "prevControl": {
-        "x": 2.677618572143235,
-        "y": 6.40977652597692
+        "x": 2.640620155600761,
+        "y": 6.444622604590929
       },
       "nextControl": null,
       "isLocked": false,
@@ -45,7 +45,7 @@
     "rotation": -53.426969021480716
   },
   "reversed": false,
-  "folder": "Reef to CS1",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
     "rotation": -59.264512298079744

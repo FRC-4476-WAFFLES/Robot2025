@@ -34,9 +34,14 @@ public class PickupAlgea extends SequentialCommandGroup {
   // }
 
   public static Command pickupAlgeaWithPath(Command driveCommand, ScoringLevel scoringLevel, Command pathAwayCommand) {
-    return new PickupAlgea(driveCommand, scoringLevel, pathAwayCommand).finallyDo(() -> {
-      RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
-      RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
+    return new PickupAlgea(driveCommand, scoringLevel, pathAwayCommand).finallyDo((interruped) -> {
+      if (interruped && !RobotContainer.intakeSubsystem.isAlgaeLoaded()) {
+        // If interrupted, 
+        RobotContainer.intakeSubsystem.setIntakeSpeed(-20);
+      } else {
+        RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
+        RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
+      }
     });
   }
 }

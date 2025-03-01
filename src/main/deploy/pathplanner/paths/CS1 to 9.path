@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.7022540983606556,
-        "y": 7.345594262295082
+        "x": 1.6652556818181818,
+        "y": 7.380440340909091
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.4127843055814475,
-        "y": 6.901931470601412
+        "x": 2.3757858890389736,
+        "y": 6.936777549215422
       },
       "isLocked": false,
       "linkedName": "CS1"
@@ -45,7 +45,7 @@
     "rotation": -119.99999999999999
   },
   "reversed": false,
-  "folder": "CS1 to Reef",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
     "rotation": -53.426969021480716

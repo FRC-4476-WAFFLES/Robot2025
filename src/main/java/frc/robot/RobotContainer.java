@@ -47,6 +47,7 @@ import frc.robot.subsystems.Lights;
 import frc.robot.subsystems.MechanismPoses;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Telemetry;
+import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
 
 
 /**
@@ -166,9 +167,9 @@ public class RobotContainer {
     );
 
     // Operator Algea out
-    // Controls.operatorController.rightBumper().whileTrue(
-    //   new AlgeaOutake()
-    // );
+    Controls.algaeOut.whileTrue(
+      new AlgeaOutake().onlyIf(() -> dynamicPathingSubsystem.getCurrentPathingSituation() != DynamicPathingSituation.PROCESSOR)
+    );
     
     // Override mode immediately moves to position while held
     inOverrideMode.and(Controls.operatorController.a()).whileTrue(

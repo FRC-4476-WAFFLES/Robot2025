@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 1.7022540983606556,
-        "y": 7.345594262295082
+        "x": 1.6652556818181818,
+        "y": 7.380440340909091
       },
       "prevControl": {
-        "x": 3.5255040983606554,
-        "y": 7.579594262295082
+        "x": 3.4885056818181814,
+        "y": 7.614440340909091
       },
       "nextControl": null,
       "isLocked": false,
@@ -50,7 +50,7 @@
     "rotation": -53.426969021480716
   },
   "reversed": false,
-  "folder": "Reef to CS1",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0

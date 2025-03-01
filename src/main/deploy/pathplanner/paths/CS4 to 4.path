@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.6575,
-        "y": 0.6807499999999993
+        "x": 1.6453125,
+        "y": 0.6595880681818176
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.3556621730506255,
-        "y": 1.5063685864259306
+        "x": 2.343474673050626,
+        "y": 1.485206654607749
       },
       "isLocked": false,
       "linkedName": "CS4"
@@ -31,7 +31,7 @@
   "rotationTargets": [],
   "constraintZones": [
     {
-      "name": "Constraints Zone",
+      "name": "Slow End",
       "minWaypointRelativePos": 0.6,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
@@ -59,7 +59,7 @@
     "rotation": 59.139108311650524
   },
   "reversed": false,
-  "folder": "CS4 to Reef",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
     "rotation": 54.591013070833
