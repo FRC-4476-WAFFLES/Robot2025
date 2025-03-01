@@ -285,7 +285,8 @@ public class Pivot extends SubsystemBase implements NetworkUser {
      * @return true if within deadband of setpoint
      */
     public boolean isPivotAtSetpoint() {
-        return Math.abs(getPivotPosition() - pivotSetpointAngle) < Constants.ManipulatorConstants.PIVOT_ANGLE_DEADBAND;
+        double deadband = RobotContainer.intakeSubsystem.isAlgaeLoaded() ? Constants.ManipulatorConstants.PIVOT_ANGLE_DEADBAND * 2: Constants.ManipulatorConstants.PIVOT_ANGLE_DEADBAND;
+        return Math.abs(getPivotPosition() - pivotSetpointAngle) < deadband;
     }
 
     /*

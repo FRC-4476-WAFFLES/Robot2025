@@ -315,7 +315,7 @@ public final class Constants {
       L4(1.47),
       L3(0.772),
       L2(0.41),
-      L1(0.44),
+      L1(0.33),
 
       MANUAL_L4(1.440),
       MANUAL_L3(0.6772),

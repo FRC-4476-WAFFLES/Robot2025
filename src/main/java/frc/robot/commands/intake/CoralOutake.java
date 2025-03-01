@@ -31,9 +31,13 @@ public class CoralOutake extends Command {
   @Override
   public void execute() {
     if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L1) {
-      RobotContainer.intakeSubsystem.setIntakeSpeed(30.0);
+      RobotContainer.intakeSubsystem.setIntakeSpeed(18.0);
     } else {
-      RobotContainer.intakeSubsystem.setIntakeSpeed(-60.0);
+      if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4) {
+        RobotContainer.intakeSubsystem.setIntakeSpeed(-60.0);
+      } else {
+        RobotContainer.intakeSubsystem.setIntakeSpeed(-28.0);
+      }
     }
     
     if (!RobotContainer.intakeSubsystem.isCoralLoaded() ) {

@@ -72,6 +72,8 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
 
     /* Information about the physical capabilities of the drivetrain, used by Pathplanner */
     public RobotConfig PathPlannerConfig;
+
+    private boolean hasSeenValidOdometry = false;
     
     /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
@@ -289,7 +291,12 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
      * Adds camera reported poses from apriltags to the subsystem's odometry
      */
     private void updateVisionOdometry() {
-        if (!isOdometryValid()) {
+        if (!hasSeenValidOdometry) {
+            // Posibly avoid crash race condition on boot
+            if (isOdometryValid()) {
+                hasSeenValidOdometry = true;
+            }
+
             return;
         }
 
@@ -376,7 +383,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
                     .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
                 ), // Consumer of ChassisSpeeds to drive the robot
                 new PPHolonomicDriveController(
-                    new PIDConstants(4.4, 0, 0),
+                    new PIDConstants(4.0, 0, 0),
                     new PIDConstants(3.0, 0, 0)
                 ),
                 PathPlannerConfig,
