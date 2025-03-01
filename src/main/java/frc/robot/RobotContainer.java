@@ -168,7 +168,7 @@ public class RobotContainer {
 
     // Operator Algea out
     Controls.algaeOut.whileTrue(
-      new AlgeaOutake().onlyIf(() -> dynamicPathingSubsystem.getCurrentPathingSituation() != DynamicPathingSituation.PROCESSOR)
+      new AlgeaOutake().asProxy().onlyIf(() -> dynamicPathingSubsystem.getCurrentPathingSituation() != DynamicPathingSituation.PROCESSOR)
     );
     
     // Override mode immediately moves to position while held

@@ -226,7 +226,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
     }
 
     public boolean isIntakingAlgae() {
-        return !isAlgaeLoaded() && intake.getVelocity().getValueAsDouble() > 10 && !noAlgaeFlag;
+        return !isAlgaeLoaded() && intakeSpeed > 10 && !noAlgaeFlag;
     }
 
     public boolean isOuttakingAlgae() {
