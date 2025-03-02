@@ -226,7 +226,7 @@ public final class Constants {
     public static final double PIVOT_MOTION_JERK = 2000.0;
     public static final double STATOR_CURRENT_LIMIT = 45.0; // amps
     public static final double PIVOT_MOTOR_DEADBAND = 0.002;
-    public static final double PIVOT_CURRENT_THRESHOLD =  14.0; // amps - Current threshold for zeroing
+    public static final double PIVOT_CURRENT_THRESHOLD =  25.0; // amps - Current threshold for zeroing
 
     // PID Values
     public static final double PIVOT_kP = 110.0;

@@ -227,7 +227,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
      * Run periodically while zeroing pivot
      */
     private void handlePivotZeroPeriodic() {
-        if (pivot.getStatorCurrent().getValueAsDouble() > Constants.ManipulatorConstants.PIVOT_CURRENT_THRESHOLD) {
+        if (pivot.getTorqueCurrent().getValueAsDouble() < -Constants.ManipulatorConstants.PIVOT_CURRENT_THRESHOLD) {
 
             pivot.set(0);
             pivot.setPosition(-0.002);
