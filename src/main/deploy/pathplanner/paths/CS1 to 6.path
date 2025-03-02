@@ -3,40 +3,40 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.176,
-        "y": 2.9915000000000003
+        "x": 1.541554054054054,
+        "y": 7.295861486486485
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.976587324796398,
-        "y": 2.84072007770216
+        "x": 2.321868914614697,
+        "y": 6.5857897099146365
       },
       "isLocked": false,
-      "linkedName": "Opp1"
+      "linkedName": "CS1"
     },
     {
       "anchor": {
-        "x": 5.07,
-        "y": 2.679499999999999
+        "x": 3.06,
+        "y": 4.198190789473684
       },
       "prevControl": {
-        "x": 5.679705698956419,
-        "y": 2.8621953144565904
+        "x": 2.6387993204028946,
+        "y": 4.587721245842616
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Post 2"
+      "linkedName": "Post 6"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [
     {
       "name": "Slow End",
-      "minWaypointRelativePos": 0.59579180509413,
+      "minWaypointRelativePos": 0.5847176079734172,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 4.1,
-        "maxAcceleration": 3.0,
+        "maxAcceleration": 3.25,
         "maxAngularVelocity": 800.0,
         "maxAngularAcceleration": 1200.0,
         "nominalVoltage": 12.0,
@@ -56,13 +56,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 122.0053832080836
+    "rotation": 0.0
   },
   "reversed": false,
-  "folder": "OPP1",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -53.426969021480716
   },
   "useDefaultConstraints": true
 }

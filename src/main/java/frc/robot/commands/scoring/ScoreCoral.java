@@ -25,7 +25,7 @@ import frc.robot.commands.intake.CoralOutake;
 import frc.robot.commands.scoring.FinalAlignCoral;
 
 public class ScoreCoral extends SequentialCommandGroup {
-  private static final double waitBeforeScoreL4 = 0.25;
+  private static final double waitBeforeScoreL4 = 0.15;
   // All scoring commands require these subsystems
   public static final HashSet<Subsystem> commandRequirements = new HashSet<>(Arrays.asList(
     RobotContainer.driveSubsystem, 

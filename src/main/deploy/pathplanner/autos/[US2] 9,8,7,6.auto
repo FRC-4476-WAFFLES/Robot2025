@@ -1,0 +1,149 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "US2 to 9"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Set Position L4"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Autoscore L4 Left"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "9 to CS1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Coral Intake"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "CS1 to 8"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Set Position L4"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Autoscore L4 Left"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "8 to CS1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Coral Intake"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "CS1 to 7"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Set Position L4"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Autoscore L4 Right"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "7 to CS1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Coral Intake"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "CS1 to 6"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Set Position L4"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Autoscore L4 Left"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}
