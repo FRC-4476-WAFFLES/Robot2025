@@ -29,7 +29,7 @@ public class FinalAlignCoral extends Command {
 
   private Pose2d targetPose2d;
 
-  private static final double PosMaxError = 0.018;
+  private static final double PosMaxError = 0.022;
   private static final double RotMaxError = 1; // degrees
 
 

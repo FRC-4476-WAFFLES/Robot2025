@@ -24,6 +24,7 @@ import com.ctre.phoenix.led.StrobeAnimation;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
@@ -202,6 +203,7 @@ public class Lights extends SubsystemBase {
     updateIntakeIndicators();
     updateAprilTagIndicator();
     updateBlinkTimer();
+    updateAllianceIndicator();
     updateLedRanges();
     
     // Make sure no animations are running
@@ -275,9 +277,22 @@ public class Lights extends SubsystemBase {
 
   private void updateAprilTagIndicator() {
     if (driveSubsystem.limelightsSeeTag()) {
-      setLEDRange(1, 2, LightColours.PINK);
+      setLEDRange(4, 5, LightColours.PINK);
     } else {
-      setLEDRange(1, 2, LightColours.BLACK);
+      setLEDRange(4, 5, LightColours.BLACK);
+    }
+  }
+
+  private void updateAllianceIndicator() {
+    var alliance = DriverStation.getAlliance();
+    if (alliance.isPresent()) {
+      if (alliance.get() == Alliance.Blue) {
+        setLEDRange(6, 8, LightColours.BLUE);
+      } else {
+        setLEDRange(6, 8, LightColours.RED);
+      }
+    } else {
+      setLEDRange(6, 8, LightColours.BLUE);
     }
   }
 
