@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import static frc.robot.RobotContainer.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -28,15 +30,10 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
-import static frc.robot.RobotContainer.*;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
-import frc.robot.subsystems.Lights.LightColours;
-import frc.robot.data.Constants.VisionConstants;
-import frc.robot.subsystems.DynamicPathing;
 import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
-import frc.robot.utils.LimelightHelpers;
 
 public class Lights extends SubsystemBase {
   /*Constants */
@@ -156,6 +153,9 @@ public class Lights extends SubsystemBase {
     }
   }
 
+  /**
+   * CANDLE Hardware Animations
+   */
   public enum LedAnimation {
     STROBE(new StrobeAnimation(255, 0, 0, 0, 98.0 / 256.0, LED_COUNT)),
     LARSON(new LarsonAnimation(255, 255, 0, 0, 0.2, LED_COUNT, BounceMode.Front, 2)),
@@ -233,13 +233,28 @@ public class Lights extends SubsystemBase {
       handleManualElevatorLights();
     }
     
-    // Update central bar of lights
+    // Update top bar of lights
     updatePathingIndicators();
-    if (Controls.doNotScore.getAsBoolean() && !RobotContainer.isOperatorOverride) {
+    updateOverrideIndicators();
+  }
+
+  /**
+   * Updates the following operator override indicators
+   *  - Do not score 
+   *  - Is in override mode
+   */ 
+  private void updateOverrideIndicators() {
+    if (RobotContainer.isOperatorOverride) {
+      // Update green central range if in override mode
+      setLEDRangeGroup(LedRange.MIDDLE_MIDDLE, LightColours.GREEN, LightColours.BLACK, false);
+
+    } else if (Controls.doNotScore.getAsBoolean()) {
       // When "do not score" is active, and we are in normal mode, set middle lights to red
       setLEDRangeGroup(LedRange.MIDDLE_MIDDLE, LightColours.RED, LightColours.BLACK, false);
+
     } else {
-      updateOperatorOverrideIndicator();
+      // Clear central LEDs if no state is being displayed
+      setLEDRangeGroup(LedRange.MIDDLE_MIDDLE, LightColours.BLACK, LightColours.BLACK, false);
     }
   }
 
@@ -464,16 +479,6 @@ public class Lights extends SubsystemBase {
       setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.BLACK, LightColours.BLACK, false);
       setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.BLACK, LightColours.BLACK, false);
     }
-  }
-
-  /**
-   * Updates the operator override indicator 
-   */ 
-  private void updateOperatorOverrideIndicator() {
-    setLEDRangeGroup(LedRange.MIDDLE_MIDDLE, 
-      RobotContainer.isOperatorOverride ? LightColours.GREEN : LightColours.BLACK, 
-      LightColours.BLACK, 
-      false);
   }
 
   /*                       */
