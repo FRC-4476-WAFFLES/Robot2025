@@ -82,8 +82,6 @@ public class Robot extends TimedRobot {
   public void disabledInit() {
     System.gc();
 
-    RobotContainer.lightsSubsystem.onDisable();
-
     // Disable controller vibration in case disabled while pathing
     Controls.operatorController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0);
   }

@@ -39,24 +39,30 @@ import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
 import frc.robot.utils.LimelightHelpers;
 
 public class Lights extends SubsystemBase {
-  // Constants
+  /*Constants */
   private static final int LED_COUNT = 122;
   private static final double DEFAULT_BLINK_RATE = 0.1;
+  private static final int FLOW_LENGTH = 20; // Length of the flowing section
   
-  // Hardware
+  /* Hardware */
   private static final CANdle candle = new CANdle(Constants.CANIds.CANdle);
   
-  // State
+  /* State */ 
+  private Map<LedRange, LightColours> ledRangeColours = new EnumMap<>(LedRange.class);
+  private List<Map.Entry<LedRange, LightColours>> entriesList = new ArrayList<>(); // Allocated once here to avoid allocating in periodic
+  private int[][] ledColors;
+
   private static final Timer blinkTimer = new Timer();
   private boolean isBlinkColour = true;
-  public boolean isEndgameWarning = false;
   private double blinkRate = DEFAULT_BLINK_RATE;
-  private int[][] ledColors;
-  private Map<LedRange, LightColours> ledRangeColours = new EnumMap<>(LedRange.class);
+  
   private int flowPosition = 8; // Start flow at LED 8
-  private static final int FLOW_LENGTH = 20; // Length of the flowing section
   private boolean isCoralIntakeRunning = false; // Track when coral intake is running
 
+
+  /**
+   * Enum containing start and and indicies for various defined LED groups
+   */
   public enum LedRange {
     CANDLE(0,8),
     // Full sections
@@ -103,6 +109,9 @@ public class Lights extends SubsystemBase {
     }
   }
 
+  /**
+   * Enum containing commonly used RGB colors
+   */
   public enum LightColours {
     BLACK(0, 0, 0),
     BROWN(96, 32, 8),
@@ -131,14 +140,19 @@ public class Lights extends SubsystemBase {
     private final int green;
     private final int blue;
 
+    private int[] packedColors;
+
     LightColours(int red, int green, int blue) {
       this.red = red;
       this.green = green;
       this.blue = blue;
+
+      // cache array to reduce allocations
+      this.packedColors = new int[]{red, green, blue};
     }
 
     public int[] getRGBValues() {
-      return new int[]{red, green, blue};
+      return packedColors;
     }
   }
 
@@ -191,23 +205,54 @@ public class Lights extends SubsystemBase {
    */
   @Override
   public void periodic() {
-    if (DriverStation.isDisabled()) {
-      handleDisabledState();
-    } else {
+    // Mutate LED colors based on robot state
+    if (DriverStation.isEnabled()) {
       handleEnabledState();
+    } else {
+      handleDisabledState();
+    }
+
+    // Update blink state for ranges that require blinking
+    updateBlinkTimer();
+    // Apply the current desired LED colors
+    applyLEDRanges();
+  }
+
+  /**
+   * Updates all lights in the robot's enabled state.
+   * Mutates LED colors.
+   */
+  private void handleEnabledState() {
+    // Make sure no animations are running
+    clearHardwareAnimations();
+    
+    // Update elevator side lights
+    if (!RobotContainer.isOperatorOverride) {
+      handleAutomaticElevatorLights();
+    } else {
+      handleManualElevatorLights();
+    }
+    
+    // Update central bar of lights
+    updatePathingIndicators();
+    if (Controls.doNotScore.getAsBoolean() && !RobotContainer.isOperatorOverride) {
+      // When "do not score" is active, and we are in normal mode, set middle lights to red
+      setLEDRangeGroup(LedRange.MIDDLE_MIDDLE, LightColours.RED, LightColours.BLACK, false);
+    } else {
+      updateOperatorOverrideIndicator();
     }
   }
 
+  /**
+   * Updates all lights in the robot's disabled state.
+   * Mutates LED colors.
+   */
   private void handleDisabledState() {
-    // First update status indicators
-    updateIntakeIndicators();
-    updateAprilTagIndicator();
-    updateBlinkTimer();
-    updateAllianceIndicator();
-    updateLedRanges();
-    
     // Make sure no animations are running
-    candle.animate(null);
+    clearHardwareAnimations();
+
+    // First update status indicators
+    updateDiagnosticIndicators();
     
     // Update flow position
     if (blinkTimer.get() > 0.05) { // Control flow speed
@@ -233,32 +278,25 @@ public class Lights extends SubsystemBase {
     }
   }
 
-  private void handleEnabledState() {
-    // Make sure no animations are running
-    candle.animate(null);
-    for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
-      candle.clearAnimation(i);
-    }
-    
-    updateLights();  // Update standard LED patterns
-    updateBlinkTimer();
-    updateLedRanges();
-  }
-
-  private void updateIntakeIndicators() {
+  /**
+   * Indicators used to perform systems check
+   */
+  private void updateDiagnosticIndicators() {
+    // Algae Loaded
     if (intakeSubsystem.isAlgaeLoaded()) {
       setLEDRange(0, 1, LightColours.DARKGREEN);
     } else {
       setLEDRange(0, 1, LightColours.BLACK);
     }
     
+    // Coral Loaded
     if (intakeSubsystem.isCoralLoaded()) {
       setLEDRange(1, 2, LightColours.WHITE);
     } else {
       setLEDRange(1, 2, LightColours.BLACK);
     }
 
-    // Add pivot position indicator on third LED
+    // Add pivot position indicator
     double pivotPosition = RobotContainer.pivotSubsystem.getPivotPosition();
     if (Math.abs(pivotPosition) <= 2.0) { // Within 2 degrees of zero
       setLEDRange(2, 3, LightColours.BLUE);
@@ -266,24 +304,22 @@ public class Lights extends SubsystemBase {
       setLEDRange(2, 3, LightColours.BLACK);
     }
 
-    // Add elevator position indicator on fourth LED
+    // Add elevator position indicator 
     double elevatorPosition = RobotContainer.elevatorSubsystem.getElevatorPositionMeters();
     if (Math.abs(elevatorPosition) <= 0.02) { // Within 2cm of zero
       setLEDRange(3, 4, LightColours.CYAN);
     } else {
       setLEDRange(3, 4, LightColours.BLACK);
     }
-  }
 
-  private void updateAprilTagIndicator() {
+    // Can see tag indicator
     if (driveSubsystem.limelightsSeeTag()) {
       setLEDRange(4, 5, LightColours.PINK);
     } else {
       setLEDRange(4, 5, LightColours.BLACK);
     }
-  }
 
-  private void updateAllianceIndicator() {
+    // Alliance Indicator Light
     var alliance = DriverStation.getAlliance();
     if (alliance.isPresent()) {
       if (alliance.get() == Alliance.Blue) {
@@ -297,19 +333,152 @@ public class Lights extends SubsystemBase {
   }
 
   /**
-   * Determines the appropriate LED animation based on the robot's state.
-   * @return The LedAnimation to be displayed
+   * Updates elevator side lights based on targeted elevator height in automatic mode
    */
-  private LedAnimation getLedAnimation() {
-    return LedAnimation.COLOR_FLOW;
+  private void handleAutomaticElevatorLights() {
+    ScoringLevel scoringLevel = dynamicPathingSubsystem.getCoralScoringLevel();
+    boolean isRightSide = dynamicPathingSubsystem.getCoralScoringSide();
+    
+    switch (scoringLevel) {
+      case L1:
+        setElevatorRange(LedRange.L1, isRightSide);
+        setElevatorRange(LedRange.R1, isRightSide);
+        break;
+      case L2:
+        setElevatorRange(LedRange.L2, isRightSide);
+        setElevatorRange(LedRange.R2, isRightSide);
+        break;
+      case L3:
+        setElevatorRange(LedRange.L3, isRightSide);
+        setElevatorRange(LedRange.R3, isRightSide);
+        break;
+      case L4:
+        setElevatorRange(LedRange.LEFT_SIDE_FULL, isRightSide);
+        setElevatorRange(LedRange.RIGHT_SIDE_FULL, isRightSide);
+        break;
+      default:
+        break;
+    }
   }
 
   /**
-   * Called once when disabled
+   * Helper methods for elevator LEDs 
    */
-  public void onDisable() {
-    setLEDRange(0, LED_COUNT, LightColours.BLACK);
+  private void setElevatorRange(LedRange range, boolean isRightSide) {
+    LightColours color = isRightSide ? LightColours.PURPLE : LightColours.YELLOW;
+    setLEDRangeGroup(range, color, LightColours.WHITE, false);
   }
+
+  /**
+   * Updates elevator side lights based on current elevator height setpoint in manual mode
+   */
+  private void handleManualElevatorLights() {
+    ElevatorLevel elevatorLevel =  elevatorSubsystem.getElevatorSetpointEnum();
+    boolean hasCoralLoaded = intakeSubsystem.isCoralLoaded();
+    setElevatorLevelPattern(elevatorLevel, hasCoralLoaded);
+  }
+
+  /*
+   * Helper methods for elevator LEDs 
+   */
+  private void setElevatorLevelPattern(ElevatorLevel level, boolean isCoralLoaded) {
+    LedRange leftRange = null;
+    LedRange rightRange = null;
+    LightColours color = isCoralLoaded ? LightColours.WHITE : LightColours.DARKGREEN;
+
+    switch (level) {
+      case L1:
+        leftRange = LedRange.L1;
+        rightRange = LedRange.R1;
+        break;
+      case PROCESSOR:
+        leftRange = LedRange.L1;
+        rightRange = LedRange.R1;
+      case L2:
+        leftRange = LedRange.L2;
+        rightRange = LedRange.R2;
+        break;
+      case ALGAE_L1:
+        leftRange = LedRange.L2;
+        rightRange = LedRange.R2;
+        break;
+      case L3:
+        leftRange = LedRange.L3;
+        rightRange = LedRange.R3;
+        break;
+      case ALGAE_L2:
+        leftRange = LedRange.L3;
+        rightRange = LedRange.R3;
+        break;
+      case L4:
+        leftRange = LedRange.LEFT_SIDE_FULL;
+        rightRange = LedRange.RIGHT_SIDE_FULL;
+        break;
+      case NET:
+        leftRange = LedRange.LEFT_SIDE_FULL;
+        rightRange = LedRange.RIGHT_SIDE_FULL;
+        break;
+      default:
+        setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
+        setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
+        return;
+    }
+
+    // Finally apply chosen range and color
+    setLEDRangeGroup(leftRange, color, LightColours.WHITE, false);
+    setLEDRangeGroup(rightRange, color, LightColours.WHITE, false);
+  }
+
+  /**
+   * Update dynamic pathing indicators
+   */
+  private void updatePathingIndicators() {
+    var pathingSituation = RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation();
+
+    if (isCoralIntakeRunning) {
+      // When coral intake is running, blink white lights
+      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.WHITE, LightColours.BLACK, true);
+      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.WHITE, LightColours.BLACK, true);
+
+    } else if (pathingSituation == DynamicPathingSituation.REEF_CORAL) {
+      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.WHITE, LightColours.BLACK, false);
+      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.WHITE, LightColours.BLACK, false);
+
+    } else if (pathingSituation == DynamicPathingSituation.REEF_ALGAE) {
+      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.DARKGREEN, LightColours.BLACK, false);
+      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.DARKGREEN, LightColours.BLACK, false);
+    
+    } else if (pathingSituation == DynamicPathingSituation.HUMAN_PICKUP) {
+      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.RED, LightColours.BLACK, false);
+      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.RED, LightColours.BLACK, false);
+    
+    } else if (pathingSituation == DynamicPathingSituation.PROCESSOR) {
+      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.BLUE, LightColours.BLACK, false);
+      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.BLUE, LightColours.BLACK, false);
+
+    } else if (pathingSituation == DynamicPathingSituation.NET) {
+      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.PINK, LightColours.BLACK, false);
+      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.PINK, LightColours.BLACK, false);
+
+    } else {
+      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.BLACK, LightColours.BLACK, false);
+      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.BLACK, LightColours.BLACK, false);
+    }
+  }
+
+  /**
+   * Updates the operator override indicator 
+   */ 
+  private void updateOperatorOverrideIndicator() {
+    setLEDRangeGroup(LedRange.MIDDLE_MIDDLE, 
+      RobotContainer.isOperatorOverride ? LightColours.GREEN : LightColours.BLACK, 
+      LightColours.BLACK, 
+      false);
+  }
+
+  /*                       */
+  /* Light Utility Methods */
+  /*                       */
 
   /**
    * Updates the blink timer and toggles the blink state if necessary.
@@ -369,7 +538,10 @@ public class Lights extends SubsystemBase {
     }
   }
 
-   private void updateLedRanges() {
+  /**
+   * Applies chosen colors from ledRangeColours to the physical light hardware
+   */
+  private void applyLEDRanges() {
     if (ledRangeColours.isEmpty()) {
       return; // Don't update if there are no colors to set
     }
@@ -377,31 +549,32 @@ public class Lights extends SubsystemBase {
     // Initialize ledColors[] to default color
     int[] defaultRGB = LightColours.BLACK.getRGBValues();
     for (int i = 0; i < LED_COUNT; i++) {
-        ledColors[i][0] = defaultRGB[0];
-        ledColors[i][1] = defaultRGB[1];
-        ledColors[i][2] = defaultRGB[2];
+      ledColors[i][0] = defaultRGB[0];
+      ledColors[i][1] = defaultRGB[1];
+      ledColors[i][2] = defaultRGB[2];
     }
 
     // Convert ledRangeColours entries to a list for sorting
-    List<Map.Entry<LedRange, LightColours>> entries = new ArrayList<>(ledRangeColours.entrySet());
+    entriesList.clear();
+    entriesList.addAll(ledRangeColours.entrySet());
 
     // Sort ranges from largest to smallest to give precedence to smaller ranges
-    entries.sort((entry1, entry2) -> {
-        int size1 = entry1.getKey().getEnd() - entry1.getKey().getStart();
-        int size2 = entry2.getKey().getEnd() - entry2.getKey().getStart();
-        return Integer.compare(size2, size1); // Largest size first
+    entriesList.sort((entry1, entry2) -> {
+      int size1 = entry1.getKey().getEnd() - entry1.getKey().getStart();
+      int size2 = entry2.getKey().getEnd() - entry2.getKey().getStart();
+      return Integer.compare(size2, size1); // Largest size first
     });
 
     // Apply colors to ledColors[] array
-    for (Map.Entry<LedRange, LightColours> entry : entries) {
-        LedRange range = entry.getKey();
-        LightColours colour = entry.getValue();
-        int[] rgb = colour.getRGBValues();
-        for (int i = range.getStart(); i < range.getEnd(); i++) {
-            ledColors[i][0] = rgb[0];
-            ledColors[i][1] = rgb[1];
-            ledColors[i][2] = rgb[2];
-        }
+    for (Map.Entry<LedRange, LightColours> entry : entriesList) {
+      LedRange range = entry.getKey();
+      LightColours colour = entry.getValue();
+      int[] rgb = colour.getRGBValues();
+      for (int i = range.getStart(); i < range.getEnd(); i++) {
+          ledColors[i][0] = rgb[0];
+          ledColors[i][1] = rgb[1];
+          ledColors[i][2] = rgb[2];
+      }
     }
 
     // Optimize LED updates by grouping contiguous colors
@@ -420,7 +593,6 @@ public class Lights extends SubsystemBase {
     }
   }
 
-
   /**
    * Clears all LEDs by setting them to black.
    */
@@ -429,157 +601,23 @@ public class Lights extends SubsystemBase {
       ledColors[i] = LightColours.BLACK.getRGBValues();
     }
     ledRangeColours.clear();
-    updateLedRanges();
+    applyLEDRanges();
   }
 
   /**
-   * Updates all lights based on current robot state.
-   * This method is called by the default command to handle standard lighting patterns.
+   * Clears all CANDLE hardware animations
    */
-  public void updateLights() {
-    if (!RobotContainer.isOperatorOverride) {
-      handleRestPositionLights();
-    } else {
-      handleElevatorPositionLights();
-    }
-    
-    updateReefPathingIndicators();
-    if (Controls.doNotScore.getAsBoolean() && !RobotContainer.isOperatorOverride) {
-      // When "do not score" is active, and we are in normal mode, set middle lights to red
-      setLEDRangeGroup(LedRange.MIDDLE_MIDDLE, LightColours.RED, LightColours.BLACK, false);
-    } else {
-      updateOperatorOverrideIndicator();
-    }
-    
-    updateLedRanges();
-  }
-
-  private void handleRestPositionLights() {
-    ScoringLevel scoringLevel = dynamicPathingSubsystem.getCoralScoringLevel();
-    boolean isRightSide = dynamicPathingSubsystem.getCoralScoringSide();
-    
-    switch (scoringLevel) {
-      case L1:
-        setCoralScoringPattern(LedRange.L1, isRightSide);
-        setCoralScoringPattern(LedRange.R1, isRightSide);
-        break;
-      case L2:
-        setCoralScoringPattern(LedRange.L2, isRightSide);
-        setCoralScoringPattern(LedRange.R2, isRightSide);
-        break;
-      case L3:
-        setCoralScoringPattern(LedRange.L3, isRightSide);
-        setCoralScoringPattern(LedRange.R3, isRightSide);
-        break;
-      case L4:
-        setCoralScoringPattern(LedRange.LEFT_SIDE_FULL, isRightSide);
-        setCoralScoringPattern(LedRange.RIGHT_SIDE_FULL, isRightSide);
-        break;
-      default:
-        break;
+  public void clearHardwareAnimations() {
+    candle.animate(null);
+    for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
+      candle.clearAnimation(i);
     }
   }
 
-  private void handleElevatorPositionLights() {
-    ElevatorLevel elevatorLevel =  elevatorSubsystem.getElevatorSetpointEnum();
-    boolean hasCoralLoaded = intakeSubsystem.isCoralLoaded();
-    setElevatorLevelPattern(elevatorLevel, hasCoralLoaded);
-  }
-
-  private void updateReefPathingIndicators() {
-    var pathingSituation = RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation();
-
-    if (isCoralIntakeRunning) {
-      // When coral intake is running, blink white lights
-      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.WHITE, LightColours.BLACK, true);
-      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.WHITE, LightColours.BLACK, true);
-
-    } else if (pathingSituation == DynamicPathingSituation.REEF_CORAL) {
-      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.WHITE, LightColours.BLACK, false);
-      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.WHITE, LightColours.BLACK, false);
-
-    } else if (pathingSituation == DynamicPathingSituation.REEF_ALGAE) {
-      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.DARKGREEN, LightColours.BLACK, false);
-      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.DARKGREEN, LightColours.BLACK, false);
-    
-    } else if (pathingSituation == DynamicPathingSituation.HUMAN_PICKUP) {
-      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.RED, LightColours.BLACK, false);
-      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.RED, LightColours.BLACK, false);
-    
-    } else if (pathingSituation == DynamicPathingSituation.PROCESSOR) {
-      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.BLUE, LightColours.BLACK, false);
-      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.BLUE, LightColours.BLACK, false);
-
-    } else if (pathingSituation == DynamicPathingSituation.NET) {
-      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.PINK, LightColours.BLACK, false);
-      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.PINK, LightColours.BLACK, false);
-
-    } else {
-      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.BLACK, LightColours.BLACK, false);
-      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.BLACK, LightColours.BLACK, false);
-    }
-  }
-
-  private void updateOperatorOverrideIndicator() {
-    setLEDRangeGroup(LedRange.MIDDLE_MIDDLE, 
-      RobotContainer.isOperatorOverride ? LightColours.GREEN : LightColours.BLACK, 
-      LightColours.BLACK, 
-      false);
-  }
-
-  // Helper methods for LED patterns
-  private void setCoralScoringPattern(LedRange range, boolean isRightSide) {
-    LightColours color = isRightSide ? LightColours.PURPLE : LightColours.YELLOW;
-    setLEDRangeGroup(range, color, LightColours.WHITE, false);
-  }
-
-  private void setElevatorLevelPattern(ElevatorLevel level, boolean isCoralLoaded) {
-    LedRange leftRange = null;
-    LedRange rightRange = null;
-    LightColours color = isCoralLoaded ? LightColours.WHITE : LightColours.DARKGREEN;
-
-    switch (level) {
-      case L1:
-        leftRange = LedRange.L1;
-        rightRange = LedRange.R1;
-        break;
-      case PROCESSOR:
-        leftRange = LedRange.L1;
-        rightRange = LedRange.R1;
-      case L2:
-        leftRange = LedRange.L2;
-        rightRange = LedRange.R2;
-        break;
-      case ALGAE_L1:
-        leftRange = LedRange.L2;
-        rightRange = LedRange.R2;
-        break;
-      case L3:
-        leftRange = LedRange.L3;
-        rightRange = LedRange.R3;
-        break;
-      case ALGAE_L2:
-        leftRange = LedRange.L3;
-        rightRange = LedRange.R3;
-        break;
-      case L4:
-        leftRange = LedRange.LEFT_SIDE_FULL;
-        rightRange = LedRange.RIGHT_SIDE_FULL;
-        break;
-      case NET:
-        leftRange = LedRange.LEFT_SIDE_FULL;
-        rightRange = LedRange.RIGHT_SIDE_FULL;
-        break;
-      default:
-        setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
-        setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
-        return;
-    }
-
-    setLEDRangeGroup(leftRange, color, LightColours.WHITE, false);
-    setLEDRangeGroup(rightRange, color, LightColours.WHITE, false);
-  }
-
+  /**
+   * Sets the light's is intaking state
+   * @param running is intaking
+   */
   public void setCoralIntakeRunning(boolean running) {
     isCoralIntakeRunning = running;
   }

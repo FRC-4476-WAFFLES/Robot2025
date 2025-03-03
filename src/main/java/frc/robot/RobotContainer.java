@@ -23,7 +23,6 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.DefaultLightCommand;
 import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.ResetGyroHeading;
 import frc.robot.commands.intake.AlgeaOutake;
@@ -104,9 +103,6 @@ public class RobotContainer {
       Controls::getDriveX,
       Controls::getDriveRotation
     ));
-
-    // Set default command for lights
-    lightsSubsystem.setDefaultCommand(new DefaultLightCommand());
 
     // Axis intake control 
     intakeSubsystem.setDefaultCommand(axisIntakeControl);
