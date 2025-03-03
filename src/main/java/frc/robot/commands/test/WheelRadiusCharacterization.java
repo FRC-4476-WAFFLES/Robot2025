@@ -15,6 +15,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -94,8 +97,19 @@ public class WheelRadiusCharacterization {
           }
 
           double wheelRadius = accumulatedWheelRadius / 4;
+          System.out.println("==== Test Completed! ==== ");
           System.out.println("Wheel Radius Calculated As: " + wheelRadius);
           System.out.println("From Gyro Yaw Delta Of: " + Units.radiansToDegrees(state.accumulatedRotation));
+          
+          // NetworkTables publishers
+          NetworkTable testTable = NetworkTableInstance.getDefault().getTable("WheelRadiusTest");
+          DoublePublisher wheelRadiusMeterValueNT = testTable.getDoubleTopic("Wheel Radius (Meters)").publish();
+          DoublePublisher wheelRadiusInchValueNT = testTable.getDoubleTopic("Wheel Radius (Inches)").publish();
+          DoublePublisher gyroDeltaNT = testTable.getDoubleTopic("Gyro Test Delta (Degrees)").publish();
+
+          wheelRadiusMeterValueNT.set(wheelRadius);
+          wheelRadiusInchValueNT.set(Units.metersToInches(wheelRadius));
+          gyroDeltaNT.set(Units.radiansToDegrees(state.accumulatedRotation));
         })
       )
     ).withTimeout(TEST_DURATION);
