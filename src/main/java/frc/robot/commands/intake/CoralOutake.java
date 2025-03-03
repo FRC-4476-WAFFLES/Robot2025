@@ -22,7 +22,9 @@ public class CoralOutake extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    // Make sure the intake doesn't detect us as having loaded algae in this motion
     RobotContainer.intakeSubsystem.setNoAlgaeFlag(true);
+
     timer.stop();
     timer.reset();
   }
@@ -30,14 +32,19 @@ public class CoralOutake extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L1) {
-      RobotContainer.intakeSubsystem.setIntakeSpeed(18.0);
-    } else {
-      if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4) {
-        RobotContainer.intakeSubsystem.setIntakeSpeed(-60.0);
-      } else {
-        RobotContainer.intakeSubsystem.setIntakeSpeed(-28.0);
-      }
+    var scoringLevel = RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel();
+    switch (scoringLevel) {
+      case L1:
+        RobotContainer.intakeSubsystem.setIntakeSpeed(18.0); // Reverse to spit out backwards
+        break;
+
+      case L4:
+        RobotContainer.intakeSubsystem.setIntakeSpeed(-60.0); // Fast to ensure fitting on post
+        break;
+
+      default:
+        RobotContainer.intakeSubsystem.setIntakeSpeed(-28.0); // Slower to avoid bouncing off L2-L3
+        break;
     }
     
     if (!RobotContainer.intakeSubsystem.isCoralLoaded() ) {

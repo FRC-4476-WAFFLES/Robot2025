@@ -72,16 +72,16 @@ public class RobotContainer {
   public static final Lights lightsSubsystem = new Lights();
 
   /* Software Subsystems */
-  /* Do not control harware, but have state and periodic methods */
+  /* Do not control harware, but have state and or periodic methods */
   /* Can be required by commands to mutex lock actions like pathing */
   public static final DynamicPathing dynamicPathingSubsystem = new DynamicPathing();
   public static final Telemetry telemetry = new Telemetry(PhysicalConstants.maxSpeed);
   public static final MechanismPoses mechanismPoses = new MechanismPoses();
 
   /* Commands */
-  private final ResetGyroHeading resetGyroHeading = new ResetGyroHeading();
+  private final Command resetGyroHeading = new ResetGyroHeading().ignoringDisable(true);
   private final Command restPosition = SuperstructureControl.RestPositionCommand();
-  private final AxisIntakeControl axisIntakeControl = new AxisIntakeControl(
+  private final Command axisIntakeControl = new AxisIntakeControl(
     Controls.operatorController::getRightTriggerAxis,
     Controls.operatorController::getLeftTriggerAxis
   );

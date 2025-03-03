@@ -423,7 +423,7 @@ public class DynamicPathing extends SubsystemBase {
         if (coralScoringLevel == ScoringLevel.L1) {
             return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), coralScoringRightSide, true, REEF_SCORING_POSITION_OFFSET_L1);
         }
-        
+
         if (coralScoringLevel == ScoringLevel.L4) {
             return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), coralScoringRightSide, false, REEF_SCORING_POSITION_OFFSET_L4);
         }
@@ -532,10 +532,9 @@ public class DynamicPathing extends SubsystemBase {
     }
 
     /**
-     * Creates a simple, path for PathPlanner which moves the robot to a point.
+     * Creates a simple path for PathPlanner which moves the robot to a point.
      * Assumes starting at the robot's current position
      * @param endingPose The target end pose
-     * @param straightPath Force pathing in a straight line
      * @return The PathPlannerPath
      */
     public static Optional<PathPlannerPath> simplePathToPose(Pose2d endingPose) {
