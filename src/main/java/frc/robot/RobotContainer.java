@@ -34,6 +34,9 @@ import frc.robot.commands.superstructure.SetElevatorPos;
 import frc.robot.commands.superstructure.SetPivotPos;
 import frc.robot.commands.superstructure.SuperstructureControl;
 import frc.robot.commands.superstructure.ZeroMechanisms;
+import frc.robot.commands.test.TestDriveAuto;
+import frc.robot.commands.test.TestElevatorAuto;
+import frc.robot.commands.test.WheelRadiusCharacterization;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.PhysicalConstants;
@@ -87,6 +90,7 @@ public class RobotContainer {
 
   /* Global Robot State */
   private final SendableChooser<Command> autoChooser;
+  private final SendableChooser<Command> testChooser;
   public static boolean isOperatorOverride = false;
 
 
@@ -117,6 +121,9 @@ public class RobotContainer {
     // Build an auto chooser. This will use Commands.none() as the default option.
     autoChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("Auto Chooser", autoChooser);
+
+    testChooser = buildTestChooser(); 
+    SmartDashboard.putData("Test Routine Chooser", testChooser);
 
     // Warmup pathplanner to reduce delay when dynamic pathing
     FollowPathCommand.warmupCommand().schedule();
@@ -388,12 +395,35 @@ public class RobotContainer {
   }
 
   /**
+   * Use this method to define a list of commands that can be chosen from in test mode
+   */
+  private SendableChooser<Command> buildTestChooser() {
+    SendableChooser<Command> chooser = new SendableChooser<>();
+
+    chooser.setDefaultOption("None", Commands.none());
+    chooser.addOption("Wheel Radius Characterization", WheelRadiusCharacterization.GetCharacterizationCommand());
+    chooser.addOption("Test Drivetrain", new TestDriveAuto(driveSubsystem));
+    chooser.addOption("Test Elevator", new TestElevatorAuto(elevatorSubsystem));
+
+    return chooser;
+  }
+
+  /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
     return autoChooser.getSelected();
+  }
+
+  /**
+   * Use this to pass the testing command to the main {@link Robot} class.
+   *
+   * @return the command to run in testng mode
+   */
+  public Command getTestCommand() {
+    return testChooser.getSelected();
   }
 
   /**

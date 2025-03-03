@@ -82,6 +82,9 @@ public class Robot extends TimedRobot {
   public void disabledInit() {
     System.gc();
 
+    // Ensure both auto and test commands are canceled
+    cancelControllingCommands();
+
     // Disable controller vibration in case disabled while pathing
     Controls.operatorController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0);
   }
@@ -94,6 +97,9 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    // Ensure a clean slate before starting auto
+    cancelControllingCommands();
+
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     // schedule the autonomous command (example)
@@ -112,9 +118,8 @@ public class Robot extends TimedRobot {
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
     // this line or comment it out.
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.cancel();
-    }
+    // Ensure both auto and test commands are canceled
+    cancelControllingCommands();
 
     NetworkConfiguredPID.onEnable();
   }
@@ -127,12 +132,8 @@ public class Robot extends TimedRobot {
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
-    
-    // Create and schedule both test commands in sequence
-    m_testCommand = Commands.sequence(
-      //new TestElevatorAuto(m_robotContainer.getElevator()),
-      new TestDriveAuto(m_robotContainer.getDriveSubsystem())
-    );
+
+    m_testCommand = m_robotContainer.getTestCommand();
 
     if (m_testCommand != null) {
       m_testCommand.schedule();
@@ -152,4 +153,14 @@ public class Robot extends TimedRobot {
   /** This function is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {}
+
+  /** Cancels both the auto and test commands if present */
+  private void cancelControllingCommands() {
+    if (m_autonomousCommand != null) {
+      m_autonomousCommand.cancel();
+    }
+    if (m_testCommand != null) {
+      m_testCommand.cancel();
+    }
+  }
 }
