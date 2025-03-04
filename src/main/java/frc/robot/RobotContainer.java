@@ -174,7 +174,7 @@ public class RobotContainer {
       new ParallelCommandGroup(
         new ApplyScoringSetpoint(ScoringLevel.PROCESSOR),
         new SequentialCommandGroup(
-          new WaitCommand(0.3), // wait a quarter second lmao
+          new WaitCommand(0.55), // wait a quarter second lmao
           new AlgeaOutake()
         )
       )
