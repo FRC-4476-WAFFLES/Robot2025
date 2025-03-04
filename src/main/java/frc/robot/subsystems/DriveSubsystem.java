@@ -19,9 +19,11 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -458,6 +460,23 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
     */
     public ChassisSpeeds getCurrentRobotChassisSpeeds() {
         return getState().Speeds;
+    }
+
+    /**
+     * Gets the distance from a swerve module to it's center of rotation (0, 0)
+     * @return a double in meters
+     */
+    public double getSwerveModuleRadius(int moduleID) {
+        return getModuleLocations()[moduleID].getDistance(Translation2d.kZero);
+    }
+
+    /** Returns the position of each module in radians. */
+    public double[] getWheelDriveRotations() {
+        double[] values = new double[4];
+        for (int i = 0; i < 4; i++) {
+            values[i] = Units.rotationsToRadians(getModule(i).getDriveMotor().getPosition().getValueAsDouble());
+        }
+        return values;
     }
 
 

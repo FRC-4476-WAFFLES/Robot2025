@@ -23,7 +23,6 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.DefaultLightCommand;
 import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.ResetGyroHeading;
 import frc.robot.commands.intake.AlgeaOutake;
@@ -35,6 +34,9 @@ import frc.robot.commands.superstructure.SetElevatorPos;
 import frc.robot.commands.superstructure.SetPivotPos;
 import frc.robot.commands.superstructure.SuperstructureControl;
 import frc.robot.commands.superstructure.ZeroMechanisms;
+import frc.robot.commands.test.TestDriveAuto;
+import frc.robot.commands.test.TestElevatorAuto;
+import frc.robot.commands.test.WheelRadiusCharacterization;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.PhysicalConstants;
@@ -72,22 +74,23 @@ public class RobotContainer {
   public static final Lights lightsSubsystem = new Lights();
 
   /* Software Subsystems */
-  /* Do not control harware, but have state and periodic methods */
+  /* Do not control harware, but have state and or periodic methods */
   /* Can be required by commands to mutex lock actions like pathing */
   public static final DynamicPathing dynamicPathingSubsystem = new DynamicPathing();
   public static final Telemetry telemetry = new Telemetry(PhysicalConstants.maxSpeed);
   public static final MechanismPoses mechanismPoses = new MechanismPoses();
 
   /* Commands */
-  private final ResetGyroHeading resetGyroHeading = new ResetGyroHeading();
+  private final Command resetGyroHeading = new ResetGyroHeading().ignoringDisable(true);
   private final Command restPosition = SuperstructureControl.RestPositionCommand();
-  private final AxisIntakeControl axisIntakeControl = new AxisIntakeControl(
+  private final Command axisIntakeControl = new AxisIntakeControl(
     Controls.operatorController::getRightTriggerAxis,
     Controls.operatorController::getLeftTriggerAxis
   );
 
   /* Global Robot State */
   private final SendableChooser<Command> autoChooser;
+  private final SendableChooser<Command> testChooser;
   public static boolean isOperatorOverride = false;
 
 
@@ -105,9 +108,6 @@ public class RobotContainer {
       Controls::getDriveRotation
     ));
 
-    // Set default command for lights
-    lightsSubsystem.setDefaultCommand(new DefaultLightCommand());
-
     // Axis intake control 
     intakeSubsystem.setDefaultCommand(axisIntakeControl);
 
@@ -121,6 +121,9 @@ public class RobotContainer {
     // Build an auto chooser. This will use Commands.none() as the default option.
     autoChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("Auto Chooser", autoChooser);
+
+    testChooser = buildTestChooser(); 
+    SmartDashboard.putData("Test Routine Chooser", testChooser);
 
     // Warmup pathplanner to reduce delay when dynamic pathing
     FollowPathCommand.warmupCommand().schedule();
@@ -392,12 +395,35 @@ public class RobotContainer {
   }
 
   /**
+   * Use this method to define a list of commands that can be chosen from in test mode
+   */
+  private SendableChooser<Command> buildTestChooser() {
+    SendableChooser<Command> chooser = new SendableChooser<>();
+
+    chooser.setDefaultOption("None", Commands.none());
+    chooser.addOption("Wheel Radius Characterization", WheelRadiusCharacterization.GetCharacterizationCommand());
+    chooser.addOption("Test Drivetrain", new TestDriveAuto(driveSubsystem));
+    chooser.addOption("Test Elevator", new TestElevatorAuto(elevatorSubsystem));
+
+    return chooser;
+  }
+
+  /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
     return autoChooser.getSelected();
+  }
+
+  /**
+   * Use this to pass the testing command to the main {@link Robot} class.
+   *
+   * @return the command to run in testng mode
+   */
+  public Command getTestCommand() {
+    return testChooser.getSelected();
   }
 
   /**

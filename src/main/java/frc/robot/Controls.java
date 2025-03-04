@@ -1,6 +1,7 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -64,6 +65,23 @@ public class Controls {
             0 : 
             (WafflesUtilities.Lerp(0, input, WafflesUtilities.InvLerp(JOYSTICK_DEADZONE_INNER, JOYSTICK_DEADZONE_OUTER, input)) * Math.signum(input))
         );
+    }
+
+    // Clamps and squares input from two joysticks
+    // Inputs should be in the 0-1 range
+    public static Translation2d normalizeJoystickInput(double x, double y) {
+        Translation2d inputVector = new Translation2d(x, y);
+        double magnitude = inputVector.getNorm();
+
+        if (magnitude > 1) {
+            inputVector.div(magnitude);
+            magnitude = 1;
+        }
+        
+        // Square magnitude for more precise control
+        inputVector.times(magnitude);
+
+        return inputVector;
     }
 
     /* Methods to get operator input */
