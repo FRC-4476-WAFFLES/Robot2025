@@ -173,15 +173,14 @@ public class RobotContainer {
     );
 
     // Operator Algea out
-    Controls.algaeOut.whileTrue(
+    dynamicPathingSubsystem.notRunningAction.and(Controls.algaeOut).whileTrue(
       new ParallelCommandGroup(
         new ApplyScoringSetpoint(ScoringLevel.PROCESSOR),
         new SequentialCommandGroup(
-          new WaitCommand(0.55), // wait a quarter second lmao
+          new WaitCommand(0.55), // wait a some amount of time ¯\_(ツ)_/¯
           new AlgeaOutake()
         )
       )
-      .asProxy().onlyIf(() -> dynamicPathingSubsystem.getCurrentPathingSituation() != DynamicPathingSituation.PROCESSOR)
     ).onFalse(restPosition);
     
     // Override mode immediately moves to position while held
@@ -244,7 +243,7 @@ public class RobotContainer {
     // Dynamic pathing button
     Controls.dynamicPathingButton.whileTrue(
       Commands.defer(
-        () -> dynamicPathingSubsystem.getCurrentDynamicPathCommand(), 
+        () -> dynamicPathingSubsystem.getCurrentDynamicActionCommand(), 
         ScoreCoral.commandRequirements
       )
       // On start - Begin rumble and start dynamic pathing

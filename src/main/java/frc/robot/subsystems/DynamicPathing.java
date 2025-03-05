@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.commands.DriveTeleop;
@@ -32,6 +33,7 @@ import frc.robot.commands.intake.AlgeaOutake;
 import frc.robot.commands.intake.CoralIntake;
 import frc.robot.commands.scoring.PickupAlgea;
 import frc.robot.commands.scoring.ScoreCoral;
+import frc.robot.commands.scoring.ScoreNet;
 import frc.robot.commands.superstructure.ApplyScoringSetpoint;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
@@ -94,10 +96,15 @@ public class DynamicPathing extends SubsystemBase {
 
     /* Persistent state */
     private boolean coralScoringRightSide = false;
-    private boolean isPathing;
+    private boolean isPathing; // Is moving
+
     // Only used for coral scoring, level can be determined automatically in every other situation
     private ScoringLevel coralScoringLevel = ScoringLevel.L3;
     private DynamicPathingSituation currentPathingSituation = DynamicPathingSituation.NONE;
+    
+    private boolean isRunningAction = false;
+    public Trigger runningAction = new Trigger(() -> isRunningAction); // If a dynamic action command is active
+    public Trigger notRunningAction = runningAction.negate(); // If no dynamic action command is active
 
     public enum DynamicPathingSituation {
         NONE, // None of the conditions for other situations are met
@@ -193,11 +200,11 @@ public class DynamicPathing extends SubsystemBase {
     }
 
     /**
-     * Returns a command that paths to the chosen dynamic path target, chosen by the getDynamicPathingSituation() function
-     * @return A pathplanner command that drives to the chosen position
+     * Returns a command that runs the current dynamic action, chosen by the getDynamicPathingSituation() function
+     * @return A command that performs the current action
      */
-    public Command getCurrentDynamicPathCommand() {
-        Command cmd = new InstantCommand(); // Do nothing fallback in case something goes wrong
+    public Command getCurrentDynamicActionCommand() {
+        Command cmd = null; // Command that performs the action
         
         // DynamicPathingSituation currentSituation = getDynamicPathingSituation();
         // SmartDashboard.putString("Pathing Situation", currentSituation.toString());
@@ -258,18 +265,7 @@ public class DynamicPathing extends SubsystemBase {
                     Rotation2d targetNetRotation = WafflesUtilities.FlipAngleIfRedAlliance(NET_SCORING_ANGLE);
                     double targetNetX = WafflesUtilities.FlipXIfRedAlliance(NET_LINE_X_BLUE); 
 
-                    cmd = new ParallelCommandGroup(
-                        new DriveTeleop(
-                            () -> targetNetX, true, // a PID controller or smth lmao
-                            Controls::getDriveX, false,
-                            () -> targetNetRotation, true
-                        ),
-                        new ApplyScoringSetpoint(ScoringLevel.NET)
-                    ).finallyDo(() -> {
-                        RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
-                        RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
-                    });
-
+                    cmd = ScoreNet.getScoreNetCommand(targetNetX, targetNetRotation);
                 }
                 break;
 
@@ -311,6 +307,13 @@ public class DynamicPathing extends SubsystemBase {
             default:
                 break;
         }
+        
+        if (cmd == null) {
+            cmd = new InstantCommand(); // Do nothing fallback in case something goes wrong
+        } else {
+            cmd = wrapActionStateCommand(cmd);
+        }
+
         
         return cmd;
     }
@@ -658,5 +661,14 @@ public class DynamicPathing extends SubsystemBase {
      */
     public Command wrapPathingCommand(Command pathingCommand) {
         return pathingCommand.beforeStarting(() -> {isPathing = true;}).finallyDo(() -> {isPathing = false;});
+    }
+
+    /**
+     * Wraps an action command with setters for the current action state 
+     * @param command command to wrap
+     * @return the wrapped command
+     */
+    public Command wrapActionStateCommand(Command command) {
+        return command.beforeStarting(() -> {isRunningAction = true;}).finallyDo(() -> {isRunningAction = false;});
     }
 }

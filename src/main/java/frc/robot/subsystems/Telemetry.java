@@ -123,6 +123,9 @@ public class Telemetry extends SubsystemBase {
 
         // Publish build info once to networktables
         publishBuildInfo();
+
+        // Set override state once to avoid it sticking around after code reboots
+        publishOperatorOverrideInfo();
     }
 
     @Override
