@@ -16,6 +16,8 @@ import frc.robot.data.Constants.ElevatorConstants;
 import frc.robot.subsystems.Elevator;
 
 public class TestElevatorAuto extends SequentialCommandGroup {
+  private Elevator elevatorSubsystem;
+
   private double minLeaderCurrent = Double.MAX_VALUE;
   private double maxLeaderCurrent = Double.MIN_VALUE;
   private double totalLeaderCurrent = 0;
@@ -42,6 +44,7 @@ public class TestElevatorAuto extends SequentialCommandGroup {
    */
   public TestElevatorAuto(Elevator elevator) {
     addRequirements(elevator);
+    elevatorSubsystem = elevator;
 
     // Initialize NetworkTables publishers
     testTable = NetworkTableInstance.getDefault().getTable("ElevatorTest");
@@ -51,24 +54,6 @@ public class TestElevatorAuto extends SequentialCommandGroup {
     minFollowerCurrentNT = testTable.getDoubleTopic("Follower Min Current (Amps)").publish();
     maxFollowerCurrentNT = testTable.getDoubleTopic("Follower Max Current (Amps)").publish();
     avgFollowerCurrentNT = testTable.getDoubleTopic("Follower Avg Current (Amps)").publish();
-
-    // Create a command to monitor current during movement
-    Command monitorCurrent = Commands.run(() -> {
-      double leaderCurrent = elevator.getLeaderCurrent();
-      double followerCurrent = elevator.getFollowerCurrent();
-
-      // Update leader stats
-      minLeaderCurrent = Math.min(minLeaderCurrent, leaderCurrent);
-      maxLeaderCurrent = Math.max(maxLeaderCurrent, leaderCurrent);
-      totalLeaderCurrent += leaderCurrent;
-      leaderSampleCount++;
-
-      // Update follower stats
-      minFollowerCurrent = Math.min(minFollowerCurrent, followerCurrent);
-      maxFollowerCurrent = Math.max(maxFollowerCurrent, followerCurrent);
-      totalFollowerCurrent += followerCurrent;
-      followerSampleCount++;
-    });
 
     // Create a command to publish final statistics
     Command publishStats = Commands.runOnce(() -> {
@@ -91,7 +76,7 @@ public class TestElevatorAuto extends SequentialCommandGroup {
       Commands.runOnce(() -> elevator.setElevatorSetpoint(ElevatorConstants.MIN_ELEVATOR_HEIGHT)),
       Commands.parallel(
         new WaitUntilCommand(() -> elevator.isElevatorAtSetpoint()),
-        monitorCurrent
+        monitorCurrentCommand()
       ),
       
       // Move to maximum height
@@ -99,7 +84,7 @@ public class TestElevatorAuto extends SequentialCommandGroup {
       Commands.runOnce(() -> elevator.setElevatorSetpoint(ElevatorConstants.MAX_ELEVATOR_HEIGHT)),
       Commands.parallel(
         new WaitUntilCommand(() -> elevator.isElevatorAtSetpoint()),
-        monitorCurrent
+        monitorCurrentCommand()
       ),
       
       // Move back to minimum height
@@ -107,11 +92,30 @@ public class TestElevatorAuto extends SequentialCommandGroup {
       Commands.runOnce(() -> elevator.setElevatorSetpoint(ElevatorConstants.MIN_ELEVATOR_HEIGHT)),
       Commands.parallel(
         new WaitUntilCommand(() -> elevator.isElevatorAtSetpoint()),
-        monitorCurrent
+        monitorCurrentCommand()
       ),
 
       // Publish final statistics
       publishStats
     );
+  }
+
+  private Command monitorCurrentCommand() {
+    return Commands.run(() -> {
+      double leaderCurrent = elevatorSubsystem.getLeaderCurrent();
+      double followerCurrent = elevatorSubsystem.getFollowerCurrent();
+
+      // Update leader stats
+      minLeaderCurrent = Math.min(minLeaderCurrent, leaderCurrent);
+      maxLeaderCurrent = Math.max(maxLeaderCurrent, leaderCurrent);
+      totalLeaderCurrent += leaderCurrent;
+      leaderSampleCount++;
+
+      // Update follower stats
+      minFollowerCurrent = Math.min(minFollowerCurrent, followerCurrent);
+      maxFollowerCurrent = Math.max(maxFollowerCurrent, followerCurrent);
+      totalFollowerCurrent += followerCurrent;
+      followerSampleCount++;
+    });
   }
 } 

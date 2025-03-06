@@ -14,6 +14,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -45,8 +46,8 @@ public class Funnel extends SubsystemBase implements NetworkUser {
 
   private final DoublePublisher funnelPivotSetpointNT = funnelTable.getDoubleTopic("Setpoint (Degrees)").publish();
   private final DoublePublisher funnelPivotAngleNT = funnelTable.getDoubleTopic("Current Angle (Degrees)").publish();
-  private final DoublePublisher funnelAtSetpointNT = funnelTable.getDoubleTopic("At Setpoint").publish();
-  private final DoublePublisher funnelSafeToMoveNT = funnelTable.getDoubleTopic("Safe To Move").publish();
+  private final BooleanPublisher funnelAtSetpointNT = funnelTable.getBooleanTopic("At Setpoint").publish();
+  private final BooleanPublisher funnelSafeToMoveNT = funnelTable.getBooleanTopic("Safe To Move").publish();
 
   /** Creates a new funnelSubsystem. */
   public Funnel() {
@@ -128,7 +129,7 @@ public class Funnel extends SubsystemBase implements NetworkUser {
     
     // Check if it's safe to move the funnel
     boolean safeToMove = isSafeToMoveFunnel();
-    funnelSafeToMoveNT.set(safeToMove ? 1.0 : 0.0);
+    funnelSafeToMoveNT.set(safeToMove);
     
     // Only apply motion magic control if it's safe to move
     if (safeToMove) {
@@ -141,7 +142,7 @@ public class Funnel extends SubsystemBase implements NetworkUser {
     }
     
     // Update network tables
-    funnelAtSetpointNT.set(isFunnelAtSetpoint() ? 1.0 : 0.0);
+    funnelAtSetpointNT.set(isFunnelAtSetpoint());
   }
 
   /**

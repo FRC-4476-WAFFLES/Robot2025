@@ -205,6 +205,10 @@ public class Lights extends SubsystemBase {
    */
   @Override
   public void periodic() {
+    ledRangeColours.clear();
+    // setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
+    // setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
+
     // Mutate LED colors based on robot state
     if (DriverStation.isEnabled()) {
       handleEnabledState();

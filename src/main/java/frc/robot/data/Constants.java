@@ -168,7 +168,7 @@ public final class Constants {
 
   public static class ScoringConstants {
     public static final double AUTO_SCORE_PIVOT_NUDGE = 8;
-    public static final double ALGAE_TOSS_PIVOT_ANGLE = 75; // Angle at which toss occurs
+    public static final double ALGAE_TOSS_PIVOT_ANGLE = 170; // Angle at which toss occurs
 
     /**
      * Maps scoring levels to their respective elevator and pivot enums
@@ -248,7 +248,7 @@ public final class Constants {
         ALGAE_L1(178.5),
         PROCESSOR(189),
         CORAL_INTAKE(0.5),
-        NET(50),
+        NET(30),
         L4(49),
         L3(28),
         L2(35),
@@ -327,7 +327,7 @@ public final class Constants {
       MANUAL_L2(0.280),
       MANUAL_L1(0.22),
 
-      NET_PREP(0.4);
+      NET_PREP(1.20);
 
 
       private final double height;

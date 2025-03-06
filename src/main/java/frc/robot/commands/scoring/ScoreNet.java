@@ -31,11 +31,14 @@ public class ScoreNet {
             // Score sequence (Operator controlled)
             Commands.sequence(
                 new ApplyScoringSetpoint(ScoringLevel.NET_PREP),
+                Commands.runOnce(() -> RobotContainer.pivotSubsystem.setIsThrowingAlgae(true)),
                 algaeToss()
             )
         ).finallyDo(() -> {
             RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
             RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
+
+            RobotContainer.pivotSubsystem.setIsThrowingAlgae(false);
         });
     }
 

@@ -17,6 +17,7 @@ import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.CodeConstants;
@@ -52,6 +53,8 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private long algaeDetectionStartTime = 0;
     private static final long ALGAE_DETECTION_DEBOUNCE_TIME = 100; // 100ms debounce time
 
+    private Timer algaeLossTimer = new Timer();
+
     // Network Tables
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
     private final NetworkTable intakeTable = inst.getTable("Intake");
@@ -76,6 +79,8 @@ public class Intake extends SubsystemBase implements NetworkUser{
         // Configure hardware
         configureIntakeMotor();
         configureLaserCAN();
+
+        algaeLossTimer.reset();
     }
 
     /**
@@ -139,9 +144,26 @@ public class Intake extends SubsystemBase implements NetworkUser{
     
     @Override
     public void periodic() {
+        if (algaeLossTimer.get() > 1) {
+            algaeLoaded = false;
+            algaeLossTimer.stop();
+            algaeLossTimer.reset();
+
+            System.out.print("===============\nLost Algae Detected.");
+        }
+
         if (Math.abs(intakeSpeed) < 0.01 && isAlgaeLoaded()) {
             // When algae is loaded, run intake slowly inward
             intake.setControl(intakeControlRequest.withVelocity(Constants.ManipulatorConstants.ALGAE_HOLD_SPEED).withSlot(0));
+
+            if (intake.getStatorCurrent().getValueAsDouble() < 8) {
+                intake.setControl(intakeControlRequest.withVelocity(-300).withSlot(0));
+                
+                if (!algaeLossTimer.isRunning()) {
+                    algaeLossTimer.reset();
+                    algaeLossTimer.start();
+                }
+            }
         } else if (usePositionControl && isCoralLoaded()) {
             // Use position control to maintain coral position
             intake.setControl(intakePositionControlRequest
@@ -187,6 +209,8 @@ public class Intake extends SubsystemBase implements NetworkUser{
             // Check if we've exceeded the debounce time
             else if (System.currentTimeMillis() - algaeDetectionStartTime >= ALGAE_DETECTION_DEBOUNCE_TIME) {
                 algaeLoaded = true;
+                algaeLossTimer.stop();
+                algaeLossTimer.reset();
             }
         } else {
             // Reset the timer if conditions aren't met

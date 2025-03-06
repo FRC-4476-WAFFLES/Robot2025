@@ -51,6 +51,9 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     // State variables
     private double pivotSetpointAngle = 0;
     private boolean isZeroingPivot = false;
+    private boolean isThrowingAlgae = false;
+
+
 
     // Network Tables
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
@@ -171,7 +174,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
         // Real jank but ok
         int slot = 0;
-        if (intakeSubsystem.isAlgaeLoaded()) {
+        if (intakeSubsystem.isAlgaeLoaded() && !isThrowingAlgae) {
             // while algea is loaded, use a slower profile
             slot = 1;
         }
@@ -359,5 +362,10 @@ public class Pivot extends SubsystemBase implements NetworkUser {
      */
     public boolean isZeroing() {
         return isZeroingPivot;
+    }
+
+    
+    public void setIsThrowingAlgae(boolean val) {
+        isThrowingAlgae = val;
     }
 }
