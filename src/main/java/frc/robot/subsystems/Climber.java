@@ -93,7 +93,7 @@ public class Climber extends SubsystemBase implements NetworkUser {
     climberConfig.Feedback.SensorToMechanismRatio = Constants.PhysicalConstants.ClimberReduction;
     
     // Set neutral mode to brake
-    climberConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    climberConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     
     // Add voltage compensation
     climberConfig.Voltage.PeakForwardVoltage = 12.0; // 12V compensation

@@ -25,6 +25,7 @@ import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.ElevatorConstants;
 import frc.robot.data.Constants.FunnelConstants;
 import frc.robot.data.Constants.FunnelConstants.FunnelPosition;
+import frc.robot.utils.NetworkConfiguredPID;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
 
@@ -48,6 +49,30 @@ public class Funnel extends SubsystemBase implements NetworkUser {
   private final DoublePublisher funnelPivotAngleNT = funnelTable.getDoubleTopic("Current Angle (Degrees)").publish();
   private final BooleanPublisher funnelAtSetpointNT = funnelTable.getBooleanTopic("At Setpoint").publish();
   private final BooleanPublisher funnelSafeToMoveNT = funnelTable.getBooleanTopic("Safe To Move").publish();
+
+
+  // -------------------- Tuning Code --------------------
+  // private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
+  
+  // public void updatePID() {
+  //   var slot0Configs = new Slot0Configs();
+  //   slot0Configs.kS = networkPIDConfiguration.getS(); // Static feedforward
+  //   slot0Configs.kP = networkPIDConfiguration.getP(); 
+  //   slot0Configs.kI = networkPIDConfiguration.getI(); 
+  //   slot0Configs.kD = networkPIDConfiguration.getD(); 
+
+  //   funnelPivotMotor.getConfigurator().apply(slot0Configs);
+
+  //   MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
+  //   motionMagicConfigs.MotionMagicCruiseVelocity = networkPIDConfiguration.getMotionMagicCruiseVelocity(); 
+  //   motionMagicConfigs.MotionMagicAcceleration = networkPIDConfiguration.getMotionMagicAcceleration();
+  //   motionMagicConfigs.MotionMagicJerk = networkPIDConfiguration.getMotionMagicJerk(); 
+
+  //   funnelPivotMotor.getConfigurator().apply(motionMagicConfigs);
+
+  //   System.out.println("Refreshing PID values from networktables for funnel");
+  // }
+
 
   /** Creates a new funnelSubsystem. */
   public Funnel() {

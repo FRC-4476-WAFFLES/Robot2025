@@ -38,6 +38,7 @@ import frc.robot.commands.test.TestDriveAuto;
 import frc.robot.commands.test.TestElevatorAuto;
 import frc.robot.commands.test.WheelRadiusCharacterization;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
+import frc.robot.data.Constants.FunnelConstants.FunnelPosition;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
@@ -273,6 +274,17 @@ public class RobotContainer {
     Controls.operatorController.leftStick().onTrue(
       new InstantCommand(
         () -> {dynamicPathingSubsystem.setCoralScoringSide(false);}
+      )
+    );
+
+    // Climb binds
+    Controls.leftJoystick.button(3).whileTrue(
+      new InstantCommand(
+        () -> {RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.UP);}
+      )
+    ).onFalse(
+      new InstantCommand(
+        () -> {RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.DOWN);}
       )
     );
   }

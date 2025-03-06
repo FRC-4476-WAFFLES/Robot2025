@@ -132,19 +132,19 @@ public final class Constants {
   /* Funnel Constants */
   public static class FunnelConstants {
     // Control constants
-    public static final double FUNNEL_DEAD_ZONE = 1.0; // In degrees
+    public static final double FUNNEL_DEAD_ZONE = 5.0; // In degrees
     public static final double FUNNEL_MIN_ANGLE = 0.0; // Minimum angle in degrees
-    public static final double FUNNEL_MAX_ANGLE = 200.0; // Maximum angle in degrees - adjust as needed
-    public static final double FUNNEL_BLOCKING_THRESHOLD = 45.0; // Angle threshold where funnel starts to interfere with elevator movement
+    public static final double FUNNEL_MAX_ANGLE = 195.0; // Maximum angle in degrees - adjust as needed
+    public static final double FUNNEL_BLOCKING_THRESHOLD = 60.0; // Angle threshold where funnel starts to interfere with elevator movement
 
     // Motor configuration
     public static final double STATOR_CURRENT_LIMIT = 40.0; // amps
-    public static final double MOTION_CRUISE_VELOCITY = 110.0; 
-    public static final double MOTION_ACCELERATION = 190.0; 
-    public static final double MOTION_JERK = 1900.0; 
+    public static final double MOTION_CRUISE_VELOCITY = 1.5; 
+    public static final double MOTION_ACCELERATION = 2.0; 
+    public static final double MOTION_JERK = 2000.0; 
 
     // PID Values
-    public static final double kP = 2.0;
+    public static final double kP = 60.0;
     public static final double kI = 0.0;
     public static final double kD = 0.01;
     public static final double kS = 0.0;
@@ -152,7 +152,7 @@ public final class Constants {
     // Predefined positions for the funnel (in degrees)
     public enum FunnelPosition {
       DOWN(0.0),
-      UP(200.0);
+      UP(190.0);
 
       private final double degrees;
 

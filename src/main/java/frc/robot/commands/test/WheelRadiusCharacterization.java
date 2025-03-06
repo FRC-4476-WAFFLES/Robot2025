@@ -30,8 +30,8 @@ import frc.robot.RobotContainer;
  * All rotation units are in radians.
  */
 public class WheelRadiusCharacterization {
-  public static final double TEST_RAMP_RATE = 0.05; // Radians / s^2
-  public static final double TEST_TOP_SPEED = 0.25; // Radians / s
+  public static final double TEST_RAMP_RATE = 0.4; // Radians / s^2
+  public static final double TEST_TOP_SPEED = 0.35; // Radians / s
 
   public static final double TEST_DURATION = 12; // seconds
   
@@ -59,10 +59,7 @@ public class WheelRadiusCharacterization {
         Commands.run(() -> {
           double rotationRate = slewRateLimiter.calculate(TEST_TOP_SPEED);
           driveSubsystem.setControl(rotationRequest.withRotationalRate(rotationRate));
-        }, driveSubsystem).finallyDo(() -> {
-          // Stop drivetrain at end of characterization
-          driveSubsystem.setControl(stopRequest);
-        })
+        }, driveSubsystem)
       ),
 
       // Measurement sequence
@@ -93,13 +90,13 @@ public class WheelRadiusCharacterization {
             double moduleDeltaRadians = Math.abs(state.startingModuleRotations[i] - finalModuleRotations[i]);
 
             // Arc length over theta to get radius of wheel
-            accumulatedWheelRadius = arcLength / moduleDeltaRadians;
+            accumulatedWheelRadius += arcLength / moduleDeltaRadians;
           }
 
           double wheelRadius = accumulatedWheelRadius / 4;
           System.out.println("==== Test Completed! ==== ");
-          System.out.println("Wheel Radius Calculated As: " + wheelRadius);
-          System.out.println("From Gyro Yaw Delta Of: " + Units.radiansToDegrees(state.accumulatedRotation));
+          System.out.println("Wheel Radius Calculated As: " + wheelRadius + " m");
+          System.out.println("From Gyro Yaw Delta Of: " + Units.radiansToDegrees(state.accumulatedRotation) + " deg");
           
           // NetworkTables publishers
           NetworkTable testTable = NetworkTableInstance.getDefault().getTable("WheelRadiusTest");
@@ -112,7 +109,10 @@ public class WheelRadiusCharacterization {
           gyroDeltaNT.set(Units.radiansToDegrees(state.accumulatedRotation));
         })
       )
-    ).withTimeout(TEST_DURATION);
+    ).withTimeout(TEST_DURATION).finallyDo(() -> {
+      // Stop drivetrain at end of characterization
+      driveSubsystem.setControl(stopRequest);
+    });
   }
 
   // Get around the fact that variables are copied into lambdas
