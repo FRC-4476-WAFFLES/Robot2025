@@ -6,8 +6,11 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
@@ -37,7 +40,10 @@ public class DriveTeleop extends Command {
   /* PID Controllers used if suppliers are interpreted as setpoints */
   private PIDController xPidController = new PIDController(3, 0, 0.1);
   private PIDController yPidController = new PIDController(3, 0, 0.1);
-  private PIDController thetaPidController = new PIDController(7.0, 0, 0.1);
+  private ProfiledPIDController thetaPidController = new ProfiledPIDController(7.0, 0, 0.1, new Constraints(1, 1));
+
+  private double previousThetaSetpoint;
+
   private final SwerveSetpointGenerator setpointGenerator;
   private SwerveSetpoint previousSetpoint;
 
@@ -101,6 +107,15 @@ public class DriveTeleop extends Command {
     }
 
     var currentPose = driveSubsystem.getRobotPose();
+
+    // Reset logic for profiled PID controller
+    if (isSetpointTheta) {
+      if (previousThetaSetpoint != thetaSupplier.get().getRadians()) {
+        previousThetaSetpoint = thetaSupplier.get().getRadians();
+        thetaPidController.reset(currentPose.getRotation().getRadians());
+      }
+    }
+
     double xVelocity = isSetpointX ? (sign * xPidController.calculate(currentPose.getX(), xSupplier.getAsDouble())) : xSupplier.getAsDouble();
     double yVelocity = isSetpointY ? (sign * yPidController.calculate(currentPose.getY(), ySupplier.getAsDouble())) : ySupplier.getAsDouble();
     double thetaVelocity = isSetpointTheta ? thetaPidController.calculate(currentPose.getRotation().getRadians(), thetaSupplier.get().getRadians()) : thetaSupplier.get().getRadians();
@@ -147,8 +162,6 @@ public class DriveTeleop extends Command {
     //   targetSpeeds, // The desired target speeds
     //   0.02 // The loop time of the robot code, in seconds
     // );
-
-    
     
     // ChassisSpeeds setpointGeneratedSpeeds = previousSetpoint.robotRelativeSpeeds();
 
