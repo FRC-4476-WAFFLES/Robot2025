@@ -156,7 +156,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
             // When algae is loaded, run intake slowly inward
             intake.setControl(intakeControlRequest.withVelocity(Constants.ManipulatorConstants.ALGAE_HOLD_SPEED).withSlot(0));
 
-            if (intake.getStatorCurrent().getValueAsDouble() < 8) {
+            if (intake.getStatorCurrent().getValueAsDouble() < 4) {
                 intake.setControl(intakeControlRequest.withVelocity(-300).withSlot(0));
                 
                 if (!algaeLossTimer.isRunning()) {

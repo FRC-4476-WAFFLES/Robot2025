@@ -345,18 +345,18 @@ public final class Constants {
   /* Climber Constants */
   public static class ClimberConstants {
     // Control constants
-    public static final double CLIMBER_DEAD_ZONE = 1.0; // In degrees
+    public static final double CLIMBER_DEAD_ZONE = 0.2; // In degrees
     public static final double CLIMBER_MIN_ANGLE = 0.0; // Minimum angle in degrees
     public static final double CLIMBER_MAX_ANGLE = 134.0; // Maximum angle in degrees
 
     // Motor configuration
-    public static final double STATOR_CURRENT_LIMIT = 60.0; // amps
-    public static final double MOTION_CRUISE_VELOCITY = 20.0; 
+    public static final double STATOR_CURRENT_LIMIT = 90.0; // amps
+    public static final double MOTION_CRUISE_VELOCITY = 10.0; // was 20
     public static final double MOTION_ACCELERATION = 20.0; 
     public static final double MOTION_JERK = 1900.0; 
 
     // PID Values
-    public static final double kP = 250.0;
+    public static final double kP = 350.0;
     public static final double kI = 0.0;
     public static final double kD = 0.01;
     public static final double kS = 0.0;

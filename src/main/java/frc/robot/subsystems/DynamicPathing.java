@@ -49,7 +49,7 @@ public class DynamicPathing extends SubsystemBase {
     public static final double REEF_MIN_SCORING_DISTANCE = 2.7;
     public static final double REEF_MAX_SCORING_DISTANCE = 0.3; // Don't try to score within this distance
     public static final double REEF_MIN_SCORING_DISTANCE_L1 = 0.78; // Don't try to score within this distance
-    public static final double PROCCESSOR_MIN_SCORING_DISTANCE = 1.5;
+    public static final double PROCCESSOR_MIN_SCORING_DISTANCE = 2.2;
     public static final double HUMAN_PLAYER_MIN_PICKUP_DISTANCE = 2;
 
     /* Net AABB bounds */
@@ -81,7 +81,7 @@ public class DynamicPathing extends SubsystemBase {
     public static final Rotation2d PROCESSOR_SCORING_ANGLE = Rotation2d.fromDegrees(-90);
 
     /* Net physical parameters */
-    public static final double NET_LINE_X_BLUE = Units.inchesToMeters(300.0);
+    public static final double NET_LINE_X_BLUE = 6.978; // Meters
     public static final Rotation2d NET_SCORING_ANGLE = Rotation2d.k180deg;
 
     /* Path following parameters */
@@ -327,7 +327,7 @@ public class DynamicPathing extends SubsystemBase {
             coralScoringRightSide = rightSide;
             System.out.println("Setting coral scoring to right side: " + coralScoringRightSide);
             // If we're currently pathing, regenerate the path
-            if (isPathing && currentPathingSituation == DynamicPathingSituation.REEF_CORAL) {
+            if (isRunningAction && currentPathingSituation == DynamicPathingSituation.REEF_CORAL) {
                 regenerateCurrentCoralPath();
             }
         }
@@ -351,7 +351,7 @@ public class DynamicPathing extends SubsystemBase {
             // Since started from outside button based scheduling, letting go of the dynamic pathing button would fail to cancel it
             // .onlyWhile() ensures it can still be canceled by letting go of the button
             Command cmd = ScoreCoral.scoreCoralWithPath(pathCommand, newTargetPose).onlyWhile(() -> Controls.dynamicPathingButton.getAsBoolean());
-            cmd.schedule();
+            wrapActionStateCommand(cmd).schedule();
         }
     }
 
