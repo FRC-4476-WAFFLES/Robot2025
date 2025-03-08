@@ -11,9 +11,11 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -45,7 +47,7 @@ public class Climber extends SubsystemBase implements NetworkUser {
 
   private final DoublePublisher climberSetpointNT = climberTable.getDoubleTopic("Setpoint (Degrees)").publish();
   private final DoublePublisher climberAngleNT = climberTable.getDoubleTopic("Current Angle (Degrees)").publish();
-  private final DoublePublisher climberAtSetpointNT = climberTable.getDoubleTopic("At Setpoint").publish();
+  private final BooleanPublisher climberAtSetpointNT = climberTable.getBooleanTopic("At Setpoint").publish();
 
   /** Creates a new Climber subsystem. */
   public Climber() {
@@ -95,6 +97,8 @@ public class Climber extends SubsystemBase implements NetworkUser {
     // Set neutral mode to brake
     climberConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     
+    climberConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+
     // Add voltage compensation
     climberConfig.Voltage.PeakForwardVoltage = 12.0; // 12V compensation
     climberConfig.Voltage.PeakReverseVoltage = -12.0;
@@ -120,7 +124,7 @@ public class Climber extends SubsystemBase implements NetworkUser {
     climberMotorLeader.setControl(motionMagicRequest.withPosition(targetRotations).withSlot(0));
     
     // Update network tables
-    climberAtSetpointNT.set(isClimberAtSetpoint() ? 1.0 : 0.0);
+    climberAtSetpointNT.set(isClimberAtSetpoint());
   }
 
   /**

@@ -24,7 +24,7 @@ public class ScoreNet {
         return Commands.parallel(
             // Alignment
             new DriveTeleop(
-                () -> targetNetX, true, // Just pid to setpoint 
+                Controls::getDriveY, false, // Just pid to setpoint should be () -> targetNetX
                 Controls::getDriveX, false,
                 () -> targetNetRotation, true
             ),

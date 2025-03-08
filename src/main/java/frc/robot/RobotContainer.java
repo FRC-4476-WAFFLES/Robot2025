@@ -41,6 +41,7 @@ import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.FunnelConstants.FunnelPosition;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.PhysicalConstants;
+import frc.robot.data.Constants.ClimberConstants.ClimberPosition;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.data.TunerConstants;
 import frc.robot.subsystems.Climber;
@@ -285,6 +286,16 @@ public class RobotContainer {
     ).onFalse(
       new InstantCommand(
         () -> {RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.DOWN);}
+      )
+    );
+
+    Controls.leftJoystick.button(4).whileTrue(
+      new InstantCommand(
+        () -> {RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.DEPLOYED);}
+      )
+    ).onFalse(
+      new InstantCommand(
+        () -> {RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.RETRACTED);}
       )
     );
   }

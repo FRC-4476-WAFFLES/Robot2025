@@ -144,6 +144,13 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         slot1Configs.kD = Constants.ManipulatorConstants.PIVOT_kD;
         pivotConfigs.Slot1 = slot1Configs;
 
+        Slot2Configs slot2Configs = new Slot2Configs();
+        slot2Configs.kP = Constants.ManipulatorConstants.PIVOT_kP * 2;
+        slot2Configs.kI = Constants.ManipulatorConstants.PIVOT_kI;
+        slot2Configs.kS = Constants.ManipulatorConstants.PIVOT_kS;
+        slot2Configs.kD = Constants.ManipulatorConstants.PIVOT_kD;
+        pivotConfigs.Slot2 = slot2Configs;
+
         pivotConfigs.MotorOutput.DutyCycleNeutralDeadband = PIVOT_MOTOR_DEADBAND;
 
         // For when CANCoder is not present
@@ -174,9 +181,13 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
         // Real jank but ok
         int slot = 0;
-        if (intakeSubsystem.isAlgaeLoaded() && !isThrowingAlgae) {
+        if (intakeSubsystem.isAlgaeLoaded()) {
             // while algea is loaded, use a slower profile
             slot = 1;
+        }
+        if (isThrowingAlgae) {
+            // go FAST
+            slot = 2;
         }
 
         // Update motor controls

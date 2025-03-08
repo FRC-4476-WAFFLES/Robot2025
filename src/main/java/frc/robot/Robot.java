@@ -47,7 +47,7 @@ public class Robot extends TimedRobot {
     m_robotContainer = new RobotContainer();
 
     // Start USB logging
-    DataLogManager.start("/U/logs");  // Log to USB drive
+    DataLogManager.start("/U/logs", "", 0.1);  // Log to USB drive
 
     // Record both DS control and joystick data
     DriverStation.startDataLog(DataLogManager.getLog());

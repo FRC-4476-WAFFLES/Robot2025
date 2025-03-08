@@ -224,7 +224,7 @@ public final class Constants {
     public static final double PIVOT_L4_CLEARANCE_ANGLE = 28;
 
     // Motor configuration
-    public static final double PIVOT_MOTION_CRUISE_VELOCITY = 4.0;
+    public static final double PIVOT_MOTION_CRUISE_VELOCITY = 5.0;
     public static final double PIVOT_MOTION_ACCELERATION = 20.0;
     public static final double PIVOT_MOTION_JERK = 2000.0;
     public static final double STATOR_CURRENT_LIMIT = 45.0; // amps
@@ -248,7 +248,7 @@ public final class Constants {
         ALGAE_L1(178.5),
         PROCESSOR(189),
         CORAL_INTAKE(0.5),
-        NET(30),
+        NET(10),
         L4(49),
         L3(28),
         L2(35),
@@ -327,7 +327,7 @@ public final class Constants {
       MANUAL_L2(0.280),
       MANUAL_L1(0.22),
 
-      NET_PREP(1.20);
+      NET_PREP(1.1);
 
 
       private final double height;
@@ -347,16 +347,16 @@ public final class Constants {
     // Control constants
     public static final double CLIMBER_DEAD_ZONE = 1.0; // In degrees
     public static final double CLIMBER_MIN_ANGLE = 0.0; // Minimum angle in degrees
-    public static final double CLIMBER_MAX_ANGLE = 30.0; // Maximum angle in degrees
+    public static final double CLIMBER_MAX_ANGLE = 134.0; // Maximum angle in degrees
 
     // Motor configuration
     public static final double STATOR_CURRENT_LIMIT = 60.0; // amps
-    public static final double MOTION_CRUISE_VELOCITY = 110.0; 
-    public static final double MOTION_ACCELERATION = 190.0; 
+    public static final double MOTION_CRUISE_VELOCITY = 20.0; 
+    public static final double MOTION_ACCELERATION = 20.0; 
     public static final double MOTION_JERK = 1900.0; 
 
     // PID Values
-    public static final double kP = 2.0;
+    public static final double kP = 250.0;
     public static final double kI = 0.0;
     public static final double kD = 0.01;
     public static final double kS = 0.0;
@@ -364,7 +364,7 @@ public final class Constants {
     // Predefined positions for the climber (in degrees)
     public enum ClimberPosition {
       RETRACTED(0.0),
-      DEPLOYED(30.0);
+      DEPLOYED(130.0);
 
       private final double degrees;
 

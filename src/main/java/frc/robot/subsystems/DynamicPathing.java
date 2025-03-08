@@ -53,7 +53,7 @@ public class DynamicPathing extends SubsystemBase {
     public static final double HUMAN_PLAYER_MIN_PICKUP_DISTANCE = 2;
 
     /* Net AABB bounds */
-    public static final double NET_MIN_SCORING_X = Units.inchesToMeters(220);
+    public static final double NET_MIN_SCORING_X = Units.inchesToMeters(150);
     public static final double NET_MIN_SCORING_Y = Units.inchesToMeters(158.50);
 
     public static final double NET_MAX_SCORING_X = Units.inchesToMeters(340);
