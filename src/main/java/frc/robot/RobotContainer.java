@@ -293,7 +293,15 @@ public class RobotContainer {
       new InstantCommand(
         () -> {RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.DEPLOYED);}
       )
-    ).onFalse(
+    );
+
+    Controls.rightJoystick.button(3).whileTrue(
+      new InstantCommand(
+        () -> {RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.MIDDLE);}
+      )
+    );
+
+    Controls.rightJoystick.button(4).whileTrue(
       new InstantCommand(
         () -> {RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.RETRACTED);}
       )

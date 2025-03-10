@@ -133,8 +133,8 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     slot0Configs.kP = ElevatorConstants.kP;
     slot0Configs.kI = ElevatorConstants.kI;
     slot0Configs.kD = ElevatorConstants.kD;
-    // slot0Configs.kG = ElevatorConstants.kG;
-    // slot0Configs.GravityType = GravityTypeValue.Elevator_Static;
+    slot0Configs.kG = ElevatorConstants.kG;
+    slot0Configs.GravityType = GravityTypeValue.Elevator_Static;
 
     elevatorConfig.Slot0 = slot0Configs;
 
@@ -201,13 +201,14 @@ public class Elevator extends SubsystemBase implements NetworkUser {
 
       // If elevator is high enough to use first stage, apply feedforward
       // Not needed for carriage only motion due to CF springs
-      double chosenFeedforward = 0;
-      if (getElevatorPositionMeters() > ElevatorConstants.FIRST_STAGE_START_HEIGHT) {
-        chosenFeedforward = ElevatorConstants.kG;
-      }
+      // double chosenFeedforward = 0;
+      // if (getElevatorPositionMeters() > ElevatorConstants.FIRST_STAGE_START_HEIGHT) {
+      //   chosenFeedforward = ElevatorConstants.kG;
+      // }
+      // double chosenFeedforward = ElevatorConstants.kG; // withFeedForward(chosenFeedforward)
 
       // Apply chosen setpoint
-      elevatorMotorLeader.setControl(motionMagicRequest.withPosition(chosenElevatorPosition).withSlot(0).withFeedForward(chosenFeedforward));
+      elevatorMotorLeader.setControl(motionMagicRequest.withPosition(chosenElevatorPosition).withSlot(0));
     }
 
     // Update network tables

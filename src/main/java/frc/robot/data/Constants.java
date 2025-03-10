@@ -214,7 +214,7 @@ public final class Constants {
     // Intake constantsd
     public static final double INTAKE_SPEED_MULTIPLIER = 0.15;
     public static final double INTAKE_MAX_SPEED = 25; // Rps
-    public static final double ALGAE_HOLD_SPEED = 2; // Speed to hold algae in place
+    public static final double ALGAE_HOLD_SPEED = 3; // Speed to hold algae in place
 
     // Pivot constants
     public static final double PIVOT_ANGLE_DEADBAND = 1.3;
@@ -308,7 +308,7 @@ public final class Constants {
     public static final double kI = 0.0;
     public static final double kD = 0.01;
     public static final double kS = 0.0;
-    public static final double kG = 0.36; // Volts of feedforward. Not put in kG gain slot since only applies when elevator is past constant force springs
+    public static final double kG = 0.31; // Volts of feedforward. Not put in kG gain slot since only applies when elevator is past constant force springs
 
     // Predefined heights for the elevator (in meters)
     public enum ElevatorLevel {
@@ -364,6 +364,7 @@ public final class Constants {
     // Predefined positions for the climber (in degrees)
     public enum ClimberPosition {
       RETRACTED(0.0),
+      MIDDLE(35),
       DEPLOYED(130.0);
 
       private final double degrees;

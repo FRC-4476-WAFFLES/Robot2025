@@ -48,6 +48,7 @@ public class Climber extends SubsystemBase implements NetworkUser {
   private final DoublePublisher climberSetpointNT = climberTable.getDoubleTopic("Setpoint (Degrees)").publish();
   private final DoublePublisher climberAngleNT = climberTable.getDoubleTopic("Current Angle (Degrees)").publish();
   private final BooleanPublisher climberAtSetpointNT = climberTable.getBooleanTopic("At Setpoint").publish();
+  private final DoublePublisher leaderCurrentDrawNT = climberTable.getDoubleTopic("Leader Current (Amps)").publish();
 
   /** Creates a new Climber subsystem. */
   public Climber() {
@@ -95,7 +96,7 @@ public class Climber extends SubsystemBase implements NetworkUser {
     climberConfig.Feedback.SensorToMechanismRatio = Constants.PhysicalConstants.ClimberReduction;
     
     // Set neutral mode to brake
-    climberConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    climberConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     
     climberConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
@@ -181,6 +182,7 @@ public class Climber extends SubsystemBase implements NetworkUser {
   public void updateNetwork() {
     climberSetpointNT.set(climberSetpointAngle);
     climberAngleNT.set(getClimberDegrees());
+    leaderCurrentDrawNT.set(climberMotorLeader.getTorqueCurrent().getValueAsDouble());
   }
 
   @Override
