@@ -4,9 +4,6 @@
 
 package frc.robot;
 
-import java.util.Arrays;
-import java.util.HashSet;
-
 import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -37,11 +34,12 @@ import frc.robot.commands.superstructure.ZeroMechanisms;
 import frc.robot.commands.test.TestDriveAuto;
 import frc.robot.commands.test.TestElevatorAuto;
 import frc.robot.commands.test.WheelRadiusCharacterization;
+import frc.robot.data.Constants.ClimberConstants;
+import frc.robot.data.Constants.ClimberConstants.ClimberPosition;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.FunnelConstants.FunnelPosition;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.PhysicalConstants;
-import frc.robot.data.Constants.ClimberConstants.ClimberPosition;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.data.TunerConstants;
 import frc.robot.subsystems.Climber;
@@ -54,7 +52,6 @@ import frc.robot.subsystems.Lights;
 import frc.robot.subsystems.MechanismPoses;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Telemetry;
-import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
 
 
 /**
@@ -306,7 +303,21 @@ public class RobotContainer {
 
     Controls.rightJoystick.button(4).whileTrue(
       new InstantCommand(
-        () -> {RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.RETRACTED);}
+        () -> {
+          // Set slower motion profile for retraction
+          RobotContainer.climberSubsystem.setMotionProfile(
+            ClimberConstants.MOTION_CRUISE_VELOCITY / 2.0,
+            ClimberConstants.MOTION_ACCELERATION / 2.0
+          );
+          RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.RETRACTED);
+        }
+      )
+    ).onFalse(
+      new InstantCommand(
+        () -> {
+          // Reset to normal motion profile when button is released
+          RobotContainer.climberSubsystem.resetMotionProfile();
+        }
       )
     );
   }

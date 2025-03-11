@@ -173,6 +173,35 @@ public class Climber extends SubsystemBase implements NetworkUser {
     return climberSetpointAngle;
   }
 
+  /**
+   * Sets a custom motion profile for the climber
+   * 
+   * @param cruiseVelocity The cruise velocity to use
+   * @param acceleration The acceleration to use
+   */
+  public void setMotionProfile(double cruiseVelocity, double acceleration) {
+    MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
+    motionMagicConfigs.MotionMagicCruiseVelocity = cruiseVelocity;
+    motionMagicConfigs.MotionMagicAcceleration = acceleration;
+    motionMagicConfigs.MotionMagicJerk = ClimberConstants.MOTION_JERK;
+    
+    climberMotorLeader.getConfigurator().apply(motionMagicConfigs);
+    climberMotorFollower.getConfigurator().apply(motionMagicConfigs);
+  }
+
+  /**
+   * Resets the motion profile to the default values
+   */
+  public void resetMotionProfile() {
+    MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
+    motionMagicConfigs.MotionMagicCruiseVelocity = ClimberConstants.MOTION_CRUISE_VELOCITY;
+    motionMagicConfigs.MotionMagicAcceleration = ClimberConstants.MOTION_ACCELERATION;
+    motionMagicConfigs.MotionMagicJerk = ClimberConstants.MOTION_JERK;
+    
+    climberMotorLeader.getConfigurator().apply(motionMagicConfigs);
+    climberMotorFollower.getConfigurator().apply(motionMagicConfigs);
+  }
+
   /* Networktables methods */
 
   /**
