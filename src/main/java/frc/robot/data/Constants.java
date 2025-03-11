@@ -124,7 +124,7 @@ public final class Constants {
     public static final double funnelReduction = 40.0; 
     public static final double pivotReduction = 52.5625; 
     public static final double ClimberReduction = 341.3333333;
-    public static final double elevatorReductionToMeters = 52.1602684; // Motor rotations to elevator height in meters
+    public static final double elevatorReductionToMeters = 27.4213982438; // Motor rotations to elevator height in meters
 
     public static final double pivotAbsoluteEncoderOffset = 0;
   }
@@ -260,6 +260,7 @@ public final class Constants {
         MANUAL_L2(24.0),
         MANUAL_L1(0.0),
 
+        CLIMB(24),
         NET_PREP(180);
 
         private final double pivotDegrees;
@@ -292,14 +293,14 @@ public final class Constants {
     public static final double MAX_ELEVATOR_HEIGHT = 1.47;
 
     // Collision zone constants
-    public static final double COLLISION_ZONE_LOWER = 0.12; // meters
-    public static final double COLLISION_ZONE_UPPER = 0.56; // meters
+    public static final double COLLISION_ZONE_LOWER = 0.1; // meters
+    public static final double COLLISION_ZONE_UPPER = 0.6; // meters
 
     // Height where first stage starts moving
     public static final double FIRST_STAGE_START_HEIGHT = ElevatorConstants.MAX_ELEVATOR_HEIGHT / 2.0; 
 
     // Motion Magic configuration
-    public static final double MOTION_CRUISE_VELOCITY = 4; // 4 usually
+    public static final double MOTION_CRUISE_VELOCITY = 3; // 4 usually
     public static final double MOTION_ACCELERATION = 8;
     public static final double MOTION_JERK = 2000;
 
@@ -308,7 +309,7 @@ public final class Constants {
     public static final double kI = 0.0;
     public static final double kD = 0.01;
     public static final double kS = 0.0;
-    public static final double kG = 0.31; // Volts of feedforward. Not put in kG gain slot since only applies when elevator is past constant force springs
+    public static final double kG = 0.41; // Volts of feedforward. Not put in kG gain slot since only applies when elevator is past constant force springs
 
     // Predefined heights for the elevator (in meters)
     public enum ElevatorLevel {

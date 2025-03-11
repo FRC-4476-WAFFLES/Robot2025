@@ -291,7 +291,10 @@ public class RobotContainer {
 
     Controls.leftJoystick.button(4).whileTrue(
       new InstantCommand(
-        () -> {RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.DEPLOYED);}
+        () -> {
+          RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.DEPLOYED);
+          RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLIMB);
+        }
       )
     );
 
