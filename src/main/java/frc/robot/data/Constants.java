@@ -364,9 +364,9 @@ public final class Constants {
 
     // Predefined positions for the climber (in degrees)
     public enum ClimberPosition {
-      RETRACTED(-2.0),
-      MIDDLE(35),
-      DEPLOYED(130.0);
+      RETRACTED(4.0),
+      MIDDLE(45),
+      DEPLOYED(145.0);
 
       private final double degrees;
 

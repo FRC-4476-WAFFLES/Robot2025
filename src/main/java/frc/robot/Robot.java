@@ -121,6 +121,8 @@ public class Robot extends TimedRobot {
     // Ensure both auto and test commands are canceled
     cancelControllingCommands();
 
+    
+
     NetworkConfiguredPID.onEnable();
   }
 

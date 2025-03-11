@@ -88,7 +88,7 @@ public class RobotContainer {
     Controls.operatorController::getRightTriggerAxis,
     Controls.operatorController::getLeftTriggerAxis
   );
-  private final Command climberControlCommand = new ClimbCommand();
+  private final Command climberControlCommand = new ClimbCommand().ignoringDisable(true);
  
   /* Global Robot State */
   private final SendableChooser<Command> autoChooser;
@@ -291,7 +291,7 @@ public class RobotContainer {
     );
 
     // Moves forwards in state if possible
-    Controls.rightJoystick.button(3).onTrue(
+    Controls.rightJoystick.button(4).onTrue(
       Commands.runOnce(() -> {
         switch (currentClimbState) {
           case STOWED:

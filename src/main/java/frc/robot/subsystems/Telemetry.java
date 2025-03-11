@@ -60,6 +60,7 @@ public class Telemetry extends SubsystemBase {
     /* Controls data */
     private final NetworkTable controlsTable = inst.getTable("Controls");
     private final BooleanPublisher overrideEnabled = controlsTable.getBooleanTopic("Override Enabled").publish();
+    private final StringPublisher climbState = controlsTable.getStringTopic("Climb State").publish();
     private final DoublePublisher calculatedDriveX = controlsTable.getDoubleTopic("Calculated Drive X").publish();
     private final DoublePublisher calculatedDriveY = controlsTable.getDoubleTopic("Calculated Drive Y").publish();
     private final DoublePublisher calculatedDriveRot = controlsTable.getDoubleTopic("Calculated Drive Rotation").publish();
@@ -130,8 +131,12 @@ public class Telemetry extends SubsystemBase {
 
     @Override
     public void periodic() {
-      // This method will be called once per scheduler run
-      publishPDHInfo();
+        // This method will be called once per scheduler run
+        publishPDHInfo();
+
+        if (RobotContainer.currentClimbState != null) {
+            climbState.set(RobotContainer.currentClimbState.toString());
+        }
     }
 
     /* Accept the swerve drive state and telemeterize it to smartdashboard */
