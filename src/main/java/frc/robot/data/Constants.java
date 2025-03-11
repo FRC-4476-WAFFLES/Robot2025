@@ -347,7 +347,7 @@ public final class Constants {
   public static class ClimberConstants {
     // Control constants
     public static final double CLIMBER_DEAD_ZONE = 0.2; // In degrees
-    public static final double CLIMBER_MIN_ANGLE = 0.0; // Minimum angle in degrees
+    public static final double CLIMBER_MIN_ANGLE = -2.0; // Minimum angle in degrees
     public static final double CLIMBER_MAX_ANGLE = 134.0; // Maximum angle in degrees
 
     // Motor configuration
