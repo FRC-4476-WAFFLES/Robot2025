@@ -293,8 +293,8 @@ public final class Constants {
     public static final double MAX_ELEVATOR_HEIGHT = 1.47;
 
     // Collision zone constants
-    public static final double COLLISION_ZONE_LOWER = 0.1; // meters
-    public static final double COLLISION_ZONE_UPPER = 0.6; // meters
+    public static final double COLLISION_ZONE_LOWER = 0.12; // meters
+    public static final double COLLISION_ZONE_UPPER = 0.56; // meters
 
     // Height where first stage starts moving
     public static final double FIRST_STAGE_START_HEIGHT = ElevatorConstants.MAX_ELEVATOR_HEIGHT / 2.0; 
