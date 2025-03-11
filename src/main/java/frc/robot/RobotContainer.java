@@ -22,6 +22,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.ResetGyroHeading;
+import frc.robot.commands.climb.ClimbCommand;
+import frc.robot.commands.climb.ClimbCommand.ClimbState;
 import frc.robot.commands.intake.AlgeaOutake;
 import frc.robot.commands.intake.AxisIntakeControl;
 import frc.robot.commands.intake.CoralIntake;
@@ -86,11 +88,13 @@ public class RobotContainer {
     Controls.operatorController::getRightTriggerAxis,
     Controls.operatorController::getLeftTriggerAxis
   );
-
+  private final Command climberControlCommand = new ClimbCommand();
+ 
   /* Global Robot State */
   private final SendableChooser<Command> autoChooser;
   private final SendableChooser<Command> testChooser;
   public static boolean isOperatorOverride = false;
+  public static ClimbState currentClimbState = ClimbState.STOWED;
 
 
 
@@ -286,40 +290,81 @@ public class RobotContainer {
       )
     );
 
-    Controls.leftJoystick.button(4).whileTrue(
-      new InstantCommand(
-        () -> {
-          RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.DEPLOYED);
-          RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLIMB);
+    // Moves forwards in state if possible
+    Controls.rightJoystick.button(3).onTrue(
+      Commands.runOnce(() -> {
+        switch (currentClimbState) {
+          case STOWED:
+            currentClimbState = ClimbState.DEPLOYED;
+            // Sketchy way to start command but
+            // I promise this is likely fine in this specific case
+            climberControlCommand.schedule();
+            break;
+          
+          case DEPLOYED:
+            currentClimbState = ClimbState.MIDDLE;
+            
+            // Set slower motion profile for retraction
+            RobotContainer.climberSubsystem.setMotionProfile(
+              ClimberConstants.MOTION_CRUISE_VELOCITY / 5.0,
+              ClimberConstants.MOTION_ACCELERATION / 5.0
+            );
+            break;
+          
+          case MIDDLE:
+            currentClimbState = ClimbState.LIFTED;
+            break;
+        
+          default:
+            break;
         }
-      )
+      })
     );
 
-    Controls.rightJoystick.button(3).whileTrue(
-      new InstantCommand(
-        () -> {RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.MIDDLE);}
-      )
+    // Moves backwards in state if possible
+    Controls.rightJoystick.button(3).onTrue(
+      Commands.runOnce(() -> {
+        switch (currentClimbState) {
+          case DEPLOYED:
+            currentClimbState = ClimbState.STOWED;
+            break;
+          
+          case MIDDLE:
+            currentClimbState = ClimbState.DEPLOYED;
+            // Speed up again
+            RobotContainer.climberSubsystem.resetMotionProfile();
+            break;
+          
+          case LIFTED:
+            currentClimbState = ClimbState.MIDDLE;
+            break;
+        
+          default:
+            break;
+        }
+      })
     );
 
-    Controls.rightJoystick.button(4).whileTrue(
-      new InstantCommand(
-        () -> {
-          // Set slower motion profile for retraction
-          RobotContainer.climberSubsystem.setMotionProfile(
-            ClimberConstants.MOTION_CRUISE_VELOCITY / 5.0,
-            ClimberConstants.MOTION_ACCELERATION / 5.0
-          );
-          RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.RETRACTED);
-        }
-      )
-    ).onFalse(
-      new InstantCommand(
-        () -> {
-          // Reset to normal motion profile when button is released
-          RobotContainer.climberSubsystem.resetMotionProfile();
-        }
-      )
-    );
+    // Controls.leftJoystick.button(4).whileTrue(
+    //   new InstantCommand(
+    //     () -> {
+    //       RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.DEPLOYED);
+    //       RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLIMB);
+    //     }
+    //   )
+    // );
+
+    // Controls.rightJoystick.button(3).whileTrue(
+    //   new InstantCommand(
+    //     () -> {RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.MIDDLE);}
+    //   )
+    // );
+
+    // Controls.rightJoystick.button(4).whileTrue(
+    //   new InstantCommand(
+    //     () -> {RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.RETRACTED);}
+    //   )
+    // );
   }
 
   /**

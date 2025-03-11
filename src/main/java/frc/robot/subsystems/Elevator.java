@@ -208,7 +208,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
       // double chosenFeedforward = ElevatorConstants.kG; // withFeedForward(chosenFeedforward)
 
       // Apply chosen setpoint
-      elevatorMotorLeader.setControl(motionMagicRequest.withPosition(chosenElevatorPosition).withSlot(0));
+      // elevatorMotorLeader.setControl(motionMagicRequest.withPosition(chosenElevatorPosition).withSlot(0));
     }
 
     // Update network tables
