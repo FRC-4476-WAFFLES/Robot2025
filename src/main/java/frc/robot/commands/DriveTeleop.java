@@ -40,7 +40,7 @@ public class DriveTeleop extends Command {
   /* PID Controllers used if suppliers are interpreted as setpoints */
   private PIDController xPidController = new PIDController(3, 0, 0.1);
   private PIDController yPidController = new PIDController(3, 0, 0.1);
-  private ProfiledPIDController thetaPidController = new ProfiledPIDController(7.0, 0, 0.1, new Constraints(1, 1));
+  private ProfiledPIDController thetaPidController = new ProfiledPIDController(7.0, 0, 0.1, new Constraints(4, 20));
 
   private double previousThetaSetpoint;
 
