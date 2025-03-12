@@ -67,7 +67,7 @@ public class ClimbCommand extends Command {
         break;
     }
 
-    System.out.println("AAGHHH: " + RobotContainer.currentClimbState);
+    // System.out.println("AAGHHH: " + RobotContainer.currentClimbState);
   }
 
   // Called once the command ends or is interrupted.
