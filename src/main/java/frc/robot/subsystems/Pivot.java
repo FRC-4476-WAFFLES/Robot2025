@@ -60,6 +60,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     private final NetworkTable pivotTable = inst.getTable("Pivot");
     private final DoublePublisher pivotSetpointNT = pivotTable.getDoubleTopic("Setpoint (Degrees)").publish();
     private final DoublePublisher pivotAngleNT = pivotTable.getDoubleTopic("Current Angle (Degrees)").publish();
+    private final DoublePublisher pivotCurrentDrawNT = pivotTable.getDoubleTopic("Current Draw (Amps)").publish();
     private final BooleanPublisher isAtSetpointNT = pivotTable.getBooleanTopic("Pivot at Setpoint").publish();
     private final BooleanPublisher isZeroingNT = pivotTable.getBooleanTopic("Is Zeroing").publish();
 
@@ -319,6 +320,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         pivotSetpointNT.set(pivotSetpointAngle);
         pivotAngleNT.set(getPivotPosition());
         isZeroingNT.set(isZeroingPivot);
+        pivotCurrentDrawNT.set(pivot.getTorqueCurrent().getValueAsDouble());
     }
 
     @Override

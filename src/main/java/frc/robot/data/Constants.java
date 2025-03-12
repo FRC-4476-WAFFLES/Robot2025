@@ -225,14 +225,14 @@ public final class Constants {
 
     // Motor configuration
     public static final double PIVOT_MOTION_CRUISE_VELOCITY = 5.0;
-    public static final double PIVOT_MOTION_ACCELERATION = 20.0;
+    public static final double PIVOT_MOTION_ACCELERATION = 10.0;
     public static final double PIVOT_MOTION_JERK = 2000.0;
     public static final double STATOR_CURRENT_LIMIT = 45.0; // amps
     public static final double PIVOT_MOTOR_DEADBAND = 0.002;
-    public static final double PIVOT_CURRENT_THRESHOLD =  25.0; // amps - Current threshold for zeroing
+    public static final double PIVOT_CURRENT_THRESHOLD =  38.0; // amps - Current threshold for zeroing
 
     // PID Values
-    public static final double PIVOT_kP = 110.0;
+    public static final double PIVOT_kP = 70.0;
     public static final double PIVOT_kI = 0.0;
     public static final double PIVOT_kD = 0.0;
     public static final double PIVOT_kS = 0.0;
@@ -242,7 +242,7 @@ public final class Constants {
     // Pivot Positions
     public enum PivotPosition {
         ZERO(0),
-        CLEARANCE_POSITION(22),
+        CLEARANCE_POSITION(28),
         CLEARANCE_POSITION_ALGEA(90),
         ALGAE_L2(169.1),
         ALGAE_L1(178.5),
@@ -300,16 +300,16 @@ public final class Constants {
     public static final double FIRST_STAGE_START_HEIGHT = ElevatorConstants.MAX_ELEVATOR_HEIGHT / 2.0; 
 
     // Motion Magic configuration
-    public static final double MOTION_CRUISE_VELOCITY = 3; // 4 usually
-    public static final double MOTION_ACCELERATION = 8;
+    public static final double MOTION_CRUISE_VELOCITY = 4; // 4 usually
+    public static final double MOTION_ACCELERATION = 4;
     public static final double MOTION_JERK = 2000;
 
     // PID Values
-    public static final double kP = 85.0;
+    public static final double kP = 60.0;
     public static final double kI = 0.0;
     public static final double kD = 0.01;
     public static final double kS = 0.0;
-    public static final double kG = 0.41; // Volts of feedforward. Not put in kG gain slot since only applies when elevator is past constant force springs
+    public static final double kG = 0.36; 
 
     // Predefined heights for the elevator (in meters)
     public enum ElevatorLevel {
