@@ -124,7 +124,7 @@ public final class Constants {
     public static final double funnelReduction = 40.0; 
     public static final double pivotReduction = 52.5625; 
     public static final double ClimberReduction = 455.1111111111;
-    public static final double elevatorReductionToMeters = 27.4213982438; // Motor rotations to elevator height in meters
+    public static final double elevatorReductionToMeters = 26.6; // Motor rotations to elevator height in meters
 
     public static final double pivotAbsoluteEncoderOffset = 0;
   }
@@ -182,6 +182,7 @@ public final class Constants {
       ALGEA_L2(PivotPosition.ALGAE_L2, ElevatorLevel.ALGAE_L2),
       CORAL_INTAKE(PivotPosition.CORAL_INTAKE, ElevatorLevel.REST_POSITION),
       PROCESSOR(PivotPosition.PROCESSOR, ElevatorLevel.PROCESSOR),
+      SPIT_ALGAE(PivotPosition.SPIT_ALGAE, ElevatorLevel.PROCESSOR),
       NET(PivotPosition.NET, ElevatorLevel.NET),
       NET_PREP(PivotPosition.NET_PREP, ElevatorLevel.NET_PREP);
       
@@ -209,7 +210,7 @@ public final class Constants {
     public static final double CORAL_LOADED_DISTANCE_THRESHOLD = 22.0; // mm
     public static final double ALGAE_LOADED_DISTANCE_THRESHOLD = 94.0; // mm
     public static final double ALGAE_LOADED_DISTANCE_UPPER_LIMIT = 130; // mm
-    public static final double ALGAE_CURRENT_THRESHOLD = 30.0; // amps
+    public static final double ALGAE_CURRENT_THRESHOLD = 35.0; // amps
 
     // Intake constantsd
     public static final double INTAKE_SPEED_MULTIPLIER = 0.15;
@@ -244,9 +245,10 @@ public final class Constants {
         ZERO(0),
         CLEARANCE_POSITION(28),
         CLEARANCE_POSITION_ALGEA(90),
-        ALGAE_L2(169.1),
+        ALGAE_L2(178.5),
         ALGAE_L1(178.5),
         PROCESSOR(189),
+        SPIT_ALGAE(140),
         CORAL_INTAKE(0.5),
         NET(10),
         L4(49),
@@ -315,7 +317,7 @@ public final class Constants {
     public enum ElevatorLevel {
       REST_POSITION(0.0),
       NET(1.45),
-      ALGAE_L2(0.89),
+      ALGAE_L2(0.97),
       ALGAE_L1(0.55),
       PROCESSOR(0.2),
       L4(1.47),
@@ -364,6 +366,7 @@ public final class Constants {
 
     // Predefined positions for the climber (in degrees)
     public enum ClimberPosition {
+      ZERO(0.0),
       RETRACTED(4.0),
       MIDDLE(45),
       DEPLOYED(145.0);

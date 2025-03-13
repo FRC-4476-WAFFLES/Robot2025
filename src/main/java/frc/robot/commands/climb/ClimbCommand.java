@@ -44,7 +44,7 @@ public class ClimbCommand extends Command {
     // Apply current state
     switch (RobotContainer.currentClimbState) {
       case STOWED:
-        RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.RETRACTED);
+        RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.ZERO);
         RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.DOWN);
         RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.ZERO);
         break;

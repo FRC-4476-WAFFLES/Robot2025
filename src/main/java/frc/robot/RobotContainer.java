@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -177,13 +178,16 @@ public class RobotContainer {
 
     // Operator Algea out
     dynamicPathingSubsystem.notRunningAction.and(Controls.algaeOut).whileTrue(
-      new ParallelCommandGroup(
-        new ApplyScoringSetpoint(ScoringLevel.PROCESSOR),
-        new SequentialCommandGroup(
-          new WaitCommand(0.55), // wait a some amount of time ¯\_(ツ)_/¯
-          new AlgeaOutake()
-        )
-      )
+      new SequentialCommandGroup(
+        new InstantCommand(() -> RobotContainer.pivotSubsystem.setIsThrowingAlgae(true)),
+        new ParallelRaceGroup(
+          new ApplyScoringSetpoint(ScoringLevel.SPIT_ALGAE),
+          new WaitCommand(0.45) // wait a some amount of time ¯\_(ツ)_/¯
+        ),
+        new AlgeaOutake()
+      ).finallyDo(() -> {
+        RobotContainer.pivotSubsystem.setIsThrowingAlgae(false);
+      })
     ).onFalse(restPosition);
     
     // Override mode immediately moves to position while held
