@@ -182,7 +182,7 @@ public class RobotContainer {
         new InstantCommand(() -> RobotContainer.pivotSubsystem.setIsThrowingAlgae(true)),
         new ParallelRaceGroup(
           new ApplyScoringSetpoint(ScoringLevel.SPIT_ALGAE),
-          new WaitCommand(0.45) // wait a some amount of time ¯\_(ツ)_/¯
+          new WaitCommand(0.45) // wait some amount of time ¯\_(ツ)_/¯
         ),
         new AlgeaOutake()
       ).finallyDo(() -> {

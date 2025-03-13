@@ -89,6 +89,8 @@ public class WheelRadiusCharacterization {
             double arcLength = driveSubsystem.getSwerveModuleRadius(i) * state.accumulatedRotation;
             double moduleDeltaRadians = Math.abs(state.startingModuleRotations[i] - finalModuleRotations[i]);
 
+            System.out.println("RAD: " + driveSubsystem.getSwerveModuleRadius(i));
+
             // Arc length over theta to get radius of wheel
             accumulatedWheelRadius += arcLength / moduleDeltaRadians;
           }

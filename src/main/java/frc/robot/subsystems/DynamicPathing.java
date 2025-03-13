@@ -64,7 +64,7 @@ public class DynamicPathing extends SubsystemBase {
     public static final double REEF_INRADIUS = 0.81901;
     public static final double REEF_PIPE_CENTER_OFFSET = Units.inchesToMeters(6.5); // Fudged
     // Offset from the edge of the reef to score from 
-    public static final double REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.6; // Robot with bumpers
+    public static final double REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.65; // Robot with bumpers
     public static final double REEF_SCORING_POSITION_OFFSET = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.15; // Robot with bumpers
     public static final double REEF_SCORING_POSITION_OFFSET_L1 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.37; // Robot with bumpers
     public static final double REEF_SCORING_POSITION_OFFSET_L4 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.12; // Robot with bumpers

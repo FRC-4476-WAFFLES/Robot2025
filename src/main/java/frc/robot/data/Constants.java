@@ -262,7 +262,7 @@ public final class Constants {
         MANUAL_L2(24.0),
         MANUAL_L1(0.0),
 
-        CLIMB(24),
+        CLIMB(37),
         NET_PREP(180);
 
         private final double pivotDegrees;
@@ -367,7 +367,7 @@ public final class Constants {
     // Predefined positions for the climber (in degrees)
     public enum ClimberPosition {
       ZERO(0.0),
-      RETRACTED(4.0),
+      RETRACTED(5.0),
       MIDDLE(45),
       DEPLOYED(145.0);
 
