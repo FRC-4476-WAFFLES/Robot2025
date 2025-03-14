@@ -21,6 +21,7 @@ public class ClimbCommand extends Command {
   public enum ClimbState {
     STOWED,
     DEPLOYED,
+    FIT,
     MIDDLE,
     LIFTED
   }
@@ -50,6 +51,11 @@ public class ClimbCommand extends Command {
         break;
       case DEPLOYED:
         RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.DEPLOYED);
+        RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.UP);
+        RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLIMB);
+        break;
+      case FIT:
+        RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.FIT);
         RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.UP);
         RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLIMB);
         break;

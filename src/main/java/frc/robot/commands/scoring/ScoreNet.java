@@ -48,7 +48,7 @@ public class ScoreNet {
      */
     private static Command algaeToss() {
         return Commands.sequence(
-            Commands.waitUntil(Controls.algaeOut),
+            Commands.waitUntil(Controls.doNotScore.negate()),
             Commands.parallel(
                 new ApplyScoringSetpoint(ScoringLevel.NET),
                 // Release at the same point

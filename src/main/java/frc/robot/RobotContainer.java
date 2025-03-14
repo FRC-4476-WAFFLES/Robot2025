@@ -306,13 +306,18 @@ public class RobotContainer {
             break;
           
           case DEPLOYED:
-            currentClimbState = ClimbState.MIDDLE;
+            currentClimbState = ClimbState.FIT;
             
             // Set slower motion profile for retraction
             RobotContainer.climberSubsystem.setMotionProfile(
               ClimberConstants.MOTION_CRUISE_VELOCITY / 5.0,
               ClimberConstants.MOTION_ACCELERATION / 5.0
             );
+            break;
+
+          case FIT:
+            currentClimbState = ClimbState.MIDDLE;
+            
             break;
           
           case MIDDLE:
@@ -326,17 +331,21 @@ public class RobotContainer {
     );
 
     // Moves backwards in state if possible
-    Controls.rightJoystick.button(3).onTrue(
+    Controls.rightJoystick.button(11).onTrue(
       Commands.runOnce(() -> {
         switch (currentClimbState) {
           case DEPLOYED:
             currentClimbState = ClimbState.STOWED;
             break;
-          
-          case MIDDLE:
+
+          case FIT:
             currentClimbState = ClimbState.DEPLOYED;
             // Speed up again
             RobotContainer.climberSubsystem.resetMotionProfile();
+            break;
+          
+          case MIDDLE:
+            currentClimbState = ClimbState.FIT;
             break;
           
           case LIFTED:

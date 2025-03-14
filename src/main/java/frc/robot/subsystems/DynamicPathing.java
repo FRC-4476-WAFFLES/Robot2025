@@ -81,7 +81,7 @@ public class DynamicPathing extends SubsystemBase {
     public static final Rotation2d PROCESSOR_SCORING_ANGLE = Rotation2d.fromDegrees(-90);
 
     /* Net physical parameters */
-    public static final double NET_LINE_X_BLUE = 6.978; // Meters
+    public static final double NET_LINE_X_BLUE = 7.30; // Meters
     public static final Rotation2d NET_SCORING_ANGLE = Rotation2d.k180deg;
 
     /* Path following parameters */

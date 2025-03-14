@@ -229,11 +229,11 @@ public final class Constants {
     public static final double PIVOT_MOTION_ACCELERATION = 10.0;
     public static final double PIVOT_MOTION_JERK = 2000.0;
     public static final double STATOR_CURRENT_LIMIT = 45.0; // amps
-    public static final double PIVOT_MOTOR_DEADBAND = 0.002;
+    public static final double PIVOT_MOTOR_DEADBAND = 0.001;
     public static final double PIVOT_CURRENT_THRESHOLD =  38.0; // amps - Current threshold for zeroing
 
     // PID Values
-    public static final double PIVOT_kP = 70.0;
+    public static final double PIVOT_kP = 110.0;
     public static final double PIVOT_kI = 0.0;
     public static final double PIVOT_kD = 0.0;
     public static final double PIVOT_kS = 0.0;
@@ -250,7 +250,7 @@ public final class Constants {
         PROCESSOR(189),
         SPIT_ALGAE(140),
         CORAL_INTAKE(0.5),
-        NET(10),
+        NET(55),
         L4(49),
         L3(28),
         L2(35),
@@ -262,7 +262,7 @@ public final class Constants {
         MANUAL_L2(24.0),
         MANUAL_L1(0.0),
 
-        CLIMB(37),
+        CLIMB(5),
         NET_PREP(180);
 
         private final double pivotDegrees;
@@ -302,7 +302,7 @@ public final class Constants {
     public static final double FIRST_STAGE_START_HEIGHT = ElevatorConstants.MAX_ELEVATOR_HEIGHT / 2.0; 
 
     // Motion Magic configuration
-    public static final double MOTION_CRUISE_VELOCITY = 4; // 4 usually
+    public static final double MOTION_CRUISE_VELOCITY = 6; // 4 usually
     public static final double MOTION_ACCELERATION = 4;
     public static final double MOTION_JERK = 2000;
 
@@ -367,9 +367,10 @@ public final class Constants {
     // Predefined positions for the climber (in degrees)
     public enum ClimberPosition {
       ZERO(0.0),
-      RETRACTED(5.0),
+      RETRACTED(8.0),
       MIDDLE(45),
-      DEPLOYED(145.0);
+      FIT(106),
+      DEPLOYED(135.0);
 
       private final double degrees;
 
