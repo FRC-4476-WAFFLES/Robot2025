@@ -23,7 +23,8 @@ public class LimelightContainer {
     }
     
     /**
-     * Call every periodic loop to update odometry with vision reported poses
+     * Call every periodic loop to update odometry with vision reported poses. 
+     * LimelightHelpers.Flush() or equivalent must be called after all limelights have run update() 
      */
     public void update() {
         // Update valid tag IDs, done periodically since they may change on the fly later
@@ -48,6 +49,7 @@ public class LimelightContainer {
                 });
             }
         }
+
         // Integrate rotation from mt1
         LimelightHelpers.PoseEstimate mt1Result = LimelightHelpers.getBotPoseEstimate_wpiBlue(limelightName);
         if (mt1Result != null) {
@@ -80,12 +82,14 @@ public class LimelightContainer {
                 onMoving(); // Use IMU mode 2 while rotating to avoid latency issues
             }
 
-            LimelightHelpers.SetRobotOrientation(limelightName, driveSubsystem.getRobotPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
+            LimelightHelpers.SetRobotOrientation_NoFlush(limelightName, driveSubsystem.getRobotPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
         } else {
             onSeeding();
             // Seeding in disabled (Uses IMU mode 1)
-            LimelightHelpers.SetRobotOrientation(limelightName, driveSubsystem.getRobotPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
+            LimelightHelpers.SetRobotOrientation_NoFlush(limelightName, driveSubsystem.getRobotPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
         }
+
+        // SetRobotOrientation_NoFlush() is used since SetRobotOrientation() flushes NT implicitly
     }
 
     /**

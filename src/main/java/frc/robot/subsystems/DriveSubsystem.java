@@ -36,6 +36,7 @@ import frc.robot.RobotContainer;
 import frc.robot.data.Constants.VisionConstants;
 import frc.robot.data.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.LimelightContainer;
+import frc.robot.utils.LimelightHelpers;
 import frc.robot.utils.VisionHelpers;
 
 /**
@@ -302,9 +303,15 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
             return;
         }
 
-        
+        // Updates odometry from vision.
+        // Does not flush networktables.
         leftLimelight.update();
         rightLimelight.update();
+
+        // Flush networktables explicitly once to avoid network latency
+        // Do not flush once per limelight, since flushing NT is ratelimited to once every 10ms
+        // With one or more cameras each flushing periodically, you start seeing loop overruns
+        LimelightHelpers.Flush();
 
 
 
