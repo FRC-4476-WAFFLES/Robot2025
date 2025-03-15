@@ -25,6 +25,7 @@ import frc.robot.data.Constants.CANIds;
 import frc.robot.data.Constants.ClimberConstants;
 import frc.robot.data.Constants.ClimberConstants.ClimberPosition;
 import frc.robot.data.Constants.CodeConstants;
+import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
 
@@ -120,6 +121,7 @@ public class Climber extends SubsystemBase implements NetworkUser {
   public void periodic() {
     // Convert degrees to rotations for motion magic
     double targetRotations = climberSetpointAngle / 360.0;
+    targetRotations *= PhysicalConstants.AWFULCLIMBFUDGE;
     
     // Apply motion magic control
     climberMotorLeader.setControl(motionMagicRequest.withPosition(targetRotations).withSlot(0));

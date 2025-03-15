@@ -310,8 +310,8 @@ public class RobotContainer {
             
             // Set slower motion profile for retraction
             RobotContainer.climberSubsystem.setMotionProfile(
-              ClimberConstants.MOTION_CRUISE_VELOCITY / 5.0,
-              ClimberConstants.MOTION_ACCELERATION / 5.0
+              ClimberConstants.MOTION_CRUISE_VELOCITY / 15.0,
+              ClimberConstants.MOTION_ACCELERATION / 15.0
             );
             break;
 
