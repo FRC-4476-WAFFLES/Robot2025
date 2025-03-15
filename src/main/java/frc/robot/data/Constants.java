@@ -124,7 +124,7 @@ public final class Constants {
     public static final double funnelReduction = 40.0; 
     public static final double pivotReduction = 52.5625; 
     public static final double ClimberReduction = 455.1111111111;
-    public static final double AWFULCLIMBFUDGE = 3;
+    public static final double AwfulClimbRatioFudge = 3;
     public static final double elevatorReductionToMeters = 26.6; // Motor rotations to elevator height in meters
 
     public static final double pivotAbsoluteEncoderOffset = 0;
@@ -153,7 +153,9 @@ public final class Constants {
     // Predefined positions for the funnel (in degrees)
     public enum FunnelPosition {
       DOWN(0.0),
-      UP(190.0);
+      UP(190.0),
+      
+      CORAL_BUMP(6.0);
 
       private final double degrees;
 

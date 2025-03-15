@@ -358,6 +358,12 @@ public class RobotContainer {
       })
     );
 
+    // Operator coral bump up
+    Controls.operatorController.povUp().whileTrue(
+      Commands.runOnce(() -> RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.CORAL_BUMP), pivotSubsystem)
+      .finallyDo(() -> RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.DOWN))
+    );
+
     // Controls.leftJoystick.button(4).whileTrue(
     //   new InstantCommand(
     //     () -> {

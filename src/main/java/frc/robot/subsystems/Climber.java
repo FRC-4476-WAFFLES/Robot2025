@@ -48,6 +48,7 @@ public class Climber extends SubsystemBase implements NetworkUser {
 
   private final DoublePublisher climberSetpointNT = climberTable.getDoubleTopic("Setpoint (Degrees)").publish();
   private final DoublePublisher climberAngleNT = climberTable.getDoubleTopic("Current Angle (Degrees)").publish();
+  private final DoublePublisher climberVelocityNT = climberTable.getDoubleTopic("Current Velocity (deg / s)").publish();
   private final BooleanPublisher climberAtSetpointNT = climberTable.getBooleanTopic("At Setpoint").publish();
   private final DoublePublisher leaderCurrentDrawNT = climberTable.getDoubleTopic("Leader Current (Amps)").publish();
 
@@ -121,7 +122,7 @@ public class Climber extends SubsystemBase implements NetworkUser {
   public void periodic() {
     // Convert degrees to rotations for motion magic
     double targetRotations = climberSetpointAngle / 360.0;
-    targetRotations *= PhysicalConstants.AWFULCLIMBFUDGE;
+    targetRotations *= PhysicalConstants.AwfulClimbRatioFudge;
     
     // Apply motion magic control
     climberMotorLeader.setControl(motionMagicRequest.withPosition(targetRotations).withSlot(0));
@@ -214,6 +215,7 @@ public class Climber extends SubsystemBase implements NetworkUser {
     climberSetpointNT.set(climberSetpointAngle);
     climberAngleNT.set(getClimberDegrees());
     leaderCurrentDrawNT.set(climberMotorLeader.getTorqueCurrent().getValueAsDouble());
+    climberVelocityNT.set(climberMotorLeader.getVelocity().getValueAsDouble());
   }
 
   @Override
