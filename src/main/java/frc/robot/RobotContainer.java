@@ -308,7 +308,7 @@ public class RobotContainer {
             break;
           
           case DEPLOYED:
-            currentClimbState = ClimbState.FIT;
+            currentClimbState = ClimbState.MIDDLE;
             
             // Set slower motion profile for retraction
             RobotContainer.climberSubsystem.setMotionProfile(
@@ -317,10 +317,10 @@ public class RobotContainer {
             );
             break;
 
-          case FIT:
-            currentClimbState = ClimbState.MIDDLE;
+          // case FIT:
+          //   currentClimbState = ClimbState.MIDDLE;
             
-            break;
+          //   break;
           
           case MIDDLE:
             currentClimbState = ClimbState.LIFTED;
@@ -340,14 +340,16 @@ public class RobotContainer {
             currentClimbState = ClimbState.STOWED;
             break;
 
-          case FIT:
-            currentClimbState = ClimbState.DEPLOYED;
-            // Speed up again
-            RobotContainer.climberSubsystem.resetMotionProfile();
-            break;
+          // case FIT:
+          //   currentClimbState = ClimbState.DEPLOYED;
+
+          //   break;
           
           case MIDDLE:
-            currentClimbState = ClimbState.FIT;
+            currentClimbState = ClimbState.DEPLOYED;
+
+            // Speed up again
+            RobotContainer.climberSubsystem.resetMotionProfile();
             break;
           
           case LIFTED:

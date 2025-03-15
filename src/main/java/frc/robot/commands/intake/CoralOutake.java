@@ -35,7 +35,7 @@ public class CoralOutake extends Command {
     var scoringLevel = RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel();
     switch (scoringLevel) {
       case L1:
-        RobotContainer.intakeSubsystem.setIntakeSpeed(18.0); // Reverse to spit out backwards
+        RobotContainer.intakeSubsystem.setIntakeSpeed(20.0); // Reverse to spit out backwards
         break;
 
       case L4:
