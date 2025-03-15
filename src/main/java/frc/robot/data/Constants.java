@@ -124,6 +124,7 @@ public final class Constants {
     public static final double funnelReduction = 40.0; 
     public static final double pivotReduction = 52.5625; 
     public static final double ClimberReduction = 455.1111111111;
+    public static final double AWFULCLIMBFUDGE = 3;
     public static final double elevatorReductionToMeters = 26.6; // Motor rotations to elevator height in meters
 
     public static final double pivotAbsoluteEncoderOffset = 0;
@@ -264,7 +265,7 @@ public final class Constants {
         MANUAL_L2(24.0),
         MANUAL_L1(0.0),
 
-        CLIMB(5),
+        CLIMB(23),
         NET_PREP(180);
 
         private final double pivotDegrees;
@@ -356,8 +357,8 @@ public final class Constants {
 
     // Motor configuration
     public static final double STATOR_CURRENT_LIMIT = 90.0; // amps
-    public static final double MOTION_CRUISE_VELOCITY = 10.0; // was 20
-    public static final double MOTION_ACCELERATION = 20.0; 
+    public static final double MOTION_CRUISE_VELOCITY = 50.0; // was 20
+    public static final double MOTION_ACCELERATION = 60.0; 
     public static final double MOTION_JERK = 1900.0; 
 
     // PID Values
@@ -369,7 +370,7 @@ public final class Constants {
     // Predefined positions for the climber (in degrees)
     public enum ClimberPosition {
       ZERO(0.0),
-      RETRACTED(8.0),
+      RETRACTED(9),
       MIDDLE(45),
       FIT(106),
       DEPLOYED(135.0);
