@@ -48,7 +48,7 @@ public class Climber extends SubsystemBase implements NetworkUser {
 
   private final DoublePublisher climberSetpointNT = climberTable.getDoubleTopic("Setpoint (Degrees)").publish();
   private final DoublePublisher climberAngleNT = climberTable.getDoubleTopic("Current Angle (Degrees)").publish();
-  private final DoublePublisher climberVelocityNT = climberTable.getDoubleTopic("Current Velocity (deg / s)").publish();
+  private final DoublePublisher climberVelocityNT = climberTable.getDoubleTopic("Current Velocity (rps)").publish();
   private final BooleanPublisher climberAtSetpointNT = climberTable.getBooleanTopic("At Setpoint").publish();
   private final DoublePublisher leaderCurrentDrawNT = climberTable.getDoubleTopic("Leader Current (Amps)").publish();
 

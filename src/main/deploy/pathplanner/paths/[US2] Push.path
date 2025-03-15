@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.908863636363636,
-        "y": 5.346235795454545
+        "x": 7.205250000000001,
+        "y": 6.17
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.0174900452120377,
-        "y": 6.168305842790335
+        "x": 7.454116522567505,
+        "y": 6.14622072446103
       },
       "isLocked": false,
-      "linkedName": "Post 8"
+      "linkedName": "US2"
     },
     {
       "anchor": {
-        "x": 1.6897804054054055,
-        "y": 7.315625
+        "x": 7.3,
+        "y": 6.17
       },
       "prevControl": {
-        "x": 2.6651448791879844,
-        "y": 6.379807263681838
+        "x": 7.024684162030635,
+        "y": 6.195827157908175
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "CS1"
+      "linkedName": "Push [US2]"
     }
   ],
   "rotationTargets": [],
@@ -34,7 +34,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.1,
-    "maxAcceleration": 5.5,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 800.0,
     "maxAngularAcceleration": 1200.0,
     "nominalVoltage": 12.0,
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -53.426969021480716
+    "rotation": 180.0
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Push",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -59.264512298079744
+    "rotation": 180.0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

@@ -43,7 +43,7 @@ public class CoralOutake extends Command {
         break;
 
       default:
-        RobotContainer.intakeSubsystem.setIntakeSpeed(-28.0); // Slower to avoid bouncing off L2-L3
+        RobotContainer.intakeSubsystem.setIntakeSpeed(-25.0); // Slower to avoid bouncing off L2-L3
         break;
     }
     
@@ -62,6 +62,6 @@ public class CoralOutake extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return timer.get() > 0;
+    return timer.get() > 0.1;
   }
 }

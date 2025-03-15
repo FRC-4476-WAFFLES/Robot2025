@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.908863636363636,
-        "y": 5.346235795454545
+        "x": 7.4,
+        "y": 1.89
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.0174900452120377,
-        "y": 6.168305842790335
+        "x": 6.236638578332059,
+        "y": 1.7038105966118287
       },
       "isLocked": false,
-      "linkedName": "Post 8"
+      "linkedName": "Push [OPP2]"
     },
     {
       "anchor": {
-        "x": 1.6897804054054055,
-        "y": 7.315625
+        "x": 5.07,
+        "y": 2.679499999999999
       },
       "prevControl": {
-        "x": 2.6651448791879844,
-        "y": 6.379807263681838
+        "x": 5.353994291651408,
+        "y": 2.6398043788285874
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "CS1"
+      "linkedName": "Post 2"
     }
   ],
   "rotationTargets": [],
@@ -34,7 +34,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.1,
-    "maxAcceleration": 5.5,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 800.0,
     "maxAngularAcceleration": 1200.0,
     "nominalVoltage": 12.0,
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -53.426969021480716
+    "rotation": 121.50460420781835
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Push",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -59.264512298079744
+    "rotation": -177.8229297792097
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

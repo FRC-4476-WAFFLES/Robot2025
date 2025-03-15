@@ -8,6 +8,7 @@
     "CS4 to Reef",
     "Debug Paths",
     "MIDDLE",
+    "Push",
     "OPP1",
     "OPP2",
     "Reef to CS1",
@@ -17,7 +18,9 @@
     "Starting Line (TOP)",
     "Starting Line(BOT)"
   ],
-  "autoFolders": [],
+  "autoFolders": [
+    "Push"
+  ],
   "defaultMaxVel": 4.1,
   "defaultMaxAccel": 4.0,
   "defaultMaxAngVel": 800.0,
@@ -26,7 +29,7 @@
   "robotMass": 65.0,
   "robotMOI": 4.2,
   "robotTrackwidth": 0.546,
-  "driveWheelRadius": 0.051,
+  "driveWheelRadius": 0.052,
   "driveGearing": 6.746,
   "maxDriveSpeed": 4.25,
   "driveMotorType": "krakenX60",

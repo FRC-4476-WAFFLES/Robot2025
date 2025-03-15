@@ -81,12 +81,12 @@ public class DynamicPathing extends SubsystemBase {
     public static final Rotation2d PROCESSOR_SCORING_ANGLE = Rotation2d.fromDegrees(-90);
 
     /* Net physical parameters */
-    public static final double NET_LINE_X_BLUE = 7.30; // Meters
+    public static final double NET_LINE_X_BLUE = 7.70; // Meters
     public static final Rotation2d NET_SCORING_ANGLE = Rotation2d.k180deg;
 
     /* Path following parameters */
-    public static final double MAX_SPEED = 2.0f;
-    public static final double MAX_ACCELERATION = 4.0f;
+    public static final double MAX_SPEED = 2.5f;
+    public static final double MAX_ACCELERATION = 5.0f;
 
     /* Angular units are radians per second */
     public static final double MAX_ANGULAR_SPEED = 1 * Math.PI;
@@ -265,7 +265,7 @@ public class DynamicPathing extends SubsystemBase {
                     Rotation2d targetNetRotation = WafflesUtilities.FlipAngleIfRedAlliance(NET_SCORING_ANGLE);
                     double targetNetX = WafflesUtilities.FlipXIfRedAlliance(NET_LINE_X_BLUE); 
 
-                    cmd = ScoreNet.getScoreNetCommand(targetNetX, targetNetRotation);
+                    cmd = ScoreNet.getScoreNetCommand(targetNetX, targetNetRotation, true);
                 }
                 break;
 

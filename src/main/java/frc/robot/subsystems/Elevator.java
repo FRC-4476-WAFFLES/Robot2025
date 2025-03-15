@@ -64,7 +64,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
 
   private final DoublePublisher elevatorSetpointNT = elevatorTable.getDoubleTopic("Setpoint (Meters)").publish();
   private final DoublePublisher elevatorPositionNT = elevatorTable.getDoubleTopic("Current Position (Meters)").publish();
-  private final DoublePublisher elevatorVelocityNT = elevatorTable.getDoubleTopic("Current Velocity (M / s)").publish();
+  private final DoublePublisher elevatorVelocityNT = elevatorTable.getDoubleTopic("Current Velocity (rps)").publish();
   private final BooleanPublisher elevatorIsZeroingNT = elevatorTable.getBooleanTopic("Is Zeroing").publish();
   private final BooleanPublisher isAtSetpointNT = elevatorTable.getBooleanTopic("Elevator at Setpoint").publish();
   private final DoublePublisher leaderCurrentDrawNT = elevatorTable.getDoubleTopic("Leader Motor Current (Amps)").publish();

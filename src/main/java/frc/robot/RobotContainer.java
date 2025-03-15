@@ -9,6 +9,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -29,6 +30,7 @@ import frc.robot.commands.intake.AlgeaOutake;
 import frc.robot.commands.intake.AxisIntakeControl;
 import frc.robot.commands.intake.CoralIntake;
 import frc.robot.commands.scoring.ScoreCoral;
+import frc.robot.commands.scoring.ScoreNet;
 import frc.robot.commands.superstructure.ApplyScoringSetpoint;
 import frc.robot.commands.superstructure.SetElevatorPos;
 import frc.robot.commands.superstructure.SetPivotPos;
@@ -363,6 +365,9 @@ public class RobotContainer {
       Commands.runOnce(() -> RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.CORAL_BUMP), pivotSubsystem)
       .finallyDo(() -> RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.DOWN))
     );
+
+    // Manual net toss
+    Controls.operatorController.povDown().whileTrue(Commands.defer(() -> ScoreNet.getScoreNetCommand(0, Rotation2d.kZero, false), ScoreCoral.commandRequirements).onlyIf(() -> RobotContainer.intakeSubsystem.isAlgaeLoaded()));
 
     // Controls.leftJoystick.button(4).whileTrue(
     //   new InstantCommand(
