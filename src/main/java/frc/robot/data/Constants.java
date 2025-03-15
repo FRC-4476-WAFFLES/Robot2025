@@ -152,7 +152,9 @@ public final class Constants {
     // Predefined positions for the funnel (in degrees)
     public enum FunnelPosition {
       DOWN(0.0),
-      UP(190.0);
+      UP(190.0),
+      
+      CORAL_BUMP(6.0);
 
       private final double degrees;
 
