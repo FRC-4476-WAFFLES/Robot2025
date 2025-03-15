@@ -122,7 +122,7 @@ public class Climber extends SubsystemBase implements NetworkUser {
   public void periodic() {
     // Convert degrees to rotations for motion magic
     double targetRotations = climberSetpointAngle / 360.0;
-    targetRotations *= PhysicalConstants.AWFULCLIMBFUDGE;
+    targetRotations *= PhysicalConstants.AwfulClimbRatioFudge;
     
     // Apply motion magic control
     climberMotorLeader.setControl(motionMagicRequest.withPosition(targetRotations).withSlot(0));
