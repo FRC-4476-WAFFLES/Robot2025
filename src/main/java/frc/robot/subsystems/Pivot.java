@@ -188,7 +188,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         }
         if (isThrowingAlgae) {
             // go FAST
-            slot = 2;
+            slot = 0;
         }
 
         // Update motor controls
