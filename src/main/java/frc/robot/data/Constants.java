@@ -371,7 +371,7 @@ public final class Constants {
     public enum ClimberPosition {
       ZERO(0.0),
       RETRACTED(10),
-      MIDDLE(75),
+      MIDDLE(73),
       FIT(95),
       DEPLOYED(135.0);
 
