@@ -221,7 +221,7 @@ public final class Constants {
     public static final double ALGAE_HOLD_SPEED = 3; // Speed to hold algae in place
 
     // Pivot constants
-    public static final double PIVOT_ANGLE_DEADBAND = 1.3;
+    public static final double PIVOT_ANGLE_DEADBAND = 1.4;
     public static final double PIVOT_MIN_ANGLE = 0.0; // degrees
     public static final double PIVOT_MAX_ANGLE = 185.0; // degrees
     public static final double PIVOT_BUMPER_CLEARANCE_ANGLE = 144.4; // degrees
@@ -236,7 +236,7 @@ public final class Constants {
     public static final double PIVOT_CURRENT_THRESHOLD =  38.0; // amps - Current threshold for zeroing
 
     // PID Values
-    public static final double PIVOT_kP = 110.0;
+    public static final double PIVOT_kP = 120.0;
     public static final double PIVOT_kI = 0.0;
     public static final double PIVOT_kD = 0.0;
     public static final double PIVOT_kS = 0.0;
@@ -257,13 +257,13 @@ public final class Constants {
         L4(49),
         L3(28),
         L2(35),
-        L1(147),
+        L1(150),
 
         // Maybe manual mode
         MANUAL_L4(71.0),
         MANUAL_L3(24.0),
         MANUAL_L2(24.0),
-        MANUAL_L1(0.0),
+        MANUAL_L1(150),
 
         CLIMB(144),
         NET_PREP(180);
@@ -326,12 +326,12 @@ public final class Constants {
       L4(1.47),
       L3(0.782),
       L2(0.41),
-      L1(0.30),
+      L1(0.33),
 
       MANUAL_L4(1.440),
       MANUAL_L3(0.6772),
       MANUAL_L2(0.280),
-      MANUAL_L1(0.22),
+      MANUAL_L1(0.33),
 
       NET_PREP(1.1);
 
