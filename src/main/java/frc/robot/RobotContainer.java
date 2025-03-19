@@ -168,15 +168,15 @@ public class RobotContainer {
     );
 
     // SysID routines
-    // sysIDBindings();
+    sysIDBindings();
 
     // Manual auto intake
-    Controls.operatorController.leftBumper().whileTrue(
-      Commands.parallel(
-        new CoralIntake(),
-        new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
-      )    
-    );
+    // Controls.operatorController.leftBumper().whileTrue(
+    //   Commands.parallel(
+    //     new CoralIntake(),
+    //     new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
+    //   )    
+    // );
 
     // Operator Algea out
     dynamicPathingSubsystem.notRunningAction.and(Controls.algaeOut).whileTrue(
@@ -405,16 +405,16 @@ public class RobotContainer {
   private void sysIDBindings() {
     // Drive bindings
     Controls.operatorController.a().whileTrue(
-     driveSubsystem.sysIdQuasistatic(Direction.kForward)
+     elevatorSubsystem.m_sysIdRoutineElevator.quasistatic(Direction.kForward)
     );
     Controls.operatorController.x().whileTrue(
-      driveSubsystem.sysIdQuasistatic(Direction.kReverse)
+      elevatorSubsystem.m_sysIdRoutineElevator.quasistatic(Direction.kReverse)
     );
     Controls.operatorController.b().whileTrue(
-      driveSubsystem.sysIdDynamic(Direction.kForward)
+      elevatorSubsystem.m_sysIdRoutineElevator.dynamic(Direction.kForward)
     );
     Controls.operatorController.y().whileTrue(
-      driveSubsystem.sysIdDynamic(Direction.kReverse)
+      elevatorSubsystem.m_sysIdRoutineElevator.dynamic(Direction.kReverse)
     );
 
     // Datalog controls needed by sysID

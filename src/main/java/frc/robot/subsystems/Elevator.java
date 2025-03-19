@@ -4,12 +4,14 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -18,8 +20,10 @@ import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.CodeConstants;
@@ -29,6 +33,7 @@ import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
 
+import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.RobotContainer.*;
 
 public class Elevator extends SubsystemBase implements NetworkUser {
@@ -105,6 +110,27 @@ public class Elevator extends SubsystemBase implements NetworkUser {
 
   //   System.out.println("Refreshing PID values from networktables for elevator");
   // }
+
+  /* SysId routine for characterizing elevator. */
+  public final SysIdRoutine m_sysIdRoutineElevator = new SysIdRoutine(
+      new SysIdRoutine.Config(
+          null,        // Use default ramp rate (1 V/s)
+          Volts.of(3), // Use dynamic voltage of 7 V
+          null,        // Use default timeout (10 s)
+          // Log state with SignalLogger class
+          state -> SignalLogger.writeString("SysIdElevator_State", state.toString())
+      ),
+      new SysIdRoutine.Mechanism(
+          volts -> setElevatorVolts(volts),
+          null,
+          this
+      )
+  );
+  // SysID Boilerplate
+  private VoltageOut sysIDRequest = new VoltageOut(0);
+  private void setElevatorVolts(Voltage volts) {
+    elevatorMotorLeader.setControl(sysIDRequest.withOutput(volts));
+  }
 
   public Elevator() {
     SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
@@ -209,7 +235,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
       // double chosenFeedforward = ElevatorConstants.kG; // withFeedForward(chosenFeedforward)
 
       // Apply chosen setpoint
-      elevatorMotorLeader.setControl(motionMagicRequest.withPosition(chosenElevatorPosition).withSlot(0));
+      // elevatorMotorLeader.setControl(motionMagicRequest.withPosition(chosenElevatorPosition).withSlot(0));
     }
 
     // Update network tables
