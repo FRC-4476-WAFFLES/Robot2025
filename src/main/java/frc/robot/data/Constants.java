@@ -325,7 +325,7 @@ public final class Constants {
       PROCESSOR(0.2),
       L4(1.47),
       L3(0.782),
-      L2(0.41),
+      L2(0.42),
       L1(0.33),
 
       MANUAL_L4(1.440),
