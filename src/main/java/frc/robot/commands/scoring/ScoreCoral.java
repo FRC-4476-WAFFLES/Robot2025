@@ -11,6 +11,11 @@ import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -40,10 +45,36 @@ public class ScoreCoral extends SequentialCommandGroup {
     RobotContainer.intakeSubsystem
   ));
 
+  /* Timing variables */
+  private final Timer totalScoringTimer = new Timer();
+  private static final NetworkTable scoringTable = NetworkTableInstance.getDefault().getTable("ScoringMetrics");
+  private static final DoublePublisher totalScoringTimePublisher = scoringTable.getDoubleTopic("Total ScoreCoral Duration").publish();
+
   /** Creates a new ScoreCoral. */
   private ScoreCoral(Command driveCommand, Pose2d finalAlignPose) {
     var pathingSubsystem = RobotContainer.dynamicPathingSubsystem;
+    
+    // Command to start timing
+    Command startTimingCommand = new InstantCommand(() -> {
+      totalScoringTimer.reset();
+      totalScoringTimer.start();
+      SmartDashboard.putBoolean("ScoreCoralInProgress", true);
+    });
+    
+    // Command to end timing
+    Command endTimingCommand = new InstantCommand(() -> {
+      totalScoringTimer.stop();
+      double finalScoringTime = totalScoringTimer.get();
+      totalScoringTimePublisher.set(finalScoringTime);
+      SmartDashboard.putNumber("Recent Total Scoring Time", finalScoringTime);
+      SmartDashboard.putBoolean("ScoreCoralInProgress", false);
+    });
+
     addCommands(
+      // Start timing
+      startTimingCommand,
+      
+      // Main scoring sequence
       new ParallelCommandGroup(
         pathingSubsystem.wrapPathingCommand(
           new SequentialCommandGroup(
@@ -53,9 +84,15 @@ public class ScoreCoral extends SequentialCommandGroup {
         ),
         new PrepareScoreCoral()
       ),
+      
       // Wait until doNotScore is released
       new WaitUntilCommand(() -> !Controls.doNotScore.getAsBoolean()),
-      new CoralOutake()
+      
+      // Outake the coral
+      new CoralOutake(),
+      
+      // End timing
+      endTimingCommand
     );
   }
 

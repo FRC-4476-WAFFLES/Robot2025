@@ -114,6 +114,12 @@ public class Telemetry extends SubsystemBase {
 
     private PowerDistribution powerDistributionHub = new PowerDistribution(1, ModuleType.kRev);
 
+    /* Scoring metrics data */
+    private final NetworkTable scoringMetricsTable = inst.getTable("ScoringMetrics");
+    
+    // Remove tracking of averages, counts, and success rates
+    // Only keep publishers for the most recent durations
+
     /**
      * Construct a telemetry subsystem, with the specified max speed of the robot
      * 
@@ -235,5 +241,25 @@ public class Telemetry extends SubsystemBase {
      */
     public void publishOperatorOverrideInfo() {
         overrideEnabled.set(RobotContainer.isOperatorOverride);
+    }
+
+    /**
+     * Update the scoring metrics with the latest alignment and scoring durations
+     * @param alignmentTime Time it took to complete the alignment in seconds
+     * @param totalScoringTime Time it took for the entire scoring operation in seconds
+     */
+    public void updateScoringMetrics(double alignmentTime, double totalScoringTime) {
+        // Only publish to SmartDashboard for driver visibility
+        SmartDashboard.putNumber("Recent Alignment Time", alignmentTime);
+        SmartDashboard.putNumber("Recent Total Scoring Time", totalScoringTime);
+    }
+    
+    /**
+     * Record a scoring operation timing
+     * @param alignmentTime Time it took for alignment
+     * @param totalTime Total time for the scoring operation
+     */
+    public void recordScoringTime(double alignmentTime, double totalTime) {
+        updateScoringMetrics(alignmentTime, totalTime);
     }
 }
