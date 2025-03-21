@@ -6,6 +6,7 @@ package frc.robot.commands.intake;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
@@ -13,6 +14,7 @@ import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class CoralOutake extends Command {
   Timer timer = new Timer();
+  
   /** Creates a new CoralIntake. */
   public CoralOutake() {
     addRequirements(RobotContainer.intakeSubsystem);
@@ -57,6 +59,20 @@ public class CoralOutake extends Command {
   public void end(boolean interrupted) {
     RobotContainer.intakeSubsystem.setIntakeSpeed(0);
     RobotContainer.intakeSubsystem.setNoAlgaeFlag(false);
+    
+    // Get timing information from NetworkTables
+    double alignmentTime = NetworkTableInstance.getDefault()
+        .getTable("ScoringMetrics")
+        .getEntry("FinalAlignCoral Duration")
+        .getDouble(0.0);
+    
+    double totalScoringTime = NetworkTableInstance.getDefault()
+        .getTable("ScoringMetrics")
+        .getEntry("Total ScoreCoral Duration")
+        .getDouble(0.0);
+    
+    // Record timing metrics without tracking success/failure
+    RobotContainer.telemetry.recordScoringTime(alignmentTime, totalScoringTime);
   }
 
   // Returns true when the command should end.
