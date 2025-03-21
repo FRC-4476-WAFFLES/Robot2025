@@ -22,6 +22,8 @@ import frc.robot.utils.SubsystemNetworkManager;
 
 import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
+import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -45,7 +47,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     private final CANcoder pivotAbsoluteEncoder;
 
     // Control Objects
-    private final DynamicMotionMagicVoltage motionMagicRequest = new DynamicMotionMagicVoltage(0, ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY, ManipulatorConstants.PIVOT_MOTION_ACCELERATION, ManipulatorConstants.PIVOT_MOTION_JERK);
+    private final MotionMagicExpoVoltage motionMagicRequest = new MotionMagicExpoVoltage(0);
     // private final DynamicMotionMagicVoltage slowMotionMagicRequest = new DynamicMotionMagicVoltage(0, ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY / 25, ManipulatorConstants.PIVOT_MOTION_ACCELERATION / 25, ManipulatorConstants.PIVOT_MOTION_JERK / 25);
 
     // State variables
@@ -126,9 +128,12 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
         // Motion Magic
         MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs()
+            // .withMotionMagicCruiseVelocity(Constants.ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY)
+            // .withMotionMagicAcceleration(Constants.ManipulatorConstants.PIVOT_MOTION_ACCELERATION)
+            // .withMotionMagicJerk(Constants.ManipulatorConstants.PIVOT_MOTION_JERK)
             .withMotionMagicCruiseVelocity(Constants.ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY)
-            .withMotionMagicAcceleration(Constants.ManipulatorConstants.PIVOT_MOTION_ACCELERATION)
-            .withMotionMagicJerk(Constants.ManipulatorConstants.PIVOT_MOTION_JERK);
+            .withMotionMagicExpo_kV(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY)
+            .withMotionMagicExpo_kA(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_ACCELERATION);
         pivotConfigs.MotionMagic = motionMagicConfigs;
 
         // PID
@@ -165,10 +170,10 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         pivotConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
         // Add voltage compensation
-        pivotConfigs.Voltage.PeakForwardVoltage = 12.0; // 12V compensation
-        pivotConfigs.Voltage.PeakReverseVoltage = -12.0;
+        pivotConfigs.Voltage.PeakForwardVoltage = ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE; // 12V compensation
+        pivotConfigs.Voltage.PeakReverseVoltage = -ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE;
         pivotConfigs.Voltage.SupplyVoltageTimeConstant = 0.1;
-        pivotConfigs.CurrentLimits.StatorCurrentLimit = 40;
+        pivotConfigs.CurrentLimits.StatorCurrentLimit = 60;
 
         pivot.getConfigurator().apply(pivotConfigs);
     }

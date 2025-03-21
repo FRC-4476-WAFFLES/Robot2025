@@ -4,12 +4,14 @@
 
 package frc.robot.commands.superstructure;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.RobotContainer;
 
 public class ZeroMechanisms extends Command {
     private boolean hasStartedPivot = false;
+    private Timer elevatorTimer = new Timer() ;
 
     public ZeroMechanisms() {
         addRequirements(RobotContainer.elevatorSubsystem, RobotContainer.pivotSubsystem);
@@ -20,12 +22,15 @@ public class ZeroMechanisms extends Command {
         // Start elevator zeroing first
         RobotContainer.elevatorSubsystem.zeroElevator();
         hasStartedPivot = false;
+
+        elevatorTimer.reset();
+        elevatorTimer.start();
     }
 
     @Override
     public void execute() {
         // Once elevator is done zeroing, start pivot zeroing
-        if (!RobotContainer.elevatorSubsystem.isZeroing() && !hasStartedPivot) {
+        if (!RobotContainer.elevatorSubsystem.isZeroing() && !hasStartedPivot && elevatorTimer.hasElapsed(0.5)) {
             RobotContainer.pivotSubsystem.zeroPivot();
             hasStartedPivot = true;
         }
@@ -42,6 +47,8 @@ public class ZeroMechanisms extends Command {
                 RobotContainer.pivotSubsystem.zeroPivot(); // Calling again cancels zeroing
             }
         }
+
+        elevatorTimer.stop();
     }
 
     @Override
