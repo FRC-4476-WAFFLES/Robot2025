@@ -7,6 +7,7 @@ package frc.robot.commands.scoring;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.RobotContainer;
 import frc.robot.commands.intake.AlgeaIntake;
@@ -22,8 +23,14 @@ public class PickupAlgea extends SequentialCommandGroup {
     addCommands(
       new ParallelCommandGroup(
         RobotContainer.dynamicPathingSubsystem.wrapPathingCommand(driveCommand),
-        new ApplyScoringSetpoint(scoringLevel),
-        new AlgeaIntake()
+        // Deploy and pickup sequence
+        new SequentialCommandGroup(
+          new WaitUntilCommand(() -> DynamicPathing.isPastAlgaeClearancePoint()),
+          new ParallelCommandGroup(
+            new ApplyScoringSetpoint(scoringLevel),
+            new AlgeaIntake()
+          )
+        )
       ),
       pathAwayCommand
     );

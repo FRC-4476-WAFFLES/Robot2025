@@ -174,8 +174,8 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     // motionMagicConfigs.MotionMagicJerk = ElevatorConstants.MOTION_JERK;
 
     motionMagicConfigs.MotionMagicCruiseVelocity = 0; // Unlimited cruise velocity
-    motionMagicConfigs.MotionMagicExpo_kV = 4.5; // kV is V/rps
-    motionMagicConfigs.MotionMagicExpo_kA = 0.9; // Use a slower kA V/(rps/s)
+    motionMagicConfigs.MotionMagicExpo_kV = 3; // kV is V/rps
+    motionMagicConfigs.MotionMagicExpo_kA = 0.7; // Use a slower kA V/(rps/s)
     elevatorConfig.MotionMagic = motionMagicConfigs;
 
     // Mechanism Reduction

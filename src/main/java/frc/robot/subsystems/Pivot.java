@@ -26,10 +26,12 @@ import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.util.Units;
 
 import static frc.robot.RobotContainer.intakeSubsystem;
 import static frc.robot.RobotContainer.elevatorSubsystem;
@@ -61,6 +63,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
     private final NetworkTable pivotTable = inst.getTable("Pivot");
     private final DoublePublisher pivotSetpointNT = pivotTable.getDoubleTopic("Setpoint (Degrees)").publish();
+    private final DoublePublisher realPivotSetpointNT = pivotTable.getDoubleTopic("Real Setpoint (Degrees)").publish();
     private final DoublePublisher pivotAngleNT = pivotTable.getDoubleTopic("Current Angle (Degrees)").publish();
     private final DoublePublisher pivotVelocityNT = pivotTable.getDoubleTopic("Current Velocity (rps)").publish();
     private final DoublePublisher pivotCurrentDrawNT = pivotTable.getDoubleTopic("Current Draw (Amps)").publish();
@@ -156,6 +159,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         slot2Configs.kI = Constants.ManipulatorConstants.PIVOT_kI;
         slot2Configs.kS = Constants.ManipulatorConstants.PIVOT_kS;
         slot2Configs.kD = Constants.ManipulatorConstants.PIVOT_kD;
+        
         pivotConfigs.Slot2 = slot2Configs;
 
         pivotConfigs.MotorOutput.DutyCycleNeutralDeadband = PIVOT_MOTOR_DEADBAND;
@@ -241,7 +245,17 @@ public class Pivot extends SubsystemBase implements NetworkUser {
             chosenPivotAngle = PivotPosition.CLEARANCE_POSITION.getDegrees();
         }
 
-        pivot.setControl(motionMagicRequest.withPosition(chosenPivotAngle / 360).withSlot(slot));
+        realPivotSetpointNT.set(chosenPivotAngle);
+
+        // Account for zero not being vertical
+        double pivotAngleFromVertical = getPivotPosition() - 40;
+        double gravityFeedforward = ManipulatorConstants.PIVOT_kG_HORIZONTAL * Math.sin(Units.degreesToRadians(pivotAngleFromVertical));
+
+        pivot.setControl(motionMagicRequest
+            .withPosition(chosenPivotAngle / 360)
+            .withFeedForward(gravityFeedforward)
+            .withSlot(slot)
+        );
     }
 
     /**
@@ -259,7 +273,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
             
             return;
         }
-        pivot.set(-0.1);
+        pivot.set(-0.05);
     }
 
     /**

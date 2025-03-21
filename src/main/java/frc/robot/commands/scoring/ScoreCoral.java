@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -95,27 +96,29 @@ public class ScoreCoral extends SequentialCommandGroup {
     
     return new SequentialCommandGroup(
       scoreCoralCommand,
-      new WaitUntilCommand(() -> {
+      new DeferredCommand(() -> {
         // Check if the button is held down AND other conditions are met
+        // (A variety of sanity checks)
         boolean shouldPickupAlgae = Controls.algaeAfterScoreButton.getAsBoolean() && 
-            DynamicPathing.isRobotInRangeOfReefPathing() && 
-            !RobotContainer.intakeSubsystem.isCoralLoaded() &&
-            !RobotContainer.intakeSubsystem.isAlgaeLoaded() &&
-            Controls.dynamicPathingButton.getAsBoolean();
+          DynamicPathing.isRobotInRangeOfReefPathing() && 
+          !RobotContainer.intakeSubsystem.isCoralLoaded() &&
+          !RobotContainer.intakeSubsystem.isAlgaeLoaded() &&
+          Controls.dynamicPathingButton.getAsBoolean();
         
         if (shouldPickupAlgae) {
-          // Use the new helper method in DynamicPathing to create the algae pickup command
+          // Use the helper method in DynamicPathing to create the algae pickup command
           var dynamicPathing = RobotContainer.dynamicPathingSubsystem;
           Command algaeCommand = dynamicPathing.createAlgaePickupCommand();
-          
+
+          // createAlgaePickupCommand() is nullable
           if (algaeCommand != null) {
-            dynamicPathing.wrapActionStateCommand(algaeCommand).schedule();
+            return algaeCommand;
           }
         }
-        
-        // Always end this command immediately after deciding whether to run the next command
-        return true;
-      })
+        // Return empty command otherwise
+        return new InstantCommand();
+
+      }, commandRequirements)
     );
   }
   

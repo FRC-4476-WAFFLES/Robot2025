@@ -11,7 +11,7 @@ import frc.robot.RobotContainer;
 
 public class ZeroMechanisms extends Command {
     private boolean hasStartedPivot = false;
-    private Timer elevatorTimer = new Timer() ;
+    // private Timer elevatorTimer = new Timer() ;
 
     public ZeroMechanisms() {
         addRequirements(RobotContainer.elevatorSubsystem, RobotContainer.pivotSubsystem);
@@ -23,14 +23,14 @@ public class ZeroMechanisms extends Command {
         RobotContainer.elevatorSubsystem.zeroElevator();
         hasStartedPivot = false;
 
-        elevatorTimer.reset();
-        elevatorTimer.start();
+        // elevatorTimer.reset();
+        // elevatorTimer.start();
     }
 
     @Override
     public void execute() {
         // Once elevator is done zeroing, start pivot zeroing
-        if (!RobotContainer.elevatorSubsystem.isZeroing() && !hasStartedPivot && elevatorTimer.hasElapsed(0.5)) {
+        if (!RobotContainer.elevatorSubsystem.isZeroing() && !hasStartedPivot) {
             RobotContainer.pivotSubsystem.zeroPivot();
             hasStartedPivot = true;
         }
@@ -48,7 +48,7 @@ public class ZeroMechanisms extends Command {
             }
         }
 
-        elevatorTimer.stop();
+        // elevatorTimer.stop();
     }
 
     @Override

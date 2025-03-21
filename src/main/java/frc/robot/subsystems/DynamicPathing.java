@@ -190,13 +190,21 @@ public class DynamicPathing extends SubsystemBase {
     }
 
     /**
-     * Is the robot within a certain distance of the human player station
+     * Gets robot distance to the reef
      * @return a boolean
      */
     public static double getDistanceToReef() {
         var pose = WafflesUtilities.FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose());
         
         return pose.getTranslation().getDistance(REEF_CENTER_BLUE);
+    }
+
+    /**
+     * Is the robot within a certain distance of the reef
+     * @return a boolean
+     */
+    public static boolean isPastAlgaeClearancePoint() {
+        return getDistanceToReef() > REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE;
     }
 
     /**
