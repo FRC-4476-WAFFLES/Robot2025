@@ -7,8 +7,11 @@ package frc.robot.commands.scoring;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -23,9 +26,11 @@ import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.subsystems.DynamicPathing;
 import frc.robot.commands.intake.CoralOutake;
 import frc.robot.commands.scoring.FinalAlignCoral;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.commands.scoring.PickupAlgea;
 
 public class ScoreCoral extends SequentialCommandGroup {
-  private static final double waitBeforeScoreL4 = 0.15;
+  private static final double waitBeforeScoreL4 = 0.1;
   // All scoring commands require these subsystems
   public static final HashSet<Subsystem> commandRequirements = new HashSet<>(Arrays.asList(
     RobotContainer.driveSubsystem, 
@@ -48,7 +53,6 @@ public class ScoreCoral extends SequentialCommandGroup {
         new PrepareScoreCoral()
       ),
       // Wait until doNotScore is released
-      new WaitCommand(waitBeforeScoreL4).onlyIf(() -> pathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4),
       new WaitUntilCommand(() -> !Controls.doNotScore.getAsBoolean()),
       new CoralOutake()
     );
@@ -76,6 +80,57 @@ public class ScoreCoral extends SequentialCommandGroup {
         RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
       }
     });
+  }
+
+  /**
+   * Scores coral given a path and a final target pose, and if the algae button is held,
+   * automatically picks up algae after scoring.
+   * @param driveCommand the pathing command
+   * @param finalAlignPose the final pose (used for a final PID based alignment pass)
+   * @return The command to score coral and optionally pick up algae after
+   */
+  public static Command scoreCoralWithPathAndAlgae(Command driveCommand, Pose2d finalAlignPose) {
+    Command scoreCoralCommand = scoreCoralWithPath(driveCommand, finalAlignPose);
+    
+    return new SequentialCommandGroup(
+      scoreCoralCommand,
+      new WaitUntilCommand(() -> {
+        // Check if the button is held down AND other conditions are met
+        boolean shouldPickupAlgae = Controls.algaeAfterScoreButton.getAsBoolean() && 
+            DynamicPathing.isRobotInRangeOfReefPathing() && 
+            !RobotContainer.intakeSubsystem.isCoralLoaded() &&
+            !RobotContainer.intakeSubsystem.isAlgaeLoaded() &&
+            Controls.dynamicPathingButton.getAsBoolean();
+        
+        if (shouldPickupAlgae) {
+          // Get nearest algae pickup location
+          Pose2d targetAlgaePose = RobotContainer.dynamicPathingSubsystem.getNearestAlgaePickupLocation();
+          Pose2d clearancePose = RobotContainer.dynamicPathingSubsystem.getNearestAlgaeClearanceLocation();
+          
+          // Generate paths
+          var startingPose = RobotContainer.driveSubsystem.getRobotPose();
+          var pickupPath = DynamicPathing.simplePathToPose(targetAlgaePose);
+          var backOffPath = DynamicPathing.simplePathToPose(clearancePose);
+          
+          if (pickupPath.isPresent() && backOffPath.isPresent()) {
+            // Create and schedule the algae pickup command
+            var pickupPathCommand = AutoBuilder.followPath(pickupPath.get());
+            var backoffPathCommand = AutoBuilder.followPath(backOffPath.get());
+            ScoringLevel algeaScoringLevel = RobotContainer.dynamicPathingSubsystem.getAlgeaScoringLevel(startingPose);
+            // Call the existing static method from PickupAlgea (in the same package)
+            Command algaeCommand = PickupAlgea.pickupAlgeaWithPath(
+              pickupPathCommand, 
+              algeaScoringLevel, 
+              backoffPathCommand);
+              
+            RobotContainer.dynamicPathingSubsystem.wrapActionStateCommand(algaeCommand).schedule();
+          }
+        }
+        
+        // Always end this command immediately after deciding whether to run the next command
+        return true;
+      })
+    );
   }
 
   /**

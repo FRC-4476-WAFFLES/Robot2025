@@ -229,7 +229,7 @@ public class DynamicPathing extends SubsystemBase {
                     var path = DynamicPathing.simplePathToPose(targetCoralPose);
                     if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
                         var pathingCommand = AutoBuilder.followPath(path.get());
-                        cmd = ScoreCoral.scoreCoralWithPath(pathingCommand, targetCoralPose);
+                        cmd = ScoreCoral.scoreCoralWithPathAndAlgae(pathingCommand, targetCoralPose);
                     }
 
                 }
@@ -350,7 +350,7 @@ public class DynamicPathing extends SubsystemBase {
             // Different from normal pathing command.
             // Since started from outside button based scheduling, letting go of the dynamic pathing button would fail to cancel it
             // .onlyWhile() ensures it can still be canceled by letting go of the button
-            Command cmd = ScoreCoral.scoreCoralWithPath(pathCommand, newTargetPose).onlyWhile(() -> Controls.dynamicPathingButton.getAsBoolean());
+            Command cmd = ScoreCoral.scoreCoralWithPathAndAlgae(pathCommand, newTargetPose).onlyWhile(() -> Controls.dynamicPathingButton.getAsBoolean());
             wrapActionStateCommand(cmd).schedule();
         }
     }
