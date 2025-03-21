@@ -168,15 +168,15 @@ public class RobotContainer {
     );
 
     // SysID routines
-    sysIDBindings();
+    // sysIDBindings();
 
     // Manual auto intake
-    // Controls.operatorController.leftBumper().whileTrue(
-    //   Commands.parallel(
-    //     new CoralIntake(),
-    //     new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
-    //   )    
-    // );
+    Controls.operatorController.leftBumper().whileTrue(
+      Commands.parallel(
+        new CoralIntake(),
+        new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
+      )    
+    );
 
     // Operator Algea out
     dynamicPathingSubsystem.notRunningAction.and(Controls.algaeOut).whileTrue(

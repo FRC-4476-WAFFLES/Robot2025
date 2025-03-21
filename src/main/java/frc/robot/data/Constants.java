@@ -246,7 +246,7 @@ public final class Constants {
     // Pivot Positions
     public enum PivotPosition {
         ZERO(0),
-        CLEARANCE_POSITION(28),
+        CLEARANCE_POSITION(32),
         CLEARANCE_POSITION_ALGEA(90),
         ALGAE_L2(178.5),
         ALGAE_L1(178.5),
