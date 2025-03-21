@@ -237,27 +237,14 @@ public class DynamicPathing extends SubsystemBase {
 
             case REEF_ALGAE: {
                     Pose2d targetAlgaePose = getNearestAlgaePickupLocation();
-                    Pose2d clearancePose = getNearestAlgaeClearanceLocation();
-
                     SmartDashboard.putNumberArray("TargetPose Reef", new double[] {
                         targetAlgaePose.getX(),
                         targetAlgaePose.getY(),
                         targetAlgaePose.getRotation().getDegrees()
                     });
 
-
-                    var startingPose = RobotContainer.driveSubsystem.getRobotPose();
-
-                    var pickupPath = DynamicPathing.generateComplexPath(startingPose, new Translation2d[] {clearancePose.getTranslation()}, targetAlgaePose);
-                    var backOffPath = DynamicPathing.generateComplexPath(targetAlgaePose, null, clearancePose);
-                    
-
-                    if (pickupPath.isPresent() && backOffPath.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
-                        var pathingCommand = AutoBuilder.followPath(pickupPath.get());
-                        var backoffPathingCommand = AutoBuilder.followPath(backOffPath.get());
-                        cmd = PickupAlgea.pickupAlgeaWithPath(pathingCommand, getAlgeaScoringLevel(RobotContainer.driveSubsystem.getRobotPose()), backoffPathingCommand);
-                    }
-
+                    // Use the extracted helper method to create the command
+                    cmd = createAlgaePickupCommand();
                 }
                 break;
 
@@ -670,5 +657,34 @@ public class DynamicPathing extends SubsystemBase {
      */
     public Command wrapActionStateCommand(Command command) {
         return command.beforeStarting(() -> {isRunningAction = true;}).finallyDo(() -> {isRunningAction = false;});
+    }
+
+    /**
+     * Creates an algae pickup command using the current robot position and the nearest algae pickup location.
+     * @return A command to pick up algae, or null if not possible
+     */
+    public Command createAlgaePickupCommand() {
+        Pose2d targetAlgaePose = getNearestAlgaePickupLocation();
+        Pose2d clearancePose = getNearestAlgaeClearanceLocation();
+
+        var startingPose = RobotContainer.driveSubsystem.getRobotPose();
+
+        var pickupPath = DynamicPathing.generateComplexPath(startingPose, 
+                                                         new Translation2d[] {clearancePose.getTranslation()}, 
+                                                         targetAlgaePose);
+        var backOffPath = DynamicPathing.generateComplexPath(targetAlgaePose, null, clearancePose);
+        
+        if (pickupPath.isPresent() && backOffPath.isPresent()) {
+            var pathingCommand = AutoBuilder.followPath(pickupPath.get());
+            var backoffPathingCommand = AutoBuilder.followPath(backOffPath.get());
+            
+            return PickupAlgea.pickupAlgeaWithPath(
+                pathingCommand, 
+                getAlgeaScoringLevel(startingPose), 
+                backoffPathingCommand
+            );
+        }
+        
+        return null;
     }
 }

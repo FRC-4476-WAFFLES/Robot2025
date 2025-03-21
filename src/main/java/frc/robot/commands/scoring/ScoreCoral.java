@@ -10,6 +10,7 @@ import java.util.HashSet;
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -103,27 +104,12 @@ public class ScoreCoral extends SequentialCommandGroup {
             Controls.dynamicPathingButton.getAsBoolean();
         
         if (shouldPickupAlgae) {
-          // Get nearest algae pickup location
-          Pose2d targetAlgaePose = RobotContainer.dynamicPathingSubsystem.getNearestAlgaePickupLocation();
-          Pose2d clearancePose = RobotContainer.dynamicPathingSubsystem.getNearestAlgaeClearanceLocation();
+          // Use the new helper method in DynamicPathing to create the algae pickup command
+          var dynamicPathing = RobotContainer.dynamicPathingSubsystem;
+          Command algaeCommand = dynamicPathing.createAlgaePickupCommand();
           
-          // Generate paths
-          var startingPose = RobotContainer.driveSubsystem.getRobotPose();
-          var pickupPath = DynamicPathing.simplePathToPose(targetAlgaePose);
-          var backOffPath = DynamicPathing.simplePathToPose(clearancePose);
-          
-          if (pickupPath.isPresent() && backOffPath.isPresent()) {
-            // Create and schedule the algae pickup command
-            var pickupPathCommand = AutoBuilder.followPath(pickupPath.get());
-            var backoffPathCommand = AutoBuilder.followPath(backOffPath.get());
-            ScoringLevel algeaScoringLevel = RobotContainer.dynamicPathingSubsystem.getAlgeaScoringLevel(startingPose);
-            // Call the existing static method from PickupAlgea (in the same package)
-            Command algaeCommand = PickupAlgea.pickupAlgeaWithPath(
-              pickupPathCommand, 
-              algeaScoringLevel, 
-              backoffPathCommand);
-              
-            RobotContainer.dynamicPathingSubsystem.wrapActionStateCommand(algaeCommand).schedule();
+          if (algaeCommand != null) {
+            dynamicPathing.wrapActionStateCommand(algaeCommand).schedule();
           }
         }
         
@@ -132,7 +118,7 @@ public class ScoreCoral extends SequentialCommandGroup {
       })
     );
   }
-
+  
   /**
    * Scores coral given a final target pose. Performs no pathing of it's own.
    * @param finalAlignPose The final pose (used for a final PID based alignment pass)
