@@ -4,12 +4,31 @@
 
 package frc.robot.subsystems;
 
+import static frc.robot.RobotContainer.elevatorSubsystem;
+import static frc.robot.RobotContainer.intakeSubsystem;
+import static frc.robot.data.Constants.ManipulatorConstants.PIVOT_MOTOR_DEADBAND;
+
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.Slot1Configs;
+import com.ctre.phoenix6.configs.Slot2Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.CodeConstants;
@@ -19,19 +38,6 @@ import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.subsystems.Elevator.CollisionType;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
-
-import com.ctre.phoenix6.configs.*;
-import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-
-import edu.wpi.first.math.MathUtil;
-
-import static frc.robot.RobotContainer.intakeSubsystem;
-import static frc.robot.RobotContainer.elevatorSubsystem;
-import static frc.robot.data.Constants.ManipulatorConstants.*;
 
 /**
  * The Manipulator subsystem handles the robot's pivot mechanism.
@@ -65,6 +71,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     private final BooleanPublisher isAtSetpointNT = pivotTable.getBooleanTopic("Pivot at Setpoint").publish();
     private final BooleanPublisher isZeroingNT = pivotTable.getBooleanTopic("Is Zeroing").publish();
 
+    private Trigger zeroingDebounceTrigger;
 
     // -------------------- Tuning Code --------------------
     // private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
@@ -101,6 +108,10 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
         // Initialize position
         resetInternalEncoder();
+
+        zeroingDebounceTrigger = new Trigger(() -> {
+            return pivot.getTorqueCurrent().getValueAsDouble() < -Constants.ManipulatorConstants.PIVOT_CURRENT_THRESHOLD;     
+        }).debounce(0.25);
     }
 
     /**
@@ -243,10 +254,10 @@ public class Pivot extends SubsystemBase implements NetworkUser {
      * Run periodically while zeroing pivot
      */
     private void handlePivotZeroPeriodic() {
-        if (pivot.getTorqueCurrent().getValueAsDouble() < -Constants.ManipulatorConstants.PIVOT_CURRENT_THRESHOLD) {
+        if (zeroingDebounceTrigger.getAsBoolean()) {
 
             pivot.set(0);
-            pivot.setPosition(-0.002);
+            pivot.setPosition(0.0);
             setPivotSetpoint(0);
             
             isZeroingPivot = false;
@@ -254,7 +265,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
             
             return;
         }
-        pivot.set(-0.1);
+        pivot.set(-0.065);
     }
 
     /**
