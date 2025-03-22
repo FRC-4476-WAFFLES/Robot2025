@@ -71,7 +71,7 @@ public class DynamicPathing extends SubsystemBase {
     public static final double REEF_SCORING_POSITION_OFFSET_L4 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.12; // Robot with bumpers
     public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.05; // Robot with bumpers
     public static final double REEF_ALGAE_SAFETY_POSITION = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.35; // Robot with bumpers
-
+    public static final double REEF_PATH_POSITION_OFFSET = 0.12;
     
     /* Human player station physical parameters */
     public static final Translation2d HUMAN_PLAYER_STATION_LEFT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(25.80));  
@@ -223,7 +223,18 @@ public class DynamicPathing extends SubsystemBase {
 
         switch (currentPathingSituation) {
             case REEF_CORAL:  { // extra curly brackets to keep scopes seperate
+                    Pose2d startingPose = RobotContainer.driveSubsystem.getRobotPose();
                     Pose2d targetCoralPose = getNearestCoralScoringLocation();
+
+                    // Pose2d offsetCoralPose = getCoralLocationOffset(REEF_PATH_POSITION_OFFSET);
+                    Translation2d offsetTranslation = targetCoralPose.getTranslation();
+                    Translation2d offsetVector = new Translation2d(REEF_PATH_POSITION_OFFSET, WafflesUtilities.AngleBetweenPoints(
+                        targetCoralPose.getTranslation(), startingPose.getTranslation())
+                    ); 
+                    offsetTranslation = offsetTranslation.plus(offsetVector);
+                    Pose2d offsetCoralPose = new Pose2d(offsetTranslation, targetCoralPose.getRotation());
+
+
                     SmartDashboard.putNumberArray("TargetPose Reef", new double[] {
                         targetCoralPose.getX(),
                         targetCoralPose.getY(),
@@ -237,7 +248,8 @@ public class DynamicPathing extends SubsystemBase {
                         debugFlippedPose.getRotation().getDegrees()
                     });
 
-                    var path = DynamicPathing.simplePathToPose(targetCoralPose);
+                    
+                    var path = DynamicPathing.generateComplexPath(startingPose, null, offsetCoralPose, 0.4);
                     if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
                         var pathingCommand = AutoBuilder.followPath(path.get());
                         cmd = ScoreCoral.scoreCoralWithPathAndAlgae(pathingCommand, targetCoralPose);
@@ -424,6 +436,10 @@ public class DynamicPathing extends SubsystemBase {
         return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), coralScoringRightSide, false, REEF_SCORING_POSITION_OFFSET);
     }
 
+    public Pose2d getCoralLocationOffset(double offset) {
+        return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), coralScoringRightSide, false, offset);
+    }
+
     /**
      * Gets coordinates in field space to the nearest algae scoring position.
      * @return The coordinates the robot can pickup from
@@ -545,6 +561,17 @@ public class DynamicPathing extends SubsystemBase {
      * @return The PathPlannerPath
      */
     public static Optional<PathPlannerPath> generateComplexPath(Pose2d startingPose, Translation2d[] intermediatePoses, Pose2d endingPose) {
+        return generateComplexPath(startingPose, intermediatePoses, endingPose, 0);
+    }
+
+    /**
+     * Creates a path for PathPlanner which moves the robot to a point, passing through an optional set of other points
+     * @param startingPose The starting pose
+     * @param endingPose The target end pose
+     * @param intermediatePoses An array of positions to travel through
+     * @return The PathPlannerPath
+     */
+    public static Optional<PathPlannerPath> generateComplexPath(Pose2d startingPose, Translation2d[] intermediatePoses, Pose2d endingPose, double endingVelocity) {
         // If distance to target is less than some epsilon (1/2 cm in this case), don't even try.
         if (startingPose.getTranslation().getDistance(endingPose.getTranslation()) < 0.005) {
             return Optional.empty();
@@ -616,7 +643,7 @@ public class DynamicPathing extends SubsystemBase {
             waypoints,
             constraints,
             null,
-            new GoalEndState(0.0, endingPose.getRotation()) // Goal end state with holonomic rotation
+            new GoalEndState(endingVelocity, endingPose.getRotation()) // Goal end state with holonomic rotation
         );
         path.preventFlipping = true;
 

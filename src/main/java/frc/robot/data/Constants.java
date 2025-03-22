@@ -84,7 +84,7 @@ public final class Constants {
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(2, 2, 1);
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
 
-    public static final Matrix<N3, N1> kSingleTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 5);
+    public static final Matrix<N3, N1> kSingleTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 4);
     public static final Matrix<N3, N1> kMultiTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 3);
 
     public static final Matrix<N3, N1> kStdDevsMT2ReefTargeting = VecBuilder.fill(0.005,0.005, Double.MAX_VALUE);
@@ -95,7 +95,7 @@ public final class Constants {
     public static final double MT1_REJECT_DISTANCE = 2; // meters
 
     public static final int SEDING_LL_IMU_MODE = 1; // Enables seeding
-    public static final int MOVING_LL_IMU_MODE = 2; // Should be 3, but firmware isn't out yet, might use 2 if feeling like it
+    public static final int MOVING_LL_IMU_MODE = 2; // Uses internal IMU
 
     // Names of limelights
     public static final String LIMELIGHT_NAME_L = "limelight-right";
@@ -288,7 +288,7 @@ public final class Constants {
     // Control constants
     public static final double ELEVATOR_DEAD_ZONE = 0.015;
     public static final double ZEROING_SPEED = -0.1; // Slow downward speed
-    public static final double STALL_CURRENT_THRESHOLD = 20.0; // Amperes
+    public static final double STALL_CURRENT_THRESHOLD = 26.0; // Amperes
 
     // Elevator will not move if the pivot is not past this angle, to avoid collision with top bar
     public static final double MIN_ELEVATOR_PIVOT_ANGLE = 24; 

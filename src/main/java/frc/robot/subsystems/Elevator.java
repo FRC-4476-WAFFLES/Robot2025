@@ -24,6 +24,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
@@ -81,6 +82,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   private CollisionType currentCollisionPrediction = CollisionType.NONE;
   private CollisionType potentialCollisionPrediction = CollisionType.NONE; // If the movement could induce collision
 
+  private Trigger zeroingDebounceTrigger;
   // -------------------- Tuning Code --------------------
   // private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
   
@@ -140,6 +142,10 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     elevatorMotorFollower = new TalonFX(Constants.CANIds.elevator2);
 
     configureElevatorMotors();
+
+    zeroingDebounceTrigger = new Trigger(() -> {
+      return elevatorMotorLeader.getStatorCurrent().getValueAsDouble() > ElevatorConstants.STALL_CURRENT_THRESHOLD;   
+    }).debounce(0.2);
   }
 
   /**
@@ -253,7 +259,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    * Run periodically while zeroing elevator
    */
   private void handleElevatorZeroPeriodic() {
-    if (elevatorMotorLeader.getStatorCurrent().getValueAsDouble() > ElevatorConstants.STALL_CURRENT_THRESHOLD && isZeroingElevator) {
+    if (zeroingDebounceTrigger.getAsBoolean() && isZeroingElevator) {
       // Stop the elevator
       elevatorMotorLeader.set(0);
 

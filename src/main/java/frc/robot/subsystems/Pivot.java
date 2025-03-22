@@ -129,7 +129,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
         zeroingDebounceTrigger = new Trigger(() -> {
             return pivot.getTorqueCurrent().getValueAsDouble() < -Constants.ManipulatorConstants.PIVOT_CURRENT_THRESHOLD;     
-        }).debounce(0.25);
+        }).debounce(0.2);
     }
 
     /**

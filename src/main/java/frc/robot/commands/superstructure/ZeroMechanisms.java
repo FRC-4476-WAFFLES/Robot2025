@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.RobotContainer;
+import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 
 public class ZeroMechanisms extends Command {
     private boolean hasStartedPivot = false;
@@ -22,6 +23,8 @@ public class ZeroMechanisms extends Command {
         // Start elevator zeroing first
         RobotContainer.elevatorSubsystem.zeroElevator();
         hasStartedPivot = false;
+
+        RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
 
         // elevatorTimer.reset();
         // elevatorTimer.start();

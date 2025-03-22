@@ -392,8 +392,8 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
                     .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
                 ), // Consumer of ChassisSpeeds to drive the robot
                 new PPHolonomicDriveController(
-                    new PIDConstants(1.7, 0, 0.01),
-                    new PIDConstants(3.5, 0, 0.01)
+                    new PIDConstants(3.4, 0, 0.65),
+                    new PIDConstants(3.8, 0, 0.25)
                 ),
                 PathPlannerConfig,
                 () -> {

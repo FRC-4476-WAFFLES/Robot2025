@@ -6,8 +6,11 @@ package frc.robot.commands.scoring;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.networktables.DoublePublisher;
@@ -15,6 +18,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.PhysicalConstants;
+import frc.robot.utils.WafflesUtilities;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
@@ -25,9 +29,9 @@ import static frc.robot.RobotContainer.*;
 
 public class FinalAlignCoral extends Command {
   /* PID Controllers */
-  private PIDController xPidController = new PIDController(3.8, 0, 0.1);
-  private PIDController yPidController = new PIDController(3.8, 0, 0.1);
-  private PIDController thetaPidController = new PIDController(5.0, 0, 0.1);
+  private PIDController posPidController = new PIDController(4.1, 0, 0.22);
+  // private PIDController yPidController = new PIDController(3.3, 0, 0.2);
+  private ProfiledPIDController thetaPidController = new ProfiledPIDController(7.0, 0, 0.1, new Constraints(4, 20));
 
   private SwerveRequest.FieldCentric driveRequest = new SwerveRequest.FieldCentric();
 
@@ -62,6 +66,9 @@ public class FinalAlignCoral extends Command {
     // Start the alignment timer
     alignmentTimer.reset();
     alignmentTimer.start();
+
+    var currentPose = driveSubsystem.getRobotPose();
+    thetaPidController.reset(currentPose.getRotation().getRadians());
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -77,18 +84,34 @@ public class FinalAlignCoral extends Command {
     }
 
     var currentPose = driveSubsystem.getRobotPose();
-    double xVelocity = (sign * xPidController.calculate(currentPose.getX(), targetPose2d.getX()));
-    double yVelocity = (sign * yPidController.calculate(currentPose.getY(), targetPose2d.getY()));
+    double distanceToTarget = currentPose.getTranslation().getDistance(targetPose2d.getTranslation());
+
+    double moveVelocity = -(posPidController.calculate(distanceToTarget, 0));
+    // double yVelocity = (sign * yPidController.calculate(currentPose.getY(), targetPose2d.getY()));
     double thetaVelocity = thetaPidController.calculate(currentPose.getRotation().getRadians(), targetPose2d.getRotation().getRadians());
 
+
+    
+    Translation2d directionVector = new Translation2d(1, WafflesUtilities.AngleBetweenPoints(
+      currentPose.getTranslation(), targetPose2d.getTranslation())
+    ); 
+
+    SmartDashboard.putNumber("idkman", moveVelocity);
+    SmartDashboard.putNumberArray("Direction Vector", new double[] {directionVector.getX(),directionVector.getY()});
+    
+    
+    directionVector = directionVector.times(moveVelocity);
+    
+    
+    
     driveSubsystem.setControl(
       driveRequest
         .withDeadband(speedDeadband)
         .withRotationalDeadband(rotationDeadband)
         .withDriveRequestType(DriveRequestType.Velocity)
         .withSteerRequestType(SteerRequestType.MotionMagicExpo)
-        .withVelocityX(xVelocity)
-        .withVelocityY(yVelocity)
+        .withVelocityX(sign * directionVector.getX())
+        .withVelocityY(sign * directionVector.getY())
         .withRotationalRate(thetaVelocity)
     );
   }
