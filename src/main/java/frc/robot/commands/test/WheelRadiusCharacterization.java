@@ -32,9 +32,9 @@ import frc.robot.data.TunerConstants;
  */
 public class WheelRadiusCharacterization {
   public static final double TEST_RAMP_RATE = 0.4; // Radians / s^2
-  public static final double TEST_TOP_SPEED = 0.35; // Radians / s
+  public static final double TEST_TOP_SPEED = 0.6; // Radians / s
 
-  public static final double TEST_DURATION = 30; // seconds
+  public static final double TEST_DURATION = 60; // seconds
   
   // Class should not be instanciated, so constructor is private
   private WheelRadiusCharacterization() {}
