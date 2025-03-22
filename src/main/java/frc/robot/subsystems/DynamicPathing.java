@@ -69,7 +69,9 @@ public class DynamicPathing extends SubsystemBase {
     public static final double REEF_SCORING_POSITION_OFFSET_L1 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.37; // Robot with bumpers
     public static final double REEF_SCORING_POSITION_OFFSET_L4 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.12; // Robot with bumpers
     public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.05; // Robot with bumpers
+    public static final double REEF_ALGAE_SAFETY_POSITION = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.35; // Robot with bumpers
 
+    
     /* Human player station physical parameters */
     public static final Translation2d HUMAN_PLAYER_STATION_LEFT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(25.80));  
     public static final Translation2d HUMAN_PLAYER_STATION_RIGHT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(291.20));  
@@ -190,13 +192,21 @@ public class DynamicPathing extends SubsystemBase {
     }
 
     /**
-     * Is the robot within a certain distance of the human player station
+     * Gets robot distance to the reef
      * @return a boolean
      */
     public static double getDistanceToReef() {
         var pose = WafflesUtilities.FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose());
         
         return pose.getTranslation().getDistance(REEF_CENTER_BLUE);
+    }
+
+    /**
+     * Is the robot within a certain distance of the reef
+     * @return a boolean
+     */
+    public static boolean isPastAlgaeClearancePoint() {
+        return getDistanceToReef() > REEF_ALGAE_SAFETY_POSITION + REEF_INRADIUS;
     }
 
     /**
@@ -229,35 +239,15 @@ public class DynamicPathing extends SubsystemBase {
                     var path = DynamicPathing.simplePathToPose(targetCoralPose);
                     if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
                         var pathingCommand = AutoBuilder.followPath(path.get());
-                        cmd = ScoreCoral.scoreCoralWithPath(pathingCommand, targetCoralPose);
+                        cmd = ScoreCoral.scoreCoralWithPathAndAlgae(pathingCommand, targetCoralPose);
                     }
 
                 }
                 break;
 
             case REEF_ALGAE: {
-                    Pose2d targetAlgaePose = getNearestAlgaePickupLocation();
-                    Pose2d clearancePose = getNearestAlgaeClearanceLocation();
-
-                    SmartDashboard.putNumberArray("TargetPose Reef", new double[] {
-                        targetAlgaePose.getX(),
-                        targetAlgaePose.getY(),
-                        targetAlgaePose.getRotation().getDegrees()
-                    });
-
-
-                    var startingPose = RobotContainer.driveSubsystem.getRobotPose();
-
-                    var pickupPath = DynamicPathing.generateComplexPath(startingPose, new Translation2d[] {clearancePose.getTranslation()}, targetAlgaePose);
-                    var backOffPath = DynamicPathing.generateComplexPath(targetAlgaePose, null, clearancePose);
-                    
-
-                    if (pickupPath.isPresent() && backOffPath.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
-                        var pathingCommand = AutoBuilder.followPath(pickupPath.get());
-                        var backoffPathingCommand = AutoBuilder.followPath(backOffPath.get());
-                        cmd = PickupAlgea.pickupAlgeaWithPath(pathingCommand, getAlgeaScoringLevel(RobotContainer.driveSubsystem.getRobotPose()), backoffPathingCommand);
-                    }
-
+                    // Use the extracted helper method to create the command
+                    cmd = createAlgaePickupCommand();
                 }
                 break;
 
@@ -350,7 +340,7 @@ public class DynamicPathing extends SubsystemBase {
             // Different from normal pathing command.
             // Since started from outside button based scheduling, letting go of the dynamic pathing button would fail to cancel it
             // .onlyWhile() ensures it can still be canceled by letting go of the button
-            Command cmd = ScoreCoral.scoreCoralWithPath(pathCommand, newTargetPose).onlyWhile(() -> Controls.dynamicPathingButton.getAsBoolean());
+            Command cmd = ScoreCoral.scoreCoralWithPathAndAlgae(pathCommand, newTargetPose).onlyWhile(() -> Controls.dynamicPathingButton.getAsBoolean());
             wrapActionStateCommand(cmd).schedule();
         }
     }
@@ -670,5 +660,47 @@ public class DynamicPathing extends SubsystemBase {
      */
     public Command wrapActionStateCommand(Command command) {
         return command.beforeStarting(() -> {isRunningAction = true;}).finallyDo(() -> {isRunningAction = false;});
+    }
+
+    /**
+     * Creates an algae pickup command using the current robot position and the nearest algae pickup location.
+     * @return A command to pick up algae, or null if not possible
+     */
+    public Command createAlgaePickupCommand() {
+        Pose2d startingPose = RobotContainer.driveSubsystem.getRobotPose();
+        Pose2d targetAlgaePose = getNearestAlgaePickupLocation();
+        Pose2d clearancePose = getNearestAlgaeClearanceLocation();
+
+        // Publish telemetry
+        SmartDashboard.putNumberArray("TargetPose Reef", new double[] {
+            targetAlgaePose.getX(),
+            targetAlgaePose.getY(),
+            targetAlgaePose.getRotation().getDegrees()
+        });
+
+        SmartDashboard.putNumberArray("TargetPose Algae Clearance", new double[] {
+            clearancePose.getX(),
+            clearancePose.getY(),
+            clearancePose.getRotation().getDegrees()
+        });
+
+        // Generate paths
+        var pickupPath = DynamicPathing.generateComplexPath(startingPose, 
+                                                         new Translation2d[] {clearancePose.getTranslation()}, 
+                                                         targetAlgaePose);
+        var backOffPath = DynamicPathing.generateComplexPath(targetAlgaePose, null, clearancePose);
+        
+        if (pickupPath.isPresent() && backOffPath.isPresent()) {
+            var pathingCommand = AutoBuilder.followPath(pickupPath.get());
+            var backoffPathingCommand = AutoBuilder.followPath(backOffPath.get());
+            
+            return PickupAlgea.pickupAlgeaWithPath(
+                pathingCommand, 
+                getAlgeaScoringLevel(startingPose), 
+                backoffPathingCommand
+            );
+        }
+        
+        return null;
     }
 }

@@ -39,6 +39,23 @@ import frc.robot.subsystems.Elevator.CollisionType;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
 
+import com.ctre.phoenix6.configs.*;
+import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
+import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.util.Units;
+
+import static frc.robot.RobotContainer.intakeSubsystem;
+import static frc.robot.RobotContainer.elevatorSubsystem;
+import static frc.robot.data.Constants.ManipulatorConstants.*;
+
 /**
  * The Manipulator subsystem handles the robot's pivot mechanism.
  * It controls:
@@ -51,7 +68,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     private final CANcoder pivotAbsoluteEncoder;
 
     // Control Objects
-    private final DynamicMotionMagicVoltage motionMagicRequest = new DynamicMotionMagicVoltage(0, ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY, ManipulatorConstants.PIVOT_MOTION_ACCELERATION, ManipulatorConstants.PIVOT_MOTION_JERK);
+    private final MotionMagicExpoVoltage motionMagicRequest = new MotionMagicExpoVoltage(0);
     // private final DynamicMotionMagicVoltage slowMotionMagicRequest = new DynamicMotionMagicVoltage(0, ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY / 25, ManipulatorConstants.PIVOT_MOTION_ACCELERATION / 25, ManipulatorConstants.PIVOT_MOTION_JERK / 25);
 
     // State variables
@@ -65,6 +82,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
     private final NetworkTable pivotTable = inst.getTable("Pivot");
     private final DoublePublisher pivotSetpointNT = pivotTable.getDoubleTopic("Setpoint (Degrees)").publish();
+    private final DoublePublisher realPivotSetpointNT = pivotTable.getDoubleTopic("Real Setpoint (Degrees)").publish();
     private final DoublePublisher pivotAngleNT = pivotTable.getDoubleTopic("Current Angle (Degrees)").publish();
     private final DoublePublisher pivotVelocityNT = pivotTable.getDoubleTopic("Current Velocity (rps)").publish();
     private final DoublePublisher pivotCurrentDrawNT = pivotTable.getDoubleTopic("Current Draw (Amps)").publish();
@@ -137,9 +155,12 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
         // Motion Magic
         MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs()
+            // .withMotionMagicCruiseVelocity(Constants.ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY)
+            // .withMotionMagicAcceleration(Constants.ManipulatorConstants.PIVOT_MOTION_ACCELERATION)
+            // .withMotionMagicJerk(Constants.ManipulatorConstants.PIVOT_MOTION_JERK)
             .withMotionMagicCruiseVelocity(Constants.ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY)
-            .withMotionMagicAcceleration(Constants.ManipulatorConstants.PIVOT_MOTION_ACCELERATION)
-            .withMotionMagicJerk(Constants.ManipulatorConstants.PIVOT_MOTION_JERK);
+            .withMotionMagicExpo_kV(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY)
+            .withMotionMagicExpo_kA(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_ACCELERATION);
         pivotConfigs.MotionMagic = motionMagicConfigs;
 
         // PID
@@ -162,6 +183,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         slot2Configs.kI = Constants.ManipulatorConstants.PIVOT_kI;
         slot2Configs.kS = Constants.ManipulatorConstants.PIVOT_kS;
         slot2Configs.kD = Constants.ManipulatorConstants.PIVOT_kD;
+        
         pivotConfigs.Slot2 = slot2Configs;
 
         pivotConfigs.MotorOutput.DutyCycleNeutralDeadband = PIVOT_MOTOR_DEADBAND;
@@ -176,10 +198,10 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         pivotConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
         // Add voltage compensation
-        pivotConfigs.Voltage.PeakForwardVoltage = 12.0; // 12V compensation
-        pivotConfigs.Voltage.PeakReverseVoltage = -12.0;
+        pivotConfigs.Voltage.PeakForwardVoltage = ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE; // 12V compensation
+        pivotConfigs.Voltage.PeakReverseVoltage = -ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE;
         pivotConfigs.Voltage.SupplyVoltageTimeConstant = 0.1;
-        pivotConfigs.CurrentLimits.StatorCurrentLimit = 40;
+        pivotConfigs.CurrentLimits.StatorCurrentLimit = 60;
 
         pivot.getConfigurator().apply(pivotConfigs);
     }
@@ -247,7 +269,17 @@ public class Pivot extends SubsystemBase implements NetworkUser {
             chosenPivotAngle = PivotPosition.CLEARANCE_POSITION.getDegrees();
         }
 
-        pivot.setControl(motionMagicRequest.withPosition(chosenPivotAngle / 360).withSlot(slot));
+        realPivotSetpointNT.set(chosenPivotAngle);
+
+        // Account for zero not being vertical
+        double pivotAngleFromVertical = getPivotPosition() - 40;
+        double gravityFeedforward = ManipulatorConstants.PIVOT_kG_HORIZONTAL * Math.sin(Units.degreesToRadians(pivotAngleFromVertical));
+
+        pivot.setControl(motionMagicRequest
+            .withPosition(chosenPivotAngle / 360)
+            .withFeedForward(gravityFeedforward)
+            .withSlot(slot)
+        );
     }
 
     /**

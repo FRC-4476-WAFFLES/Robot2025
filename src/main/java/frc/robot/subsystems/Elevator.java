@@ -10,6 +10,7 @@ import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -61,7 +62,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   private double elevatorSetpointMeters = 0;
   private boolean isZeroingElevator = false;
 
-  private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
+  private MotionMagicExpoVoltage motionMagicRequest = new MotionMagicExpoVoltage(0);
 
   // Networktables Variables 
   private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
@@ -149,7 +150,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
 
     // Current Limits
     CurrentLimitsConfigs elevatorCurrentLimits = new CurrentLimitsConfigs();
-    elevatorCurrentLimits.StatorCurrentLimit = 40;
+    elevatorCurrentLimits.StatorCurrentLimit = 50;
     elevatorCurrentLimits.StatorCurrentLimitEnable = true;
 
     elevatorConfig.CurrentLimits = elevatorCurrentLimits;
@@ -161,15 +162,20 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     slot0Configs.kI = ElevatorConstants.kI;
     slot0Configs.kD = ElevatorConstants.kD;
     slot0Configs.kG = ElevatorConstants.kG;
+    // slot0Configs.kV = 4.0;
     slot0Configs.GravityType = GravityTypeValue.Elevator_Static;
 
     elevatorConfig.Slot0 = slot0Configs;
 
     // Motion Magic
     MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
-    motionMagicConfigs.MotionMagicCruiseVelocity = ElevatorConstants.MOTION_CRUISE_VELOCITY;
-    motionMagicConfigs.MotionMagicAcceleration = ElevatorConstants.MOTION_ACCELERATION;
-    motionMagicConfigs.MotionMagicJerk = ElevatorConstants.MOTION_JERK;
+    // motionMagicConfigs.MotionMagicCruiseVelocity = ElevatorConstants.MOTION_CRUISE_VELOCITY;
+    // motionMagicConfigs.MotionMagicAcceleration = ElevatorConstants.MOTION_ACCELERATION;
+    // motionMagicConfigs.MotionMagicJerk = ElevatorConstants.MOTION_JERK;
+
+    motionMagicConfigs.MotionMagicCruiseVelocity = 0; // Unlimited cruise velocity
+    motionMagicConfigs.MotionMagicExpo_kV = 3; // kV is V/rps
+    motionMagicConfigs.MotionMagicExpo_kA = 0.7; // Use a slower kA V/(rps/s)
     elevatorConfig.MotionMagic = motionMagicConfigs;
 
     // Mechanism Reduction
@@ -190,7 +196,8 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    * @return true if funnel is blocking elevator movement
    */
   public boolean isFunnelBlockingElevator() { 
-    return RobotContainer.funnelSubsystem.getFunnelDegrees() > Constants.FunnelConstants.FUNNEL_BLOCKING_THRESHOLD;
+    // return RobotContainer.funnelSubsystem.getFunnelDegrees() > Constants.FunnelConstants.FUNNEL_BLOCKING_THRESHOLD;
+    return false;
   }
 
   @Override
@@ -235,7 +242,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
       // double chosenFeedforward = ElevatorConstants.kG; // withFeedForward(chosenFeedforward)
 
       // Apply chosen setpoint
-      // elevatorMotorLeader.setControl(motionMagicRequest.withPosition(chosenElevatorPosition).withSlot(0));
+      elevatorMotorLeader.setControl(motionMagicRequest.withPosition(chosenElevatorPosition).withSlot(0));
     }
 
     // Update network tables

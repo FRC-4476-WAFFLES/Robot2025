@@ -9,6 +9,10 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.PhysicalConstants;
 
@@ -21,9 +25,9 @@ import static frc.robot.RobotContainer.*;
 
 public class FinalAlignCoral extends Command {
   /* PID Controllers */
-  private PIDController xPidController = new PIDController(4, 0, 0.1);
-  private PIDController yPidController = new PIDController(4, 0, 0.1);
-  private PIDController thetaPidController = new PIDController(6.0, 0, 0.1);
+  private PIDController xPidController = new PIDController(3.8, 0, 0.1);
+  private PIDController yPidController = new PIDController(3.8, 0, 0.1);
+  private PIDController thetaPidController = new PIDController(5.0, 0, 0.1);
 
   private SwerveRequest.FieldCentric driveRequest = new SwerveRequest.FieldCentric();
 
@@ -31,6 +35,11 @@ public class FinalAlignCoral extends Command {
 
   private static final double PosMaxError = 0.02;
   private static final double RotMaxError = 1; // degrees
+
+  /* Timing variables */
+  private final Timer alignmentTimer = new Timer();
+  private static final NetworkTable scoringTable = NetworkTableInstance.getDefault().getTable("ScoringMetrics");
+  private static final DoublePublisher alignmentTimePublisher = scoringTable.getDoubleTopic("FinalAlignCoral Duration").publish();
 
 
   /** 
@@ -49,6 +58,10 @@ public class FinalAlignCoral extends Command {
   @Override
   public void initialize() {
     SmartDashboard.putBoolean("TerminalCoralAlignment", true);
+    
+    // Start the alignment timer
+    alignmentTimer.reset();
+    alignmentTimer.start();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -84,6 +97,14 @@ public class FinalAlignCoral extends Command {
   @Override
   public void end(boolean interrupted) {
     SmartDashboard.putBoolean("TerminalCoralAlignment", false);
+
+    // Stop the timer and publish the final alignment time
+    alignmentTimer.stop();
+    double finalAlignmentTime = alignmentTimer.get();
+    alignmentTimePublisher.set(finalAlignmentTime);
+    
+    // Log the alignment time to SmartDashboard as well
+    SmartDashboard.putNumber("Recent Alignment Time", finalAlignmentTime);
 
     driveSubsystem.setControl(
       driveRequest

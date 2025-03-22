@@ -228,25 +228,28 @@ public final class Constants {
     public static final double PIVOT_L4_CLEARANCE_ANGLE = 28;
 
     // Motor configuration
-    public static final double PIVOT_MOTION_CRUISE_VELOCITY = 5.0;
-    public static final double PIVOT_MOTION_ACCELERATION = 10.0;
+    public static final double PIVOT_MOTION_CRUISE_VELOCITY = 6;
+    public static final double PIVOT_MOTION_ACCELERATION = 30.0;
     public static final double PIVOT_MOTION_JERK = 2000.0;
-    public static final double STATOR_CURRENT_LIMIT = 70.0; // amps
+    public static final double STATOR_CURRENT_LIMIT = 50.0; // amps
     public static final double PIVOT_MOTOR_DEADBAND = 0.001;
+    public static final double PIVOT_SUPPLY_VOLTAGE = 12.0;
     public static final double PIVOT_CURRENT_THRESHOLD =  27.0; // amps - Current threshold for zeroing
 
     // PID Values
-    public static final double PIVOT_kP = 120.0;
+    public static final double PIVOT_kP = 75.0;
     public static final double PIVOT_kI = 0.0;
     public static final double PIVOT_kD = 0.0;
     public static final double PIVOT_kS = 0.0;
+
+    public static final double PIVOT_kG_HORIZONTAL = -0.3; 
 
     public static final double PIVOT_kP_ALGEA_SLOW = 40.0;
 
     // Pivot Positions
     public enum PivotPosition {
         ZERO(0),
-        CLEARANCE_POSITION(28),
+        CLEARANCE_POSITION(32),
         CLEARANCE_POSITION_ALGEA(90),
         ALGAE_L2(178.5),
         ALGAE_L1(178.5),
@@ -288,7 +291,7 @@ public final class Constants {
     public static final double STALL_CURRENT_THRESHOLD = 20.0; // Amperes
 
     // Elevator will not move if the pivot is not past this angle, to avoid collision with top bar
-    public static final double MIN_ELEVATOR_PIVOT_ANGLE = 20; 
+    public static final double MIN_ELEVATOR_PIVOT_ANGLE = 24; 
     public static final double PIVOT_BUMPER_CLEAR_HEIGHT = 0.181;
 
     public static final double PIVOT_L4_CLEAR_HEIGHT_MIN = 0.70;
