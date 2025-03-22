@@ -20,6 +20,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
@@ -555,14 +556,6 @@ public class DynamicPathing extends SubsystemBase {
             secondPose = intermediatePoses[0];
         }
 
-        // Use consistent constraints regardless of current speed
-        PathConstraints constraints = new PathConstraints(
-            MAX_SPEED,
-            MAX_ACCELERATION,
-            MAX_ANGULAR_SPEED,
-            MAX_ANGULAR_ACCELERATION
-        );
-
         List<Pose2d> fullPoseSet = new ArrayList<Pose2d>();
 
         // If coming at speed create curved path to allow for deceleration
@@ -605,6 +598,17 @@ public class DynamicPathing extends SubsystemBase {
             fullPoseSet
         );
         
+        // Generate constraints
+        double velocityMagnitude = Math.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
+        // If moving faster than max speed, make max speed current speed + some epsilon
+        double maxSpeed = velocityMagnitude > MAX_SPEED ? velocityMagnitude + 0.1 : MAX_SPEED;
+
+        PathConstraints constraints = new PathConstraints(
+            maxSpeed,
+            MAX_ACCELERATION,
+            MAX_ANGULAR_SPEED,
+            MAX_ANGULAR_ACCELERATION
+        );
 
         // Create the path using the waypoints above with initial velocity
         // The path will naturally slow down to MAX_SPEED using the consistent constraints
@@ -685,17 +689,43 @@ public class DynamicPathing extends SubsystemBase {
         });
 
         // Generate paths
-        var pickupPath = DynamicPathing.generateComplexPath(startingPose, 
-                                                         new Translation2d[] {clearancePose.getTranslation()}, 
-                                                         targetAlgaePose);
+        Command arrivalPathingCommand;
+        if (isPastAlgaeClearancePoint()) {
+            // Make one smooth path in
+            var pickupPath = DynamicPathing.generateComplexPath(startingPose, 
+                new Translation2d[] {clearancePose.getTranslation()}, 
+                targetAlgaePose);
+
+            // Give up if path doesn't exist
+            if (pickupPath.isPresent()) {
+                arrivalPathingCommand = AutoBuilder.followPath(pickupPath.get());
+            } else {
+                return null;
+            }
+        } else {
+            // Make two disjointed paths to avoid spline funniness
+            var initialBackOffPath = DynamicPathing.simplePathToPose(clearancePose);
+            var arrivalPath = DynamicPathing.generateComplexPath(clearancePose, null, targetAlgaePose);
+
+            // Give up if path doesn't exist
+            if (initialBackOffPath.isPresent() && arrivalPath.isPresent()) {
+                arrivalPathingCommand = Commands.sequence(
+                    AutoBuilder.followPath(initialBackOffPath.get()),
+                    AutoBuilder.followPath(arrivalPath.get())
+                );
+            } else {
+                return null;
+            }
+        }
+        
         var backOffPath = DynamicPathing.generateComplexPath(targetAlgaePose, null, clearancePose);
         
-        if (pickupPath.isPresent() && backOffPath.isPresent()) {
-            var pathingCommand = AutoBuilder.followPath(pickupPath.get());
+        if (backOffPath.isPresent()) {
+            // Generate final back off path
             var backoffPathingCommand = AutoBuilder.followPath(backOffPath.get());
             
             return PickupAlgea.pickupAlgeaWithPath(
-                pathingCommand, 
+                arrivalPathingCommand, 
                 getAlgeaScoringLevel(startingPose), 
                 backoffPathingCommand
             );

@@ -41,7 +41,7 @@ public class CoralOutake extends Command {
         break;
 
       case L4:
-        RobotContainer.intakeSubsystem.setIntakeSpeed(-60.0); // Fast to ensure fitting on post
+        RobotContainer.intakeSubsystem.setIntakeSpeed(-100.0); // Fast to ensure fitting on post
         break;
 
       default:

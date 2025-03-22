@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
+import com.pathplanner.lib.util.PathPlannerLogging;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -11,6 +12,8 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
+import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
@@ -71,6 +74,17 @@ public class Telemetry extends SubsystemBase {
     private final DoublePublisher driveSpeed = swerveTable.getDoubleTopic("DriveSpeed").publish();
     private final DoublePublisher angleSetpoint = swerveTable.getDoubleTopic("AngleSetpoint").publish();
     private final DoublePublisher anglePos = swerveTable.getDoubleTopic("AnglePos").publish();
+
+    /* Pathplanner data */
+    // private final NetworkTable pathplannerTable = inst.getTable("PathPlanner");
+    // StructPublisher<Pose2d> pathplannerCurrentPoseNT = pathplannerTable
+    //     .getStructTopic("PPCurrentPose", Pose2d.struct).publish();
+    // StructPublisher<Pose2d> pathplannerTargetPoseNT = pathplannerTable
+    //     .getStructTopic("PPTargetPose", Pose2d.struct).publish();
+    // StructArrayPublisher<Pose2d> pathplannerCurrentTrajectory = pathplannerTable
+    //     .getStructArrayTopic("PPCurrentTrajectory", Pose2d.struct).publish();
+
+    // private final Pose2d[] trajTypeArray = new Pose2d[0];
     
     /*                            */
     /* Swerve Telemetry Variables */
@@ -140,9 +154,29 @@ public class Telemetry extends SubsystemBase {
         // This method will be called once per scheduler run
         publishPDHInfo();
 
+        // Climber telemetry
         if (RobotContainer.currentClimbState != null) {
             climbState.set(RobotContainer.currentClimbState.toString());
         }
+
+        // Pathplanner Telemetry
+        // Logging callback for current robot pose
+        PathPlannerLogging.setLogCurrentPoseCallback((pose) -> {
+            // Do whatever you want with the pose here
+            // pathplannerCurrentPoseNT.set(pose);
+        });
+
+        // Logging callback for target robot pose
+        PathPlannerLogging.setLogTargetPoseCallback((pose) -> {
+            // Do whatever you want with the pose here
+            // pathplannerTargetPoseNT.set(pose);
+        });
+
+        // Logging callback for the active path, this is sent as a list of poses
+        PathPlannerLogging.setLogActivePathCallback((poses) -> {
+            // Do whatever you want with the poses here
+            // pathplannerCurrentTrajectory.set(poses.toArray(trajTypeArray));
+        });
     }
 
     /* Accept the swerve drive state and telemeterize it to smartdashboard */
