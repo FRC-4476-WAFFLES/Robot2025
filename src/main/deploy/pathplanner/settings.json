@@ -22,7 +22,7 @@
     "Push"
   ],
   "defaultMaxVel": 4.1,
-  "defaultMaxAccel": 4.0,
+  "defaultMaxAccel": 5.0,
   "defaultMaxAngVel": 800.0,
   "defaultMaxAngAccel": 1200.0,
   "defaultNominalVoltage": 12.0,
