@@ -25,9 +25,9 @@ import static frc.robot.RobotContainer.*;
 
 public class FinalAlignCoral extends Command {
   /* PID Controllers */
-  private PIDController xPidController = new PIDController(4, 0, 0.1);
-  private PIDController yPidController = new PIDController(4, 0, 0.1);
-  private PIDController thetaPidController = new PIDController(6.0, 0, 0.1);
+  private PIDController xPidController = new PIDController(3.8, 0, 0.1);
+  private PIDController yPidController = new PIDController(3.8, 0, 0.1);
+  private PIDController thetaPidController = new PIDController(5.0, 0, 0.1);
 
   private SwerveRequest.FieldCentric driveRequest = new SwerveRequest.FieldCentric();
 
