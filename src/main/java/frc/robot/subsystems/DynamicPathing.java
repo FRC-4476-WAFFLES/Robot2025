@@ -69,7 +69,9 @@ public class DynamicPathing extends SubsystemBase {
     public static final double REEF_SCORING_POSITION_OFFSET_L1 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.37; // Robot with bumpers
     public static final double REEF_SCORING_POSITION_OFFSET_L4 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.12; // Robot with bumpers
     public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.05; // Robot with bumpers
+    public static final double REEF_ALGAE_SAFETY_POSITION = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.35; // Robot with bumpers
 
+    
     /* Human player station physical parameters */
     public static final Translation2d HUMAN_PLAYER_STATION_LEFT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(25.80));  
     public static final Translation2d HUMAN_PLAYER_STATION_RIGHT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(291.20));  
@@ -204,7 +206,7 @@ public class DynamicPathing extends SubsystemBase {
      * @return a boolean
      */
     public static boolean isPastAlgaeClearancePoint() {
-        return getDistanceToReef() > REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE;
+        return getDistanceToReef() > REEF_ALGAE_SAFETY_POSITION + REEF_INRADIUS;
     }
 
     /**
@@ -244,13 +246,6 @@ public class DynamicPathing extends SubsystemBase {
                 break;
 
             case REEF_ALGAE: {
-                    Pose2d targetAlgaePose = getNearestAlgaePickupLocation();
-                    SmartDashboard.putNumberArray("TargetPose Reef", new double[] {
-                        targetAlgaePose.getX(),
-                        targetAlgaePose.getY(),
-                        targetAlgaePose.getRotation().getDegrees()
-                    });
-
                     // Use the extracted helper method to create the command
                     cmd = createAlgaePickupCommand();
                 }
@@ -672,11 +667,24 @@ public class DynamicPathing extends SubsystemBase {
      * @return A command to pick up algae, or null if not possible
      */
     public Command createAlgaePickupCommand() {
+        Pose2d startingPose = RobotContainer.driveSubsystem.getRobotPose();
         Pose2d targetAlgaePose = getNearestAlgaePickupLocation();
         Pose2d clearancePose = getNearestAlgaeClearanceLocation();
 
-        var startingPose = RobotContainer.driveSubsystem.getRobotPose();
+        // Publish telemetry
+        SmartDashboard.putNumberArray("TargetPose Reef", new double[] {
+            targetAlgaePose.getX(),
+            targetAlgaePose.getY(),
+            targetAlgaePose.getRotation().getDegrees()
+        });
 
+        SmartDashboard.putNumberArray("TargetPose Algae Clearance", new double[] {
+            clearancePose.getX(),
+            clearancePose.getY(),
+            clearancePose.getRotation().getDegrees()
+        });
+
+        // Generate paths
         var pickupPath = DynamicPathing.generateComplexPath(startingPose, 
                                                          new Translation2d[] {clearancePose.getTranslation()}, 
                                                          targetAlgaePose);

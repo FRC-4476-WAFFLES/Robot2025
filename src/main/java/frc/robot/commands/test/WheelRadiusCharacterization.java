@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
+import frc.robot.data.TunerConstants;
 
 
 /**
@@ -33,7 +34,7 @@ public class WheelRadiusCharacterization {
   public static final double TEST_RAMP_RATE = 0.4; // Radians / s^2
   public static final double TEST_TOP_SPEED = 0.35; // Radians / s
 
-  public static final double TEST_DURATION = 12; // seconds
+  public static final double TEST_DURATION = 30; // seconds
   
   // Class should not be instanciated, so constructor is private
   private WheelRadiusCharacterization() {}
@@ -48,6 +49,7 @@ public class WheelRadiusCharacterization {
     // Characterization state
     SlewRateLimiter slewRateLimiter = new SlewRateLimiter(TEST_RAMP_RATE);
     WheelRadiusCharacterizationState state = new WheelRadiusCharacterizationState(); 
+
 
     return Commands.parallel(
       // Motion sequence
@@ -78,8 +80,19 @@ public class WheelRadiusCharacterization {
         Commands.run(() -> {
           Rotation2d currentRotation = Rotation2d.fromDegrees(driveSubsystem.getPigeon2().getYaw().getValueAsDouble()); 
           state.accumulatedRotation += Math.abs(currentRotation.minus(state.lastRotation).getRadians());
+
+          //Debugging
+          // gyroDelta.set(Math.abs(currentRotation.minus(state.lastRotation).getRadians()));
+          // accumulatedRotNT.set(state.accumulatedRotation);
+          // currentRotNT.set(currentRotation.getRadians());
+
           state.lastRotation = currentRotation;
+
         }).finallyDo(() -> {
+          // Finally update last rotation
+          Rotation2d currentRotation = Rotation2d.fromDegrees(driveSubsystem.getPigeon2().getYaw().getValueAsDouble()); 
+          state.accumulatedRotation += Math.abs(currentRotation.minus(state.lastRotation).getRadians());
+
           // Finally calculate radius from accumulated data
           double[] finalModuleRotations = driveSubsystem.getWheelDriveRotations();
 
@@ -87,13 +100,16 @@ public class WheelRadiusCharacterization {
           for (int i = 0; i < 4; i++) {
             // The length of the arc made by the wheel in meters
             double arcLength = driveSubsystem.getSwerveModuleRadius(i) * state.accumulatedRotation;
-            double moduleDeltaRadians = Math.abs(state.startingModuleRotations[i] - finalModuleRotations[i]);
+            double moduleDeltaRadians = Math.abs(state.startingModuleRotations[i] - finalModuleRotations[i]) / TunerConstants.kDriveGearRatio;
 
-            System.out.println("RAD: " + driveSubsystem.getSwerveModuleRadius(i));
+            System.out.println("RADIUS: " + (arcLength / moduleDeltaRadians));
 
+            
             // Arc length over theta to get radius of wheel
             accumulatedWheelRadius += arcLength / moduleDeltaRadians;
           }
+
+          
 
           double wheelRadius = accumulatedWheelRadius / 4;
           System.out.println("==== Test Completed! ==== ");
@@ -105,10 +121,12 @@ public class WheelRadiusCharacterization {
           DoublePublisher wheelRadiusMeterValueNT = testTable.getDoubleTopic("Wheel Radius (Meters)").publish();
           DoublePublisher wheelRadiusInchValueNT = testTable.getDoubleTopic("Wheel Radius (Inches)").publish();
           DoublePublisher gyroDeltaNT = testTable.getDoubleTopic("Gyro Test Delta (Degrees)").publish();
+          DoublePublisher wheelRotations = testTable.getDoubleTopic("WheelRots").publish();
 
           wheelRadiusMeterValueNT.set(wheelRadius);
           wheelRadiusInchValueNT.set(Units.metersToInches(wheelRadius));
           gyroDeltaNT.set(Units.radiansToDegrees(state.accumulatedRotation));
+          wheelRotations.set(Math.abs(state.startingModuleRotations[0] - finalModuleRotations[0]));
         })
       )
     ).withTimeout(TEST_DURATION).finallyDo(() -> {

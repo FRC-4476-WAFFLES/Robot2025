@@ -73,7 +73,7 @@ public class RobotContainer {
   public static final Pivot pivotSubsystem = new Pivot();
   public static final Intake intakeSubsystem = new Intake();
   public static final Elevator elevatorSubsystem = new Elevator();
-  public static final Funnel funnelSubsystem = new Funnel();
+  // public static final Funnel funnelSubsystem = new Funnel();
   public static final Climber climberSubsystem = new Climber();
   public static final Lights lightsSubsystem = new Lights();
 
@@ -286,15 +286,15 @@ public class RobotContainer {
     );
 
     // Climb binds
-    Controls.leftJoystick.button(3).whileTrue(
-      new InstantCommand(
-        () -> {RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.UP);}
-      )
-    ).onFalse(
-      new InstantCommand(
-        () -> {RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.DOWN);}
-      )
-    );
+    // Controls.leftJoystick.button(3).whileTrue(
+    //   new InstantCommand(
+    //     () -> {RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.UP);}
+    //   )
+    // ).onFalse(
+    //   new InstantCommand(
+    //     () -> {RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.DOWN);}
+    //   )
+    // );
 
     // Moves forwards in state if possible
     Controls.rightJoystick.button(4).onTrue(
@@ -363,10 +363,10 @@ public class RobotContainer {
     );
 
     // Operator coral bump up
-    Controls.operatorController.povUp().whileTrue(
-      Commands.runOnce(() -> RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.CORAL_BUMP), pivotSubsystem)
-      .finallyDo(() -> RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.DOWN))
-    );
+    // Controls.operatorController.povUp().whileTrue(
+    //   Commands.runOnce(() -> RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.CORAL_BUMP), pivotSubsystem)
+    //   .finallyDo(() -> RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.DOWN))
+    // );
 
     // Manual net toss
     Controls.operatorController.povDown().whileTrue(Commands.defer(() -> ScoreNet.getScoreNetCommand(0, Rotation2d.kZero, false), ScoreCoral.commandRequirements).onlyIf(() -> RobotContainer.intakeSubsystem.isAlgaeLoaded()));

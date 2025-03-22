@@ -150,7 +150,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
 
     // Current Limits
     CurrentLimitsConfigs elevatorCurrentLimits = new CurrentLimitsConfigs();
-    elevatorCurrentLimits.StatorCurrentLimit = 60;
+    elevatorCurrentLimits.StatorCurrentLimit = 50;
     elevatorCurrentLimits.StatorCurrentLimitEnable = true;
 
     elevatorConfig.CurrentLimits = elevatorCurrentLimits;
@@ -196,7 +196,8 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    * @return true if funnel is blocking elevator movement
    */
   public boolean isFunnelBlockingElevator() { 
-    return RobotContainer.funnelSubsystem.getFunnelDegrees() > Constants.FunnelConstants.FUNNEL_BLOCKING_THRESHOLD;
+    // return RobotContainer.funnelSubsystem.getFunnelDegrees() > Constants.FunnelConstants.FUNNEL_BLOCKING_THRESHOLD;
+    return false;
   }
 
   @Override

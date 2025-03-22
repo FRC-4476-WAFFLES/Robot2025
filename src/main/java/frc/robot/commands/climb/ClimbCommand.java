@@ -29,7 +29,7 @@ public class ClimbCommand extends Command {
   /** Creates a new ClimbCommand. */
   public ClimbCommand() {
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(RobotContainer.climberSubsystem, RobotContainer.funnelSubsystem, RobotContainer.pivotSubsystem, RobotContainer.elevatorSubsystem);
+    // addRequirements(RobotContainer.climberSubsystem, RobotContainer.funnelSubsystem, RobotContainer.pivotSubsystem, RobotContainer.elevatorSubsystem);
   }
 
   // Called when the command is initially scheduled.
@@ -43,35 +43,35 @@ public class ClimbCommand extends Command {
   @Override
   public void execute() {
     // Apply current state
-    switch (RobotContainer.currentClimbState) {
-      case STOWED:
-        RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.ZERO);
-        RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.DOWN);
-        RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.ZERO);
-        break;
-      case DEPLOYED:
-        RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.DEPLOYED);
-        RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.UP);
-        RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLIMB);
-        break;
-      case FIT:
-        RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.FIT);
-        RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.UP);
-        RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLIMB);
-        break;
-      case MIDDLE:
-        RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.MIDDLE);
-        RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.UP);
-        RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLIMB);
-        break;
-      case LIFTED:
-        RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.RETRACTED);
-        RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.UP);
-        RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLIMB);
-        break;
-      default:
-        break;
-    }
+    // switch (RobotContainer.currentClimbState) {
+    //   case STOWED:
+    //     RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.ZERO);
+    //     RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.DOWN);
+    //     RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.ZERO);
+    //     break;
+    //   case DEPLOYED:
+    //     RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.DEPLOYED);
+    //     RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.UP);
+    //     RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLIMB);
+    //     break;
+    //   case FIT:
+    //     RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.FIT);
+    //     RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.UP);
+    //     RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLIMB);
+    //     break;
+    //   case MIDDLE:
+    //     RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.MIDDLE);
+    //     RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.UP);
+    //     RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLIMB);
+    //     break;
+    //   case LIFTED:
+    //     RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.RETRACTED);
+    //     RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.UP);
+    //     RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLIMB);
+    //     break;
+    //   default:
+    //     break;
+    // }
 
     // System.out.println("AAGHHH: " + RobotContainer.currentClimbState);
   }
@@ -80,7 +80,7 @@ public class ClimbCommand extends Command {
   @Override
   public void end(boolean interrupted) {
     RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.RETRACTED);
-    RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.DOWN);
+    // RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.DOWN);
     RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.ZERO);
 
     // Just for safety
