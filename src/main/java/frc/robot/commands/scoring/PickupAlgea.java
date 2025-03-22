@@ -5,6 +5,7 @@
 package frc.robot.commands.scoring;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -25,6 +26,12 @@ public class PickupAlgea extends SequentialCommandGroup {
         RobotContainer.dynamicPathingSubsystem.wrapPathingCommand(driveCommand),
         // Deploy and pickup sequence
         new SequentialCommandGroup(
+          // Move elevator first, since it's always safe to do so
+          new InstantCommand(() -> {
+            RobotContainer.elevatorSubsystem.setElevatorSetpoint(scoringLevel.getElevatorLevel());
+            RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
+          }),
+          // Wait until safe to move out pivot
           new WaitUntilCommand(() -> DynamicPathing.isPastAlgaeClearancePoint()),
           new ParallelCommandGroup(
             new ApplyScoringSetpoint(scoringLevel),

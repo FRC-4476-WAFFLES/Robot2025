@@ -37,16 +37,19 @@ public class LimelightContainer {
         if (mt2Result != null) {
             if(mt2Result.tagCount > 0) //Math.abs(Math.toDegrees(getCurrentRobotChassisSpeeds().omegaRadiansPerSecond)) < 10 &&
             {
+                var StandardDeviations = VisionHelpers.getEstimationStdDevsLimelightMT2(mt2Result.rawFiducials);
                 driveSubsystem.addVisionMeasurement(
                     mt2Result.pose,
                     Utils.fpgaToCurrentTime(mt2Result.timestampSeconds),
-                    VisionHelpers.getEstimationStdDevsLimelightMT2(mt2Result.rawFiducials));
+                    StandardDeviations);
 
                 SmartDashboard.putNumberArray(limelightName + " Pose MT2 ", new double[] {
                     mt2Result.pose.getX(),
                     mt2Result.pose.getY(),
                     mt2Result.pose.getRotation().getDegrees()
                 });
+
+                SmartDashboard.putNumber(limelightName + "STDEV MT2", StandardDeviations.get(0, 0));
             }
         }
 
