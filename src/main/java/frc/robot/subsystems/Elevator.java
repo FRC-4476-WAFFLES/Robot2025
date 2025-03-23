@@ -11,7 +11,6 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
@@ -30,13 +29,11 @@ import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.ElevatorConstants;
-import frc.robot.data.Constants.FunnelConstants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
 
 import static edu.wpi.first.units.Units.Volts;
-import static frc.robot.RobotContainer.*;
 
 public class Elevator extends SubsystemBase implements NetworkUser {
   /**
@@ -51,8 +48,6 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     ENTERING_FROM_BELOW,
     /** Will enter collision zone from above */
     ENTERING_FROM_ABOVE,
-    /** Funnel is up, preventing elevator movement */
-    FUNNEL_BLOCKING
   }
 
   // Hardware Components
@@ -76,7 +71,6 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   private final BooleanPublisher isAtSetpointNT = elevatorTable.getBooleanTopic("Elevator at Setpoint").publish();
   private final DoublePublisher leaderCurrentDrawNT = elevatorTable.getDoubleTopic("Leader Motor Current (Amps)").publish();
   private final DoublePublisher followerCurrentDrawNT = elevatorTable.getDoubleTopic("Follower Motor Current (Amps)").publish();
-  private final BooleanPublisher funnelBlockingElevatorNT = elevatorTable.getBooleanTopic("Funnel Blocking Elevator").publish();
 
   private ElevatorLevel currentSetpointEnum = ElevatorLevel.REST_POSITION; 
   private CollisionType currentCollisionPrediction = CollisionType.NONE;
@@ -198,23 +192,11 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     elevatorMotorFollower.setControl(new Follower(Constants.CANIds.elevator1, false));
   }
 
-  /**
-   * Checks if the funnel is in a position that would block elevator movement
-   * @return true if funnel is blocking elevator movement
-   */
-  public boolean isFunnelBlockingElevator() { 
-    // return RobotContainer.funnelSubsystem.getFunnelDegrees() > Constants.FunnelConstants.FUNNEL_BLOCKING_THRESHOLD;
-    return false;
-  }
 
   @Override
   public void periodic() {
     // Updated always so pivot always gets accurate information
     currentCollisionPrediction = isCollisionPredicted(elevatorSetpointMeters);
-
-    // Check if funnel is blocking elevator movement
-    boolean funnelBlocking = isFunnelBlockingElevator();
-    funnelBlockingElevatorNT.set(funnelBlocking);
 
     if (isZeroingElevator) {
       handleElevatorZeroPeriodic();
@@ -222,10 +204,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
       // Main control logic
       double chosenElevatorPosition = elevatorSetpointMeters;
 
-      if (funnelBlocking && elevatorSetpointMeters > ElevatorConstants.COLLISION_ZONE_LOWER) {
-        // If funnel is up and we're trying to move above the collision zone, limit to collision zone lower
-        chosenElevatorPosition = ElevatorConstants.COLLISION_ZONE_LOWER;
-      } else if (currentCollisionPrediction == Elevator.CollisionType.NONE) {
+      if (currentCollisionPrediction == Elevator.CollisionType.NONE) {
         // Safe to move elevator
         // Move elevator to setpoint
         chosenElevatorPosition = elevatorSetpointMeters; // not necessary but sanity check I guess
@@ -432,11 +411,6 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    */
   public CollisionType isCollisionPredicted(double setpoint) {
     potentialCollisionPrediction = predictedPotentialCollision(setpoint);
-    
-    // Check if funnel is blocking elevator movement
-    if (isFunnelBlockingElevator() && setpoint > ElevatorConstants.COLLISION_ZONE_LOWER) {
-      return CollisionType.FUNNEL_BLOCKING;
-    }
     
     // Check if pivot is in safe position
     boolean pivotSafe = RobotContainer.pivotSubsystem.getPivotPosition() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE;

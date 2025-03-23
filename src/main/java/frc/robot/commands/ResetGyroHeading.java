@@ -10,7 +10,7 @@ import static frc.robot.RobotContainer.*;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ResetGyroHeading extends Command {
-  /** Creates a new ClimberIn. */
+  /** Creates a new ResetGyroHeading. */
   public ResetGyroHeading() {
     //addRequirements(driveSubsystem);
     // Use addRequirements() here to declare subsystem dependencies.

@@ -36,14 +36,12 @@ public final class Constants {
     public static final int drivingBackRight = 8; 
 
     // Other Motors
-    public static final int elevator1 = 9; // Kraken X60
-    public static final int elevator2 = 10; // Kraken X60
-    public static final int climberLeader = 11;
-    public static final int climberFollower = 12;
-    public static final int funnelMotor = 13;
+    public static final int elevator1 = 9; 
+    public static final int elevator2 = 10; 
     public static final int intakeMotor = 14;
     public static final int pivotMotor = 15;
-    
+    public static final int sharkPivotMotor = 13;
+    public static final int sharkIntake = 99;
     
     // Sensors
     
@@ -51,8 +49,6 @@ public final class Constants {
     public static final int frontRightAbsoluteEncoder = 20; // CANcoder
     public static final int backLeftAbsoluteEncoder = 21; // CANcoder
     public static final int backRightAbsoluteEncoder = 22; // CANcoder
-    // public static final int climberAbsoluteEncoder = 23;
-    // public static final int climberEncoderOffset = 0;
     // public static final int coralPivotAbsoluteEncoder = 24;
     // public static final int coralPivotAbsoluteEncoderOffset = 0;
 
@@ -129,23 +125,20 @@ public final class Constants {
     public static final double withBumperBotHalfWidth = 0.460; // m
 
     // In number of motor rotations per mechanism rotation
-    public static final double funnelReduction = 40.0; 
+    public static final double sharkPivotReduction = 40.0; 
     public static final double pivotReduction = 52.5625; 
-    public static final double ClimberReduction = 455.1111111111;
-    public static final double AwfulClimbRatioFudge = 3;
     public static final double elevatorReductionToMeters = 26.6; // Motor rotations to elevator height in meters
 
     public static final double pivotAbsoluteEncoderOffset = 0;
   }
 
-  /* Funnel Constants */
-  public static class FunnelConstants {
+  /* Shark Pivot Constants */
+  public static class SharkPivotConstants {
     // Control constants
-    public static final double FUNNEL_DEAD_ZONE = 5.0; // In degrees
-    public static final double FUNNEL_MIN_ANGLE = 0.0; // Minimum angle in degrees
-    public static final double FUNNEL_MAX_ANGLE = 195.0; // Maximum angle in degrees - adjust as needed
-    public static final double FUNNEL_BLOCKING_THRESHOLD = 60.0; // Angle threshold where funnel starts to interfere with elevator movement
-
+    public static final double DEAD_ZONE = 5.0; // In degrees
+    public static final double MIN_ANGLE = 0.0; // Minimum angle in degrees
+    public static final double MAX_ANGLE = 195.0; // Maximum angle in degrees - adjust as needed
+    
     // Motor configuration
     public static final double STATOR_CURRENT_LIMIT = 40.0; // amps
     public static final double MOTION_CRUISE_VELOCITY = 1.5; 
@@ -158,16 +151,15 @@ public final class Constants {
     public static final double kD = 0.01;
     public static final double kS = 0.0;
 
-    // Predefined positions for the funnel (in degrees)
-    public enum FunnelPosition {
-      DOWN(0.0),
-      UP(190.0),
-      
-      CORAL_BUMP(6.0);
+    // Predefined positions for the shark (in degrees)
+    public enum SharkPivotPosition {
+      STOWED(0.0),
+      DEPLOYED(90.0),
+      L1(15);
 
       private final double degrees;
 
-      FunnelPosition(double degrees) {
+      SharkPivotPosition(double degrees) {
         this.degrees = degrees;
       }
 
@@ -276,7 +268,6 @@ public final class Constants {
         MANUAL_L2(24.0),
         MANUAL_L1(150),
 
-        CLIMB(144),
         NET_PREP(180);
 
         private final double pivotDegrees;
@@ -355,45 +346,6 @@ public final class Constants {
 
       public double getHeight() {
         return height;
-      }
-    }
-  }
-
-  /* Climber Constants */
-  public static class ClimberConstants {
-    // Control constants
-    public static final double CLIMBER_DEAD_ZONE = 0.2; // In degrees
-    public static final double CLIMBER_MIN_ANGLE = -2.0; // Minimum angle in degrees
-    public static final double CLIMBER_MAX_ANGLE = 134.0; // Maximum angle in degrees
-
-    // Motor configuration
-    public static final double STATOR_CURRENT_LIMIT = 90.0; // amps
-    public static final double MOTION_CRUISE_VELOCITY = 50.0; // was 20
-    public static final double MOTION_ACCELERATION = 60.0; 
-    public static final double MOTION_JERK = 1900.0; 
-
-    // PID Values
-    public static final double kP = 350.0;
-    public static final double kI = 0.0;
-    public static final double kD = 0.01;
-    public static final double kS = 0.0;
-
-    // Predefined positions for the climber (in degrees)
-    public enum ClimberPosition {
-      ZERO(0.0),
-      RETRACTED(10),
-      MIDDLE(73),
-      FIT(95),
-      DEPLOYED(135.0);
-
-      private final double degrees;
-
-      ClimberPosition(double degrees) {
-        this.degrees = degrees;
-      }
-
-      public double getDegrees() {
-        return degrees;
       }
     }
   }

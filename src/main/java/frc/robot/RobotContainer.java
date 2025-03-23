@@ -24,8 +24,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.ResetGyroHeading;
-import frc.robot.commands.climb.ClimbCommand;
-import frc.robot.commands.climb.ClimbCommand.ClimbState;
 import frc.robot.commands.intake.AlgeaOutake;
 import frc.robot.commands.intake.AutoIntake;
 import frc.robot.commands.intake.AxisIntakeControl;
@@ -40,19 +38,14 @@ import frc.robot.commands.superstructure.ZeroMechanisms;
 import frc.robot.commands.test.TestDriveAuto;
 import frc.robot.commands.test.TestElevatorAuto;
 import frc.robot.commands.test.WheelRadiusCharacterization;
-import frc.robot.data.Constants.ClimberConstants;
-import frc.robot.data.Constants.ClimberConstants.ClimberPosition;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
-import frc.robot.data.Constants.FunnelConstants.FunnelPosition;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.data.TunerConstants;
-import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.DynamicPathing;
 import frc.robot.subsystems.Elevator;
-import frc.robot.subsystems.Funnel;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Lights;
 import frc.robot.subsystems.MechanismPoses;
@@ -74,8 +67,6 @@ public class RobotContainer {
   public static final Pivot pivotSubsystem = new Pivot();
   public static final Intake intakeSubsystem = new Intake();
   public static final Elevator elevatorSubsystem = new Elevator();
-  // public static final Funnel funnelSubsystem = new Funnel();
-  public static final Climber climberSubsystem = new Climber();
   public static final Lights lightsSubsystem = new Lights();
 
   /* Software Subsystems */
@@ -92,14 +83,11 @@ public class RobotContainer {
     Controls.operatorController::getRightTriggerAxis,
     Controls.operatorController::getLeftTriggerAxis
   );
-  private final Command climberControlCommand = new ClimbCommand().ignoringDisable(true);
- 
+
   /* Global Robot State */
   private final SendableChooser<Command> autoChooser;
   private final SendableChooser<Command> testChooser;
   public static boolean isOperatorOverride = false;
-  public static ClimbState currentClimbState = ClimbState.STOWED;
-
 
 
   /** The static entry point for the robot. Contains subsystems, OI devices, and commands. */
@@ -286,112 +274,8 @@ public class RobotContainer {
       )
     );
 
-    // Climb binds
-    // Controls.leftJoystick.button(3).whileTrue(
-    //   new InstantCommand(
-    //     () -> {RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.UP);}
-    //   )
-    // ).onFalse(
-    //   new InstantCommand(
-    //     () -> {RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.DOWN);}
-    //   )
-    // );
-
-    // Moves forwards in state if possible
-    Controls.rightJoystick.button(4).onTrue(
-      Commands.runOnce(() -> {
-        switch (currentClimbState) {
-          case STOWED:
-            currentClimbState = ClimbState.DEPLOYED;
-            // Sketchy way to start command but
-            // I promise this is likely fine in this specific case
-            climberControlCommand.schedule();
-            break;
-          
-          case DEPLOYED:
-            currentClimbState = ClimbState.MIDDLE;
-            
-            // Set slower motion profile for retraction
-            RobotContainer.climberSubsystem.setMotionProfile(
-              ClimberConstants.MOTION_CRUISE_VELOCITY / 15.0,
-              ClimberConstants.MOTION_ACCELERATION / 15.0
-            );
-            break;
-
-          // case FIT:
-          //   currentClimbState = ClimbState.MIDDLE;
-            
-          //   break;
-          
-          case MIDDLE:
-            currentClimbState = ClimbState.LIFTED;
-            break;
-        
-          default:
-            break;
-        }
-      })
-    );
-
-    // Moves backwards in state if possible
-    Controls.rightJoystick.button(11).onTrue(
-      Commands.runOnce(() -> {
-        switch (currentClimbState) {
-          case DEPLOYED:
-            currentClimbState = ClimbState.STOWED;
-            break;
-
-          // case FIT:
-          //   currentClimbState = ClimbState.DEPLOYED;
-
-          //   break;
-          
-          case MIDDLE:
-            currentClimbState = ClimbState.DEPLOYED;
-
-            // Speed up again
-            RobotContainer.climberSubsystem.resetMotionProfile();
-            break;
-          
-          case LIFTED:
-            currentClimbState = ClimbState.MIDDLE;
-            break;
-        
-          default:
-            break;
-        }
-      })
-    );
-
-    // Operator coral bump up
-    // Controls.operatorController.povUp().whileTrue(
-    //   Commands.runOnce(() -> RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.CORAL_BUMP), pivotSubsystem)
-    //   .finallyDo(() -> RobotContainer.funnelSubsystem.setFunnelPosition(FunnelPosition.DOWN))
-    // );
-
     // Manual net toss
     Controls.operatorController.povDown().whileTrue(Commands.defer(() -> ScoreNet.getScoreNetCommand(0, Rotation2d.kZero, false), ScoreCoral.commandRequirements).onlyIf(() -> RobotContainer.intakeSubsystem.isAlgaeLoaded()));
-
-    // Controls.leftJoystick.button(4).whileTrue(
-    //   new InstantCommand(
-    //     () -> {
-    //       RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.DEPLOYED);
-    //       RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLIMB);
-    //     }
-    //   )
-    // );
-
-    // Controls.rightJoystick.button(3).whileTrue(
-    //   new InstantCommand(
-    //     () -> {RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.MIDDLE);}
-    //   )
-    // );
-
-    // Controls.rightJoystick.button(4).whileTrue(
-    //   new InstantCommand(
-    //     () -> {RobotContainer.climberSubsystem.setClimberPosition(ClimberPosition.RETRACTED);}
-    //   )
-    // );
   }
 
   /**
