@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.0895,
-        "y": 5.34125
+        "x": 5.2065,
+        "y": 5.448499999999999
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.296411552138953,
-        "y": 5.8360672045820845
+        "x": 4.413411552138953,
+        "y": 5.943317204582084
       },
       "isLocked": false,
       "linkedName": "Post 9"
     },
     {
       "anchor": {
-        "x": 1.6769999999999998,
-        "y": 7.34
+        "x": 1.88175,
+        "y": 7.106
       },
       "prevControl": {
-        "x": 2.1347980130494717,
-        "y": 6.929029272859434
+        "x": 2.339548013049472,
+        "y": 6.695029272859434
       },
       "nextControl": null,
       "isLocked": false,
@@ -41,14 +41,14 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
+    "velocity": 0.4,
     "rotation": -53.426969021480716
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -116.95760409707925
+    "rotation": -121.8907918018457
   },
   "useDefaultConstraints": false
 }

@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.6769999999999998,
-        "y": 7.34
+        "x": 1.88175,
+        "y": 7.106
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.3741373709456695,
-        "y": 6.493196820608499
+        "x": 2.5788873709456697,
+        "y": 6.259196820608499
       },
       "isLocked": false,
       "linkedName": "CS1"
     },
     {
       "anchor": {
-        "x": 3.705,
-        "y": 5.077999999999999
+        "x": 3.5782500000000006,
+        "y": 5.350999999999999
       },
       "prevControl": {
-        "x": 2.108293047101535,
-        "y": 6.919995450564887
+        "x": 3.12,
+        "y": 5.86775
       },
       "nextControl": null,
       "isLocked": false,
@@ -29,21 +29,7 @@
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [
-    {
-      "name": "Slow End",
-      "minWaypointRelativePos": 0.5957918050941308,
-      "maxWaypointRelativePos": 1.0,
-      "constraints": {
-        "maxVelocity": 4.1,
-        "maxAcceleration": 3.0,
-        "maxAngularVelocity": 800.0,
-        "maxAngularAcceleration": 1200.0,
-        "nominalVoltage": 12.0,
-        "unlimited": false
-      }
-    }
-  ],
+  "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
@@ -55,8 +41,8 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": 125.00000000000001
+    "velocity": 0.4,
+    "rotation": -60.6728205095432
   },
   "reversed": false,
   "folder": null,
