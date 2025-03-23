@@ -223,38 +223,7 @@ public class DynamicPathing extends SubsystemBase {
 
         switch (currentPathingSituation) {
             case REEF_CORAL:  { // extra curly brackets to keep scopes seperate
-                    Pose2d startingPose = RobotContainer.driveSubsystem.getRobotPose();
-                    Pose2d targetCoralPose = getNearestCoralScoringLocation();
-
-                    // Pose2d offsetCoralPose = getCoralLocationOffset(REEF_PATH_POSITION_OFFSET);
-                    Translation2d offsetTranslation = targetCoralPose.getTranslation();
-                    Translation2d offsetVector = new Translation2d(REEF_PATH_POSITION_OFFSET, WafflesUtilities.AngleBetweenPoints(
-                        targetCoralPose.getTranslation(), startingPose.getTranslation())
-                    ); 
-                    offsetTranslation = offsetTranslation.plus(offsetVector);
-                    Pose2d offsetCoralPose = new Pose2d(offsetTranslation, targetCoralPose.getRotation());
-
-
-                    SmartDashboard.putNumberArray("TargetPose Reef", new double[] {
-                        targetCoralPose.getX(),
-                        targetCoralPose.getY(),
-                        targetCoralPose.getRotation().getDegrees()
-                    });
-
-                    Pose2d debugFlippedPose = FlippingUtil.flipFieldPose(targetCoralPose);
-                    SmartDashboard.putNumberArray("TargetPose Reef_Flipped", new double[] {
-                        debugFlippedPose.getX(),
-                        debugFlippedPose.getY(),
-                        debugFlippedPose.getRotation().getDegrees()
-                    });
-
-                    
-                    var path = DynamicPathing.generateComplexPath(startingPose, null, offsetCoralPose, 0.4);
-                    if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
-                        var pathingCommand = AutoBuilder.followPath(path.get());
-                        cmd = ScoreCoral.scoreCoralWithPathAndAlgae(pathingCommand, targetCoralPose);
-                    }
-
+                    cmd = createCoralScoreCommand();
                 }
                 break;
 
@@ -340,20 +309,13 @@ public class DynamicPathing extends SubsystemBase {
      * Regenerates the current path using the new side selection while maintaining smooth motion
      */
     private void regenerateCurrentCoralPath() {
-        // Get the new target pose with updated side selection
-        Pose2d newTargetPose = getNearestCoralScoringLocation();
-        
-        // Generate a new path from our current position
-        var newPath = simplePathToPose(newTargetPose);
-        
-        if (newPath.isPresent()) {
-            // Create and schedule the new scoring command
-            var pathCommand = AutoBuilder.followPath(newPath.get());
+        Command cmd = createCoralScoreCommand();
 
+        if (cmd != null) {
             // Different from normal pathing command.
             // Since started from outside button based scheduling, letting go of the dynamic pathing button would fail to cancel it
             // .onlyWhile() ensures it can still be canceled by letting go of the button
-            Command cmd = ScoreCoral.scoreCoralWithPathAndAlgae(pathCommand, newTargetPose).onlyWhile(() -> Controls.dynamicPathingButton.getAsBoolean());
+            cmd = cmd.onlyWhile(() -> Controls.dynamicPathingButton.getAsBoolean());
             wrapActionStateCommand(cmd).schedule();
         }
     }
@@ -758,6 +720,52 @@ public class DynamicPathing extends SubsystemBase {
             );
         }
         
+        return null;
+    }
+
+    /**
+     * Creates an algae pickup command using the current robot position and the nearest algae pickup location.
+     * @return A command to pick up algae, or null if not possible
+     */
+    public Command createCoralScoreCommand() {
+        Pose2d startingPose = RobotContainer.driveSubsystem.getRobotPose();
+        Pose2d targetCoralPose = getNearestCoralScoringLocation();
+
+        // If too close just use PID
+        if (startingPose.getTranslation().getDistance(targetCoralPose.getTranslation()) < 0.6) {
+            return ScoreCoral.scoreCoralWithPathAndAlgae(new InstantCommand(), targetCoralPose);
+        }
+
+        // Calculate offset pose to generate pathing command to 
+        Translation2d offsetTranslation = targetCoralPose.getTranslation();
+        Translation2d offsetVector = new Translation2d(REEF_PATH_POSITION_OFFSET, WafflesUtilities.AngleBetweenPoints(
+            targetCoralPose.getTranslation(), startingPose.getTranslation())
+        ); 
+        offsetTranslation = offsetTranslation.plus(offsetVector);
+        Pose2d offsetCoralPose = new Pose2d(offsetTranslation, targetCoralPose.getRotation());
+
+
+        SmartDashboard.putNumberArray("TargetPose Reef", new double[] {
+            targetCoralPose.getX(),
+            targetCoralPose.getY(),
+            targetCoralPose.getRotation().getDegrees()
+        });
+
+        Pose2d debugFlippedPose = FlippingUtil.flipFieldPose(targetCoralPose);
+        SmartDashboard.putNumberArray("TargetPose Reef_Flipped", new double[] {
+            debugFlippedPose.getX(),
+            debugFlippedPose.getY(),
+            debugFlippedPose.getRotation().getDegrees()
+        });
+
+        
+        var path = DynamicPathing.generateComplexPath(startingPose, null, offsetCoralPose, 0.4);
+        if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
+            var pathingCommand = AutoBuilder.followPath(path.get());
+            return ScoreCoral.scoreCoralWithPathAndAlgae(pathingCommand, targetCoralPose);
+        }
+        
+        // Return null if cannot path
         return null;
     }
 }
