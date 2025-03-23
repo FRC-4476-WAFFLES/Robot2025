@@ -32,8 +32,8 @@ public class AxisIntakeControl extends Command {
   @Override
   public void execute() {
     if (RobotContainer.isOperatorOverride) {
-      double intakeValue = Math.abs(intakeAxis.getAsDouble()) > Controls.AXIS_DEADBAND ? intakeAxis.getAsDouble() * ManipulatorConstants.INTAKE_MAX_SPEED : 0;
-      double outtakeValue = Math.abs(outtakeAxis.getAsDouble()) > Controls.AXIS_DEADBAND ? -outtakeAxis.getAsDouble() * ManipulatorConstants.INTAKE_MAX_SPEED : 0;
+      double intakeValue = Math.abs(intakeAxis.getAsDouble()) > Controls.AXIS_DEADBAND ? intakeAxis.getAsDouble() * ManipulatorConstants.CORAL_INTAKE_SPEED : 0;
+      double outtakeValue = Math.abs(outtakeAxis.getAsDouble()) > Controls.AXIS_DEADBAND ? -outtakeAxis.getAsDouble() * ManipulatorConstants.CORAL_INTAKE_SPEED : 0;
       
       // Sum the values - positive for intake, negative for outtake
       RobotContainer.intakeSubsystem.setIntakeSpeed(intakeValue + outtakeValue);

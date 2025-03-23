@@ -41,7 +41,7 @@ public final class Constants {
     public static final int intakeMotor = 14;
     public static final int pivotMotor = 15;
     public static final int sharkPivotMotor = 13;
-    public static final int sharkIntake = 99;
+    public static final int sharkIntakeMotor = 99;
     
     // Sensors
     
@@ -125,48 +125,12 @@ public final class Constants {
     public static final double withBumperBotHalfWidth = 0.460; // m
 
     // In number of motor rotations per mechanism rotation
+    public static final double sharkIntakeReduction = 9.0; 
     public static final double sharkPivotReduction = 40.0; 
     public static final double pivotReduction = 52.5625; 
     public static final double elevatorReductionToMeters = 26.6; // Motor rotations to elevator height in meters
 
     public static final double pivotAbsoluteEncoderOffset = 0;
-  }
-
-  /* Shark Pivot Constants */
-  public static class SharkPivotConstants {
-    // Control constants
-    public static final double DEAD_ZONE = 5.0; // In degrees
-    public static final double MIN_ANGLE = 0.0; // Minimum angle in degrees
-    public static final double MAX_ANGLE = 195.0; // Maximum angle in degrees - adjust as needed
-    
-    // Motor configuration
-    public static final double STATOR_CURRENT_LIMIT = 40.0; // amps
-    public static final double MOTION_CRUISE_VELOCITY = 1.5; 
-    public static final double MOTION_ACCELERATION = 2.0; 
-    public static final double MOTION_JERK = 2000.0; 
-
-    // PID Values
-    public static final double kP = 60.0;
-    public static final double kI = 0.0;
-    public static final double kD = 0.01;
-    public static final double kS = 0.0;
-
-    // Predefined positions for the shark (in degrees)
-    public enum SharkPivotPosition {
-      STOWED(0.0),
-      DEPLOYED(90.0),
-      L1(15);
-
-      private final double degrees;
-
-      SharkPivotPosition(double degrees) {
-        this.degrees = degrees;
-      }
-
-      public double getDegrees() {
-        return degrees;
-      }
-    }
   }
 
   public static class ScoringConstants {
@@ -211,13 +175,10 @@ public final class Constants {
   public static class ManipulatorConstants {
     // Detection thresholds
     public static final double CORAL_LOADED_DISTANCE_THRESHOLD = 22.0; // mm
-    public static final double ALGAE_LOADED_DISTANCE_THRESHOLD = 94.0; // mm
-    public static final double ALGAE_LOADED_DISTANCE_UPPER_LIMIT = 130; // mm
     public static final double ALGAE_CURRENT_THRESHOLD = 35.0; // amps
 
     // Intake constantsd
-    public static final double INTAKE_SPEED_MULTIPLIER = 0.15;
-    public static final double INTAKE_MAX_SPEED = 25; // Rps
+    public static final double CORAL_INTAKE_SPEED = 25; // Rps
     public static final double ALGAE_HOLD_SPEED = 3; // Speed to hold algae in place
 
     // Pivot constants
@@ -348,5 +309,56 @@ public final class Constants {
         return height;
       }
     }
+  }
+  
+  /* Shark Pivot Constants */
+  public static class SharkPivotConstants {
+    // Control constants
+    public static final double DEAD_ZONE = 5.0; // In degrees
+    public static final double MIN_ANGLE = 0.0; // Minimum angle in degrees
+    public static final double MAX_ANGLE = 195.0; // Maximum angle in degrees - adjust as needed
+    
+    // Motor configuration
+    public static final double STATOR_CURRENT_LIMIT = 40.0; // amps
+    public static final double MOTION_CRUISE_VELOCITY = 1.5; 
+    public static final double MOTION_ACCELERATION = 2.0; 
+    public static final double MOTION_JERK = 2000.0; 
+
+    // PID Values
+    public static final double kP = 60.0;
+    public static final double kI = 0.0;
+    public static final double kD = 0.01;
+    public static final double kS = 0.0;
+
+    // Predefined positions for the shark (in degrees)
+    public enum SharkPivotPosition {
+      STOWED(0.0),
+      DEPLOYED(90.0),
+      L1(15);
+
+      private final double degrees;
+
+      SharkPivotPosition(double degrees) {
+        this.degrees = degrees;
+      }
+
+      public double getDegrees() {
+        return degrees;
+      }
+    }
+  }
+
+  /* Shark Intake Constants */
+  public static class SharkIntakeConstants {
+    // PID Values
+    public static final double kP = 60.0;
+    public static final double kI = 0.0;
+    public static final double kD = 0.01;
+    public static final double kS = 0.0;
+
+    public static final double CORAL_CURRENT_THRESHOLD = 35.0; // amps
+    public static final double CORAL_EJECT_VELOCITY_THRESHOLD = -3.0; // rps
+
+    public static final double STATOR_CURRENT_LIMIT = 60;
   }
 }
