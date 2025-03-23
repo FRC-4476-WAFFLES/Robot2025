@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.358433174780532,
-        "y": 2.243479222339071
+        "x": 4.554158463364899,
+        "y": 2.356416618068795
       },
       "isLocked": false,
       "linkedName": "Post 1"
@@ -20,21 +20,26 @@
         "y": 0.7392499999999995
       },
       "prevControl": {
-        "x": 2.341085227546893,
-        "y": 1.786848644680596
+        "x": 2.3934339777641385,
+        "y": 1.318958988836879
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "CS4"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.6448132780082949,
+      "rotationDegrees": 52.24709982668243
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.1,
-    "maxAcceleration": 4.0,
+    "maxAcceleration": 5.0,
     "maxAngularVelocity": 800.0,
     "maxAngularAcceleration": 1200.0,
     "nominalVoltage": 12.0,
