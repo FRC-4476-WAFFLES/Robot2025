@@ -83,6 +83,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   private CollisionType potentialCollisionPrediction = CollisionType.NONE; // If the movement could induce collision
 
   private Trigger zeroingDebounceTrigger;
+  
   // -------------------- Tuning Code --------------------
   // private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
   

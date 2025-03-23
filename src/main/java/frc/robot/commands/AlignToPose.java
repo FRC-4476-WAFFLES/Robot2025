@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.commands.scoring;
+package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.controller.PIDController;
@@ -27,29 +27,29 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import static frc.robot.RobotContainer.*;
 
-public class FinalAlignCoral extends Command {
+public class AlignToPose extends Command {
   /* PID Controllers */
   private PIDController posPidController = new PIDController(4.1, 0, 0.22);
-  // private PIDController yPidController = new PIDController(3.3, 0, 0.2);
   private ProfiledPIDController thetaPidController = new ProfiledPIDController(7.0, 0, 0.1, new Constraints(4, 20));
 
-  private SwerveRequest.FieldCentric driveRequest = new SwerveRequest.FieldCentric();
-
-  private Pose2d targetPose2d;
-
+  /* Constants */
   private static final double PosMaxError = 0.02;
   private static final double RotMaxError = 1; // degrees
 
+  /* Instance variables */
+  private SwerveRequest.FieldCentric driveRequest = new SwerveRequest.FieldCentric();
+  private Pose2d targetPose2d;
+
   /* Timing variables */
   private final Timer alignmentTimer = new Timer();
-  private static final NetworkTable scoringTable = NetworkTableInstance.getDefault().getTable("ScoringMetrics");
-  private static final DoublePublisher alignmentTimePublisher = scoringTable.getDoubleTopic("FinalAlignCoral Duration").publish();
+  private static final NetworkTable scoringTable = NetworkTableInstance.getDefault().getTable("PathingMetrics");
+  private static final DoublePublisher alignmentTimePublisher = scoringTable.getDoubleTopic("PID Align Duration").publish();
 
 
   /** 
    * Command that drives the robot to align with coral scoring
    */
-  public FinalAlignCoral(Pose2d targetPose) {
+  public AlignToPose(Pose2d targetPose) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(driveSubsystem);
 
@@ -61,7 +61,7 @@ public class FinalAlignCoral extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    SmartDashboard.putBoolean("TerminalCoralAlignment", true);
+    SmartDashboard.putBoolean("Performing PID Align", true);
     
     // Start the alignment timer
     alignmentTimer.reset();
@@ -86,21 +86,15 @@ public class FinalAlignCoral extends Command {
     var currentPose = driveSubsystem.getRobotPose();
     double distanceToTarget = currentPose.getTranslation().getDistance(targetPose2d.getTranslation());
 
-    double moveVelocity = -(posPidController.calculate(distanceToTarget, 0));
-    // double yVelocity = (sign * yPidController.calculate(currentPose.getY(), targetPose2d.getY()));
+    double moveVelocity = -posPidController.calculate(distanceToTarget, 0);
     double thetaVelocity = thetaPidController.calculate(currentPose.getRotation().getRadians(), targetPose2d.getRotation().getRadians());
-
-
     
-    Translation2d directionVector = new Translation2d(1, WafflesUtilities.AngleBetweenPoints(
+    Translation2d directionVector = new Translation2d(moveVelocity, WafflesUtilities.AngleBetweenPoints(
       currentPose.getTranslation(), targetPose2d.getTranslation())
     ); 
 
-    SmartDashboard.putNumber("idkman", moveVelocity);
-    SmartDashboard.putNumberArray("Direction Vector", new double[] {directionVector.getX(),directionVector.getY()});
-    
-    
-    directionVector = directionVector.times(moveVelocity);
+    // SmartDashboard.putNumber("Velocity magnitude", moveVelocity);
+    // SmartDashboard.putNumberArray("Direction Vector", new double[] {directionVector.getX(),directionVector.getY()});
     
     
     
@@ -119,7 +113,7 @@ public class FinalAlignCoral extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    SmartDashboard.putBoolean("TerminalCoralAlignment", false);
+    SmartDashboard.putBoolean("Performing PID Align", false);
 
     // Stop the timer and publish the final alignment time
     alignmentTimer.stop();
@@ -127,7 +121,7 @@ public class FinalAlignCoral extends Command {
     alignmentTimePublisher.set(finalAlignmentTime);
     
     // Log the alignment time to SmartDashboard as well
-    SmartDashboard.putNumber("Recent Alignment Time", finalAlignmentTime);
+    // SmartDashboard.putNumber("Recent Alignment Time", finalAlignmentTime);
 
     driveSubsystem.setControl(
       driveRequest
@@ -141,7 +135,10 @@ public class FinalAlignCoral extends Command {
     );
   }
 
-  public static boolean isWithinAllowableScoringRange(Pose2d target) {
+  /*
+   * If current pose is within a certain range of target
+   */
+  public static boolean isWithinAllowableRange(Pose2d target) {
     var currentPose = driveSubsystem.getRobotPose();
     return currentPose.getTranslation().getDistance(target.getTranslation()) <= PosMaxError &&
       Math.abs(currentPose.getRotation().minus(target.getRotation()).getDegrees()) < RotMaxError;
@@ -150,6 +147,6 @@ public class FinalAlignCoral extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return isWithinAllowableScoringRange(targetPose2d);
+    return isWithinAllowableRange(targetPose2d);
   }
 }

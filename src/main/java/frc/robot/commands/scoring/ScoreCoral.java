@@ -31,8 +31,8 @@ import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.subsystems.DynamicPathing;
+import frc.robot.commands.AlignToPose;
 import frc.robot.commands.intake.CoralOutake;
-import frc.robot.commands.scoring.FinalAlignCoral;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.scoring.PickupAlgea;
 
@@ -80,7 +80,7 @@ public class ScoreCoral extends SequentialCommandGroup {
         pathingSubsystem.wrapPathingCommand(
           new SequentialCommandGroup(
             driveCommand,
-            new FinalAlignCoral(finalAlignPose)
+            new AlignToPose(finalAlignPose)
           )
         ),
         new PrepareScoreCoral()

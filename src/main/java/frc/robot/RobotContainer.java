@@ -27,6 +27,7 @@ import frc.robot.commands.ResetGyroHeading;
 import frc.robot.commands.climb.ClimbCommand;
 import frc.robot.commands.climb.ClimbCommand.ClimbState;
 import frc.robot.commands.intake.AlgeaOutake;
+import frc.robot.commands.intake.AutoIntake;
 import frc.robot.commands.intake.AxisIntakeControl;
 import frc.robot.commands.intake.CoralIntake;
 import frc.robot.commands.scoring.ScoreCoral;
@@ -507,6 +508,9 @@ public class RobotContainer {
       new CoralIntake(),
       new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
     ));
+
+    // Auto Coral Intake
+    NamedCommands.registerCommand("Auto Coral Intake", AutoIntake.GetAutoIntakeCommand());
   }
 
   /**

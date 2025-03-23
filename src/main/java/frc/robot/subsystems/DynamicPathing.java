@@ -71,8 +71,11 @@ public class DynamicPathing extends SubsystemBase {
     public static final double REEF_SCORING_POSITION_OFFSET_L4 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.12; // Robot with bumpers
     public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.05; // Robot with bumpers
     public static final double REEF_ALGAE_SAFETY_POSITION = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.35; // Robot with bumpers
-    public static final double REEF_PATH_POSITION_OFFSET = 0.12;
     
+    /* Coral scoring pathing parameters */
+    public static final double REEF_PATH_POSITION_OFFSET = 0.12; // Distance from reef to handover from path to PID
+    public static final double CORAL_PATH_END_SPEED = 0.4; // m/s
+
     /* Human player station physical parameters */
     public static final Translation2d HUMAN_PLAYER_STATION_LEFT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(25.80));  
     public static final Translation2d HUMAN_PLAYER_STATION_RIGHT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(291.20));  
@@ -759,7 +762,7 @@ public class DynamicPathing extends SubsystemBase {
         });
 
         
-        var path = DynamicPathing.generateComplexPath(startingPose, null, offsetCoralPose, 0.4);
+        var path = DynamicPathing.generateComplexPath(startingPose, null, offsetCoralPose, CORAL_PATH_END_SPEED);
         if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
             var pathingCommand = AutoBuilder.followPath(path.get());
             return ScoreCoral.scoreCoralWithPathAndAlgae(pathingCommand, targetCoralPose);

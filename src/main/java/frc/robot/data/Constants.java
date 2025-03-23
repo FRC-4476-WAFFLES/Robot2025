@@ -6,6 +6,7 @@ package frc.robot.data;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import static edu.wpi.first.units.Units.MetersPerSecond;
@@ -110,6 +111,13 @@ public final class Constants {
     public static final int[] BLUE_VALID_REEF_TAG_IDs = {
       17, 18, 19, 20, 21, 22  
     };
+  }
+
+  /* Field */
+  public static class FieldConstants {
+    // Viewed from blue alliance driver station 
+    public static final Translation2d HumanPlayerLeftPos = new Translation2d(0, 0);
+    public static final Translation2d HumanPlayerRightPos = new Translation2d(0, 0); 
   }
 
   /* Physical */
