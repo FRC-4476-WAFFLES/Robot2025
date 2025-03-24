@@ -46,7 +46,7 @@ public class SharkIntake extends SubsystemBase implements NetworkUser{
 
     // Network Tables
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    private final NetworkTable intakeTable = inst.getTable("Intake");
+    private final NetworkTable intakeTable = inst.getTable("SharkIntake");
     private final BooleanPublisher coralLoadedNT = intakeTable.getBooleanTopic("Coral Loaded").publish();
     private final DoublePublisher intakeSetpointNT = intakeTable.getDoubleTopic("Intake Setpoint").publish();
     private final DoublePublisher intakeCurrentDrawNT = intakeTable.getDoubleTopic("Intake Current Draw").publish();
