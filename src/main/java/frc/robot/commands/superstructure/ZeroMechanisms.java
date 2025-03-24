@@ -26,6 +26,8 @@ public class ZeroMechanisms extends Command {
 
         RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
 
+        RobotContainer.sharkPivot.zeroPivot();
+
         // elevatorTimer.reset();
         // elevatorTimer.start();
     }
@@ -49,6 +51,9 @@ public class ZeroMechanisms extends Command {
             if (RobotContainer.pivotSubsystem.isZeroing()) {
                 RobotContainer.pivotSubsystem.zeroPivot(); // Calling again cancels zeroing
             }
+            if (RobotContainer.sharkPivot.isZeroing()) {
+                RobotContainer.sharkPivot.zeroPivot(); // Calling again cancels zeroing
+            }
         }
 
         // elevatorTimer.stop();
@@ -59,6 +64,7 @@ public class ZeroMechanisms extends Command {
         // Command is done when elevator is zeroed and pivot is zeroed
         return !RobotContainer.elevatorSubsystem.isZeroing() && 
                hasStartedPivot && 
-               !RobotContainer.pivotSubsystem.isZeroing();
+               !RobotContainer.pivotSubsystem.isZeroing() &&
+               !RobotContainer.sharkPivot.isZeroing();
     }
 } 

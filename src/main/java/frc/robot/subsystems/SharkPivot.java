@@ -240,6 +240,14 @@ public class SharkPivot extends SubsystemBase implements NetworkUser {
     isZeroingPivot = true;
   }
 
+  /**
+   * Checks if the pivot is currently performing its zeroing routine
+   * @return true if pivot is zeroing
+   */
+  public boolean isZeroing() {
+    return isZeroingPivot;
+  }
+
   /* Networktables methods */
 
   /**
