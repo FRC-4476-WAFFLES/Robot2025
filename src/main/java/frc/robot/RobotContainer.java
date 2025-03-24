@@ -50,6 +50,8 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Lights;
 import frc.robot.subsystems.MechanismPoses;
 import frc.robot.subsystems.Pivot;
+import frc.robot.subsystems.SharkIntake;
+import frc.robot.subsystems.SharkPivot;
 import frc.robot.subsystems.Telemetry;
 
 
@@ -68,6 +70,8 @@ public class RobotContainer {
   public static final Intake intakeSubsystem = new Intake();
   public static final Elevator elevatorSubsystem = new Elevator();
   public static final Lights lightsSubsystem = new Lights();
+  public static final SharkIntake sharkIntake = new SharkIntake();
+  public static final SharkPivot sharkPivot = new SharkPivot();
 
   /* Software Subsystems */
   /* Do not control harware, but have state and or periodic methods */

@@ -40,8 +40,8 @@ public final class Constants {
     public static final int elevator2 = 10; 
     public static final int intakeMotor = 14;
     public static final int pivotMotor = 15;
-    public static final int sharkPivotMotor = 13;
-    public static final int sharkIntakeMotor = 99;
+    public static final int sharkPivotMotor = 12;
+    public static final int sharkIntakeMotor = 13;
     
     // Sensors
     
@@ -126,7 +126,7 @@ public final class Constants {
 
     // In number of motor rotations per mechanism rotation
     public static final double sharkIntakeReduction = 9.0; 
-    public static final double sharkPivotReduction = 40.0; 
+    public static final double sharkPivotReduction = 37.92592592592592592; 
     public static final double pivotReduction = 52.5625; 
     public static final double elevatorReductionToMeters = 26.6; // Motor rotations to elevator height in meters
 
@@ -185,7 +185,7 @@ public final class Constants {
     public static final double PIVOT_ANGLE_DEADBAND = 1.4;
     public static final double PIVOT_MIN_ANGLE = 0.0; // degrees
     public static final double PIVOT_MAX_ANGLE = 185.0; // degrees
-    public static final double PIVOT_BUMPER_CLEARANCE_ANGLE = 144.4; // degrees
+    public static final double PIVOT_BUMPER_CLEARANCE_ANGLE = 150; // degrees
     public static final double PIVOT_L4_CLEARANCE_ANGLE = 28;
 
     // Motor configuration
@@ -210,7 +210,7 @@ public final class Constants {
     // Pivot Positions
     public enum PivotPosition {
         ZERO(0),
-        CLEARANCE_POSITION(32),
+        CLEARANCE_POSITION(35),
         CLEARANCE_POSITION_ALGEA(90),
         ALGAE_L2(178.5),
         ALGAE_L1(178.5),
@@ -251,8 +251,8 @@ public final class Constants {
     public static final double STALL_CURRENT_THRESHOLD = 26.0; // Amperes
 
     // Elevator will not move if the pivot is not past this angle, to avoid collision with top bar
-    public static final double MIN_ELEVATOR_PIVOT_ANGLE = 24; 
-    public static final double PIVOT_BUMPER_CLEAR_HEIGHT = 0.181;
+    public static final double MIN_ELEVATOR_PIVOT_ANGLE = 32; 
+    public static final double PIVOT_BUMPER_CLEAR_HEIGHT = 0.13;
 
     public static final double PIVOT_L4_CLEAR_HEIGHT_MIN = 0.70;
     public static final double PIVOT_L4_CLEAR_HEIGHT_MAX = 1.2;
@@ -261,8 +261,8 @@ public final class Constants {
     public static final double MAX_ELEVATOR_HEIGHT = 1.47;
 
     // Collision zone constants
-    public static final double COLLISION_ZONE_LOWER = 0.12; // meters
-    public static final double COLLISION_ZONE_UPPER = 0.56; // meters
+    public static final double COLLISION_ZONE_LOWER = 0.16; // meters
+    public static final double COLLISION_ZONE_UPPER = 0.61; // meters
 
     // Height where first stage starts moving
     public static final double FIRST_STAGE_START_HEIGHT = ElevatorConstants.MAX_ELEVATOR_HEIGHT / 2.0; 

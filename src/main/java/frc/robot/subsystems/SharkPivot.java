@@ -120,6 +120,7 @@ public class SharkPivot extends SubsystemBase implements NetworkUser {
     
     // Set neutral mode to brake
     pivotConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    pivotConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     
     // Add voltage compensation
     pivotConfig.Voltage.PeakForwardVoltage = 12.0; // 12V compensation

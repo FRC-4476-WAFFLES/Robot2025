@@ -7,6 +7,7 @@ import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.networktables.BooleanPublisher;
@@ -96,6 +97,7 @@ public class SharkIntake extends SubsystemBase implements NetworkUser{
         motionMagicConfigs.MotionMagicJerk = 0;
         intakeConfigs.MotionMagic = motionMagicConfigs;
 
+        intakeConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         intakeConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         intakeConfigs.MotorOutput.DutyCycleNeutralDeadband = 0.01;
 
