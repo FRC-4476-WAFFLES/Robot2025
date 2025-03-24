@@ -178,6 +178,7 @@ public final class Constants {
     public static final double ALGAE_CURRENT_THRESHOLD = 35.0; // amps
     public static final double ZERO_DEBOUNCE_TIME = 0.2;
     public static final double ZEROING_SPEED = -0.065; // Slow inwards speed
+    public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.1; // 100ms debounce time
 
     // Intake constantsd
     public static final double CORAL_INTAKE_SPEED = 25; // Rps

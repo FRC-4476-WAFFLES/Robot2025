@@ -19,8 +19,10 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.CodeConstants;
+import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
 
@@ -44,16 +46,12 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private double laserCANDistance = 0;
     private boolean algaeLoaded = false;
     private double intakeSpeed = 0;
-    private double lastPosition = 0;
     private double targetPosition = 0;
     private boolean usePositionControl = false;
     private boolean noAlgaeFlag = false;
-
-    // Debouncing variables for algae detection
-    private long algaeDetectionStartTime = 0;
-    private static final long ALGAE_DETECTION_DEBOUNCE_TIME = 100; // 100ms debounce time
-
     private Timer algaeLossTimer = new Timer();
+
+    private Trigger algaeDetectionTrigger;
 
     // Network Tables
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
@@ -81,6 +79,12 @@ public class Intake extends SubsystemBase implements NetworkUser{
         configureLaserCAN();
 
         algaeLossTimer.reset();
+
+        algaeDetectionTrigger = new Trigger(
+            () -> intake.getStatorCurrent().getValueAsDouble() > ManipulatorConstants.ALGAE_CURRENT_THRESHOLD 
+            && isIntakingAlgae() 
+            && !isCoralLoaded()
+        ).debounce(ManipulatorConstants.ALGAE_DETECTION_DEBOUNCE_TIME);
     }
 
     /**
@@ -169,9 +173,6 @@ public class Intake extends SubsystemBase implements NetworkUser{
             intake.setControl(intakePositionControlRequest
                 .withPosition(targetPosition));
         } else if (Math.abs(intakeSpeed) < 0.01 && isCoralLoaded()) {
-            // Hold position when speed is near zero
-            double currentPosition = intake.getPosition().getValueAsDouble();
-            lastPosition = currentPosition;
             intake.setControl(intakePositionRequest.withOutput(0));
         } else {
             intake.setControl(intakeControlRequest.withVelocity(intakeSpeed).withSlot(0));
@@ -198,32 +199,19 @@ public class Intake extends SubsystemBase implements NetworkUser{
      * @return true if algae is detected
      */
     public void detectAlgaeLoaded() {
-        boolean currentThresholdMet = intake.getStatorCurrent().getValueAsDouble() > Constants.ManipulatorConstants.ALGAE_CURRENT_THRESHOLD 
-            && isIntakingAlgae() && !isCoralLoaded();
+        if (algaeDetectionTrigger.getAsBoolean()) {
+            algaeLoaded = true;
 
-        if (currentThresholdMet) {
-            // If we haven't started timing yet, start now
-            if (algaeDetectionStartTime == 0) {
-                algaeDetectionStartTime = System.currentTimeMillis();
-            }
-            // Check if we've exceeded the debounce time
-            else if (System.currentTimeMillis() - algaeDetectionStartTime >= ALGAE_DETECTION_DEBOUNCE_TIME) {
-                algaeLoaded = true;
-                algaeLossTimer.stop();
-                algaeLossTimer.reset();
-            }
-        } else {
-            // Reset the timer if conditions aren't met
-            algaeDetectionStartTime = 0;
-            if (isOuttakingAlgae()) {
-                algaeLoaded = false;
-            }
+            // Reset algae loss conditions
+            algaeLossTimer.stop();
+            algaeLossTimer.reset();
+        } else if (isOuttakingAlgae()) {
+            algaeLoaded = false;
         }
     }
 
     public boolean isAlgaeLoaded() {
         return algaeLoaded;
-        // return Constants.ManipulatorConstants.ALGAE_LOADED_DISTANCE_UPPER_LIMIT >= laserCANDistance && laserCANDistance >= Constants.ManipulatorConstants.ALGAE_LOADED_DISTANCE_THRESHOLD;
     }
 
     /**
@@ -245,9 +233,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
         }
     }
 
-    public boolean isIntakingCoral() {
-        return !isCoralLoaded() && intake.getVelocity().getValueAsDouble() > 0;
-    }
+    /* Helper methods for determining the intake's basic state */
 
     public boolean isIntakingAlgae() {
         return !isAlgaeLoaded() && intakeSpeed > 10 && !noAlgaeFlag;
@@ -255,10 +241,6 @@ public class Intake extends SubsystemBase implements NetworkUser{
 
     public boolean isOuttakingAlgae() {
         return isAlgaeLoaded() && intake.getVelocity().getValueAsDouble() < -12;
-    }
-
-    public boolean isOuttakingCoral() {
-        return isCoralLoaded() && intake.getVelocity().getValueAsDouble() < 0;
     }
 
     public boolean isAtTargetPosition() {
