@@ -277,7 +277,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
             pivot.set(0);
             pivot.setPosition(0.0);
-            setPivotSetpoint(0);
+            setPivotPosition(0);
             
             isZeroingPivot = false;
             DriverStation.reportWarning("Pivot zeroed successfully", false);
@@ -289,24 +289,17 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
     /**
      * Sets the target angle of the pivot mechanism
-     * @param setpoint Target position in degrees or a PivotPosition enum
-     * 
+     * @param setpoint A PivotPosition enum
      */
-    public void setPivotSetpoint(Object setpoint) {
-        double targetDegrees;
-        // Check if input is an enum value (e.g., PivotPosition.REST_POSITION)
-        if (setpoint instanceof PivotPosition) {
-            targetDegrees = ((PivotPosition) setpoint).getDegrees();
-        } 
-        // Check if input is a number (e.g., 45.0 or 45)
-        else if (setpoint instanceof Double || setpoint instanceof Integer) {
-            targetDegrees = ((Number) setpoint).doubleValue();
-        } 
-        // If neither enum nor number, throw error
-        else {
-            throw new IllegalArgumentException("Setpoint must be a PivotPosition enum or a number");
-        }
-        
+    public void setPivotPosition(PivotPosition setpoint) {
+        setPivotPosition(setpoint.getDegrees());
+    }
+
+    /**
+     * Sets the target angle of the pivot mechanism
+     * @param setpoint A number in degrees
+     */
+    public void setPivotPosition(double targetDegrees) {
         pivotSetpointAngle = MathUtil.clamp(targetDegrees, ManipulatorConstants.PIVOT_MIN_ANGLE, ManipulatorConstants.PIVOT_MAX_ANGLE);
     }
 
@@ -339,7 +332,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
      * Zero pivot encoder
      */
     private void resetInternalEncoder() {
-        setPivotSetpoint(PivotPosition.ZERO);
+        setPivotPosition(PivotPosition.ZERO);
     }
 
     /**

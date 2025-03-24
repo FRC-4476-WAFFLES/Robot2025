@@ -254,7 +254,7 @@ public class DynamicPathing extends SubsystemBase {
                         new AlgaeOutake()
                     ).finallyDo(() -> {
                         RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
-                        RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
+                        RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
                     });
                     
                 }

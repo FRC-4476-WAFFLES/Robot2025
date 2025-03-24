@@ -114,9 +114,9 @@ public class ScoreCoral extends SequentialCommandGroup {
       RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
 
       if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4) {
-        RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.ZERO);
+        RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.ZERO);
       } else {
-        RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
+        RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
       }
     });
   }

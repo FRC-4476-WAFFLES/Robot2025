@@ -34,7 +34,7 @@ public class PrepareScoreCoral extends Command {
       }
     }
     RobotContainer.elevatorSubsystem.setElevatorSetpoint(scoringLevel.getElevatorLevel());
-    RobotContainer.pivotSubsystem.setPivotSetpoint(scoringLevel.getPivotPosition().getDegrees());
+    RobotContainer.pivotSubsystem.setPivotPosition(scoringLevel.getPivotPosition());
   }
 
   // Called once the command ends or is interrupted.

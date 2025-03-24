@@ -24,7 +24,7 @@ public class SetPivotPos extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    RobotContainer.pivotSubsystem.setPivotSetpoint(chosenPosition);
+    RobotContainer.pivotSubsystem.setPivotPosition(chosenPosition);
   }
 
   // Called every time the scheduler runs while the command is scheduled.

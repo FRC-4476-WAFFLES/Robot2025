@@ -16,6 +16,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
@@ -260,32 +261,17 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    * Sets the target position of the elevator.
    * @param setpoint Target position in meters.
    */
-  private void setElevatorSetpointMeters(double setpoint){
-    elevatorSetpointMeters = setpoint;
+  public void setElevatorSetpoint(double setpoint){
+    elevatorSetpointMeters = MathUtil.clamp(setpoint, ElevatorConstants.MAX_ELEVATOR_HEIGHT, ElevatorConstants.MIN_ELEVATOR_HEIGHT);
   }
 
   /**
    * Sets the target position of the elevator.
-   * Can take either a direct height value in meters or a predefined ElevatorLevel position.
-   * When using an ElevatorLevel, it will also update the target position state.
    * @param setpoint Target position (either ElevatorLevel enum or height in meters)
    */
-  public void setElevatorSetpoint(Object setpoint) {
-    if (setpoint instanceof ElevatorLevel) {
-      ElevatorLevel levelSetpoint = (ElevatorLevel) setpoint;
-      setElevatorSetpointMeters(levelSetpoint.getHeight());
-      currentSetpointEnum = levelSetpoint;
-
-    } else if (setpoint instanceof Double || setpoint instanceof Integer) {
-      double heightSetpoint = ((Number) setpoint).doubleValue();
-      setElevatorSetpointMeters(heightSetpoint);
-      // When using direct meter values, we don't update currentSetpointEnum since it doesn't correspond to a predefined level
-      // This is yucky but I do not have the will to make a system that figures out which enum to use if the value is within a certain epsilon
-      // Just assume it'll always be used with a setpoint enum 
-
-    } else {
-      throw new IllegalArgumentException("Setpoint must be either an ElevatorLevel or a numeric height in meters");
-    }
+  public void setElevatorSetpoint(ElevatorLevel setpoint) {
+    setElevatorSetpoint(setpoint.getHeight());
+    currentSetpointEnum = setpoint;    
   }
 
   /**
@@ -364,6 +350,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   
 
   /* Networktables methods */
+
   /**
    * Initializes network tables. Could be used to make shuffleboard layouts programmatically.
    * Currently unused but required by NetworkUser interface.

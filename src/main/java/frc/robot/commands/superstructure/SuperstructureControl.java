@@ -56,9 +56,9 @@ public class SuperstructureControl {
                 
                 // Go to L2 automatically if in range to speed up motion
                 if (RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.REEF_CORAL) {
-                    RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.L2);
+                    RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.L2);
                 } else {
-                    RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.ZERO);
+                    RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.ZERO);
                 }
             }, 
             (interrupted) -> {},
@@ -70,7 +70,7 @@ public class SuperstructureControl {
     public static Command RestPositionCommand() {
         return new InstantCommand(() -> {
             RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
-            RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.ZERO);
+            RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.ZERO);
         });
     }
 }

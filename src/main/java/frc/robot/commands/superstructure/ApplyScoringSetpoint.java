@@ -17,7 +17,7 @@ public class ApplyScoringSetpoint extends Command {
     @Override
     public void initialize() {
         RobotContainer.elevatorSubsystem.setElevatorSetpoint(level.getElevatorLevel());
-        RobotContainer.pivotSubsystem.setPivotSetpoint(level.getPivotPosition());
+        RobotContainer.pivotSubsystem.setPivotPosition(level.getPivotPosition());
     }
 
     // Called every time the scheduler runs while the command is scheduled.

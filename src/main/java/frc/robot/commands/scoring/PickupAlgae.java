@@ -29,7 +29,7 @@ public class PickupAlgae extends SequentialCommandGroup {
           // Move elevator first, since it's always safe to do so
           new InstantCommand(() -> {
             RobotContainer.elevatorSubsystem.setElevatorSetpoint(scoringLevel.getElevatorLevel());
-            RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
+            RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
           }),
           // Wait until safe to move out pivot
           new WaitUntilCommand(() -> DynamicPathing.isPastAlgaeClearancePoint()),
@@ -54,7 +54,7 @@ public class PickupAlgae extends SequentialCommandGroup {
         RobotContainer.intakeSubsystem.setIntakeSpeed(-20);
       } else {
         RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
-        RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
+        RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
       }
     });
   }
