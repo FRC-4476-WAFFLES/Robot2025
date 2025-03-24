@@ -6,7 +6,6 @@ package frc.robot.subsystems;
 
 import static frc.robot.RobotContainer.elevatorSubsystem;
 import static frc.robot.RobotContainer.intakeSubsystem;
-import static frc.robot.data.Constants.ManipulatorConstants.PIVOT_MOTOR_DEADBAND;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -15,7 +14,6 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.Slot2Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -30,15 +28,15 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotContainer;
-import frc.robot.data.Constants;
+import frc.robot.data.Constants.CANIds;
 import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.ElevatorConstants;
 import frc.robot.data.Constants.ManipulatorConstants;
+import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.subsystems.Elevator.CollisionType;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
-
 
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import edu.wpi.first.math.util.Units;
@@ -106,8 +104,8 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
 
         // Initialize hardware
-        pivot = new TalonFX(Constants.CANIds.pivotMotor);
-        pivotAbsoluteEncoder = new CANcoder(Constants.CANIds.pivotAbsoluteEncoder);
+        pivot = new TalonFX(CANIds.pivotMotor);
+        pivotAbsoluteEncoder = new CANcoder(CANIds.pivotAbsoluteEncoder);
         
         // Configure hardware
         configureCANCoder();
@@ -117,8 +115,8 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         resetInternalEncoder();
 
         zeroingDebounceTrigger = new Trigger(() -> {
-            return pivot.getTorqueCurrent().getValueAsDouble() < -Constants.ManipulatorConstants.PIVOT_CURRENT_THRESHOLD;     
-        }).debounce(0.2);
+            return pivot.getTorqueCurrent().getValueAsDouble() < -ManipulatorConstants.PIVOT_CURRENT_THRESHOLD;     
+        }).debounce(ManipulatorConstants.ZERO_DEBOUNCE_TIME);
     }
 
     /**
@@ -126,7 +124,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
      */
     private void configureCANCoder() {
         CANcoderConfiguration config = new CANcoderConfiguration();
-        config.MagnetSensor.MagnetOffset = Constants.PhysicalConstants.pivotAbsoluteEncoderOffset;
+        config.MagnetSensor.MagnetOffset = PhysicalConstants.pivotAbsoluteEncoderOffset;
         pivotAbsoluteEncoder.getConfigurator().apply(config);
     }
 
@@ -138,7 +136,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
         // Current limits
         CurrentLimitsConfigs pivotCurrentLimit = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(Constants.ManipulatorConstants.STATOR_CURRENT_LIMIT)
+            .withStatorCurrentLimit(ManipulatorConstants.STATOR_CURRENT_LIMIT)
             .withStatorCurrentLimitEnable(true);
         pivotConfigs.CurrentLimits = pivotCurrentLimit;
 
@@ -147,38 +145,38 @@ public class Pivot extends SubsystemBase implements NetworkUser {
             // .withMotionMagicCruiseVelocity(Constants.ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY)
             // .withMotionMagicAcceleration(Constants.ManipulatorConstants.PIVOT_MOTION_ACCELERATION)
             // .withMotionMagicJerk(Constants.ManipulatorConstants.PIVOT_MOTION_JERK)
-            .withMotionMagicCruiseVelocity(Constants.ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY)
+            .withMotionMagicCruiseVelocity(ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY)
             .withMotionMagicExpo_kV(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY)
             .withMotionMagicExpo_kA(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_ACCELERATION);
         pivotConfigs.MotionMagic = motionMagicConfigs;
 
         // PID
         Slot0Configs slot0Configs = new Slot0Configs();
-        slot0Configs.kP = Constants.ManipulatorConstants.PIVOT_kP;
-        slot0Configs.kI = Constants.ManipulatorConstants.PIVOT_kI;
-        slot0Configs.kD = Constants.ManipulatorConstants.PIVOT_kD;
-        slot0Configs.kS = Constants.ManipulatorConstants.PIVOT_kS;
+        slot0Configs.kP = ManipulatorConstants.PIVOT_kP;
+        slot0Configs.kI = ManipulatorConstants.PIVOT_kI;
+        slot0Configs.kD = ManipulatorConstants.PIVOT_kD;
+        slot0Configs.kS = ManipulatorConstants.PIVOT_kS;
         pivotConfigs.Slot0 = slot0Configs;
 
         Slot1Configs slot1Configs = new Slot1Configs();
-        slot1Configs.kP = Constants.ManipulatorConstants.PIVOT_kP_ALGAE_SLOW;
-        slot1Configs.kI = Constants.ManipulatorConstants.PIVOT_kI;
-        slot1Configs.kS = Constants.ManipulatorConstants.PIVOT_kS;
-        slot1Configs.kD = Constants.ManipulatorConstants.PIVOT_kD;
+        slot1Configs.kP = ManipulatorConstants.PIVOT_kP_ALGAE_SLOW;
+        slot1Configs.kI = ManipulatorConstants.PIVOT_kI;
+        slot1Configs.kD = ManipulatorConstants.PIVOT_kD;
+        slot1Configs.kS = ManipulatorConstants.PIVOT_kS;
         pivotConfigs.Slot1 = slot1Configs;
 
         Slot2Configs slot2Configs = new Slot2Configs();
-        slot2Configs.kP = Constants.ManipulatorConstants.PIVOT_kP * 2;
-        slot2Configs.kI = Constants.ManipulatorConstants.PIVOT_kI;
-        slot2Configs.kS = Constants.ManipulatorConstants.PIVOT_kS;
-        slot2Configs.kD = Constants.ManipulatorConstants.PIVOT_kD;
+        slot2Configs.kI = ManipulatorConstants.PIVOT_kI;
+        slot2Configs.kP = ManipulatorConstants.PIVOT_kP * 2;
+        slot2Configs.kS = ManipulatorConstants.PIVOT_kS;
+        slot2Configs.kD = ManipulatorConstants.PIVOT_kD;
         
         pivotConfigs.Slot2 = slot2Configs;
 
-        pivotConfigs.MotorOutput.DutyCycleNeutralDeadband = PIVOT_MOTOR_DEADBAND;
+        pivotConfigs.MotorOutput.DutyCycleNeutralDeadband = ManipulatorConstants.PIVOT_MOTOR_DEADBAND;
 
         // For when CANCoder is not present
-        pivotConfigs.Feedback.SensorToMechanismRatio = Constants.PhysicalConstants.pivotReduction;
+        pivotConfigs.Feedback.SensorToMechanismRatio = PhysicalConstants.pivotReduction;
         // For when CANCoder is present
         // pivotConfigs.Feedback.RotorToSensorRatio = Constants.PhysicalConstants.pivotReduction;
         // pivotConfigs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
@@ -286,7 +284,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
             
             return;
         }
-        pivot.set(-0.065);
+        pivot.set(ManipulatorConstants.ZEROING_SPEED);
     }
 
     /**
@@ -309,7 +307,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
             throw new IllegalArgumentException("Setpoint must be a PivotPosition enum or a number");
         }
         
-        pivotSetpointAngle = MathUtil.clamp(targetDegrees, Constants.ManipulatorConstants.PIVOT_MIN_ANGLE, Constants.ManipulatorConstants.PIVOT_MAX_ANGLE);
+        pivotSetpointAngle = MathUtil.clamp(targetDegrees, ManipulatorConstants.PIVOT_MIN_ANGLE, ManipulatorConstants.PIVOT_MAX_ANGLE);
     }
 
     /**
@@ -333,7 +331,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
      * @return true if within deadband of setpoint
      */
     public boolean isPivotAtSetpoint() {
-        double deadband = RobotContainer.intakeSubsystem.isAlgaeLoaded() ? Constants.ManipulatorConstants.PIVOT_ANGLE_DEADBAND * 3: Constants.ManipulatorConstants.PIVOT_ANGLE_DEADBAND;
+        double deadband = RobotContainer.intakeSubsystem.isAlgaeLoaded() ? ManipulatorConstants.PIVOT_ANGLE_DEADBAND * 3: ManipulatorConstants.PIVOT_ANGLE_DEADBAND;
         return Math.abs(getPivotPosition() - pivotSetpointAngle) < deadband;
     }
 

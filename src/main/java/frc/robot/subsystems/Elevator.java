@@ -26,9 +26,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotContainer;
-import frc.robot.data.Constants;
+import frc.robot.data.Constants.CANIds;
 import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.ElevatorConstants;
+import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
@@ -133,14 +134,14 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   public Elevator() {
     SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
 
-    elevatorMotorLeader = new TalonFX(Constants.CANIds.elevator1);
-    elevatorMotorFollower = new TalonFX(Constants.CANIds.elevator2);
+    elevatorMotorLeader = new TalonFX(CANIds.elevator1);
+    elevatorMotorFollower = new TalonFX(CANIds.elevator2);
 
     configureElevatorMotors();
 
     zeroingDebounceTrigger = new Trigger(() -> {
       return elevatorMotorLeader.getStatorCurrent().getValueAsDouble() > ElevatorConstants.STALL_CURRENT_THRESHOLD;   
-    }).debounce(0.2);
+    }).debounce(ElevatorConstants.ZERO_DEBOUNCE_TIME);
   }
 
   /**
@@ -180,7 +181,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     elevatorConfig.MotionMagic = motionMagicConfigs;
 
     // Mechanism Reduction
-    elevatorConfig.Feedback.SensorToMechanismRatio = Constants.PhysicalConstants.elevatorReductionToMeters;
+    elevatorConfig.Feedback.SensorToMechanismRatio = PhysicalConstants.elevatorReductionToMeters;
 
     elevatorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
@@ -189,7 +190,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     elevatorMotorFollower.getConfigurator().apply(elevatorConfig);
 
     // Make Follower Motor
-    elevatorMotorFollower.setControl(new Follower(Constants.CANIds.elevator1, false));
+    elevatorMotorFollower.setControl(new Follower(CANIds.elevator1, false));
   }
 
 
@@ -270,8 +271,8 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    * @param setpoint Target position (either ElevatorLevel enum or height in meters)
    */
   public void setElevatorSetpoint(Object setpoint) {
-    if (setpoint instanceof ElevatorConstants.ElevatorLevel) {
-      ElevatorConstants.ElevatorLevel levelSetpoint = (ElevatorConstants.ElevatorLevel) setpoint;
+    if (setpoint instanceof ElevatorLevel) {
+      ElevatorLevel levelSetpoint = (ElevatorLevel) setpoint;
       setElevatorSetpointMeters(levelSetpoint.getHeight());
       currentSetpointEnum = levelSetpoint;
 

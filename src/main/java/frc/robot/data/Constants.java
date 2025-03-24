@@ -176,6 +176,8 @@ public final class Constants {
     // Detection thresholds
     public static final double CORAL_LOADED_DISTANCE_THRESHOLD = 22.0; // mm
     public static final double ALGAE_CURRENT_THRESHOLD = 35.0; // amps
+    public static final double ZERO_DEBOUNCE_TIME = 0.2;
+    public static final double ZEROING_SPEED = -0.065; // Slow inwards speed
 
     // Intake constantsd
     public static final double CORAL_INTAKE_SPEED = 25; // Rps
@@ -249,6 +251,7 @@ public final class Constants {
     public static final double ELEVATOR_DEAD_ZONE = 0.015;
     public static final double ZEROING_SPEED = -0.1; // Slow downward speed
     public static final double STALL_CURRENT_THRESHOLD = 26.0; // Amperes
+    public static final double ZERO_DEBOUNCE_TIME = 0.2;
 
     // Elevator will not move if the pivot is not past this angle, to avoid collision with top bar
     public static final double MIN_ELEVATOR_PIVOT_ANGLE = 32; 
