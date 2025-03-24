@@ -34,7 +34,7 @@ import frc.robot.subsystems.DynamicPathing;
 import frc.robot.commands.AlignToPose;
 import frc.robot.commands.intake.CoralOutake;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.commands.scoring.PickupAlgea;
+import frc.robot.commands.scoring.PickupAlgae;
 
 public class ScoreCoral extends SequentialCommandGroup {
   private static final double waitBeforeScoreL4 = 0.1;

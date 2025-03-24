@@ -60,7 +60,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private final NetworkTable intakeTable = inst.getTable("Intake");
     private final DoublePublisher laserCanDistanceNT = intakeTable.getDoubleTopic("LaserCan Distance (mm)").publish();
     private final BooleanPublisher coralLoadedNT = intakeTable.getBooleanTopic("Coral Loaded").publish();
-    private final BooleanPublisher algeaLoadedNT = intakeTable.getBooleanTopic("Algea Loaded").publish();
+    private final BooleanPublisher algaeLoadedNT = intakeTable.getBooleanTopic("Algae Loaded").publish();
     private final DoublePublisher intakeSetpointNT = intakeTable.getDoubleTopic("Intake Setpoint").publish();
     private final DoublePublisher intakeCurrentDrawNT = intakeTable.getDoubleTopic("Intake Current Draw").publish();
     private final DoublePublisher intakeVelocityNT = intakeTable.getDoubleTopic("Intake Velocity").publish();
@@ -276,7 +276,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
     public void updateNetwork() {
         laserCanDistanceNT.set(laserCANDistance);
         coralLoadedNT.set(isCoralLoaded());
-        algeaLoadedNT.set(isAlgaeLoaded());
+        algaeLoadedNT.set(isAlgaeLoaded());
         intakeSetpointNT.set(intakeSpeed);
         intakeCurrentDrawNT.set(intake.getStatorCurrent().getValueAsDouble());
         intakeVelocityNT.set(intake.getVelocity().getValueAsDouble());

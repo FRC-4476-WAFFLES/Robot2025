@@ -15,9 +15,7 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.RobotContainer;
 import frc.robot.data.Constants.VisionConstants;
-import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
 import frc.robot.utils.LimelightHelpers.RawFiducial;
 
 public class VisionHelpers {

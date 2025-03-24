@@ -11,16 +11,16 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.RobotContainer;
-import frc.robot.commands.intake.AlgeaIntake;
+import frc.robot.commands.intake.AlgaeIntake;
 import frc.robot.commands.superstructure.ApplyScoringSetpoint;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.subsystems.DynamicPathing;
 
-public class PickupAlgea extends SequentialCommandGroup {
+public class PickupAlgae extends SequentialCommandGroup {
   /** Creates a new ScoreCoral. */
-  private PickupAlgea(Command driveCommand, ScoringLevel scoringLevel, Command pathAwayCommand) {
+  private PickupAlgae(Command driveCommand, ScoringLevel scoringLevel, Command pathAwayCommand) {
     addCommands(
       new ParallelCommandGroup(
         RobotContainer.dynamicPathingSubsystem.wrapPathingCommand(driveCommand),
@@ -35,7 +35,7 @@ public class PickupAlgea extends SequentialCommandGroup {
           new WaitUntilCommand(() -> DynamicPathing.isPastAlgaeClearancePoint()),
           new ParallelCommandGroup(
             new ApplyScoringSetpoint(scoringLevel),
-            new AlgeaIntake()
+            new AlgaeIntake()
           )
         )
       ),
@@ -47,8 +47,8 @@ public class PickupAlgea extends SequentialCommandGroup {
   //   return DynamicPathingSubsystem.getDistanceToReef() > DynamicPathingSubsystem.REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE;
   // }
 
-  public static Command pickupAlgeaWithPath(Command driveCommand, ScoringLevel scoringLevel, Command pathAwayCommand) {
-    return new PickupAlgea(driveCommand, scoringLevel, pathAwayCommand).finallyDo((interruped) -> {
+  public static Command pickupAlgaeWithPath(Command driveCommand, ScoringLevel scoringLevel, Command pathAwayCommand) {
+    return new PickupAlgae(driveCommand, scoringLevel, pathAwayCommand).finallyDo((interruped) -> {
       if (interruped && !RobotContainer.intakeSubsystem.isAlgaeLoaded()) {
         // If interrupted, 
         RobotContainer.intakeSubsystem.setIntakeSpeed(-20);

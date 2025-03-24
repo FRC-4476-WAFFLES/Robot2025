@@ -24,7 +24,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.ResetGyroHeading;
-import frc.robot.commands.intake.AlgeaOutake;
+import frc.robot.commands.intake.AlgaeOutake;
 import frc.robot.commands.intake.AutoIntake;
 import frc.robot.commands.intake.AxisIntakeControl;
 import frc.robot.commands.intake.CoralIntake;
@@ -179,7 +179,7 @@ public class RobotContainer {
           new ApplyScoringSetpoint(ScoringLevel.SPIT_ALGAE),
           new WaitCommand(0.45) // wait some amount of time ¯\_(ツ)_/¯
         ),
-        new AlgeaOutake()
+        new AlgaeOutake()
       ).finallyDo(() -> {
         RobotContainer.pivotSubsystem.setIsThrowingAlgae(false);
       })

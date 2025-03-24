@@ -145,8 +145,8 @@ public final class Constants {
       L2(PivotPosition.L2, ElevatorLevel.L2),
       L3(PivotPosition.L3, ElevatorLevel.L3),
       L4(PivotPosition.L4, ElevatorLevel.L4),
-      ALGEA_L1(PivotPosition.ALGAE_L1, ElevatorLevel.ALGAE_L1),
-      ALGEA_L2(PivotPosition.ALGAE_L2, ElevatorLevel.ALGAE_L2),
+      ALGAE_L1(PivotPosition.ALGAE_L1, ElevatorLevel.ALGAE_L1),
+      ALGAE_L2(PivotPosition.ALGAE_L2, ElevatorLevel.ALGAE_L2),
       CORAL_INTAKE(PivotPosition.CORAL_INTAKE, ElevatorLevel.REST_POSITION),
       PROCESSOR(PivotPosition.PROCESSOR, ElevatorLevel.PROCESSOR),
       SPIT_ALGAE(PivotPosition.SPIT_ALGAE, ElevatorLevel.PROCESSOR),
@@ -205,13 +205,13 @@ public final class Constants {
 
     public static final double PIVOT_kG_HORIZONTAL = -0.3; 
 
-    public static final double PIVOT_kP_ALGEA_SLOW = 40.0;
+    public static final double PIVOT_kP_ALGAE_SLOW = 40.0;
 
     // Pivot Positions
     public enum PivotPosition {
         ZERO(0),
         CLEARANCE_POSITION(35),
-        CLEARANCE_POSITION_ALGEA(90),
+        CLEARANCE_POSITION_ALGAE(90),
         ALGAE_L2(178.5),
         ALGAE_L1(178.5),
         PROCESSOR(189),

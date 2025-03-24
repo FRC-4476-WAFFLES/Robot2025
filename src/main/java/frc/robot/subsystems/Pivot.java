@@ -39,22 +39,11 @@ import frc.robot.subsystems.Elevator.CollisionType;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
 
-import com.ctre.phoenix6.configs.*;
-import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
-import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.GravityTypeValue;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.math.MathUtil;
+import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import edu.wpi.first.math.util.Units;
 
-import static frc.robot.RobotContainer.intakeSubsystem;
-import static frc.robot.RobotContainer.elevatorSubsystem;
-import static frc.robot.data.Constants.ManipulatorConstants.*;
+
 
 /**
  * The Manipulator subsystem handles the robot's pivot mechanism.
@@ -172,7 +161,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         pivotConfigs.Slot0 = slot0Configs;
 
         Slot1Configs slot1Configs = new Slot1Configs();
-        slot1Configs.kP = Constants.ManipulatorConstants.PIVOT_kP_ALGEA_SLOW;
+        slot1Configs.kP = Constants.ManipulatorConstants.PIVOT_kP_ALGAE_SLOW;
         slot1Configs.kI = Constants.ManipulatorConstants.PIVOT_kI;
         slot1Configs.kS = Constants.ManipulatorConstants.PIVOT_kS;
         slot1Configs.kD = Constants.ManipulatorConstants.PIVOT_kD;
@@ -217,7 +206,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         // Real jank but ok
         int slot = 0;
         if (intakeSubsystem.isAlgaeLoaded()) {
-            // while algea is loaded, use a slower profile
+            // while algae is loaded, use a slower profile
             slot = 1;
         }
         if (isThrowingAlgae) {
@@ -232,11 +221,11 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
         if (isInAlgaeDangerZone() &&
             intakeSubsystem.isAlgaeLoaded() && 
-            pivotSetpointAngle < PivotPosition.CLEARANCE_POSITION_ALGEA.getDegrees()
+            pivotSetpointAngle < PivotPosition.CLEARANCE_POSITION_ALGAE.getDegrees()
         ) {
 
             // if we have an algae, we can't fully retract when we are below the crossbar of the elevator
-            chosenPivotAngle = PivotPosition.CLEARANCE_POSITION_ALGEA.getDegrees();
+            chosenPivotAngle = PivotPosition.CLEARANCE_POSITION_ALGAE.getDegrees();
         }
         else if (collisionPrediction == CollisionType.NONE || pivotSetpointAngle > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE) {
             // Check for bumper collision, and limit angle if so

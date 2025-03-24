@@ -19,13 +19,10 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.CodeConstants;
-import frc.robot.data.Constants.ElevatorConstants;
 import frc.robot.data.Constants.SharkPivotConstants;
 import frc.robot.data.Constants.SharkPivotConstants.SharkPivotPosition;
-import frc.robot.utils.NetworkConfiguredPID;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
 

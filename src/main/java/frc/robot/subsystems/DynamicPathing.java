@@ -6,13 +6,11 @@ import java.util.Optional;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.GoalEndState;
-import com.pathplanner.lib.path.IdealStartingState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
 import com.pathplanner.lib.util.FlippingUtil;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -24,15 +22,14 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
-import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.commands.DriveTeleop;
-import frc.robot.commands.intake.AlgeaOutake;
+import frc.robot.commands.intake.AlgaeOutake;
 import frc.robot.commands.intake.CoralIntake;
-import frc.robot.commands.scoring.PickupAlgea;
+import frc.robot.commands.scoring.PickupAlgae;
 import frc.robot.commands.scoring.ScoreCoral;
 import frc.robot.commands.scoring.ScoreNet;
 import frc.robot.commands.superstructure.ApplyScoringSetpoint;
@@ -254,7 +251,7 @@ public class DynamicPathing extends SubsystemBase {
                             () -> targetProcessorRotation, true
                         ),
                         new ApplyScoringSetpoint(ScoringLevel.PROCESSOR),
-                        new AlgeaOutake()
+                        new AlgaeOutake()
                     ).finallyDo(() -> {
                         RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
                         RobotContainer.pivotSubsystem.setPivotSetpoint(PivotPosition.CLEARANCE_POSITION);
@@ -500,9 +497,9 @@ public class DynamicPathing extends SubsystemBase {
         int hexagonFace = (int)(angle / 60.0f);
         
         if (hexagonFace % 2 == 0) {
-            return ScoringLevel.ALGEA_L1;
+            return ScoringLevel.ALGAE_L1;
         } else {
-            return ScoringLevel.ALGEA_L2;
+            return ScoringLevel.ALGAE_L2;
         }
     }
 
@@ -716,7 +713,7 @@ public class DynamicPathing extends SubsystemBase {
             // Generate final back off path
             var backoffPathingCommand = AutoBuilder.followPath(backOffPath.get());
             
-            return PickupAlgea.pickupAlgeaWithPath(
+            return PickupAlgae.pickupAlgaeWithPath(
                 arrivalPathingCommand, 
                 getAlgeaScoringLevel(startingPose), 
                 backoffPathingCommand
