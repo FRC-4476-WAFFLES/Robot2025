@@ -321,7 +321,12 @@ public final class Constants {
     public static final double DEAD_ZONE = 5.0; // In degrees
     public static final double MIN_ANGLE = 0.0; // Minimum angle in degrees
     public static final double MAX_ANGLE = 195.0; // Maximum angle in degrees - adjust as needed
-    
+
+    // Zeroing
+    public static final double ZEROING_SPEED = -0.05;
+    public static final double ZERO_DEBOUNCE_TIME = 0.2; // seconds
+    public static final double PIVOT_CURRENT_THRESHOLD = 10; // amps
+
     // Motor configuration
     public static final double STATOR_CURRENT_LIMIT = 40.0; // amps
     public static final double MOTION_CRUISE_VELOCITY = 1.5; 

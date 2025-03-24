@@ -18,9 +18,12 @@ import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.CodeConstants;
+import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.SharkPivotConstants;
 import frc.robot.data.Constants.SharkPivotConstants.SharkPivotPosition;
 import frc.robot.utils.NetworkUser;
@@ -37,6 +40,8 @@ public class SharkPivot extends SubsystemBase implements NetworkUser {
   // Instance Variables
   private double angleSetpoint = 0;
   private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
+  private boolean isZeroingPivot = false;
+  private Trigger zeroingDebounceTrigger;
   
   // Networktables Variables 
   private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
@@ -45,7 +50,7 @@ public class SharkPivot extends SubsystemBase implements NetworkUser {
   private final DoublePublisher sharkPivotSetpointNT = sharkPivotTable.getDoubleTopic("Setpoint (Degrees)").publish();
   private final DoublePublisher sharkPivotAngleNT = sharkPivotTable.getDoubleTopic("Current Angle (Degrees)").publish();
   private final BooleanPublisher sharkPivotAtSetpointNT = sharkPivotTable.getBooleanTopic("At Setpoint").publish();
-
+  private final BooleanPublisher sharkPivotisZeroingNT = sharkPivotTable.getBooleanTopic("Is Zeroing").publish();
 
   // -------------------- Tuning Code --------------------
   // private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
@@ -79,6 +84,10 @@ public class SharkPivot extends SubsystemBase implements NetworkUser {
 
     // Configure hardware
     configurePivotMotor();
+
+    zeroingDebounceTrigger = new Trigger(() -> {
+      return pivotMotor.getTorqueCurrent().getValueAsDouble() < -SharkPivotConstants.PIVOT_CURRENT_THRESHOLD;     
+    }).debounce(SharkPivotConstants.ZERO_DEBOUNCE_TIME);
   }
 
   private void configurePivotMotor() {
@@ -135,6 +144,12 @@ public class SharkPivot extends SubsystemBase implements NetworkUser {
 
   @Override
   public void periodic() {
+    // Handle zeroing first
+    if (isZeroingPivot) {
+      handlePivotZeroPeriodic();
+      return;
+    }
+
     // Convert degrees to rotations for motion magic
     // Since we've set the SensorToMechanismRatio, we need to convert our
     // desired angle in degrees to rotations of the mechanism
@@ -151,7 +166,7 @@ public class SharkPivot extends SubsystemBase implements NetworkUser {
    * 
    * @param setpoint the setpoint in degrees
    */
-  public void setSharkSetpoint(double setpoint) {
+  public void setPivotSetpoint(double setpoint) {
     // Clamp the setpoint to valid range
     angleSetpoint = MathUtil.clamp(setpoint, SharkPivotConstants.MIN_ANGLE, SharkPivotConstants.MAX_ANGLE);
   }
@@ -162,7 +177,7 @@ public class SharkPivot extends SubsystemBase implements NetworkUser {
    * @param position The SharkPivotPosition enum value
    */
   public void setPivotPosition(SharkPivotPosition position) {
-    setSharkSetpoint(position.getDegrees());
+    setPivotSetpoint(position.getDegrees());
   }
 
   /**
@@ -192,6 +207,39 @@ public class SharkPivot extends SubsystemBase implements NetworkUser {
     return angleSetpoint;
   }
 
+  /**
+   * Run periodically while zeroing pivot
+   */
+  private void handlePivotZeroPeriodic() {
+    if (zeroingDebounceTrigger.getAsBoolean()) {
+      pivotMotor.set(0);
+      pivotMotor.setPosition(0.0);
+      setPivotSetpoint(0);
+      
+      isZeroingPivot = false;
+      DriverStation.reportWarning("PivotShark zeroed successfully", false);
+      
+      return;
+    }
+    pivotMotor.set(SharkPivotConstants.ZEROING_SPEED);
+  }
+
+  /**
+  * Begins zeroing the pivot.
+  */
+  public void zeroPivot() {
+    if (isZeroingPivot) {
+      isZeroingPivot = false;
+      pivotMotor.set(0);
+      DriverStation.reportWarning("PivotShark zeroing canceled", false);
+          
+      return;
+    }
+
+    // Cancel if called again
+    isZeroingPivot = true;
+  }
+
   /* Networktables methods */
 
   /**
@@ -201,6 +249,7 @@ public class SharkPivot extends SubsystemBase implements NetworkUser {
   public void updateNetwork() {
     sharkPivotSetpointNT.set(angleSetpoint);
     sharkPivotAngleNT.set(getPivotDegrees());
+    sharkPivotisZeroingNT.set(isZeroingPivot);
   }
 
   public void initializeNetwork() {
