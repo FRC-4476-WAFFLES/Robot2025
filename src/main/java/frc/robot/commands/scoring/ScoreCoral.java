@@ -112,12 +112,12 @@ public class ScoreCoral extends SequentialCommandGroup {
    */
   public static Command scoreCoralWithPath(Command driveCommand, Pose2d finalAlignPose, double maxSpeed) {
     return new ScoreCoral(driveCommand, finalAlignPose, maxSpeed).finallyDo(() -> {
-      RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
-
       if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4) {
         RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.ZERO);
+        // Do not lower elevator after L4 score
       } else {
         RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
+        RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
       }
     });
   }

@@ -61,13 +61,16 @@ public class DynamicPathing extends SubsystemBase {
     public static final Translation2d REEF_CENTER_BLUE = new Translation2d(Units.inchesToMeters(176.745), Units.inchesToMeters(158.50)); 
     public static final double REEF_INRADIUS = 0.81901;
     public static final double REEF_PIPE_CENTER_OFFSET = Units.inchesToMeters(6.5); // Fudged
-    // Offset from the edge of the reef to score from 
-    public static final double REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.65; // Robot with bumpers
-    public static final double REEF_SCORING_POSITION_OFFSET = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.15; // Robot with bumpers
-    public static final double REEF_SCORING_POSITION_OFFSET_L1 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.37; // Robot with bumpers
-    public static final double REEF_SCORING_POSITION_OFFSET_L4 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.12; // Robot with bumpers
-    public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.05; // Robot with bumpers
-    public static final double REEF_ALGAE_SAFETY_POSITION = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.35; // Robot with bumpers
+
+    /* Various robot to reef distances */
+    /* Robot is assumed to have bumpers on */
+    public static final double REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.65; 
+    public static final double REEF_SCORING_POSITION_OFFSET = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.15; 
+    public static final double REEF_SCORING_POSITION_OFFSET_L1 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.37; 
+    public static final double REEF_SCORING_POSITION_OFFSET_L4 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.12; 
+    public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.05; 
+    public static final double REEF_ALGAE_SAFETY_DISTANCE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.35;
+    public static final double REEF_ELEVATOR_RETRACTION_DISTANCE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.24;
     
     /* Coral scoring pathing parameters */
     public static final double REEF_PATH_POSITION_OFFSET = 0.12; // Distance from reef to handover from path to PID
@@ -207,7 +210,15 @@ public class DynamicPathing extends SubsystemBase {
      * @return a boolean
      */
     public static boolean isPastAlgaeClearancePoint() {
-        return getDistanceToReef() > REEF_ALGAE_SAFETY_POSITION + REEF_INRADIUS;
+        return getDistanceToReef() > REEF_ALGAE_SAFETY_DISTANCE + REEF_INRADIUS;
+    }
+
+    /**
+     * Is the robot past a certain distance from the reef
+     * @return a boolean
+     */
+    public static boolean isElevatorRetractionSafe() {
+        return getDistanceToReef() > REEF_ELEVATOR_RETRACTION_DISTANCE + REEF_INRADIUS;
     }
 
     /**
