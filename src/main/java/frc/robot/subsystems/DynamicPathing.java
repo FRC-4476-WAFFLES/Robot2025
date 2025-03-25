@@ -733,7 +733,7 @@ public class DynamicPathing extends SubsystemBase {
 
         // If too close just use PID
         if (startingPose.getTranslation().getDistance(targetCoralPose.getTranslation()) < 0.6) {
-            return ScoreCoral.scoreCoralWithPathAndAlgae(new InstantCommand(), targetCoralPose);
+            return ScoreCoral.scoreCoralWithPathAndAlgae(new InstantCommand(), targetCoralPose, Double.MAX_VALUE);
         }
 
         // Calculate offset pose to generate pathing command to 
@@ -762,7 +762,7 @@ public class DynamicPathing extends SubsystemBase {
         var path = DynamicPathing.generateComplexPath(startingPose, null, offsetCoralPose, CORAL_PATH_END_SPEED);
         if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
             var pathingCommand = AutoBuilder.followPath(path.get());
-            return ScoreCoral.scoreCoralWithPathAndAlgae(pathingCommand, targetCoralPose);
+            return ScoreCoral.scoreCoralWithPathAndAlgae(pathingCommand, targetCoralPose, CORAL_PATH_END_SPEED);
         }
         
         // Return null if cannot path

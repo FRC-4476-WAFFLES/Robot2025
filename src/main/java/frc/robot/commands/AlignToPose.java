@@ -5,6 +5,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -39,6 +40,7 @@ public class AlignToPose extends Command {
   /* Instance variables */
   private SwerveRequest.FieldCentric driveRequest = new SwerveRequest.FieldCentric();
   private Pose2d targetPose2d;
+  private double maxSpeed;
 
   /* Timing variables */
   private final Timer alignmentTimer = new Timer();
@@ -49,13 +51,22 @@ public class AlignToPose extends Command {
   /** 
    * Command that drives the robot to align with coral scoring
    */
-  public AlignToPose(Pose2d targetPose) {
+  public AlignToPose(Pose2d targetPose, double speedLimit) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(driveSubsystem);
 
     thetaPidController.enableContinuousInput(-Math.PI, Math.PI);
 
     targetPose2d = targetPose;
+    maxSpeed = speedLimit;
+  }
+
+  /** 
+   * Command that drives the robot to align with coral scoring
+   */
+  public AlignToPose(Pose2d targetPose) {
+    // Default to no speed limit
+    this(targetPose, Double.MAX_VALUE);
   }
 
   // Called when the command is initially scheduled.
@@ -86,7 +97,7 @@ public class AlignToPose extends Command {
     var currentPose = driveSubsystem.getRobotPose();
     double distanceToTarget = currentPose.getTranslation().getDistance(targetPose2d.getTranslation());
 
-    double moveVelocity = -posPidController.calculate(distanceToTarget, 0);
+    double moveVelocity = MathUtil.clamp(-posPidController.calculate(distanceToTarget, 0), -maxSpeed, maxSpeed);
     double thetaVelocity = thetaPidController.calculate(currentPose.getRotation().getRadians(), targetPose2d.getRotation().getRadians());
     
     Translation2d directionVector = new Translation2d(moveVelocity, WafflesUtilities.AngleBetweenPoints(

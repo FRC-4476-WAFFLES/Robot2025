@@ -52,7 +52,7 @@ public class ScoreCoral extends SequentialCommandGroup {
   private static final DoublePublisher totalScoringTimePublisher = scoringTable.getDoubleTopic("Total ScoreCoral Duration").publish();
 
   /** Creates a new ScoreCoral. */
-  private ScoreCoral(Command driveCommand, Pose2d finalAlignPose) {
+  private ScoreCoral(Command driveCommand, Pose2d finalAlignPose, double maxSpeed) {
     var pathingSubsystem = RobotContainer.dynamicPathingSubsystem;
     
     // Command to start timing
@@ -80,7 +80,7 @@ public class ScoreCoral extends SequentialCommandGroup {
         pathingSubsystem.wrapPathingCommand(
           new SequentialCommandGroup(
             driveCommand,
-            new AlignToPose(finalAlignPose)
+            new AlignToPose(finalAlignPose, maxSpeed)
           )
         ),
         new PrepareScoreCoral()
@@ -107,10 +107,11 @@ public class ScoreCoral extends SequentialCommandGroup {
    * Scores coral given a path and a final target pose
    * @param driveCommand the pathing command
    * @param finalAlignPose the final pose (used for a final PID based alignment pass)
+   * @param maxSpeed the maximum speed for the final PID based alignment
    * @return The command to score coral
    */
-  public static Command scoreCoralWithPath(Command driveCommand, Pose2d finalAlignPose) {
-    return new ScoreCoral(driveCommand, finalAlignPose).finallyDo(() -> {
+  public static Command scoreCoralWithPath(Command driveCommand, Pose2d finalAlignPose, double maxSpeed) {
+    return new ScoreCoral(driveCommand, finalAlignPose, maxSpeed).finallyDo(() -> {
       RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
 
       if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4) {
@@ -128,8 +129,8 @@ public class ScoreCoral extends SequentialCommandGroup {
    * @param finalAlignPose the final pose (used for a final PID based alignment pass)
    * @return The command to score coral and optionally pick up algae after
    */
-  public static Command scoreCoralWithPathAndAlgae(Command driveCommand, Pose2d finalAlignPose) {
-    Command scoreCoralCommand = scoreCoralWithPath(driveCommand, finalAlignPose);
+  public static Command scoreCoralWithPathAndAlgae(Command driveCommand, Pose2d finalAlignPose, double maxSpeed) {
+    Command scoreCoralCommand = scoreCoralWithPath(driveCommand, finalAlignPose, maxSpeed);
     
     return new SequentialCommandGroup(
       scoreCoralCommand,
@@ -165,7 +166,7 @@ public class ScoreCoral extends SequentialCommandGroup {
    * @return The command to score coral
    */
   public static Command scoreCoralWithPose(Pose2d finalAlignPose) {
-    return scoreCoralWithPath(new InstantCommand(), finalAlignPose);
+    return scoreCoralWithPath(new InstantCommand(), finalAlignPose, Double.MAX_VALUE);
   }
 
   /**
