@@ -262,7 +262,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    * @param setpoint Target position in meters.
    */
   public void setElevatorSetpoint(double setpoint){
-    elevatorSetpointMeters = MathUtil.clamp(setpoint, ElevatorConstants.MAX_ELEVATOR_HEIGHT, ElevatorConstants.MIN_ELEVATOR_HEIGHT);
+    elevatorSetpointMeters = MathUtil.clamp(setpoint, ElevatorConstants.MIN_ELEVATOR_HEIGHT, ElevatorConstants.MAX_ELEVATOR_HEIGHT);
   }
 
   /**

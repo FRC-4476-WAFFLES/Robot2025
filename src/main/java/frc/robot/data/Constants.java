@@ -221,9 +221,9 @@ public final class Constants {
         SPIT_ALGAE(140),
         CORAL_INTAKE(0.5),
         NET(55),
-        L4(49),
-        L3(28),
-        L2(35),
+        L4(42),
+        L3(35.5),
+        L2(35.5),
         L1(150),
 
         // Maybe manual mode
@@ -262,7 +262,7 @@ public final class Constants {
     public static final double PIVOT_L4_CLEAR_HEIGHT_MAX = 1.2;
 
     public static final double MIN_ELEVATOR_HEIGHT = 0;
-    public static final double MAX_ELEVATOR_HEIGHT = 1.47;
+    public static final double MAX_ELEVATOR_HEIGHT = 1.50;
 
     // Collision zone constants
     public static final double COLLISION_ZONE_LOWER = 0.16; // meters
@@ -290,9 +290,9 @@ public final class Constants {
       ALGAE_L2(0.97),
       ALGAE_L1(0.55),
       PROCESSOR(0.2),
-      L4(1.47),
-      L3(0.782),
-      L2(0.42),
+      L4(1.50),
+      L3(0.81),
+      L2(0.40),
       L1(0.33),
 
       MANUAL_L4(1.440),
@@ -325,16 +325,16 @@ public final class Constants {
     // Zeroing
     public static final double ZEROING_SPEED = -0.05;
     public static final double ZERO_DEBOUNCE_TIME = 0.2; // seconds
-    public static final double PIVOT_CURRENT_THRESHOLD = 10; // amps
+    public static final double PIVOT_CURRENT_THRESHOLD = 20; // amps
 
     // Motor configuration
     public static final double STATOR_CURRENT_LIMIT = 40.0; // amps
-    public static final double MOTION_CRUISE_VELOCITY = 1.5; 
-    public static final double MOTION_ACCELERATION = 2.0; 
+    public static final double MOTION_CRUISE_VELOCITY = 4; 
+    public static final double MOTION_ACCELERATION = 12; 
     public static final double MOTION_JERK = 2000.0; 
 
     // PID Values
-    public static final double kP = 60.0;
+    public static final double kP = 70.0;
     public static final double kI = 0.0;
     public static final double kD = 0.01;
     public static final double kS = 0.0;
@@ -342,8 +342,8 @@ public final class Constants {
     // Predefined positions for the shark (in degrees)
     public enum SharkPivotPosition {
       STOWED(0.0),
-      DEPLOYED(90.0),
-      L1(15);
+      DEPLOYED(129.0),
+      L1(22);
 
       private final double degrees;
 
@@ -365,8 +365,8 @@ public final class Constants {
     public static final double kD = 0.01;
     public static final double kS = 0.0;
 
-    public static final double CORAL_CURRENT_THRESHOLD = 35.0; // amps
-    public static final double CORAL_EJECT_VELOCITY_THRESHOLD = -3.0; // rps
+    public static final double CORAL_CURRENT_THRESHOLD = 28.0; // amps
+    public static final double CORAL_EJECT_VELOCITY_THRESHOLD = -2; // rps
 
     public static final double STATOR_CURRENT_LIMIT = 60;
   }

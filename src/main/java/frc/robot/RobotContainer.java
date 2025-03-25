@@ -30,6 +30,7 @@ import frc.robot.commands.intake.AxisIntakeControl;
 import frc.robot.commands.intake.CoralIntake;
 import frc.robot.commands.scoring.ScoreCoral;
 import frc.robot.commands.scoring.ScoreNet;
+import frc.robot.commands.shark.SharkCommands;
 import frc.robot.commands.superstructure.ApplyScoringSetpoint;
 import frc.robot.commands.superstructure.SetElevatorPos;
 import frc.robot.commands.superstructure.SetPivotPos;
@@ -280,6 +281,16 @@ public class RobotContainer {
 
     // Manual net toss
     Controls.operatorController.povDown().whileTrue(Commands.defer(() -> ScoreNet.getScoreNetCommand(0, Rotation2d.kZero, false), ScoreCoral.commandRequirements).onlyIf(() -> RobotContainer.intakeSubsystem.isAlgaeLoaded()));
+  
+    // L1 Intake
+    Controls.rightJoystick.button(2).whileTrue(
+      SharkCommands.getIntakeCommand()
+    );
+
+    // L1 Outtake
+    Controls.rightJoystick.button(4).whileTrue(
+      SharkCommands.getOutakeCommand()
+    );
   }
 
   /**

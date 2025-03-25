@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.CodeConstants;
+import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.Constants.SharkIntakeConstants;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
@@ -41,8 +42,8 @@ public class SharkIntake extends SubsystemBase implements NetworkUser{
     private Trigger coralEjectionVelocityMet;
 
     // Debouncing variables for coral detection
-    private static final long CORAL_DETECTION_DEBOUNCE_TIME = 60; // ms
-    private static final long CORAL_EJECTION_DEBOUNCE_TIME = 60; // ms
+    private static final double CORAL_DETECTION_DEBOUNCE_TIME = 0.2; // s
+    private static final double CORAL_EJECTION_DEBOUNCE_TIME = 0.1; // s
 
     // Network Tables
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
@@ -66,7 +67,7 @@ public class SharkIntake extends SubsystemBase implements NetworkUser{
         ).debounce(CORAL_DETECTION_DEBOUNCE_TIME);
 
         coralEjectionVelocityMet = new Trigger(
-            () -> intake.getVelocity().getValueAsDouble() >  SharkIntakeConstants.CORAL_EJECT_VELOCITY_THRESHOLD
+            () -> intake.getVelocity().getValueAsDouble() < SharkIntakeConstants.CORAL_EJECT_VELOCITY_THRESHOLD
         ).debounce(CORAL_EJECTION_DEBOUNCE_TIME);
     }
 
@@ -83,17 +84,19 @@ public class SharkIntake extends SubsystemBase implements NetworkUser{
         intakeConfigs.CurrentLimits = intakeCurrentLimit;
 
         var slot0Configs = new Slot0Configs();
-        slot0Configs.kP = 0.3;
+        slot0Configs.kP = 0.9;
         slot0Configs.kI = 0;
         slot0Configs.kD = 0;
-        slot0Configs.kV = 0.2;
+        slot0Configs.kV = 1.2;
         slot0Configs.kG = 0.0;
 
         intakeConfigs.Slot0 = slot0Configs;
 
+        intakeConfigs.Feedback.SensorToMechanismRatio = PhysicalConstants.sharkIntakeReduction;
+
         // Motion Magic
         MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
-        motionMagicConfigs.MotionMagicAcceleration = 200;
+        motionMagicConfigs.MotionMagicAcceleration = 40;
         motionMagicConfigs.MotionMagicJerk = 0;
         intakeConfigs.MotionMagic = motionMagicConfigs;
 
