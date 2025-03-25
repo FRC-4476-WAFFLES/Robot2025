@@ -93,6 +93,7 @@ public class RobotContainer {
   private final SendableChooser<Command> autoChooser;
   private final SendableChooser<Command> testChooser;
   public static boolean isOperatorOverride = false;
+  public static boolean isRunningL1Intake = true;
 
 
   /** The static entry point for the robot. Contains subsystems, OI devices, and commands. */
@@ -136,6 +137,8 @@ public class RobotContainer {
     // Create conditional triggers based on operator override state
     Trigger inNormalMode = new Trigger(() -> !isOperatorOverride);
     Trigger inOverrideMode = new Trigger(() -> isOperatorOverride);
+
+    Trigger runningL1Intake = new Trigger(() -> isRunningL1Intake);
 
     // Toggle operator override
     Controls.operatorController.start().onTrue(
@@ -282,15 +285,17 @@ public class RobotContainer {
     // Manual net toss
     Controls.operatorController.povDown().whileTrue(Commands.defer(() -> ScoreNet.getScoreNetCommand(0, Rotation2d.kZero, false), ScoreCoral.commandRequirements).onlyIf(() -> RobotContainer.intakeSubsystem.isAlgaeLoaded()));
   
-    // L1 Intake
-    Controls.rightJoystick.button(2).whileTrue(
-      SharkCommands.getIntakeCommand()
+    // L1 Intake / Outtake
+    Controls.rightJoystick.button(2).onTrue(
+      Commands.either(
+        Commands.runOnce(() -> isRunningL1Intake = !isRunningL1Intake), 
+        SharkCommands.getOutakeCommand(), 
+        () -> sharkIntake.isCoralLoaded()
+      )
     );
 
-    // L1 Outtake
-    Controls.rightJoystick.button(4).whileTrue(
-      SharkCommands.getOutakeCommand()
-    );
+    // Run intake while intake should be running lmao
+    runningL1Intake.whileTrue(SharkCommands.getIntakeCommand());
   }
 
   /**
