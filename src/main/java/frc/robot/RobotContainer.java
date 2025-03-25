@@ -286,11 +286,11 @@ public class RobotContainer {
     Controls.operatorController.povDown().whileTrue(Commands.defer(() -> ScoreNet.getScoreNetCommand(0, Rotation2d.kZero, false), ScoreCoral.commandRequirements).onlyIf(() -> RobotContainer.intakeSubsystem.isAlgaeLoaded()));
   
     // L1 Intake / Outtake
-    Controls.rightJoystick.button(2).onTrue(
+    Controls.rightJoystick.button(4).onTrue(
       Commands.either(
         Commands.runOnce(() -> isRunningL1Intake = !isRunningL1Intake), 
         SharkCommands.getOutakeCommand(), 
-        () -> sharkIntake.isCoralLoaded()
+        () -> !sharkIntake.isCoralLoaded()
       )
     );
 

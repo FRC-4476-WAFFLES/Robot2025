@@ -43,7 +43,7 @@ public class SharkIntake extends SubsystemBase implements NetworkUser{
 
     // Debouncing variables for coral detection
     private static final double CORAL_DETECTION_DEBOUNCE_TIME = 0.2; // s
-    private static final double CORAL_EJECTION_DEBOUNCE_TIME = 0.1; // s
+    private static final double CORAL_EJECTION_DEBOUNCE_TIME = 0.2; // s
 
     // Network Tables
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();

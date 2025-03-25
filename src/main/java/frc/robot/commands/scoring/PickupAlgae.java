@@ -14,6 +14,7 @@ import frc.robot.RobotContainer;
 import frc.robot.commands.intake.AlgaeIntake;
 import frc.robot.commands.superstructure.ApplyScoringSetpoint;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
+import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.subsystems.DynamicPathing;
@@ -30,6 +31,7 @@ public class PickupAlgae extends SequentialCommandGroup {
           new InstantCommand(() -> {
             RobotContainer.elevatorSubsystem.setElevatorSetpoint(scoringLevel.getElevatorLevel());
             RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
+            RobotContainer.intakeSubsystem.setIntakeSpeed(ManipulatorConstants.CORAL_INTAKE_SPEED);
           }),
           // Wait until safe to move out pivot
           new WaitUntilCommand(() -> DynamicPathing.isPastAlgaeClearancePoint()),

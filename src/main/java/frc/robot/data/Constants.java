@@ -175,14 +175,15 @@ public final class Constants {
   public static class ManipulatorConstants {
     // Detection thresholds
     public static final double CORAL_LOADED_DISTANCE_THRESHOLD = 22.0; // mm
-    public static final double ALGAE_CURRENT_THRESHOLD = 35.0; // amps
+    public static final double ALGAE_CURRENT_THRESHOLD = 50.0; // amps
     public static final double ZERO_DEBOUNCE_TIME = 0.2;
     public static final double ZEROING_SPEED = -0.065; // Slow inwards speed
-    public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.1; // 100ms debounce time
+    public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.4; // 100ms debounce time
 
     // Intake constantsd
     public static final double CORAL_INTAKE_SPEED = 25; // Rps
     public static final double ALGAE_HOLD_SPEED = 3; // Speed to hold algae in place
+    public static final double ALGAE_INTAKE_SPEED = 45;
 
     // Pivot constants
     public static final double PIVOT_ANGLE_DEADBAND = 1.4;
@@ -214,7 +215,7 @@ public final class Constants {
     public enum PivotPosition {
         ZERO(0),
         CLEARANCE_POSITION(35),
-        CLEARANCE_POSITION_ALGAE(90),
+        CLEARANCE_POSITION_ALGAE(96),
         ALGAE_L2(178.5),
         ALGAE_L1(178.5),
         PROCESSOR(189),
@@ -287,8 +288,8 @@ public final class Constants {
     public enum ElevatorLevel {
       REST_POSITION(0.0),
       NET(1.45),
-      ALGAE_L2(0.97),
-      ALGAE_L1(0.55),
+      ALGAE_L2(0.945),
+      ALGAE_L1(0.56),
       PROCESSOR(0.2),
       L4(1.50),
       L3(0.81),
@@ -365,7 +366,7 @@ public final class Constants {
     public static final double kD = 0.01;
     public static final double kS = 0.0;
 
-    public static final double CORAL_CURRENT_THRESHOLD = 28.0; // amps
+    public static final double CORAL_CURRENT_THRESHOLD = 24.0; // amps
     public static final double CORAL_EJECT_VELOCITY_THRESHOLD = -2; // rps
 
     public static final double STATOR_CURRENT_LIMIT = 60;
