@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -80,17 +81,22 @@ public class ScoreCoral extends SequentialCommandGroup {
         pathingSubsystem.wrapPathingCommand(
           new SequentialCommandGroup(
             driveCommand,
-            new AlignToPose(finalAlignPose, maxSpeed)
+            new AlignToPose(finalAlignPose, maxSpeed, 0, false)
           )
         ),
         new PrepareScoreCoral()
       ),
       
-      // Wait until doNotScore is released
-      new WaitUntilCommand(() -> !Controls.doNotScore.getAsBoolean()),
-      
-      // Outake the coral
-      new CoralOutake(),
+      new ParallelRaceGroup(
+        new SequentialCommandGroup(
+          // Wait until doNotScore is released
+          new WaitUntilCommand(() -> !Controls.doNotScore.getAsBoolean()),
+          
+          // Outake the coral
+          new CoralOutake()
+        ),
+        new AlignToPose(finalAlignPose, maxSpeed, Double.MAX_VALUE)
+      ),
       
       // End timing
       endTimingCommand
@@ -117,7 +123,7 @@ public class ScoreCoral extends SequentialCommandGroup {
         // Do not lower elevator after L4 score
       } else {
         RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
-        RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
+        // RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
       }
     });
   }

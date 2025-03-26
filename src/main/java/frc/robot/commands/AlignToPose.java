@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
@@ -30,8 +31,8 @@ import static frc.robot.RobotContainer.*;
 
 public class AlignToPose extends Command {
   /* PID Controllers */
-  private PIDController posPidController = new PIDController(4.1, 0, 0.22);
-  private ProfiledPIDController thetaPidController = new ProfiledPIDController(7.0, 0, 0.1, new Constraints(4, 20));
+  private PIDController posPidController = new PIDController(4.5, 0, 0.2);
+  private ProfiledPIDController thetaPidController = new ProfiledPIDController(7.0, 0, 0.1, new Constraints(4, 15));
 
   /* Constants */
   private static final double PosMaxError = 0.02;
@@ -39,9 +40,11 @@ public class AlignToPose extends Command {
 
   /* Instance variables */
   private SwerveRequest.FieldCentric driveRequest = new SwerveRequest.FieldCentric();
-  private Pose2d targetPose2d;
-  private double maxSpeed;
-
+  private final Pose2d targetPose2d;
+  private final double maxSpeed;
+  private final boolean stopOnceDone;
+  private Trigger endTrigger;
+  
   /* Timing variables */
   private final Timer alignmentTimer = new Timer();
   private static final NetworkTable scoringTable = NetworkTableInstance.getDefault().getTable("PathingMetrics");
@@ -51,7 +54,7 @@ public class AlignToPose extends Command {
   /** 
    * Command that drives the robot to align with coral scoring
    */
-  public AlignToPose(Pose2d targetPose, double speedLimit) {
+  public AlignToPose(Pose2d targetPose, double speedLimit, double endingDebounce, boolean lockOnceDone) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(driveSubsystem);
 
@@ -59,6 +62,26 @@ public class AlignToPose extends Command {
 
     targetPose2d = targetPose;
     maxSpeed = speedLimit;
+    this.stopOnceDone = lockOnceDone;
+
+    endTrigger = new Trigger(() -> isWithinAllowableRange(targetPose2d))
+    .debounce(endingDebounce);
+  }
+
+  /** 
+   * Command that drives the robot to align with coral scoring
+   */
+  public AlignToPose(Pose2d targetPose, double speedLimit, double endingDebounce) {
+    // Default to no speed limit
+    this(targetPose, speedLimit, endingDebounce, true);
+  }
+
+  /** 
+   * Command that drives the robot to align with coral scoring
+   */
+  public AlignToPose(Pose2d targetPose, double speedLimit) {
+    // Default to no speed limit
+    this(targetPose, speedLimit, 0, true);
   }
 
   /** 
@@ -66,7 +89,7 @@ public class AlignToPose extends Command {
    */
   public AlignToPose(Pose2d targetPose) {
     // Default to no speed limit
-    this(targetPose, Double.MAX_VALUE);
+    this(targetPose, Double.MAX_VALUE, 0, true);
   }
 
   // Called when the command is initially scheduled.
@@ -80,6 +103,9 @@ public class AlignToPose extends Command {
 
     var currentPose = driveSubsystem.getRobotPose();
     thetaPidController.reset(currentPose.getRotation().getRadians());
+
+    thetaPidController.setTolerance(RotMaxError);
+    posPidController.setTolerance(PosMaxError);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -100,6 +126,16 @@ public class AlignToPose extends Command {
     double moveVelocity = MathUtil.clamp(-posPidController.calculate(distanceToTarget, 0), -maxSpeed, maxSpeed);
     double thetaVelocity = thetaPidController.calculate(currentPose.getRotation().getRadians(), targetPose2d.getRotation().getRadians());
     
+    if (distanceToTarget < PosMaxError) {
+      moveVelocity = 0;
+    }
+    if (Math.abs(currentPose.getRotation().minus(targetPose2d.getRotation()).getDegrees()) < RotMaxError) {
+      thetaVelocity = 0;
+    }
+
+    SmartDashboard.putNumber("RotPID", thetaVelocity);
+    SmartDashboard.putNumber("MovePID", moveVelocity);
+
     Translation2d directionVector = new Translation2d(moveVelocity, WafflesUtilities.AngleBetweenPoints(
       currentPose.getTranslation(), targetPose2d.getTranslation())
     ); 
@@ -134,16 +170,18 @@ public class AlignToPose extends Command {
     // Log the alignment time to SmartDashboard as well
     // SmartDashboard.putNumber("Recent Alignment Time", finalAlignmentTime);
 
-    driveSubsystem.setControl(
-      driveRequest
-        .withDeadband(0)
-        .withRotationalDeadband(0)
-        .withDriveRequestType(DriveRequestType.Velocity)
-        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
-        .withVelocityX(0)
-        .withVelocityY(0)
-        .withRotationalRate(0)
-    );
+    if (stopOnceDone) {
+      driveSubsystem.setControl(
+        driveRequest
+          .withDeadband(0)
+          .withRotationalDeadband(0)
+          .withDriveRequestType(DriveRequestType.Velocity)
+          .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+          .withVelocityX(0)
+          .withVelocityY(0)
+          .withRotationalRate(0)
+      );
+    }
   }
 
   /*
@@ -158,6 +196,6 @@ public class AlignToPose extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return isWithinAllowableRange(targetPose2d);
+    return endTrigger.getAsBoolean();
   }
 }

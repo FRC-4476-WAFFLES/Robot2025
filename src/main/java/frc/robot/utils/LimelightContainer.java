@@ -37,6 +37,13 @@ public class LimelightContainer {
         if (mt2Result != null) {
             if(mt2Result.tagCount > 0) //Math.abs(Math.toDegrees(getCurrentRobotChassisSpeeds().omegaRadiansPerSecond)) < 10 &&
             {
+                if (Double.isNaN(mt2Result.pose.getX()) || 
+                    Double.isNaN(mt2Result.pose.getY()) ||
+                    Double.isNaN(mt2Result.pose.getRotation().getDegrees())) 
+                {
+                    return;
+                }
+
                 var StandardDeviations = VisionHelpers.getEstimationStdDevsLimelightMT2(mt2Result.rawFiducials);
                 driveSubsystem.addVisionMeasurement(
                     mt2Result.pose,
@@ -59,6 +66,12 @@ public class LimelightContainer {
             
             if(mt1Result.tagCount > 0) 
             {
+                if (Double.isNaN(mt1Result.pose.getX()) || 
+                    Double.isNaN(mt1Result.pose.getY()) ||
+                    Double.isNaN(mt1Result.pose.getRotation().getDegrees())) 
+                {
+                    return;
+                }
                 // Only accept in enabled if close to existing pose
                 // If disabled ignore distance heuristic
                 // if (getRobotPose().getTranslation().getDistance(mt1Result.pose.getTranslation()) < VisionConstants.MT1_REJECT_DISTANCE || DriverStation.isDisabled()) {

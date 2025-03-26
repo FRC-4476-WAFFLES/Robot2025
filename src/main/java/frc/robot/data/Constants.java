@@ -84,7 +84,7 @@ public final class Constants {
     public static final Matrix<N3, N1> kSingleTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 4);
     public static final Matrix<N3, N1> kMultiTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 3);
 
-    public static final Matrix<N3, N1> kStdDevsMT2ReefTargeting = VecBuilder.fill(0.005,0.005, Double.MAX_VALUE);
+    public static final Matrix<N3, N1> kStdDevsMT2ReefTargeting = VecBuilder.fill(0.008,0.008, Double.MAX_VALUE);
     public static final Matrix<N3, N1> kStdDevsMT2 = VecBuilder.fill(0.25,0.25, Double.MAX_VALUE);
 
     // Reject mt1 poses if further than this from current estimate, removes ambiguity noise
@@ -135,7 +135,7 @@ public final class Constants {
 
   public static class ScoringConstants {
     public static final double AUTO_SCORE_PIVOT_NUDGE = 8;
-    public static final double ALGAE_TOSS_PIVOT_ANGLE = 170; // Angle at which toss occurs
+    public static final double ALGAE_TOSS_PIVOT_ANGLE = 160; // Angle at which toss occurs
 
     /**
      * Maps scoring levels to their respective elevator and pivot enums
@@ -220,8 +220,8 @@ public final class Constants {
         ALGAE_L1(178.5),
         PROCESSOR(189),
         SPIT_ALGAE(140),
-        CORAL_INTAKE(0.5),
-        NET(55),
+        CORAL_INTAKE(7),
+        NET(70),
         L4(42),
         L3(35.5),
         L2(35.5),
@@ -292,7 +292,7 @@ public final class Constants {
       ALGAE_L1(0.56),
       PROCESSOR(0.2),
       L4(1.50),
-      L3(0.81),
+      L3(0.795),
       L2(0.40),
       L1(0.33),
 

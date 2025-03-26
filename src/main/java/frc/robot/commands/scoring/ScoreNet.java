@@ -39,6 +39,7 @@ public class ScoreNet {
             Commands.sequence(
                 new ApplyScoringSetpoint(ScoringLevel.NET_PREP),
                 Commands.runOnce(() -> RobotContainer.pivotSubsystem.setIsThrowingAlgae(true)),
+                Commands.waitSeconds(0.2),
                 algaeToss()
             )
         ).finallyDo(() -> {

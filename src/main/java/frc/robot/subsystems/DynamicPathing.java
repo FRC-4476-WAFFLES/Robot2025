@@ -74,7 +74,7 @@ public class DynamicPathing extends SubsystemBase {
     
     /* Coral scoring pathing parameters */
     public static final double REEF_PATH_POSITION_OFFSET = 0.12; // Distance from reef to handover from path to PID
-    public static final double CORAL_PATH_END_SPEED = 0.4; // m/s
+    public static final double CORAL_PATH_END_SPEED = 0.5; // m/s
 
     /* Human player station physical parameters */
     public static final Translation2d HUMAN_PLAYER_STATION_LEFT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(25.80));  
@@ -741,6 +741,7 @@ public class DynamicPathing extends SubsystemBase {
     public Command createCoralScoreCommand() {
         Pose2d startingPose = RobotContainer.driveSubsystem.getRobotPose();
         Pose2d targetCoralPose = getNearestCoralScoringLocation();
+        ChassisSpeeds speeds = RobotContainer.driveSubsystem.getCurrentRobotChassisSpeeds(); // Robot relative, just needed for magnitude
 
         // If too close just use PID
         if (startingPose.getTranslation().getDistance(targetCoralPose.getTranslation()) < 0.6) {
@@ -748,14 +749,22 @@ public class DynamicPathing extends SubsystemBase {
         }
 
         // Calculate offset pose to generate pathing command to 
+        Rotation2d offsetAngle;
+        if (Math.hypot(speeds.vxMetersPerSecond, speeds.vxMetersPerSecond) > 0.05) {
+            offsetAngle = targetCoralPose.getRotation().plus(Rotation2d.k180deg);
+        } else {
+            offsetAngle = WafflesUtilities.AngleBetweenPoints(
+                targetCoralPose.getTranslation(), startingPose.getTranslation()
+            );
+        }
+
         Translation2d offsetTranslation = targetCoralPose.getTranslation();
-        Translation2d offsetVector = new Translation2d(REEF_PATH_POSITION_OFFSET, WafflesUtilities.AngleBetweenPoints(
-            targetCoralPose.getTranslation(), startingPose.getTranslation())
-        ); 
+        Translation2d offsetVector = new Translation2d(REEF_PATH_POSITION_OFFSET, offsetAngle); 
         offsetTranslation = offsetTranslation.plus(offsetVector);
         Pose2d offsetCoralPose = new Pose2d(offsetTranslation, targetCoralPose.getRotation());
 
 
+        // Telemetry
         SmartDashboard.putNumberArray("TargetPose Reef", new double[] {
             targetCoralPose.getX(),
             targetCoralPose.getY(),
