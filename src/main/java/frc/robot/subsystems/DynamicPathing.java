@@ -77,8 +77,8 @@ public class DynamicPathing extends SubsystemBase {
     public static final double CORAL_PATH_END_SPEED = 0.5; // m/s
 
     /* Human player station physical parameters */
-    public static final Translation2d HUMAN_PLAYER_STATION_LEFT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(25.80));  
-    public static final Translation2d HUMAN_PLAYER_STATION_RIGHT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(291.20));  
+    public static final Translation2d HUMAN_PLAYER_STATION_RIGHT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(25.80));  
+    public static final Translation2d HUMAN_PLAYER_STATION_LEFT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(291.20));  
     public static final Rotation2d HUMAN_PLAYER_STATION_LEFT_SCORING_ANGLE = Rotation2d.fromDegrees(126).rotateBy(Rotation2d.k180deg); //126
     public static final Rotation2d HUMAN_PLAYER_STATION_RIGHT_SCORING_ANGLE = Rotation2d.fromDegrees(234).rotateBy(Rotation2d.k180deg);
 

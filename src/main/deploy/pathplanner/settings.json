@@ -19,7 +19,10 @@
     "Starting Line(BOT)"
   ],
   "autoFolders": [
-    "Push"
+    "Four Peice",
+    "Middle",
+    "Push",
+    "Three Peice"
   ],
   "defaultMaxVel": 4.1,
   "defaultMaxAccel": 5.0,

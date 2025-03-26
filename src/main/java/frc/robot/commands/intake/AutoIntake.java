@@ -12,6 +12,7 @@ import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -40,16 +41,25 @@ public class AutoIntake {
                 Translation2d targetTranslation;
                 if (currentPose.getY() > (FlippingUtil.fieldSizeY / 2)) {
                     targetTranslation = FieldConstants.HumanPlayerLeftPos;
+                } else {
+                    targetTranslation = FieldConstants.HumanPlayerRightPos;
                 }
-                targetTranslation = FieldConstants.HumanPlayerRightPos;
+                
 
                 Rotation2d targetRotation = RobotContainer.dynamicPathingSubsystem.getHumanPlayerPickupAngle();
 
                 Pose2d chosenStationPose = new Pose2d(targetTranslation, targetRotation);
+                chosenStationPose = WafflesUtilities.FlipIfRedAlliance(chosenStationPose);
 
-                return Commands.parallel(
-                    new AlignToPose(chosenStationPose),
+                SmartDashboard.putNumberArray("TargetPose Align", new double[] {
+                    chosenStationPose.getX(),
+                    chosenStationPose.getY(),
+                    chosenStationPose.getRotation().getDegrees()
+                });
+
+                return Commands.deadline(
                     new CoralIntake(),
+                    new AlignToPose(chosenStationPose),
                     new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
                 );
             }, 

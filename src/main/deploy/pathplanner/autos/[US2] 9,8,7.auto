@@ -107,6 +107,6 @@
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "Three Peice",
   "choreoAuto": false
 }

@@ -112,8 +112,8 @@ public final class Constants {
   /* Field */
   public static class FieldConstants {
     // Viewed from blue alliance driver station 
-    public static final Translation2d HumanPlayerLeftPos = new Translation2d(0, 0);
-    public static final Translation2d HumanPlayerRightPos = new Translation2d(0, 0); 
+    public static final Translation2d HumanPlayerLeftPos = new Translation2d(1.6, 7.35);
+    public static final Translation2d HumanPlayerRightPos = new Translation2d(1.6, 0.7); 
   }
 
   /* Physical */

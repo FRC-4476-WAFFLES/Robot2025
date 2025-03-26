@@ -38,7 +38,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Coral Intake"
+            "name": "Auto Coral Intake"
           }
         },
         {
@@ -75,7 +75,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Coral Intake"
+            "name": "Auto Coral Intake"
           }
         },
         {
@@ -112,7 +112,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Coral Intake"
+            "name": "Auto Coral Intake"
           }
         },
         {
@@ -144,6 +144,6 @@
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "Four Peice",
   "choreoAuto": false
 }

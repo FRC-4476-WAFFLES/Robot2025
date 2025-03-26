@@ -296,6 +296,11 @@ public class RobotContainer {
 
     // Run intake while intake should be running lmao
     runningL1Intake.whileTrue(SharkCommands.getIntakeCommand());
+
+    
+    Controls.operatorController.rightBumper().whileTrue(
+      AutoIntake.GetAutoIntakeCommand()  
+    );
   }
 
   /**
