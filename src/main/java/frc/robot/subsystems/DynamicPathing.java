@@ -87,7 +87,7 @@ public class DynamicPathing extends SubsystemBase {
     public static final Rotation2d PROCESSOR_SCORING_ANGLE = Rotation2d.fromDegrees(-90);
 
     /* Net physical parameters */
-    public static final double NET_LINE_X_BLUE = 7.70; // Meters
+    public static final double NET_LINE_X_BLUE = 7.80; // Meters
     public static final Rotation2d NET_SCORING_ANGLE = Rotation2d.k180deg;
 
     /* Path following parameters */
@@ -282,7 +282,16 @@ public class DynamicPathing extends SubsystemBase {
                             () -> humanPickupRotation, true
                         ),
                         new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
-                    );
+                    ).finallyDo(() -> {
+                        if (!RobotContainer.intakeSubsystem.isCoralLoaded()) {
+                            // Keep running intake for 5 seconds after ending if no coral detected
+                            Command runAfterCommand = new CoralIntake().withTimeout(4);
+
+                            // This is one of the few cases where directly scheduling a command is okay, 
+                            // since we don't want it to be canceled by releasing the driver assist button
+                            runAfterCommand.schedule();
+                        }
+                    });
 
                 }
                 break;

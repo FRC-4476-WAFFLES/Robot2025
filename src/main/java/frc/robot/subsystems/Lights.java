@@ -33,6 +33,7 @@ import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
+import frc.robot.data.Constants.SharkPivotConstants.SharkPivotPosition;
 import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
 
 public class Lights extends SubsystemBase {
@@ -355,6 +356,17 @@ public class Lights extends SubsystemBase {
    * Updates elevator side lights based on targeted elevator height in automatic mode
    */
   private void handleAutomaticElevatorLights() {
+    if (RobotContainer.sharkIntake.isCoralLoaded()) {
+      setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.GREEN, LightColours.WHITE, false);
+      setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.GREEN, LightColours.WHITE, false);
+      return;
+    } else if (RobotContainer.sharkPivot.getSharkSetpoint() > SharkPivotPosition.STOWED.getDegrees()) {
+      // Flash green if intaking
+      setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.GREEN, LightColours.BLACK, true);
+      setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.GREEN, LightColours.BLACK, true);
+      return;
+    }
+
     ScoringLevel scoringLevel = dynamicPathingSubsystem.getCoralScoringLevel();
     boolean isRightSide = dynamicPathingSubsystem.getCoralScoringSide();
     
