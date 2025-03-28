@@ -167,7 +167,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
         Slot2Configs slot2Configs = new Slot2Configs();
         slot2Configs.kI = ManipulatorConstants.PIVOT_kI;
-        slot2Configs.kP = ManipulatorConstants.PIVOT_kP * 2;
+        slot2Configs.kP = ManipulatorConstants.PIVOT_kP;
         slot2Configs.kS = ManipulatorConstants.PIVOT_kS;
         slot2Configs.kD = ManipulatorConstants.PIVOT_kD;
         
@@ -203,13 +203,9 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
         // Real jank but ok
         int slot = 0;
-        if (intakeSubsystem.isAlgaeLoaded()) {
+        if (intakeSubsystem.isAlgaeLoaded() && !isThrowingAlgae) {
             // while algae is loaded, use a slower profile
             slot = 1;
-        }
-        if (isThrowingAlgae) {
-            // go FAST
-            slot = 0;
         }
 
         // Update motor controls

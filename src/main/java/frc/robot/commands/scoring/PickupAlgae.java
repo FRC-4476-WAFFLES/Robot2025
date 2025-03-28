@@ -31,7 +31,7 @@ public class PickupAlgae extends SequentialCommandGroup {
           new InstantCommand(() -> {
             RobotContainer.elevatorSubsystem.setElevatorSetpoint(scoringLevel.getElevatorLevel());
             RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
-            RobotContainer.intakeSubsystem.setIntakeSpeed(ManipulatorConstants.CORAL_INTAKE_SPEED);
+            RobotContainer.intakeSubsystem.setIntakeSpeed(ManipulatorConstants.ALGAE_INTAKE_SPEED);
           }),
           // Wait until safe to move out pivot
           new WaitUntilCommand(() -> DynamicPathing.isPastAlgaeClearancePoint()),
@@ -45,19 +45,10 @@ public class PickupAlgae extends SequentialCommandGroup {
     );
   }
 
-  // public static boolean isOutOfReefRetractionDangerZone() {
-  //   return DynamicPathingSubsystem.getDistanceToReef() > DynamicPathingSubsystem.REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE;
-  // }
-
   public static Command pickupAlgaeWithPath(Command driveCommand, ScoringLevel scoringLevel, Command pathAwayCommand) {
     return new PickupAlgae(driveCommand, scoringLevel, pathAwayCommand).finallyDo((interruped) -> {
-      if (interruped && !RobotContainer.intakeSubsystem.isAlgaeLoaded()) {
-        // If interrupted, 
-        RobotContainer.intakeSubsystem.setIntakeSpeed(-20);
-      } else {
-        RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
-        RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
-      }
+      RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
+      RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
     });
   }
 }

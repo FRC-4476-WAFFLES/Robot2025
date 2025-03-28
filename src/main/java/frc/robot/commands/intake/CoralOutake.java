@@ -4,17 +4,20 @@
 
 package frc.robot.commands.intake;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+
+import static frc.robot.RobotContainer.intakeSubsystem;
+
 import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.robot.RobotContainer;
-import frc.robot.data.Constants.ManipulatorConstants;
-import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 
-/* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
+
 public class CoralOutake extends Command {
-  Timer timer = new Timer();
+  public static final double OUTTAKE_POSITION_CHANGE = 6; // rotations
   
+  private double outtakeEndPosition = 0;
   /** Creates a new CoralIntake. */
   public CoralOutake() {
     addRequirements(RobotContainer.intakeSubsystem);
@@ -26,9 +29,7 @@ public class CoralOutake extends Command {
   public void initialize() {
     // Make sure the intake doesn't detect us as having loaded algae in this motion
     RobotContainer.intakeSubsystem.setNoAlgaeFlag(true);
-
-    timer.stop();
-    timer.reset();
+    outtakeEndPosition = intakeSubsystem.getCurrentPosition() - OUTTAKE_POSITION_CHANGE;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -37,20 +38,16 @@ public class CoralOutake extends Command {
     var scoringLevel = RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel();
     switch (scoringLevel) {
       case L1:
-        RobotContainer.intakeSubsystem.setIntakeSpeed(20.0); // Reverse to spit out backwards
+        RobotContainer.intakeSubsystem.setIntakeSpeed(8.0); // Reverse to spit out backwards
         break;
 
       case L4:
-        RobotContainer.intakeSubsystem.setIntakeSpeed(-200.0); // Fast to ensure fitting on post
+        RobotContainer.intakeSubsystem.setIntakeSpeed(-80.0); // Fast to ensure fitting on post
         break;
 
       default:
-        RobotContainer.intakeSubsystem.setIntakeSpeed(-40.0); // Slower to avoid bouncing off L2-L3
+        RobotContainer.intakeSubsystem.setIntakeSpeed(-16.0); // Slower to avoid bouncing off L2-L3
         break;
-    }
-    
-    if (!RobotContainer.intakeSubsystem.isCoralLoaded() ) {
-      timer.start();
     }
   }
 
@@ -78,6 +75,11 @@ public class CoralOutake extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return timer.get() > 0.2;
+    return intakeSubsystem.getCurrentPosition() <= outtakeEndPosition;
+
+    // if (DriverStation.isAutonomous()) {
+    //   return timer.get() > 0;
+    // }
+    // return timer.get() > 0.2;
   }
 }

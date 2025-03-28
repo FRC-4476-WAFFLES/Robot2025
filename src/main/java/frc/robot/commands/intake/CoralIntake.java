@@ -30,7 +30,7 @@ public class CoralIntake extends Command {
   @Override
   public void execute() {
     if (!hasDetectedCoral) {
-      RobotContainer.intakeSubsystem.setIntakeSpeed(-15);
+      RobotContainer.intakeSubsystem.setIntakeSpeed(ManipulatorConstants.CORAL_INTAKE_SPEED);
       
       // Check if coral is detected for the first time
       if (RobotContainer.intakeSubsystem.isCoralLoaded()) {
@@ -45,15 +45,13 @@ public class CoralIntake extends Command {
   @Override
   public void end(boolean interrupted) {
     RobotContainer.intakeSubsystem.setIntakeSpeed(0);
-    RobotContainer.intakeSubsystem.disablePositionControl();
+    // RobotContainer.intakeSubsystem.setPositionControlFlag(false);
     RobotContainer.lightsSubsystem.setCoralIntakeRunning(false);
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return RobotContainer.intakeSubsystem.isCoralLoaded() && 
-    RobotContainer.intakeSubsystem.isAtTargetPosition() && 
-    RobotContainer.intakeSubsystem.isIntakeStopped();
+    return RobotContainer.intakeSubsystem.isCoralLoaded();
   }
 }

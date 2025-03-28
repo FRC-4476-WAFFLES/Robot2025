@@ -64,7 +64,7 @@ public class ScoreNet {
                     Commands.waitUntil(() ->   
                         RobotContainer.pivotSubsystem.getPivotPosition() <= ScoringConstants.ALGAE_TOSS_PIVOT_ANGLE
                     ),
-                    Commands.runOnce(() -> {RobotContainer.intakeSubsystem.setIntakeSpeed(-300);}),
+                    Commands.runOnce(() -> {RobotContainer.intakeSubsystem.setIntakeSpeed(-120);}),
                     Commands.waitSeconds(0.5)
                 ).finallyDo(() -> {
                     RobotContainer.intakeSubsystem.setIntakeSpeed(0);

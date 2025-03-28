@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.DriveTeleop;
@@ -416,6 +417,15 @@ public class RobotContainer {
       new CoralIntake(),
       new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
     ));
+
+    NamedCommands.registerCommand("Set Position Intake", 
+      Commands.sequence(
+        new WaitUntilCommand(() -> DynamicPathing.isElevatorRetractionSafe()),
+        new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
+      )
+    );
+
+    
 
     // Auto Coral Intake
     NamedCommands.registerCommand("Auto Coral Intake", AutoIntake.GetAutoIntakeCommand());

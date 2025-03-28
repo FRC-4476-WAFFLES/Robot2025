@@ -128,6 +128,8 @@ public final class Constants {
     public static final double sharkIntakeReduction = 9.0; 
     public static final double sharkPivotReduction = 37.92592592592592592; 
     public static final double pivotReduction = 52.5625; 
+    public static final double intakeReduction = 2.5;
+
     public static final double elevatorReductionToMeters = 26.6; // Motor rotations to elevator height in meters
 
     public static final double pivotAbsoluteEncoderOffset = 0;
@@ -175,15 +177,15 @@ public final class Constants {
   public static class ManipulatorConstants {
     // Detection thresholds
     public static final double CORAL_LOADED_DISTANCE_THRESHOLD = 22.0; // mm
-    public static final double ALGAE_CURRENT_THRESHOLD = 50.0; // amps
+    public static final double ALGAE_CURRENT_THRESHOLD = 47.0; // amps
     public static final double ZERO_DEBOUNCE_TIME = 0.2;
     public static final double ZEROING_SPEED = -0.065; // Slow inwards speed
-    public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.4; // 100ms debounce time
+    public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.2; // 100ms debounce time
 
     // Intake constantsd
-    public static final double CORAL_INTAKE_SPEED = 25; // Rps
-    public static final double ALGAE_HOLD_SPEED = 3; // Speed to hold algae in place
-    public static final double ALGAE_INTAKE_SPEED = 50;
+    public static final double CORAL_INTAKE_SPEED = -10; // Rps
+    public static final double ALGAE_HOLD_SPEED = 1.2; // Speed to hold algae in place
+    public static final double ALGAE_INTAKE_SPEED = 24;
 
     // Pivot constants
     public static final double PIVOT_ANGLE_DEADBAND = 1.4;
@@ -288,7 +290,7 @@ public final class Constants {
     public enum ElevatorLevel {
       REST_POSITION(0.0),
       NET(1.50),
-      ALGAE_L2(0.945),
+      ALGAE_L2(0.9),
       ALGAE_L1(0.56),
       PROCESSOR(0.2),
       L4(1.50),

@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.8220000000000005,
-        "y": 5.4777499999999995
+        "x": 3.8390625,
+        "y": 5.474441964285713
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.930626408848402,
-        "y": 6.299820047335789
+        "x": 2.9476889088484013,
+        "y": 6.296512011621503
       },
       "isLocked": false,
-      "linkedName": "Post 8"
+      "linkedName": null
     },
     {
       "anchor": {
@@ -41,14 +41,14 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0.4,
+    "velocity": 1.0,
     "rotation": -53.426969021480716
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -59.264512298079744
+    "rotation": -62.38697217691553
   },
   "useDefaultConstraints": false
 }
