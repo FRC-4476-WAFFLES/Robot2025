@@ -40,8 +40,8 @@ public class ScoreNet {
             Commands.sequence(
                 // Run intake in during NET_PREP position
                 Commands.parallel(
-                    new ApplyScoringSetpoint(ScoringLevel.NET_PREP),
-                    Commands.runOnce(() -> RobotContainer.intakeSubsystem.setIntakeSpeed(ManipulatorConstants.ALGAE_INTAKE_SPEED))
+                    new ApplyScoringSetpoint(ScoringLevel.NET_PREP)
+                    // Commands.runOnce(() -> RobotContainer.intakeSubsystem.setIntakeSpeed(ManipulatorConstants.ALGAE_INTAKE_SPEED))
                 ),
                 Commands.runOnce(() -> RobotContainer.pivotSubsystem.setIsThrowingAlgae(true)),
                 Commands.waitSeconds(0.2),

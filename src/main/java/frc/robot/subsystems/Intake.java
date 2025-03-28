@@ -122,7 +122,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
         slot0Configs.kP = 0.3;
         slot0Configs.kI = 0;
         slot0Configs.kD = 0;
-        slot0Configs.kV = 0.2;
+        slot0Configs.kV = 0.33;
         slot0Configs.kG = 0.0;
 
         var slot1Configs = new Slot1Configs();

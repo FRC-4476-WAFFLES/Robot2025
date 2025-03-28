@@ -4,13 +4,16 @@
 
 package frc.robot.commands.scoring;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.RobotContainer;
+import frc.robot.commands.AlignToPose;
 import frc.robot.commands.intake.AlgaeIntake;
 import frc.robot.commands.superstructure.ApplyScoringSetpoint;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
@@ -21,10 +24,9 @@ import frc.robot.subsystems.DynamicPathing;
 
 public class PickupAlgae extends SequentialCommandGroup {
   /** Creates a new ScoreCoral. */
-  private PickupAlgae(Command driveCommand, ScoringLevel scoringLevel, Command pathAwayCommand) {
+  private PickupAlgae(Command driveCommand, ScoringLevel scoringLevel, Command pathAwayCommand, Pose2d pickupPose) {
     addCommands(
-      new ParallelCommandGroup(
-        RobotContainer.dynamicPathingSubsystem.wrapPathingCommand(driveCommand),
+      new ParallelDeadlineGroup(
         // Deploy and pickup sequence
         new SequentialCommandGroup(
           // Move elevator first, since it's always safe to do so
@@ -39,14 +41,22 @@ public class PickupAlgae extends SequentialCommandGroup {
             new ApplyScoringSetpoint(scoringLevel),
             new AlgaeIntake()
           )
+        ),
+
+        // Move sequence
+        RobotContainer.dynamicPathingSubsystem.wrapPathingCommand(
+          new SequentialCommandGroup(
+            driveCommand,
+            new AlignToPose(pickupPose)
+          )
         )
       ),
       pathAwayCommand
     );
   }
 
-  public static Command pickupAlgaeWithPath(Command driveCommand, ScoringLevel scoringLevel, Command pathAwayCommand) {
-    return new PickupAlgae(driveCommand, scoringLevel, pathAwayCommand).finallyDo((interruped) -> {
+  public static Command pickupAlgaeWithPath(Command driveCommand, ScoringLevel scoringLevel, Command pathAwayCommand, Pose2d pickupPose) {
+    return new PickupAlgae(driveCommand, scoringLevel, pathAwayCommand, pickupPose).finallyDo((interruped) -> {
       RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
       RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
     });

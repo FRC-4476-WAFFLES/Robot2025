@@ -736,7 +736,8 @@ public class DynamicPathing extends SubsystemBase {
             return PickupAlgae.pickupAlgaeWithPath(
                 arrivalPathingCommand, 
                 getAlgeaScoringLevel(startingPose), 
-                backoffPathingCommand
+                backoffPathingCommand,
+                targetAlgaePose
             );
         }
         
