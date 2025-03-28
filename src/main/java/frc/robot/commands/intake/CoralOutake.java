@@ -7,13 +7,17 @@ package frc.robot.commands.intake;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+
+import static frc.robot.RobotContainer.intakeSubsystem;
+
 import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.robot.RobotContainer;
 
 
 public class CoralOutake extends Command {
-  Timer timer = new Timer();
+  public static final double OUTTAKE_POSITION_CHANGE = 6; // rotations
   
+  private double outtakeEndPosition = 0;
   /** Creates a new CoralIntake. */
   public CoralOutake() {
     addRequirements(RobotContainer.intakeSubsystem);
@@ -25,9 +29,7 @@ public class CoralOutake extends Command {
   public void initialize() {
     // Make sure the intake doesn't detect us as having loaded algae in this motion
     RobotContainer.intakeSubsystem.setNoAlgaeFlag(true);
-
-    timer.stop();
-    timer.reset();
+    outtakeEndPosition = intakeSubsystem.getCurrentPosition() - OUTTAKE_POSITION_CHANGE;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -73,9 +75,11 @@ public class CoralOutake extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if (DriverStation.isAutonomous()) {
-      return timer.get() > 0;
-    }
-    return timer.get() > 0.2;
+    return intakeSubsystem.getCurrentPosition() <= outtakeEndPosition;
+
+    // if (DriverStation.isAutonomous()) {
+    //   return timer.get() > 0;
+    // }
+    // return timer.get() > 0.2;
   }
 }
