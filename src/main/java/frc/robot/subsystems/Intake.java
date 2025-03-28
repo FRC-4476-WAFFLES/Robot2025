@@ -44,11 +44,12 @@ public class Intake extends SubsystemBase implements NetworkUser{
 
     // State Variables
     private double laserCANDistance = 0;
-    private boolean algaeLoaded = false;
     private double intakeSpeed = 0;
     private double targetPosition = 0;
     private boolean usePositionControl = false;
     private boolean noAlgaeFlag = false;
+    private boolean algaeLoaded = false;
+
     private Timer algaeLossTimer = new Timer();
 
     private Trigger algaeDetectionTrigger;
@@ -156,28 +157,30 @@ public class Intake extends SubsystemBase implements NetworkUser{
             System.out.print("===============\nLost Algae Detected.");
         }
 
-        if (Math.abs(intakeSpeed) < 0.01 && isAlgaeLoaded()) {
-            // When algae is loaded, run intake slowly inward
-            intake.setControl(intakeControlRequest.withVelocity(Constants.ManipulatorConstants.ALGAE_HOLD_SPEED).withSlot(0));
+        if (!usePositionControl) {
+            if (Math.abs(intakeSpeed) < 0.01 && isAlgaeLoaded()) {
+                // When algae is loaded, run intake slowly inward
+                intake.setControl(intakeControlRequest.withVelocity(Constants.ManipulatorConstants.ALGAE_HOLD_SPEED).withSlot(0));
 
-            if (intake.getStatorCurrent().getValueAsDouble() < 4) {
-                intake.setControl(intakeControlRequest.withVelocity(-300).withSlot(0));
-                
-                if (!algaeLossTimer.isRunning()) {
-                    algaeLossTimer.reset();
-                    algaeLossTimer.start();
+                if (intake.getStatorCurrent().getValueAsDouble() < 4) {
+                    intake.setControl(intakeControlRequest.withVelocity(-300).withSlot(0));
+                    
+                    if (!algaeLossTimer.isRunning()) {
+                        algaeLossTimer.reset();
+                        algaeLossTimer.start();
+                    }
                 }
+            } else if (Math.abs(intakeSpeed) < 0.01 && isCoralLoaded()) {
+                intake.setControl(intakePositionRequest.withOutput(0));
+            } else {
+                intake.setControl(intakeControlRequest.withVelocity(intakeSpeed).withSlot(0));
             }
-        } else if (usePositionControl && isCoralLoaded()) {
-            // Use position control to maintain coral position
-            intake.setControl(intakePositionControlRequest
-                .withPosition(targetPosition));
-        } else if (Math.abs(intakeSpeed) < 0.01 && isCoralLoaded()) {
-            intake.setControl(intakePositionRequest.withOutput(0));
         } else {
-            intake.setControl(intakeControlRequest.withVelocity(intakeSpeed).withSlot(0));
+            // Use position control
+            intake.setControl(intakePositionControlRequest.withPosition(targetPosition));
         }
 
+        // Update gamepeice sensing
         detectAlgaeLoaded();
         updateCoralSensor();
     }
@@ -190,15 +193,18 @@ public class Intake extends SubsystemBase implements NetworkUser{
         this.intakeSpeed = speed;
     }
 
+    /**
+     * Temporarily prevents the intake from registering coral loads
+     * @param val the value to set the flag to
+     */
     public void setNoAlgaeFlag(boolean val) {
         noAlgaeFlag = val;
     }
 
     /**
      * Checks if algae is present in the intake based on current draw
-     * @return true if algae is detected
      */
-    public void detectAlgaeLoaded() {
+    private void detectAlgaeLoaded() {
         if (algaeDetectionTrigger.getAsBoolean()) {
             algaeLoaded = true;
 
@@ -210,6 +216,24 @@ public class Intake extends SubsystemBase implements NetworkUser{
         }
     }
 
+    /**
+     * Updates the coral sensor's internal state
+     */
+    private void updateCoralSensor() {
+        if (laserCan != null) {
+            var measurement = laserCan.getMeasurement();
+            if (measurement != null) {
+                if (measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
+                    laserCANDistance = measurement.distance_mm;
+                }
+            }
+        }
+    }
+
+    /**
+     * Is algae loaded in the manipulator
+     * @return a boolean
+     */
     public boolean isAlgaeLoaded() {
         return algaeLoaded;
     }
@@ -220,17 +244,6 @@ public class Intake extends SubsystemBase implements NetworkUser{
      */
     public boolean isCoralLoaded() {
         return laserCANDistance <= Constants.ManipulatorConstants.CORAL_LOADED_DISTANCE_THRESHOLD;
-    }
-
-    private void updateCoralSensor() {
-        if (laserCan != null) {
-            var measurement = laserCan.getMeasurement();
-            if (measurement != null) {
-                if (measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
-                    laserCANDistance = measurement.distance_mm;
-                }
-            }
-        }
     }
 
     /* Helper methods for determining the intake's basic state */
@@ -281,7 +294,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
      */
     public void setTargetPosition(double position) {
         targetPosition = position;
-        usePositionControl = true;
+        setPositionControlFlag(true);
     }
 
     /**
@@ -293,9 +306,9 @@ public class Intake extends SubsystemBase implements NetworkUser{
     }
 
     /**
-     * Disables position control and returns to velocity control
+     * Sets the position control flag for the intake
      */
-    public void disablePositionControl() {
-        usePositionControl = false;
+    public void setPositionControlFlag(boolean positionControl) {
+        usePositionControl = positionControl;
     }
 }

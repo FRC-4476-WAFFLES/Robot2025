@@ -45,7 +45,7 @@ public class CoralIntake extends Command {
   @Override
   public void end(boolean interrupted) {
     RobotContainer.intakeSubsystem.setIntakeSpeed(0);
-    RobotContainer.intakeSubsystem.disablePositionControl();
+    RobotContainer.intakeSubsystem.setPositionControlFlag(false);
     RobotContainer.lightsSubsystem.setCoralIntakeRunning(false);
   }
 
