@@ -27,6 +27,7 @@ import com.ctre.phoenix.led.StrobeAnimation;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
@@ -56,7 +57,31 @@ public class Lights extends SubsystemBase {
   
   private int flowPosition = 8; // Start flow at LED 8
   private boolean isCoralIntakeRunning = false; // Track when coral intake is running
-
+  
+  // Animation control variables
+  private boolean useRainbowAnimation = false; // When false, use the default yellow flow animation
+  private int[] rainbowOffsets = new int[LED_COUNT]; // Stores color offset for each LED
+  private static final int[] RAINBOW_COLORS = {
+    255, 0, 0,     // Red
+    255, 127, 0,   // Orange
+    255, 255, 0,   // Yellow
+    0, 255, 0,     // Green
+    0, 0, 255,     // Blue
+    75, 0, 130,    // Indigo
+    143, 0, 255,   // Violet
+    255, 0, 0      // Red (repeated to make the cycle smooth)
+  };
+  private static final int RAINBOW_COLOR_COUNT = 7; // Number of distinct colors (excluding the repeated one)
+  private static final int RAINBOW_SEGMENTS = 100; // More segments = smoother gradient
+  private int rainbowPosition = 0; // Starting position for rainbow animation
+  private double wavePosition = 0.0; // Position for brightness wave effect
+  
+  // Animation switching control
+  private static final Timer animationSwitchTimer = new Timer();
+  private static final double ANIMATION_SWITCH_INTERVAL = 60.0; // Switch animations every 60 seconds
+  
+  // Pre-calculated smooth rainbow colors for performance
+  private int[][] smoothRainbowColors = new int[RAINBOW_SEGMENTS][3]; // [position][r,g,b]
 
   /**
    * Enum containing start and and indicies for various defined LED groups
@@ -181,6 +206,10 @@ public class Lights extends SubsystemBase {
   public Lights() {
     blinkTimer.reset();
     blinkTimer.start();
+    
+    // Start the animation switching timer
+    animationSwitchTimer.reset();
+    animationSwitchTimer.start();
 
     CANdleConfiguration configAll = new CANdleConfiguration();
 
@@ -198,6 +227,41 @@ public class Lights extends SubsystemBase {
     candle.animate(null);
 
     ledColors = new int[LED_COUNT][3];
+    
+    // Pre-calculate smooth rainbow colors
+    precalculateRainbowColors();
+    
+    // Randomly select initial animation
+    useRainbowAnimation = Math.random() > 0.5;
+  }
+
+  /**
+   * Pre-calculate all the interpolated rainbow colors for performance
+   */
+  private void precalculateRainbowColors() {
+    for (int i = 0; i < RAINBOW_SEGMENTS; i++) {
+      float position = (float)i / RAINBOW_SEGMENTS * RAINBOW_COLOR_COUNT;
+      int colorIndex = (int)position;
+      float colorBlend = position - colorIndex;
+      
+      // Get the base and next colors from the RAINBOW_COLORS array
+      int r1 = RAINBOW_COLORS[colorIndex * 3];
+      int g1 = RAINBOW_COLORS[colorIndex * 3 + 1];
+      int b1 = RAINBOW_COLORS[colorIndex * 3 + 2];
+      
+      int r2 = RAINBOW_COLORS[(colorIndex + 1) * 3];
+      int g2 = RAINBOW_COLORS[(colorIndex + 1) * 3 + 1];
+      int b2 = RAINBOW_COLORS[(colorIndex + 1) * 3 + 2];
+      
+      // Linear interpolation between colors
+      int r = Math.round(r1 * (1 - colorBlend) + r2 * colorBlend);
+      int g = Math.round(g1 * (1 - colorBlend) + g2 * colorBlend);
+      int b = Math.round(b1 * (1 - colorBlend) + b2 * colorBlend);
+      
+      smoothRainbowColors[i][0] = r;
+      smoothRainbowColors[i][1] = g;
+      smoothRainbowColors[i][2] = b;
+    }
   }
 
   /**
@@ -210,6 +274,11 @@ public class Lights extends SubsystemBase {
     // setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
     // setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
 
+    // Check if it's time to switch animations
+    if (!DriverStation.isEnabled() && animationSwitchTimer.get() >= ANIMATION_SWITCH_INTERVAL) {
+      switchAnimation();
+    }
+
     // Mutate LED colors based on robot state
     if (DriverStation.isEnabled()) {
       handleEnabledState();
@@ -221,6 +290,13 @@ public class Lights extends SubsystemBase {
     updateBlinkTimer();
     // Apply the current desired LED colors
     applyLEDRanges();
+    
+    // Update SmartDashboard with animation state and remaining time until switch
+    if (!DriverStation.isEnabled()) {
+      double timeRemaining = ANIMATION_SWITCH_INTERVAL - animationSwitchTimer.get();
+      SmartDashboard.putString("Disabled Animation", useRainbowAnimation ? "Rainbow Wave" : "Yellow Flow");
+      SmartDashboard.putNumber("Animation Switch In", Math.round(timeRemaining));
+    }
   }
 
   /**
@@ -274,7 +350,17 @@ public class Lights extends SubsystemBase {
     // First update status indicators
     updateDiagnosticIndicators();
     
-    // Update flow position
+    if (useRainbowAnimation) {
+      handleRainbowAnimation();
+    } else {
+      handleYellowFlowAnimation();
+    }
+  }
+
+  /**
+   * Handles the original yellow flow animation in disabled state
+   */
+  private void handleYellowFlowAnimation() {
     if (blinkTimer.get() > 0.05) { // Control flow speed
       // Calculate and clear previous tail LED
       int tailPos = flowPosition - FLOW_LENGTH;
@@ -296,6 +382,63 @@ public class Lights extends SubsystemBase {
       
       blinkTimer.reset();
     }
+  }
+
+  /**
+   * Handles the rainbow linear animation in disabled state
+   */
+  private void handleRainbowAnimation() {
+    if (blinkTimer.get() > 0.015) { // Faster speed for smoother animation
+      // Clear all main LEDs (everything after the status indicators)
+      for (int i = 8; i < LED_COUNT; i++) {
+        candle.setLEDs(0, 0, 0, 0, i, 1);
+      }
+      
+      // Update rainbow position (move colors down the strip)
+      rainbowPosition = (rainbowPosition + 1) % RAINBOW_SEGMENTS;
+      
+      // Update wave position for brightness effect
+      wavePosition += 0.1;
+      if (wavePosition > 2 * Math.PI) {
+        wavePosition -= 2 * Math.PI;
+      }
+      
+      // Apply rainbow colors with the shift - use smoothed colors
+      for (int i = 8; i < LED_COUNT; i++) {
+        int ledPosition = (i - 8) * 3; // Space out the colors more for a smoother gradient
+        int colorIndex = (rainbowPosition + ledPosition) % RAINBOW_SEGMENTS;
+        
+        // Get the color from our pre-calculated smooth rainbow array
+        int r = smoothRainbowColors[colorIndex][0];
+        int g = smoothRainbowColors[colorIndex][1];
+        int b = smoothRainbowColors[colorIndex][2];
+        
+        // Apply brightness wave effect - vary the brightness based on position
+        double brightnessWave = 0.6 + 0.4 * Math.sin(wavePosition + (i - 8) * 0.15);
+        r = (int)(r * brightnessWave);
+        g = (int)(g * brightnessWave);
+        b = (int)(b * brightnessWave);
+        
+        candle.setLEDs(r, g, b, 0, i, 1);
+      }
+      
+      blinkTimer.reset();
+    }
+  }
+
+  /**
+   * Switches to the other animation and resets the timer
+   */
+  private void switchAnimation() {
+    useRainbowAnimation = !useRainbowAnimation;
+    
+    // Reset positions when switching animations
+    rainbowPosition = 0;
+    flowPosition = 8;
+    wavePosition = 0.0;
+    
+    // Reset the timer for the next switch
+    animationSwitchTimer.reset();
   }
 
   /**
@@ -641,5 +784,13 @@ public class Lights extends SubsystemBase {
    */
   public void setCoralIntakeRunning(boolean running) {
     isCoralIntakeRunning = running;
+  }
+
+  /**
+   * Returns whether the rainbow animation is active in disabled state
+   * @return true if rainbow animation is active
+   */
+  public boolean isRainbowAnimationActive() {
+    return useRainbowAnimation;
   }
 } 
