@@ -150,6 +150,7 @@ public class RobotContainer {
     // Use the back button to zero both elevator and pivot in sequence
     Controls.operatorController.back().onTrue(new ZeroMechanisms());
     
+
     // Normal mode button bindings
     inNormalMode.and(Controls.operatorController.a()).onTrue(
       new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L1); })
