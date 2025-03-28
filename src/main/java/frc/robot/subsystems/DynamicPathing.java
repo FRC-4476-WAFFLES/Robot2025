@@ -74,7 +74,7 @@ public class DynamicPathing extends SubsystemBase {
     
     /* Coral scoring pathing parameters */
     public static final double REEF_PATH_POSITION_OFFSET = 0.12; // Distance from reef to handover from path to PID
-    public static final double CORAL_PATH_END_SPEED = 0.5; // m/s
+    public static final double CORAL_PATH_END_SPEED = 1; // m/s
 
     /* Human player station physical parameters */
     public static final Translation2d HUMAN_PLAYER_STATION_RIGHT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(25.80));  

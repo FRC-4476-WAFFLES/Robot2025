@@ -30,15 +30,28 @@
           }
         },
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "9 to CS1"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "9 to CS1"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Set Position Intake"
+                }
+              }
+            ]
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Coral Intake"
+            "name": "Auto Coral Intake"
           }
         },
         {
@@ -54,7 +67,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Set Position L4"
+                  "name": "Set Position L3"
                 }
               }
             ]
@@ -67,15 +80,28 @@
           }
         },
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "8 to CS1"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "8 to CS1"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Set Position Intake"
+                }
+              }
+            ]
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Coral Intake"
+            "name": "Auto Coral Intake"
           }
         },
         {
@@ -91,7 +117,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Set Position L4"
+                  "name": "Set Position L3"
                 }
               }
             ]
@@ -104,15 +130,28 @@
           }
         },
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "7 to CS1"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "7 to CS1"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Set Position Intake"
+                }
+              }
+            ]
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Coral Intake"
+            "name": "Auto Coral Intake"
           }
         },
         {
@@ -128,7 +167,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Set Position L4"
+                  "name": "Set Position L3"
                 }
               }
             ]
