@@ -128,6 +128,8 @@ public final class Constants {
     public static final double sharkIntakeReduction = 9.0; 
     public static final double sharkPivotReduction = 37.92592592592592592; 
     public static final double pivotReduction = 52.5625; 
+    public static final double intakeReduction = 2.5;
+
     public static final double elevatorReductionToMeters = 26.6; // Motor rotations to elevator height in meters
 
     public static final double pivotAbsoluteEncoderOffset = 0;
@@ -181,9 +183,9 @@ public final class Constants {
     public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.2; // 100ms debounce time
 
     // Intake constantsd
-    public static final double CORAL_INTAKE_SPEED = 25; // Rps
-    public static final double ALGAE_HOLD_SPEED = 3; // Speed to hold algae in place
-    public static final double ALGAE_INTAKE_SPEED = 60;
+    public static final double CORAL_INTAKE_SPEED = -10; // Rps
+    public static final double ALGAE_HOLD_SPEED = 1.2; // Speed to hold algae in place
+    public static final double ALGAE_INTAKE_SPEED = 24;
 
     // Pivot constants
     public static final double PIVOT_ANGLE_DEADBAND = 1.4;

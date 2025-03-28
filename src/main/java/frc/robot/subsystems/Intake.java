@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.ManipulatorConstants;
+import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
 
@@ -141,6 +142,8 @@ public class Intake extends SubsystemBase implements NetworkUser{
         intakeConfigs.MotionMagic = motionMagicConfigs;
 
         intakeConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        
+        intakeConfigs.Feedback.SensorToMechanismRatio = PhysicalConstants.intakeReduction;
 
         intakeConfigs.MotorOutput.DutyCycleNeutralDeadband = 0.01;
 
@@ -163,7 +166,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
                 intake.setControl(intakeControlRequest.withVelocity(Constants.ManipulatorConstants.ALGAE_HOLD_SPEED).withSlot(0));
 
                 if (intake.getStatorCurrent().getValueAsDouble() < 4) {
-                    intake.setControl(intakeControlRequest.withVelocity(-300).withSlot(0));
+                    intake.setControl(intakeControlRequest.withVelocity(-120).withSlot(0));
                     
                     if (!algaeLossTimer.isRunning()) {
                         algaeLossTimer.reset();
@@ -178,6 +181,11 @@ public class Intake extends SubsystemBase implements NetworkUser{
         } else {
             // Use position control
             intake.setControl(intakePositionControlRequest.withPosition(targetPosition));
+
+            // Auto disable position control once at setpoint & not moving
+            if (isAtTargetPosition() && isIntakeStopped()) {
+                usePositionControl = false;
+            }
         }
 
         // Update gamepeice sensing
