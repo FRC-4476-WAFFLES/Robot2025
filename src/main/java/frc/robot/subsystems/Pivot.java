@@ -203,7 +203,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
         // Real jank but ok
         int slot = 0;
-        if (intakeSubsystem.isAlgaeLoaded()) {
+        if (intakeSubsystem.isAlgaeLoaded() && !isThrowingAlgae) {
             // while algae is loaded, use a slower profile
             slot = 1;
         }
