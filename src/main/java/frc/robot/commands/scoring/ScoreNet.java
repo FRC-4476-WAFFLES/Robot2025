@@ -15,6 +15,7 @@ import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.superstructure.ApplyScoringSetpoint;
 import frc.robot.data.Constants.ScoringConstants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
+import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 
@@ -37,7 +38,11 @@ public class ScoreNet {
             alignCommand,
             // Score sequence (Operator controlled)
             Commands.sequence(
-                new ApplyScoringSetpoint(ScoringLevel.NET_PREP),
+                // Run intake in during NET_PREP position
+                Commands.parallel(
+                    new ApplyScoringSetpoint(ScoringLevel.NET_PREP),
+                    Commands.runOnce(() -> RobotContainer.intakeSubsystem.setIntakeSpeed(ManipulatorConstants.ALGAE_INTAKE_SPEED))
+                ),
                 Commands.runOnce(() -> RobotContainer.pivotSubsystem.setIsThrowingAlgae(true)),
                 Commands.waitSeconds(0.2),
                 algaeToss()
@@ -47,6 +52,7 @@ public class ScoreNet {
             RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
 
             RobotContainer.pivotSubsystem.setIsThrowingAlgae(false);
+            RobotContainer.intakeSubsystem.setIntakeSpeed(0); // Ensure intake is stopped
         });
     }
 
