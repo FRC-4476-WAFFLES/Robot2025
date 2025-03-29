@@ -4,7 +4,10 @@
 
 package frc.robot.commands.intake;
 
+import static frc.robot.RobotContainer.intakeSubsystem;
+
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.ManipulatorConstants;
 
@@ -12,6 +15,10 @@ import frc.robot.data.Constants.ManipulatorConstants;
 public class CoralIntake extends Command {
   private boolean hasDetectedCoral = false;
   private double targetPosition = 0;
+
+  private Trigger funnelTrigger = new Trigger(
+    () -> intakeSubsystem.funnelSeesCoral() 
+  ).debounce(0.05); // ~(>_<。)＼ WAIT! They don't love you like I love you anyways...
 
   /** Creates a new CoralIntake. */
   public CoralIntake() {
@@ -30,7 +37,12 @@ public class CoralIntake extends Command {
   @Override
   public void execute() {
     if (!hasDetectedCoral) {
-      RobotContainer.intakeSubsystem.setIntakeSpeed(ManipulatorConstants.CORAL_INTAKE_SPEED);
+      if (!funnelTrigger.getAsBoolean()) {
+        RobotContainer.intakeSubsystem.setIntakeSpeed(ManipulatorConstants.FAST_CORAL_INTAKE_SPEED);
+      } else {
+        RobotContainer.intakeSubsystem.setIntakeSpeed(ManipulatorConstants.CORAL_INTAKE_SPEED);
+      }
+      
       
       // Check if coral is detected for the first time
       if (RobotContainer.intakeSubsystem.isCoralLoaded()) {

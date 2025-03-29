@@ -16,6 +16,7 @@ import com.ctre.phoenix6.configs.Slot2Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
@@ -175,12 +176,22 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
         pivotConfigs.MotorOutput.DutyCycleNeutralDeadband = ManipulatorConstants.PIVOT_MOTOR_DEADBAND;
 
-        // For when CANCoder is not present
-        pivotConfigs.Feedback.SensorToMechanismRatio = PhysicalConstants.pivotReduction;
-        // For when CANCoder is present
-        // pivotConfigs.Feedback.RotorToSensorRatio = Constants.PhysicalConstants.pivotReduction;
-        // pivotConfigs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
-        // pivotConfigs.Feedback.FeedbackRemoteSensorID = pivotAbsoluteEncoder.getDeviceID();
+        
+        if (PhysicalConstants.usePivotAbsoluteEncoder) {
+            // For when CANCoder is present
+            pivotConfigs.Feedback.RotorToSensorRatio = PhysicalConstants.pivotReduction;
+            pivotConfigs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
+            pivotConfigs.Feedback.FeedbackRemoteSensorID = pivotAbsoluteEncoder.getDeviceID();
+
+            pivotConfigs.Feedback.SensorToMechanismRatio = 1;
+        } else { 
+            // For when CANCoder is not present
+            pivotConfigs.Feedback.SensorToMechanismRatio = PhysicalConstants.pivotReduction;
+
+            pivotConfigs.Feedback.RotorToSensorRatio = 1;
+        }
+        
+
         pivotConfigs.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         pivotConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
@@ -269,6 +280,11 @@ public class Pivot extends SubsystemBase implements NetworkUser {
      * Run periodically while zeroing pivot
      */
     private void handlePivotZeroPeriodic() {
+        if (PhysicalConstants.usePivotAbsoluteEncoder) {
+            isZeroingPivot = false;
+            return;
+        }
+
         if (zeroingDebounceTrigger.getAsBoolean()) {
 
             pivot.set(0);
@@ -377,6 +393,10 @@ public class Pivot extends SubsystemBase implements NetworkUser {
      * Begins zeroing the pivot.
      */
     public void zeroPivot() {
+        if (PhysicalConstants.usePivotAbsoluteEncoder) {
+            return;
+        }
+
         if (isZeroingPivot) {
             isZeroingPivot = false;
 

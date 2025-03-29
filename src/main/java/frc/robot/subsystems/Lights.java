@@ -107,7 +107,7 @@ public class Lights extends SubsystemBase {
     // Middle sections
     MIDDLE_LEFT(68,88),      // First third of middle
     MIDDLE_MIDDLE(88,108),   // Second third of middle
-    MIDDLE_RIGHT(108,128),   // Final third of middle
+    MIDDLE_RIGHT(108,127),   // Final third of middle
     
     // Left side sections and progressive ranges
     L1(8,23),         // Bottom section

@@ -103,8 +103,8 @@ public class Intake extends SubsystemBase implements NetworkUser{
             intakeLaserCan.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_20MS);
 
             funnelLaserCan = new LaserCan(Constants.CANIds.funnelLaserCan);
-            intakeLaserCan.setRangingMode(LaserCan.RangingMode.SHORT);
-            intakeLaserCan.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_20MS);
+            funnelLaserCan.setRangingMode(LaserCan.RangingMode.SHORT);
+            funnelLaserCan.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_20MS);
         } catch (Exception e) {
             // throw new RuntimeException("Failed to initialize LaserCan: " + e.getMessage());
             System.out.println("Failed to initialize LaserCan: " + e.getMessage());
@@ -251,7 +251,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
                     funnelLaserDistance = measurement.distance_mm;
                 }
             }
-        }
+        } 
     }
 
     /**

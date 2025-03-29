@@ -133,7 +133,8 @@ public final class Constants {
 
     public static final double elevatorReductionToMeters = 26.6; // Motor rotations to elevator height in meters
 
-    public static final double pivotAbsoluteEncoderOffset = 0;
+    public static final double pivotAbsoluteEncoderOffset = -0.267822265625;
+    public static final boolean usePivotAbsoluteEncoder = true; // Fallback, if false relies on internal motor encoder
   }
 
   public static class ScoringConstants {
@@ -187,6 +188,7 @@ public final class Constants {
     public static final double CORAL_INTAKE_SPEED = -7; // Rps
     public static final double ALGAE_HOLD_SPEED = 1.6; // Speed to hold algae in place
     public static final double ALGAE_INTAKE_SPEED = 30;
+    public static final double FAST_CORAL_INTAKE_SPEED = -14;
 
     // Pivot constants
     public static final double PIVOT_ANGLE_DEADBAND = 1.4;
@@ -225,7 +227,7 @@ public final class Constants {
         SPIT_ALGAE(140),
         CORAL_INTAKE(7),
         NET(100),
-        L4(68),
+        L4(71),
         L3(35.5),
         L2(35.5),
         L1(150),
