@@ -5,11 +5,14 @@
 package frc.robot.commands.scoring;
 
 import static frc.robot.RobotContainer.dynamicPathingSubsystem;
+import static frc.robot.RobotContainer.elevatorSubsystem;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
+import frc.robot.data.Constants.ElevatorConstants;
 import frc.robot.data.Constants.ScoringConstants;
+import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.subsystems.DynamicPathing;
 
@@ -33,6 +36,21 @@ public class PrepareScoreCoral extends Command {
         return;
       }
     }
+
+    if (scoringLevel == ScoringLevel.L4) {
+      if (DynamicPathing.isElevatorL4Ready()) {
+        RobotContainer.elevatorSubsystem.setElevatorSetpoint(scoringLevel.getElevatorLevel());
+        if (elevatorSubsystem.getElevatorPositionMeters() > ElevatorConstants.PIVOT_L4_CLEAR_HEIGHT_MAX) {
+          RobotContainer.pivotSubsystem.setPivotPosition(scoringLevel.getPivotPosition());
+        } else {
+          RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
+        }
+      } else {
+        RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.ZERO);
+      }
+      return;
+    }
+
     RobotContainer.elevatorSubsystem.setElevatorSetpoint(scoringLevel.getElevatorLevel());
     RobotContainer.pivotSubsystem.setPivotPosition(scoringLevel.getPivotPosition());
   }

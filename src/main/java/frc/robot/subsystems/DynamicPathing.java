@@ -67,14 +67,15 @@ public class DynamicPathing extends SubsystemBase {
     public static final double REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.65; 
     public static final double REEF_SCORING_POSITION_OFFSET = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.15; 
     public static final double REEF_SCORING_POSITION_OFFSET_L1 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.37; 
-    public static final double REEF_SCORING_POSITION_OFFSET_L4 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.12; 
+    public static final double REEF_SCORING_POSITION_OFFSET_L4 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.005; 
     public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.05; 
     public static final double REEF_ALGAE_SAFETY_DISTANCE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.35;
     public static final double REEF_ELEVATOR_RETRACTION_DISTANCE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.24;
+    public static final double L4_ELEVATOR_DEPLOY_DISTANCE = Constants.PhysicalConstants.withBumperBotHalfWidth + 1.2;
     
     /* Coral scoring pathing parameters */
     public static final double REEF_PATH_POSITION_OFFSET = 0.12; // Distance from reef to handover from path to PID
-    public static final double CORAL_PATH_END_SPEED = 1; // m/s
+    public static final double CORAL_PATH_END_SPEED = 0.8; // m/s
 
     /* Human player station physical parameters */
     public static final Translation2d HUMAN_PLAYER_STATION_RIGHT_BLUE = new Translation2d(Units.inchesToMeters(33.51), Units.inchesToMeters(25.80));  
@@ -219,6 +220,11 @@ public class DynamicPathing extends SubsystemBase {
      */
     public static boolean isElevatorRetractionSafe() {
         return getDistanceToReef() > REEF_ELEVATOR_RETRACTION_DISTANCE + REEF_INRADIUS;
+    }
+    
+
+    public static boolean isElevatorL4Ready() {
+        return getDistanceToReef() < L4_ELEVATOR_DEPLOY_DISTANCE + REEF_INRADIUS;
     }
 
     /**

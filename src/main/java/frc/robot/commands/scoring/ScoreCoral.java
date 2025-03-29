@@ -187,6 +187,6 @@ public class ScoreCoral extends SequentialCommandGroup {
     RobotContainer.dynamicPathingSubsystem.setCoralScoringSide(rightSide);
     Pose2d targetCoralPose = RobotContainer.dynamicPathingSubsystem.getNearestCoralScoringLocation();
 
-    return scoreCoralWithPose(targetCoralPose);
+    return scoreCoralWithPath(new InstantCommand(), targetCoralPose, DynamicPathing.CORAL_PATH_END_SPEED);
   }
 }

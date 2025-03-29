@@ -31,7 +31,7 @@ import static frc.robot.RobotContainer.*;
 
 public class AlignToPose extends Command {
   /* PID Controllers */
-  private PIDController posPidController = new PIDController(4.5, 0, 0.2);
+  private PIDController posPidController = new PIDController(6, 0, 0.4);
   private ProfiledPIDController thetaPidController = new ProfiledPIDController(7.0, 0, 0.1, new Constraints(4, 15));
 
   /* Constants */

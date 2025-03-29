@@ -79,4 +79,20 @@ public class SuperstructureControl {
             RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.ZERO);
         });
     }
+
+    public static Command L4ScorePrepCommand() {
+        return new FunctionalCommand(
+            () -> {}, 
+            () -> {
+                RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.L2);
+                RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.ZERO);
+            }, 
+            (interrupted) -> {
+                RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.L4);
+                RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
+            },
+            () -> DynamicPathing.isElevatorL4Ready(), 
+            RobotContainer.elevatorSubsystem
+        );
+    }
 }

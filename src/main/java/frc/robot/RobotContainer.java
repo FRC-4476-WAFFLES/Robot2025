@@ -352,10 +352,9 @@ public class RobotContainer {
       new SetElevatorPos(ElevatorLevel.L1),
       new SetPivotPos(PivotPosition.L1)
     ));
-    NamedCommands.registerCommand("Set Position L2", Commands.parallel(
-      new SetElevatorPos(ElevatorLevel.L2),
-      new SetPivotPos(PivotPosition.L2)
-    ));
+    // SCUFFED
+    NamedCommands.registerCommand("Set Position L2", SuperstructureControl.L4ScorePrepCommand());
+    
     NamedCommands.registerCommand("Set Position L3", Commands.parallel(
       new SetElevatorPos(ElevatorLevel.L3),
       new SetPivotPos(PivotPosition.L3)
