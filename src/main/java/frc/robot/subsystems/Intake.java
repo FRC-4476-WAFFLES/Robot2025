@@ -36,7 +36,8 @@ import frc.robot.utils.SubsystemNetworkManager;
 public class Intake extends SubsystemBase implements NetworkUser{
     // Hardware Components
     private final TalonFX intake;
-    private LaserCan laserCan;
+    private LaserCan intakeLaserCan;
+    private LaserCan funnelLaserCan;
 
     // Control Objects
     private final MotionMagicVelocityVoltage intakeControlRequest = new MotionMagicVelocityVoltage(0);
@@ -44,7 +45,8 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private final PositionVoltage intakePositionControlRequest = new PositionVoltage(0).withSlot(1);
 
     // State Variables
-    private double laserCANDistance = 0;
+    private double intakeLaserDistance = 0;
+    private double funnelLaserDistance = 0;
     private double intakeSpeed = 0;
     private double targetPosition = 0;
     private boolean usePositionControl = false;
@@ -58,7 +60,8 @@ public class Intake extends SubsystemBase implements NetworkUser{
     // Network Tables
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
     private final NetworkTable intakeTable = inst.getTable("Intake");
-    private final DoublePublisher laserCanDistanceNT = intakeTable.getDoubleTopic("LaserCan Distance (mm)").publish();
+    private final DoublePublisher intakeLaserCanDistanceNT = intakeTable.getDoubleTopic("Intake Laser Distance (mm)").publish();
+    private final DoublePublisher funnelLaserCanDistanceNT = intakeTable.getDoubleTopic("Funnel Laser Distance (mm)").publish();
     private final BooleanPublisher coralLoadedNT = intakeTable.getBooleanTopic("Coral Loaded").publish();
     private final BooleanPublisher algaeLoadedNT = intakeTable.getBooleanTopic("Algae Loaded").publish();
     private final DoublePublisher intakeSetpointNT = intakeTable.getDoubleTopic("Intake Setpoint").publish();
@@ -95,14 +98,18 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private void configureLaserCAN() {
         // Initialize LaserCan with error handling
         try {
-            laserCan = new LaserCan(Constants.CANIds.laserCan);
-            laserCan.setRangingMode(LaserCan.RangingMode.SHORT);
-            // laserCan.setRegionOfInterest(new LaserCan.RegionOfInterest(8, 8, 16, 16));
-            laserCan.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_20MS);
+            intakeLaserCan = new LaserCan(Constants.CANIds.intakeLaserCan);
+            intakeLaserCan.setRangingMode(LaserCan.RangingMode.SHORT);
+            intakeLaserCan.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_20MS);
+
+            funnelLaserCan = new LaserCan(Constants.CANIds.funnelLaserCan);
+            intakeLaserCan.setRangingMode(LaserCan.RangingMode.SHORT);
+            intakeLaserCan.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_20MS);
         } catch (Exception e) {
             // throw new RuntimeException("Failed to initialize LaserCan: " + e.getMessage());
             System.out.println("Failed to initialize LaserCan: " + e.getMessage());
-            laserCan = null;
+            intakeLaserCan = null;
+            funnelLaserCan = null;
         }
     }
 
@@ -190,7 +197,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
 
         // Update gamepeice sensing
         detectAlgaeLoaded();
-        updateCoralSensor();
+        updateCoralSensors();
     }
 
     /**
@@ -227,12 +234,21 @@ public class Intake extends SubsystemBase implements NetworkUser{
     /**
      * Updates the coral sensor's internal state
      */
-    private void updateCoralSensor() {
-        if (laserCan != null) {
-            var measurement = laserCan.getMeasurement();
+    private void updateCoralSensors() {
+        if (intakeLaserCan != null) {
+            var measurement = intakeLaserCan.getMeasurement();
             if (measurement != null) {
                 if (measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
-                    laserCANDistance = measurement.distance_mm;
+                    intakeLaserDistance = measurement.distance_mm;
+                }
+            }
+        }
+
+        if (funnelLaserCan != null) {
+            var measurement = funnelLaserCan.getMeasurement();
+            if (measurement != null) {
+                if (measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
+                    funnelLaserDistance = measurement.distance_mm;
                 }
             }
         }
@@ -251,7 +267,15 @@ public class Intake extends SubsystemBase implements NetworkUser{
      * @return true if coral is detected within threshold distance
      */
     public boolean isCoralLoaded() {
-        return laserCANDistance <= Constants.ManipulatorConstants.CORAL_LOADED_DISTANCE_THRESHOLD;
+        return intakeLaserDistance <= Constants.ManipulatorConstants.CORAL_LOADED_DISTANCE_THRESHOLD;
+    }
+
+    /**
+     * Checks if coral is in the funnel using the funne; laser distance sensor
+     * @return true if coral is detected within threshold distance
+     */
+    public boolean funnelSeesCoral() {
+        return funnelLaserDistance <= Constants.ManipulatorConstants.CORAL_LOADED_DISTANCE_THRESHOLD;
     }
 
     /* Helper methods for determining the intake's basic state */
@@ -277,7 +301,8 @@ public class Intake extends SubsystemBase implements NetworkUser{
      */
     @Override
     public void updateNetwork() {
-        laserCanDistanceNT.set(laserCANDistance);
+        intakeLaserCanDistanceNT.set(intakeLaserDistance);
+        funnelLaserCanDistanceNT.set(funnelLaserDistance);
         coralLoadedNT.set(isCoralLoaded());
         algaeLoadedNT.set(isAlgaeLoaded());
         intakeSetpointNT.set(intakeSpeed);

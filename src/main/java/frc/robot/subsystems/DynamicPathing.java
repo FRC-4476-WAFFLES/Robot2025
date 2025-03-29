@@ -67,7 +67,7 @@ public class DynamicPathing extends SubsystemBase {
     public static final double REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.65; 
     public static final double REEF_SCORING_POSITION_OFFSET = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.15; 
     public static final double REEF_SCORING_POSITION_OFFSET_L1 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.37; 
-    public static final double REEF_SCORING_POSITION_OFFSET_L4 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.005; 
+    public static final double REEF_SCORING_POSITION_OFFSET_L4 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.015; 
     public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.05; 
     public static final double REEF_ALGAE_SAFETY_DISTANCE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.35;
     public static final double REEF_ELEVATOR_RETRACTION_DISTANCE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.24;
@@ -759,8 +759,23 @@ public class DynamicPathing extends SubsystemBase {
         Pose2d targetCoralPose = getNearestCoralScoringLocation();
         ChassisSpeeds speeds = RobotContainer.driveSubsystem.getCurrentRobotChassisSpeeds(); // Robot relative, just needed for magnitude
 
+        // Telemetry
+        SmartDashboard.putNumberArray("TargetPose Reef", new double[] {
+            targetCoralPose.getX(),
+            targetCoralPose.getY(),
+            targetCoralPose.getRotation().getDegrees()
+        });
+
+        Pose2d debugFlippedPose = FlippingUtil.flipFieldPose(targetCoralPose);
+        SmartDashboard.putNumberArray("TargetPose Reef_Flipped", new double[] {
+            debugFlippedPose.getX(),
+            debugFlippedPose.getY(),
+            debugFlippedPose.getRotation().getDegrees()
+        });
+
         // If too close just use PID
-        if (startingPose.getTranslation().getDistance(targetCoralPose.getTranslation()) < 0.6) {
+        //startingPose.getTranslation().getDistance(targetCoralPose.getTranslation()) < 0.6
+        if (true) {
             return ScoreCoral.scoreCoralWithPathAndAlgae(new InstantCommand(), targetCoralPose, Double.MAX_VALUE);
         }
 
@@ -778,21 +793,6 @@ public class DynamicPathing extends SubsystemBase {
         Translation2d offsetVector = new Translation2d(REEF_PATH_POSITION_OFFSET, offsetAngle); 
         offsetTranslation = offsetTranslation.plus(offsetVector);
         Pose2d offsetCoralPose = new Pose2d(offsetTranslation, targetCoralPose.getRotation());
-
-
-        // Telemetry
-        SmartDashboard.putNumberArray("TargetPose Reef", new double[] {
-            targetCoralPose.getX(),
-            targetCoralPose.getY(),
-            targetCoralPose.getRotation().getDegrees()
-        });
-
-        Pose2d debugFlippedPose = FlippingUtil.flipFieldPose(targetCoralPose);
-        SmartDashboard.putNumberArray("TargetPose Reef_Flipped", new double[] {
-            debugFlippedPose.getX(),
-            debugFlippedPose.getY(),
-            debugFlippedPose.getRotation().getDegrees()
-        });
 
         
         var path = DynamicPathing.generateComplexPath(startingPose, null, offsetCoralPose, CORAL_PATH_END_SPEED);

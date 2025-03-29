@@ -11,6 +11,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -31,7 +32,7 @@ import static frc.robot.RobotContainer.*;
 
 public class AlignToPose extends Command {
   /* PID Controllers */
-  private PIDController posPidController = new PIDController(6, 0, 0.4);
+  private ProfiledPIDController posPidController = new ProfiledPIDController(5.0, 0, 0.2, new Constraints(3.5, 5.5));
   private ProfiledPIDController thetaPidController = new ProfiledPIDController(7.0, 0, 0.1, new Constraints(4, 15));
 
   /* Constants */
@@ -40,7 +41,7 @@ public class AlignToPose extends Command {
 
   /* Instance variables */
   private SwerveRequest.FieldCentric driveRequest = new SwerveRequest.FieldCentric();
-  private final Pose2d targetPose2d;
+  private final Pose2d targetPose;
   private final double maxSpeed;
   private final boolean stopOnceDone;
   private Trigger endTrigger;
@@ -60,11 +61,11 @@ public class AlignToPose extends Command {
 
     thetaPidController.enableContinuousInput(-Math.PI, Math.PI);
 
-    targetPose2d = targetPose;
+    this.targetPose = targetPose;
     maxSpeed = speedLimit;
     this.stopOnceDone = lockOnceDone;
 
-    endTrigger = new Trigger(() -> isWithinAllowableRange(targetPose2d))
+    endTrigger = new Trigger(() -> isWithinAllowableRange(targetPose))
     .debounce(endingDebounce);
   }
 
@@ -102,10 +103,21 @@ public class AlignToPose extends Command {
     alignmentTimer.start();
 
     var currentPose = driveSubsystem.getRobotPose();
-    thetaPidController.reset(currentPose.getRotation().getRadians());
+
+    ChassisSpeeds currentSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(
+      RobotContainer.driveSubsystem.getCurrentRobotChassisSpeeds(),
+      currentPose.getRotation()
+    );
+    Translation2d speedsVector = new Translation2d(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
 
     thetaPidController.setTolerance(RotMaxError);
     posPidController.setTolerance(PosMaxError);
+
+    double distanceToTarget = currentPose.getTranslation().getDistance(targetPose.getTranslation());
+
+    thetaPidController.reset(currentPose.getRotation().getRadians(), currentSpeeds.omegaRadiansPerSecond);
+    double speedTowardsTarget = getVelocityTowardsTarget(speedsVector, WafflesUtilities.AngleBetweenPoints(currentPose.getTranslation(), targetPose.getTranslation()));
+    posPidController.reset(distanceToTarget, speedTowardsTarget);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -121,23 +133,23 @@ public class AlignToPose extends Command {
     }
 
     var currentPose = driveSubsystem.getRobotPose();
-    double distanceToTarget = currentPose.getTranslation().getDistance(targetPose2d.getTranslation());
+    double distanceToTarget = currentPose.getTranslation().getDistance(targetPose.getTranslation());
 
     double moveVelocity = MathUtil.clamp(-posPidController.calculate(distanceToTarget, 0), -maxSpeed, maxSpeed);
-    double thetaVelocity = thetaPidController.calculate(currentPose.getRotation().getRadians(), targetPose2d.getRotation().getRadians());
+    double thetaVelocity = thetaPidController.calculate(currentPose.getRotation().getRadians(), targetPose.getRotation().getRadians());
     
     if (distanceToTarget < PosMaxError) {
       moveVelocity = 0;
     }
-    if (Math.abs(currentPose.getRotation().minus(targetPose2d.getRotation()).getDegrees()) < RotMaxError) {
+    if (Math.abs(currentPose.getRotation().minus(targetPose.getRotation()).getDegrees()) < RotMaxError) {
       thetaVelocity = 0;
     }
 
-    SmartDashboard.putNumber("RotPID", thetaVelocity);
-    SmartDashboard.putNumber("MovePID", moveVelocity);
+    SmartDashboard.putNumber("Rotation PID", thetaVelocity);
+    SmartDashboard.putNumber("Move PID", moveVelocity);
 
     Translation2d directionVector = new Translation2d(moveVelocity, WafflesUtilities.AngleBetweenPoints(
-      currentPose.getTranslation(), targetPose2d.getTranslation())
+      currentPose.getTranslation(), targetPose.getTranslation())
     ); 
 
     // SmartDashboard.putNumber("Velocity magnitude", moveVelocity);
@@ -191,6 +203,17 @@ public class AlignToPose extends Command {
     var currentPose = driveSubsystem.getRobotPose();
     return currentPose.getTranslation().getDistance(target.getTranslation()) <= PosMaxError &&
       Math.abs(currentPose.getRotation().minus(target.getRotation()).getDegrees()) < RotMaxError;
+  }
+
+  private static double getVelocityTowardsTarget(Translation2d fieldVelocity, Rotation2d angleBetweenPoses) {
+    return Math.min(
+      0.0,
+      -fieldVelocity
+          .rotateBy(
+            angleBetweenPoses
+              .unaryMinus())
+          .getX()
+    );
   }
 
   // Returns true when the command should end.

@@ -54,7 +54,8 @@ public final class Constants {
 
     public static final int pivotAbsoluteEncoder = 28;
     
-    public static final int laserCan = 29;
+    public static final int intakeLaserCan = 29;
+    public static final int funnelLaserCan = 30;
 
     public static final int pidgeon = 25;
 
@@ -294,7 +295,7 @@ public final class Constants {
       ALGAE_L1(0.56),
       PROCESSOR(0.2),
       L4(1.50),
-      L3(0.795),
+      L3(0.82),
       L2(0.40),
       L1(0.33),
 
@@ -345,7 +346,7 @@ public final class Constants {
     // Predefined positions for the shark (in degrees)
     public enum SharkPivotPosition {
       STOWED(0.0),
-      DEPLOYED(129.0),
+      DEPLOYED(135.0),
       L1(22);
 
       private final double degrees;

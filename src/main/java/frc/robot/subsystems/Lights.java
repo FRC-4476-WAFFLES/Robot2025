@@ -211,13 +211,12 @@ public class Lights extends SubsystemBase {
 
     CANdleConfiguration configAll = new CANdleConfiguration();
 
-    configAll.stripType = LEDStripType.RGB;
+    configAll.stripType = LEDStripType.GRB;
     configAll.brightnessScalar = 0.75;
     configAll.vBatOutputMode = VBatOutputMode.On;
     configAll.v5Enabled = true;
 
     candle.configAllSettings(configAll, 1000);
-    candle.configLEDType(LEDStripType.RGB);
 
     // Explicitly disable all animations
     for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
