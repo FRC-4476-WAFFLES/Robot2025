@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems;
 
-import static frc.robot.RobotContainer.*;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -25,11 +23,15 @@ import com.ctre.phoenix.led.RainbowAnimation;
 import com.ctre.phoenix.led.StrobeAnimation;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
+import static frc.robot.RobotContainer.driveSubsystem;
+import static frc.robot.RobotContainer.dynamicPathingSubsystem;
+import static frc.robot.RobotContainer.elevatorSubsystem;
+import static frc.robot.RobotContainer.intakeSubsystem;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
@@ -99,20 +101,20 @@ public class Lights extends SubsystemBase {
 
     // Right side
     R1(167,186),      // Bottom only //129
-    R2(148,166),      // Bottom + lower middle
-    R3(129,147),      // Bottom + lower middle + upper middle
+    R2(148,186),      // Bottom + lower middle
+    R3(129,186),      // Bottom + lower middle + upper middle
 
     // Middle sections
-    MIDDLE_LEFT(68,78),
-    MIDDLE_MIDDLE(79,99),
-    MIDDLE_RIGHT(109,128),
+    MIDDLE_LEFT(68,88),      // First third of middle
+    MIDDLE_MIDDLE(88,108),   // Second third of middle
+    MIDDLE_RIGHT(108,128),   // Final third of middle
     // Left side sections and progressive ranges
     LEFT_SIDE_TOP(62,71),
     LEFT_SIDE_LOWER_MIDDLE(80,89),
     LEFT_SIDE_BOTTOM(89,100),
-    L1(8,17),     // Bottom only
-    L2(8,26),     // Bottom + lower middle
-    L3(8,35);     // Bottom + lower middle + upper middle
+    L1(8,27),     // Bottom only
+    L2(8,47),     // Bottom + lower middle
+    L3(8,67);     // Bottom + lower middle + upper middle
   
 
     private final int start;
