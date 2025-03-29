@@ -100,21 +100,20 @@ public class Lights extends SubsystemBase {
     LEFT_SIDE_FULL(8,67), //59
 
     // Right side
-    R1(167,186),      // Bottom only //129
-    R2(148,186),      // Bottom + lower middle
-    R3(129,186),      // Bottom + lower middle + upper middle
+    R1(173,186),      // Bottom section
+    R2(158,186),      // Bottom + lower middle
+    R3(144,186),      // Bottom + lower middle + upper middle
 
     // Middle sections
     MIDDLE_LEFT(68,88),      // First third of middle
     MIDDLE_MIDDLE(88,108),   // Second third of middle
     MIDDLE_RIGHT(108,128),   // Final third of middle
+    
     // Left side sections and progressive ranges
-    LEFT_SIDE_TOP(62,71),
-    LEFT_SIDE_LOWER_MIDDLE(80,89),
-    LEFT_SIDE_BOTTOM(89,100),
-    L1(8,27),     // Bottom only
-    L2(8,47),     // Bottom + lower middle
-    L3(8,67);     // Bottom + lower middle + upper middle
+    L1(8,23),         // Bottom section
+    L2(8,38),         // Bottom + lower middle
+    L3(8,52);         // Bottom + lower middle + upper middle
+
   
 
     private final int start;
