@@ -185,10 +185,10 @@ public final class Constants {
     public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.2; // 100ms debounce time
 
     // Intake constantsd
-    public static final double CORAL_INTAKE_SPEED = -7; // Rps
+    public static final double CORAL_INTAKE_SPEED = -5; // Rps
     public static final double ALGAE_HOLD_SPEED = 1.6; // Speed to hold algae in place
     public static final double ALGAE_INTAKE_SPEED = 30;
-    public static final double FAST_CORAL_INTAKE_SPEED = -14;
+    public static final double FAST_CORAL_INTAKE_SPEED = -12;
 
     // Pivot constants
     public static final double PIVOT_ANGLE_DEADBAND = 1.4;
@@ -207,10 +207,12 @@ public final class Constants {
     public static final double PIVOT_CURRENT_THRESHOLD =  27.0; // amps - Current threshold for zeroing
 
     // PID Values
-    public static final double PIVOT_kP = 75.0;
+    public static final double PIVOT_kP = 80.0;
     public static final double PIVOT_kI = 0.0;
     public static final double PIVOT_kD = 0.0;
-    public static final double PIVOT_kS = 0.0;
+    public static final double PIVOT_kS = 0.15
+
+    ;
 
     public static final double PIVOT_kG_HORIZONTAL = -0.3; 
 
@@ -225,11 +227,11 @@ public final class Constants {
         ALGAE_L1(178.5),
         PROCESSOR(189),
         SPIT_ALGAE(140),
-        CORAL_INTAKE(7),
+        CORAL_INTAKE(1),
         NET(100),
         L4(71),
-        L3(35.5),
-        L2(35.5),
+        L3(34),
+        L2(34),
         L1(150),
 
         // Maybe manual mode
@@ -297,8 +299,8 @@ public final class Constants {
       ALGAE_L1(0.56),
       PROCESSOR(0.2),
       L4(1.50),
-      L3(0.82),
-      L2(0.40),
+      L3(0.835),
+      L2(0.435),
       L1(0.33),
 
       MANUAL_L4(1.440),

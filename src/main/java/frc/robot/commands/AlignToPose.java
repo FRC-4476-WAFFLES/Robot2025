@@ -32,11 +32,11 @@ import static frc.robot.RobotContainer.*;
 
 public class AlignToPose extends Command {
   /* PID Controllers */
-  private ProfiledPIDController posPidController = new ProfiledPIDController(5.0, 0, 0.2, new Constraints(3.5, 5.5));
+  private ProfiledPIDController posPidController = new ProfiledPIDController(5.0, 0, 0.2, new Constraints(3.5, 5.0));
   private ProfiledPIDController thetaPidController = new ProfiledPIDController(7.0, 0, 0.1, new Constraints(4, 15));
 
   /* Constants */
-  private static final double PosMaxError = 0.02;
+  private static final double PosMaxError = 0.01;
   private static final double RotMaxError = 1; // degrees
 
   /* Instance variables */
