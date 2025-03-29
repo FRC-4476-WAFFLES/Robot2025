@@ -38,9 +38,9 @@ import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
 
 public class Lights extends SubsystemBase {
   /*Constants */
-  private static final int LED_COUNT = 122;
+  private static final int LED_COUNT = 186;
   private static final double DEFAULT_BLINK_RATE = 0.1;
-  private static final int FLOW_LENGTH = 20; // Length of the flowing section
+  private static final int FLOW_LENGTH = 32; // Length of the flowing section
   
   /* Hardware */
   private static final CANdle candle = new CANdle(Constants.CANIds.CANdle);
@@ -64,25 +64,21 @@ public class Lights extends SubsystemBase {
   public enum LedRange {
     CANDLE(0,8),
     // Full sections
-    RIGHT_SIDE_FULL(84,122),//37
-    MIDDLE_FULL(46,83),//36
-    LEFT_SIDE_FULL(8,45), //37
-    // Right side sections and progressive ranges
-    RIGHT_SIDE_TOP(8,15),
-    RIGHT_SIDE_UPPER_MIDDLE(15,23),
-    RIGHT_SIDE_LOWER_MIDDLE(23,31),
-    RIGHT_SIDE_BOTTOM(31,38),
-    R1(113,122),      // Bottom only
-    R2(104,122),      // Bottom + lower middle
-    R3(95,122),      // Bottom + lower middle + upper middle
+    RIGHT_SIDE_FULL(129,186),//59
+    MIDDLE_FULL(68,128),//60
+    LEFT_SIDE_FULL(8,67), //59
+
+    // Right side
+    R1(167,186),      // Bottom only //129
+    R2(148,166),      // Bottom + lower middle
+    R3(129,147),      // Bottom + lower middle + upper middle
 
     // Middle sections
-    MIDDLE_LEFT(46,58),
-    MIDDLE_MIDDLE(59,70),
-    MIDDLE_RIGHT(71,83),
+    MIDDLE_LEFT(68,78),
+    MIDDLE_MIDDLE(79,99),
+    MIDDLE_RIGHT(109,128),
     // Left side sections and progressive ranges
     LEFT_SIDE_TOP(62,71),
-    LEFT_SIDE_UPPER_MIDDLE(71,80),
     LEFT_SIDE_LOWER_MIDDLE(80,89),
     LEFT_SIDE_BOTTOM(89,100),
     L1(8,17),     // Bottom only
@@ -185,8 +181,9 @@ public class Lights extends SubsystemBase {
     CANdleConfiguration configAll = new CANdleConfiguration();
 
     configAll.stripType = LEDStripType.RGB;
-    configAll.brightnessScalar = 1;
+    configAll.brightnessScalar = 0.75;
     configAll.vBatOutputMode = VBatOutputMode.On;
+    configAll.v5Enabled = true;
 
     candle.configAllSettings(configAll, 1000);
     candle.configLEDType(LEDStripType.RGB);
