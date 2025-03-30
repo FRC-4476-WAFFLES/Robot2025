@@ -144,7 +144,7 @@ public class Lights extends SubsystemBase {
     LIGHTRED(255, 105, 105),
     SUN(255, 60, 0),
     ORANGE(255, 18, 0),
-    YELLOW(255, 255, 0),
+    YELLOW(255, 190, 0),
     LIME(187, 255, 0),
     LIGHTGREEN(130, 247, 119),
     GREEN(0, 255, 0),
@@ -158,7 +158,9 @@ public class Lights extends SubsystemBase {
     MAGENTA(150, 15, 92),
     PINK(255, 0, 255),
     WHITE(255, 255, 255),
-    GRAY(127, 127, 127);
+    GRAY(127, 127, 127),
+
+    FLOW_COLOR(255, 190, 0);
 
     private final int red;
     private final int green;
@@ -368,7 +370,7 @@ public class Lights extends SubsystemBase {
       }
       
       // Set new head LED to full brightness
-      candle.setLEDs(255, 255, 0, 0, flowPosition, 1);
+      candle.setLEDs(LightColours.FLOW_COLOR.red, LightColours.FLOW_COLOR.green, LightColours.FLOW_COLOR.blue, 0, flowPosition, 1);
       
       blinkTimer.reset();
     }
@@ -530,7 +532,7 @@ public class Lights extends SubsystemBase {
       setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.GREEN, LightColours.WHITE, false);
       setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.GREEN, LightColours.WHITE, false);
       return;
-    } else if (RobotContainer.sharkPivot.getSharkSetpoint() > SharkPivotPosition.STOWED.getDegrees()) {
+    } else if (RobotContainer.sharkPivot.getSharkSetpoint() > SharkPivotPosition.L1.getDegrees()) {
       // Flash green if intaking
       setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.GREEN, LightColours.BLACK, true);
       setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.GREEN, LightColours.BLACK, true);

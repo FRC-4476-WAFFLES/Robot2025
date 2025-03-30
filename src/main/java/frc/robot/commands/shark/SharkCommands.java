@@ -17,11 +17,11 @@ public class SharkCommands {
         return new FunctionalCommand(
         () -> {
             RobotContainer.sharkPivot.setPivotPosition(SharkPivotPosition.DEPLOYED);
-            RobotContainer.sharkIntake.setIntakeSpeed(5);
+            RobotContainer.sharkIntake.setIntakeSpeed(6);
         }, 
         () -> {}, 
         (interrupted) -> {
-            RobotContainer.sharkPivot.setPivotPosition(SharkPivotPosition.STOWED);
+            RobotContainer.sharkPivot.setPivotPosition(SharkPivotPosition.L1);
             RobotContainer.sharkIntake.setIntakeSpeed(0);
         },
         () -> RobotContainer.sharkIntake.isCoralLoaded(),
@@ -32,7 +32,7 @@ public class SharkCommands {
         return new FunctionalCommand(
         () -> {
             RobotContainer.sharkPivot.setPivotPosition(SharkPivotPosition.L1);
-            RobotContainer.sharkIntake.setIntakeSpeed(-2.5);
+            RobotContainer.sharkIntake.setIntakeSpeed(-4);
         }, 
         () -> {}, 
         (interrupted) -> {

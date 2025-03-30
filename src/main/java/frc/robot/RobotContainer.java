@@ -295,6 +295,12 @@ public class RobotContainer {
       )
     );
 
+    Controls.leftJoystick.button(2).onTrue(
+      new InstantCommand(() -> {
+        intakeSubsystem.setTargetPosition(intakeSubsystem.getCurrentPosition() + 1);
+      })
+    );
+
     // Run intake while intake should be running lmao
     runningL1Intake.whileTrue(SharkCommands.getIntakeCommand());
 
@@ -302,6 +308,8 @@ public class RobotContainer {
     Controls.operatorController.rightBumper().whileTrue(
       AutoIntake.GetAutoIntakeCommand()  
     );
+
+
   }
 
   /**
@@ -354,7 +362,7 @@ public class RobotContainer {
     ));
     // SCUFFED
     NamedCommands.registerCommand("Set Position L2", SuperstructureControl.L4ScorePrepCommand());
-    
+
     NamedCommands.registerCommand("Set Position L3", Commands.parallel(
       new SetElevatorPos(ElevatorLevel.L3),
       new SetPivotPos(PivotPosition.L3)

@@ -188,7 +188,7 @@ public final class Constants {
     public static final double CORAL_INTAKE_SPEED = -5; // Rps
     public static final double ALGAE_HOLD_SPEED = 1.6; // Speed to hold algae in place
     public static final double ALGAE_INTAKE_SPEED = 30;
-    public static final double FAST_CORAL_INTAKE_SPEED = -12;
+    public static final double FAST_CORAL_INTAKE_SPEED = -10;
 
     // Pivot constants
     public static final double PIVOT_ANGLE_DEADBAND = 1.4;
@@ -210,9 +210,7 @@ public final class Constants {
     public static final double PIVOT_kP = 80.0;
     public static final double PIVOT_kI = 0.0;
     public static final double PIVOT_kD = 0.0;
-    public static final double PIVOT_kS = 0.15
-
-    ;
+    public static final double PIVOT_kS = 0.15;
 
     public static final double PIVOT_kG_HORIZONTAL = -0.3; 
 
@@ -350,7 +348,7 @@ public final class Constants {
     // Predefined positions for the shark (in degrees)
     public enum SharkPivotPosition {
       STOWED(0.0),
-      DEPLOYED(135.0),
+      DEPLOYED(138.0),
       L1(22);
 
       private final double degrees;
