@@ -140,6 +140,8 @@ public final class Constants {
   public static class ScoringConstants {
     public static final double AUTO_SCORE_PIVOT_NUDGE = 8;
     public static final double ALGAE_TOSS_PIVOT_ANGLE = 155; // Angle at which toss occurs
+    public static final double L1_HEADING_LOCK_ENGAGE_DIFFERENCE = 30; // If within 30deg of L1 angle, engage heading lock 
+    public static final double L1_HEADING_LOCK_RIPOFF_VALUE = 0.3; // Break auto align if joystick value higher than this
 
     /**
      * Maps scoring levels to their respective elevator and pivot enums

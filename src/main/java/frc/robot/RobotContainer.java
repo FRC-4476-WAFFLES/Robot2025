@@ -43,6 +43,7 @@ import frc.robot.commands.test.WheelRadiusCharacterization;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.PhysicalConstants;
+import frc.robot.data.Constants.ScoringConstants;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.data.TunerConstants;
 import frc.robot.subsystems.DriveSubsystem;
@@ -291,7 +292,7 @@ public class RobotContainer {
     Controls.rightJoystick.button(4).onTrue(
       Commands.either(
         Commands.runOnce(() -> RobotContainer.isRunningL1Intake = !RobotContainer.isRunningL1Intake), 
-        SharkCommands.getOutakeCommand(), 
+        SharkCommands.getOutakeCommand().asProxy(), 
         () -> !sharkIntake.isCoralLoaded()
       )
     );
@@ -300,14 +301,20 @@ public class RobotContainer {
     runningL1Intake.whileTrue(SharkCommands.getIntakeCommand());
     
     // Heading lock for L1
-    // sharkCoralLoaded.and(() -> DynamicPathing.isRobotInRangeOfReefL1() && dynamicPathingSubsystem.notRunningAction.getAsBoolean()).whileTrue(
-    //   new DriveTeleop(
-    //     Controls::getDriveY, false,
-    //     Controls::getDriveX, false,
-    //     () -> DynamicPathing.getClosestFaceAngle(driveSubsystem.getRobotPose()), true        
-    //   )
-    // );
+    sharkCoralLoaded.and(() -> 
+      DynamicPathing.isRobotInRangeOfReefL1() && 
+      dynamicPathingSubsystem.notRunningAction.getAsBoolean() && 
+      Controls.getDriveRotationRaw() < ScoringConstants.L1_HEADING_LOCK_RIPOFF_VALUE &&
+      Math.abs(driveSubsystem.getRobotPose().getRotation().minus(dynamicPathingSubsystem.getClosestFaceAngle()).getDegrees()) < ScoringConstants.L1_HEADING_LOCK_ENGAGE_DIFFERENCE
+    ).whileTrue(
+      new DriveTeleop(
+        Controls::getDriveY, false,
+        Controls::getDriveX, false,
+        () -> dynamicPathingSubsystem.getClosestFaceAngle(), true        
+      )
+    );
     
+    // Manual intake backup
     Controls.leftJoystick.button(2).onTrue(
       new InstantCommand(() -> {
         intakeSubsystem.setTargetPosition(intakeSubsystem.getCurrentPosition() + 1);

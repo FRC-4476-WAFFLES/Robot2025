@@ -108,7 +108,8 @@ public class DynamicPathing extends SubsystemBase {
 
     /* Persistent state */
     private boolean coralScoringRightSide = false;
-    private boolean isPathing; // Is moving
+    private boolean isPathing = false; // Is moving
+    private Rotation2d currentClosestReefAngle = Rotation2d.kZero;
 
     // Only used for coral scoring, level can be determined automatically in every other situation
     private ScoringLevel coralScoringLevel = ScoringLevel.L3;
@@ -130,6 +131,7 @@ public class DynamicPathing extends SubsystemBase {
     @Override
     public void periodic() {
         currentPathingSituation = getDynamicPathingSituation();
+        currentClosestReefAngle = calculateClosestFaceAngle(RobotContainer.driveSubsystem.getRobotPose());
         SmartDashboard.putString("Pathing Situation", currentPathingSituation.toString());
     }
 
@@ -542,11 +544,11 @@ public class DynamicPathing extends SubsystemBase {
     }
 
     /**
-     * Gets the direction to face the nearest reef face
+     * Calculates and the direction to face the nearest reef face
      * @param robotPose the field centric pose of the robot
      * @return A Rotation2d representing robot rotation
      */
-    public static Rotation2d getClosestFaceAngle(Pose2d robotPose) {
+    public Rotation2d calculateClosestFaceAngle(Pose2d robotPose) {
         Pose2d pose = WafflesUtilities.FlipIfRedAlliance(robotPose);
 
 
@@ -557,8 +559,16 @@ public class DynamicPathing extends SubsystemBase {
         }
 
         int inRadiusAngle = (int)(angle / 60.0f) * 60;
-
+        
         return WafflesUtilities.FlipAngleIfRedAlliance(Rotation2d.fromDegrees(inRadiusAngle));
+    }
+
+    /**
+     * Gets and the direction to face the nearest reef face
+     * @return A Rotation2d representing robot rotation
+     */
+    public Rotation2d getClosestFaceAngle() {
+        return currentClosestReefAngle;
     }
 
     /**

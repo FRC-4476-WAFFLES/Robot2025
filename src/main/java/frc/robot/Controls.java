@@ -58,6 +58,10 @@ public class Controls {
         return Rotation2d.fromRadians(-driveRot * PhysicalConstants.maxAngularSpeed);
     }
 
+    public static double getDriveRotationRaw() { 
+        return applyDeadzone(rightJoystick.getX());
+    }
+
     // Smooths deadzone over range
     public static double applyDeadzone(double input){
         return Math.abs(input) > JOYSTICK_DEADZONE_OUTER ? 
