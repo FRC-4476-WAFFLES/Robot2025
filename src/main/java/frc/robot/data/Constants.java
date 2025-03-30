@@ -295,7 +295,7 @@ public final class Constants {
       NET(1.50),
       ALGAE_L2(0.9),
       ALGAE_L1(0.56),
-      PROCESSOR(0.2),
+      PROCESSOR(0.135),
       L4(1.50),
       L3(0.835),
       L2(0.435),

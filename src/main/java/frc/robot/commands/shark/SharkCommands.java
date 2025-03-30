@@ -21,8 +21,16 @@ public class SharkCommands {
         }, 
         () -> {}, 
         (interrupted) -> {
-            RobotContainer.sharkPivot.setPivotPosition(SharkPivotPosition.L1);
+            RobotContainer.isRunningL1Intake = false;
+            
             RobotContainer.sharkIntake.setIntakeSpeed(0);
+
+            if (!RobotContainer.sharkIntake.isCoralLoaded()) {
+                // If we're just flipping back, use stowed
+                RobotContainer.sharkPivot.setPivotPosition(SharkPivotPosition.STOWED);
+            } else {
+                RobotContainer.sharkPivot.setPivotPosition(SharkPivotPosition.L1);
+            }
         },
         () -> RobotContainer.sharkIntake.isCoralLoaded(),
         RobotContainer.sharkPivot, RobotContainer.sharkIntake);

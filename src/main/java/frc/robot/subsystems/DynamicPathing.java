@@ -11,6 +11,8 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
 import com.pathplanner.lib.util.FlippingUtil;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -26,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
+import frc.robot.commands.AlignToPose;
 import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.intake.AlgaeOutake;
 import frc.robot.commands.intake.CoralIntake;
@@ -34,6 +37,7 @@ import frc.robot.commands.scoring.ScoreCoral;
 import frc.robot.commands.scoring.ScoreNet;
 import frc.robot.commands.superstructure.ApplyScoringSetpoint;
 import frc.robot.data.Constants;
+import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
@@ -64,15 +68,15 @@ public class DynamicPathing extends SubsystemBase {
 
     /* Various robot to reef distances */
     /* Robot is assumed to have bumpers on */
-    public static final double REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.65; 
-    public static final double REEF_SCORING_POSITION_OFFSET = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.12; 
-    public static final double REEF_SCORING_POSITION_OFFSET_L1 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.37; 
-    public static final double REEF_SCORING_POSITION_OFFSET_L4 = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.015; 
-    public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.05; 
-    public static final double REEF_ALGAE_SAFETY_DISTANCE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.35;
-    public static final double REEF_ELEVATOR_RETRACTION_DISTANCE = Constants.PhysicalConstants.withBumperBotHalfWidth + 0.24;
-    public static final double L4_ELEVATOR_DEPLOY_DISTANCE = Constants.PhysicalConstants.withBumperBotHalfWidth + 1.0;
-    
+    public static final double REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE = PhysicalConstants.withBumperBotHalfWidth + 0.65; 
+    public static final double REEF_SCORING_POSITION_OFFSET = PhysicalConstants.withBumperBotHalfWidth + 0.12; 
+    public static final double REEF_SCORING_POSITION_OFFSET_L1 = PhysicalConstants.withBumperBotHalfWidth + 0.37; 
+    public static final double REEF_SCORING_POSITION_OFFSET_L4 = PhysicalConstants.withBumperBotHalfWidth + 0.015; 
+    public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE = PhysicalConstants.withBumperBotHalfWidth + 0.05; 
+    public static final double REEF_ALGAE_SAFETY_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 0.35;
+    public static final double REEF_ELEVATOR_RETRACTION_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 0.24;
+    public static final double L4_ELEVATOR_DEPLOY_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 1.0;
+    public static final double REEF_L1_HEADING_LOCK_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 1.0;
     /* Coral scoring pathing parameters */
     public static final double REEF_PATH_POSITION_OFFSET = 0.12; // Distance from reef to handover from path to PID
     public static final double CORAL_PATH_END_SPEED = 0.8; // m/s
@@ -86,6 +90,7 @@ public class DynamicPathing extends SubsystemBase {
     /* Processor physical parameters */
     public static final Translation2d PROCCESSOR_BLUE = new Translation2d(Units.inchesToMeters(235.73), Units.inchesToMeters(0.0));  
     public static final Rotation2d PROCESSOR_SCORING_ANGLE = Rotation2d.fromDegrees(-90);
+    public static final double PROCESSOR_SCORING_DISTANCE_Y = 0.35; // Distance from processor Y in meters to score from 
 
     /* Net physical parameters */
     public static final double NET_LINE_X_BLUE = 7.80; // Meters
@@ -166,7 +171,7 @@ public class DynamicPathing extends SubsystemBase {
             pose.getTranslation().getDistance(REEF_CENTER_BLUE) >= REEF_INRADIUS + REEF_MAX_SCORING_DISTANCE
         );
     }
-
+    
     /**
      * Is the robot within a bounding box that allows scoring in the net 
      * @return a boolean
@@ -215,6 +220,14 @@ public class DynamicPathing extends SubsystemBase {
     }
 
     /**
+     * Is the robot within a certain distance of the reef
+     * @return a boolean
+     */
+    public static boolean isRobotInRangeOfReefL1() {
+        return getDistanceToReef() < REEF_L1_HEADING_LOCK_DISTANCE + REEF_INRADIUS;
+    }
+
+    /**
      * Is the robot past a certain distance from the reef
      * @return a boolean
      */
@@ -260,13 +273,12 @@ public class DynamicPathing extends SubsystemBase {
 
             case PROCESSOR: {
                     Rotation2d targetProcessorRotation = WafflesUtilities.FlipAngleIfRedAlliance(PROCESSOR_SCORING_ANGLE);
+                    double targetProcessorY = WafflesUtilities.FlipYIfRedAlliance(PROCCESSOR_BLUE.getY() + PROCESSOR_SCORING_DISTANCE_Y + PhysicalConstants.withBumperBotHalfWidth);
+                    Double targetProcessorX = WafflesUtilities.FlipXIfRedAlliance(PROCCESSOR_BLUE.getX());
+                    Pose2d processorScoringPose = new Pose2d(targetProcessorX, targetProcessorY, targetProcessorRotation);
 
                     cmd = new ParallelCommandGroup(
-                        new DriveTeleop(
-                            Controls::getDriveY, false,
-                            Controls::getDriveX, false,
-                            () -> targetProcessorRotation, true
-                        ),
+                        new AlignToPose(processorScoringPose),
                         new ApplyScoringSetpoint(ScoringLevel.PROCESSOR),
                         new AlgaeOutake()
                     ).finallyDo(() -> {
@@ -527,6 +539,26 @@ public class DynamicPathing extends SubsystemBase {
         } else {
             return ScoringLevel.ALGAE_L2;
         }
+    }
+
+    /**
+     * Gets the direction to face the nearest reef face
+     * @param robotPose the field centric pose of the robot
+     * @return A Rotation2d representing robot rotation
+     */
+    public static Rotation2d getClosestFaceAngle(Pose2d robotPose) {
+        Pose2d pose = WafflesUtilities.FlipIfRedAlliance(robotPose);
+
+
+        Translation2d TranslatedPose = pose.getTranslation().minus(REEF_CENTER_BLUE);
+        double angle = Math.toDegrees(Math.atan2(TranslatedPose.getY(), TranslatedPose.getX())) + 30;
+        if (angle < 0) {
+            angle = 360 + angle;
+        }
+
+        int inRadiusAngle = (int)(angle / 60.0f) * 60;
+
+        return WafflesUtilities.FlipAngleIfRedAlliance(Rotation2d.fromDegrees(inRadiusAngle));
     }
 
     /**

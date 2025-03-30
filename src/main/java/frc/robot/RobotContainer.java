@@ -94,7 +94,7 @@ public class RobotContainer {
   private final SendableChooser<Command> autoChooser;
   private final SendableChooser<Command> testChooser;
   public static boolean isOperatorOverride = false;
-  public static boolean isRunningL1Intake = true;
+  public static boolean isRunningL1Intake = false;
 
 
   /** The static entry point for the robot. Contains subsystems, OI devices, and commands. */
@@ -140,6 +140,7 @@ public class RobotContainer {
     Trigger inOverrideMode = new Trigger(() -> isOperatorOverride);
 
     Trigger runningL1Intake = new Trigger(() -> isRunningL1Intake);
+    Trigger sharkCoralLoaded = new Trigger(() -> sharkIntake.isCoralLoaded());
 
     // Toggle operator override
     Controls.operatorController.start().onTrue(
@@ -289,25 +290,32 @@ public class RobotContainer {
     // L1 Intake / Outtake
     Controls.rightJoystick.button(4).onTrue(
       Commands.either(
-        Commands.runOnce(() -> isRunningL1Intake = !isRunningL1Intake), 
+        Commands.runOnce(() -> RobotContainer.isRunningL1Intake = !RobotContainer.isRunningL1Intake), 
         SharkCommands.getOutakeCommand(), 
         () -> !sharkIntake.isCoralLoaded()
       )
     );
 
+    // Run intake while intake should be running lmao
+    runningL1Intake.whileTrue(SharkCommands.getIntakeCommand());
+    
+    // Heading lock for L1
+    // sharkCoralLoaded.and(() -> DynamicPathing.isRobotInRangeOfReefL1() && dynamicPathingSubsystem.notRunningAction.getAsBoolean()).whileTrue(
+    //   new DriveTeleop(
+    //     Controls::getDriveY, false,
+    //     Controls::getDriveX, false,
+    //     () -> DynamicPathing.getClosestFaceAngle(driveSubsystem.getRobotPose()), true        
+    //   )
+    // );
+    
     Controls.leftJoystick.button(2).onTrue(
       new InstantCommand(() -> {
         intakeSubsystem.setTargetPosition(intakeSubsystem.getCurrentPosition() + 1);
       })
     );
-
-    // Run intake while intake should be running lmao
-    runningL1Intake.whileTrue(SharkCommands.getIntakeCommand());
-
-    
-    Controls.operatorController.rightBumper().whileTrue(
-      AutoIntake.GetAutoIntakeCommand()  
-    );
+    // Controls.operatorController.rightBumper().whileTrue(
+    //   AutoIntake.GetAutoIntakeCommand()  
+    // );
 
 
   }
