@@ -351,7 +351,7 @@ public final class Constants {
     public enum SharkPivotPosition {
       STOWED(0.0),
       DEPLOYED(138.0),
-      L1(22);
+      L1(25);
 
       private final double degrees;
 
