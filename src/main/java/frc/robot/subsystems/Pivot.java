@@ -63,6 +63,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     private double pivotSetpointAngle = 0;
     private boolean isZeroingPivot = false;
     private boolean isThrowingAlgae = false;
+    private boolean isPIDEnabled = true; // Add a flag to track PID state
 
 
 
@@ -209,6 +210,11 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         // Handle zeroing first
         if (isZeroingPivot) {
             handlePivotZeroPeriodic();
+            return;
+        }
+
+        // Skip PID control if disabled
+        if (!isPIDEnabled) {
             return;
         }
 
@@ -421,5 +427,26 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     
     public void setIsThrowingAlgae(boolean val) {
         isThrowingAlgae = val;
+    }
+
+    /**
+     * Sets the neutral mode of the pivot motor
+     * @param mode The NeutralModeValue to set (Coast or Brake)
+     */
+    public void setNeutralMode(NeutralModeValue mode) {
+        pivot.setNeutralMode(mode);
+    }
+
+    /**
+     * Enables or disables PID control of the pivot motor
+     * @param enabled true to enable PID control, false to disable
+     */
+    public void setPIDEnabled(boolean enabled) {
+        isPIDEnabled = enabled;
+        
+        // If we're disabling PID, stop the motor
+        if (!enabled) {
+            pivot.stopMotor();
+        }
     }
 }

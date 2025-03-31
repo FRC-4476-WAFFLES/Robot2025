@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.ManipulatorConstants;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class CoralIntake extends Command {
@@ -31,6 +32,10 @@ public class CoralIntake extends Command {
   public void initialize() {
     RobotContainer.lightsSubsystem.setCoralIntakeRunning(true);
     hasDetectedCoral = false;
+    
+    // Set pivot manipulator motor to coast mode and disable PID
+    RobotContainer.pivotSubsystem.setNeutralMode(NeutralModeValue.Coast);
+    RobotContainer.pivotSubsystem.setPIDEnabled(false);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -59,6 +64,10 @@ public class CoralIntake extends Command {
     RobotContainer.intakeSubsystem.setIntakeSpeed(0);
     // RobotContainer.intakeSubsystem.setPositionControlFlag(false);
     RobotContainer.lightsSubsystem.setCoralIntakeRunning(false);
+    
+    // Set pivot manipulator motor back to brake mode and re-enable PID
+    RobotContainer.pivotSubsystem.setNeutralMode(NeutralModeValue.Brake);
+    RobotContainer.pivotSubsystem.setPIDEnabled(true);
   }
 
   // Returns true when the command should end.
