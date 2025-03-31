@@ -7,6 +7,7 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -28,26 +29,41 @@ import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 public class AlignToPose extends Command {
-  /* PID Controllers */
-  private ProfiledPIDController posPidController = new ProfiledPIDController(5.0, 0, 0.2, new Constraints(3.5, 5.0));
-  private ProfiledPIDController thetaPidController = new ProfiledPIDController(7.0, 0, 0.1, new Constraints(4, 15));
+  /* Approach Constants */
+  public static final double maxAcceleration = 5.0;
+  public static final double maxVelocity = 4;
+
+  public static final double maxThetaAcceleration = 15;
+  public static final double maxThetaVelocity = 4;
+
+  // Refresh profiles if strafing more than this value
+  public static final double strafeResetLimit = 0.2;
+
+  /* Controllers */
+  private ProfiledPIDController approachPidController = new ProfiledPIDController(5.0, 0, 0.2, new Constraints(maxVelocity, maxAcceleration));
+  private ProfiledPIDController thetaPidController = new ProfiledPIDController(7.0, 0, 0.1, new Constraints(maxThetaVelocity, maxThetaAcceleration));
+  private SlewRateLimiter strafeRateLimiter = new SlewRateLimiter(maxAcceleration);
 
   /* Constants */
   private static final double PosMaxError = 0.01;
   private static final double RotMaxError = 1; // degrees
 
-  /* Instance variables */
+  /* Data */
   private SwerveRequest.FieldCentric driveRequest = new SwerveRequest.FieldCentric();
   private final Pose2d targetPose;
   private final double maxSpeed;
   private final boolean stopOnceDone;
+
   private Trigger endTrigger;
   
-  /* Timing variables */
+  /* Telemetry Variables */
   private final Timer alignmentTimer = new Timer();
-  private static final NetworkTable scoringTable = NetworkTableInstance.getDefault().getTable("PathingMetrics");
+  private static final NetworkTable scoringTable = NetworkTableInstance.getDefault().getTable("AlignmentMetrics");
   private static final DoublePublisher alignmentTimePublisher = scoringTable.getDoubleTopic("PID Align Duration").publish();
   private static final BooleanPublisher isAligningPublisher = scoringTable.getBooleanTopic("Performing PID Align").publish();
+  private static final DoublePublisher thetaOutputPublisher = scoringTable.getDoubleTopic("Theta Output").publish();
+  private static final DoublePublisher approachOutputPublisher = scoringTable.getDoubleTopic("Approach Output").publish();
+  private static final DoublePublisher strafeOutputPublisher = scoringTable.getDoubleTopic("Strafe Output").publish();
 
 
   /** 
@@ -63,7 +79,7 @@ public class AlignToPose extends Command {
     this.maxSpeed = maxSpeed;
     this.stopOnceDone = lockOnceDone;
 
-    endTrigger = new Trigger(() -> isWithinAllowableRange(targetPose))
+    endTrigger = new Trigger(() -> isWithinRangeOfTarget(targetPose))
     .debounce(endingDebounce);
   }
 
@@ -102,64 +118,69 @@ public class AlignToPose extends Command {
 
     var currentPose = RobotContainer.driveSubsystem.getRobotPose();
 
-    ChassisSpeeds currentSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(
-      RobotContainer.driveSubsystem.getCurrentRobotChassisSpeeds(),
-      currentPose.getRotation()
-    );
-    Translation2d speedsVector = new Translation2d(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
-
+    // Set tolerances
     thetaPidController.setTolerance(RotMaxError);
-    posPidController.setTolerance(PosMaxError);
+    approachPidController.setTolerance(PosMaxError);
 
+    // Reset theta controller
+    thetaPidController.reset(currentPose.getRotation().getRadians(), RobotContainer.driveSubsystem.getCurrentRobotChassisSpeeds().omegaRadiansPerSecond);
+    
+    // Reset approach controller
     double distanceToTarget = currentPose.getTranslation().getDistance(targetPose.getTranslation());
+    Translation2d velocityTowardsTarget = getVelocityTowardsTarget(currentPose, WafflesUtilities.AngleBetweenPoints(currentPose.getTranslation(), targetPose.getTranslation()));
 
-    thetaPidController.reset(currentPose.getRotation().getRadians(), currentSpeeds.omegaRadiansPerSecond);
-    double speedTowardsTarget = getVelocityTowardsTarget(speedsVector, WafflesUtilities.AngleBetweenPoints(currentPose.getTranslation(), targetPose.getTranslation()));
-    posPidController.reset(distanceToTarget, speedTowardsTarget);
+    approachPidController.reset(distanceToTarget, 
+      Math.min(
+        0.0,
+        -velocityTowardsTarget.getX() // Approach velocity is negative since we PID towards zero
+    ));
+
+    // Reset strafe controller
+    strafeRateLimiter.reset(velocityTowardsTarget.getY());
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double speedDeadband = PhysicalConstants.maxSpeed * 0.01;
-    double rotationDeadband = PhysicalConstants.maxAngularSpeed * 0.003;
-
-    int sign = 1;
-    if (Math.abs(RobotContainer.driveSubsystem.getOperatorForwardDirection().getDegrees()) > 90) {
-      // probably fipped controls lmao
-      sign = -1;
-    }
-
     var currentPose = RobotContainer.driveSubsystem.getRobotPose();
     double distanceToTarget = currentPose.getTranslation().getDistance(targetPose.getTranslation());
 
-    double moveVelocity = MathUtil.clamp(-posPidController.calculate(distanceToTarget, 0), -maxSpeed, maxSpeed);
-    double thetaVelocity = thetaPidController.calculate(currentPose.getRotation().getRadians(), targetPose.getRotation().getRadians());
-    
+    // Calculate target velocities
+    double targetApproachVelocity = MathUtil.clamp(-approachPidController.calculate(distanceToTarget, 0), -maxSpeed, maxSpeed);
+    double targetThetaVelocity = thetaPidController.calculate(currentPose.getRotation().getRadians(), targetPose.getRotation().getRadians());
+    double targetStrafeVelocity = strafeRateLimiter.calculate(0);
+
+    // Deadband target velocities
     if (distanceToTarget < PosMaxError) {
-      moveVelocity = 0;
+      targetApproachVelocity = 0;
     }
     if (Math.abs(currentPose.getRotation().minus(targetPose.getRotation()).getDegrees()) < RotMaxError) {
-      thetaVelocity = 0;
+      targetThetaVelocity = 0;
     }
 
-    SmartDashboard.putNumber("Rotation PID", thetaVelocity);
-    SmartDashboard.putNumber("Move PID", moveVelocity);
+    // Publish telemetry
+    thetaOutputPublisher.set(targetThetaVelocity);
+    approachOutputPublisher.set(targetApproachVelocity);
+    strafeOutputPublisher.set(targetStrafeVelocity);
 
-    Translation2d directionVector = new Translation2d(moveVelocity, WafflesUtilities.AngleBetweenPoints(
-      currentPose.getTranslation(), targetPose.getTranslation())
-    ); 
+    // Convert to field velocities
+    Rotation2d angleToTarget = WafflesUtilities.AngleBetweenPoints(currentPose.getTranslation(), targetPose.getTranslation());
+    Translation2d targetFieldVelocity = new Translation2d(targetApproachVelocity, targetStrafeVelocity).rotateBy(angleToTarget); 
+
+    // Reset motion profiling if strafing fast enough
+    Translation2d velocityTowardsTarget = getVelocityTowardsTarget(currentPose, angleToTarget);
+    if (velocityTowardsTarget.getY() > strafeResetLimit) {
+      // Approach velocity is negative since we PID towards zero
+      approachPidController.reset(distanceToTarget, 
+        Math.min(
+          0.0,
+          -velocityTowardsTarget.getX()
+      ));
+      strafeRateLimiter.reset(velocityTowardsTarget.getY());
+    }
     
-    RobotContainer.driveSubsystem.setControl(
-      driveRequest
-        .withDeadband(speedDeadband)
-        .withRotationalDeadband(rotationDeadband)
-        .withDriveRequestType(DriveRequestType.Velocity)
-        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
-        .withVelocityX(sign * directionVector.getX())
-        .withVelocityY(sign * directionVector.getY())
-        .withRotationalRate(thetaVelocity)
-    );
+    // Apply chosen velocity
+    applyFieldVelocity(targetFieldVelocity, targetThetaVelocity);
   }
 
   // Called once the command ends or is interrupted.
@@ -173,38 +194,59 @@ public class AlignToPose extends Command {
     alignmentTimePublisher.set(finalAlignmentTime);
 
     if (stopOnceDone) {
-      RobotContainer.driveSubsystem.setControl(
-        driveRequest
-          .withDeadband(0)
-          .withRotationalDeadband(0)
-          .withDriveRequestType(DriveRequestType.Velocity)
-          .withSteerRequestType(SteerRequestType.MotionMagicExpo)
-          .withVelocityX(0)
-          .withVelocityY(0)
-          .withRotationalRate(0)
-      );
+      // Stop drivetrain
+      applyFieldVelocity(Translation2d.kZero, 0);
     }
   }
 
   /*
    * If current pose is within a certain range of target
    */
-  public static boolean isWithinAllowableRange(Pose2d target) {
+  public static boolean isWithinRangeOfTarget(Pose2d target) {
     var currentPose = RobotContainer.driveSubsystem.getRobotPose();
     return currentPose.getTranslation().getDistance(target.getTranslation()) <= PosMaxError &&
       Math.abs(currentPose.getRotation().minus(target.getRotation()).getDegrees()) < RotMaxError;
   }
 
   /*
-   * Calculates current velocity towards the target pose
+   * Helper method to apply a chosen field velocity to the drivetrain
    */
-  private static double getVelocityTowardsTarget(Translation2d fieldVelocity, Rotation2d angleBetweenPoses) {
-    return Math.min(
-      0.0,
-      -fieldVelocity
-        .rotateBy(angleBetweenPoses.unaryMinus())
-        .getX()
+  private void applyFieldVelocity(Translation2d targetVelocity, double targetThetaVelocity) {
+    // Drivetrain deadbands
+    double speedDeadband = PhysicalConstants.maxSpeed * 0.01;
+    double rotationDeadband = PhysicalConstants.maxAngularSpeed * 0.003;
+
+    int sign = 1;
+    if (Math.abs(RobotContainer.driveSubsystem.getOperatorForwardDirection().getDegrees()) > 90) {
+      // funny way to flip controls lmao
+      sign = -1;
+    }
+
+    // Apply swerve request
+    RobotContainer.driveSubsystem.setControl(
+      driveRequest
+        .withDeadband(speedDeadband)
+        .withRotationalDeadband(rotationDeadband)
+        .withDriveRequestType(DriveRequestType.Velocity)
+        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+        .withVelocityX(sign * targetVelocity.getX())
+        .withVelocityY(sign * targetVelocity.getY())
+        .withRotationalRate(targetThetaVelocity)
     );
+  }
+
+  /*
+   * Calculates current velocity towards the target pose 
+   * X+ is forward
+   */
+  private static Translation2d getVelocityTowardsTarget(Pose2d currentPose, Rotation2d angleBetweenPoses) {
+    ChassisSpeeds currentSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(
+      RobotContainer.driveSubsystem.getCurrentRobotChassisSpeeds(),
+      currentPose.getRotation()
+    );
+    Translation2d fieldVelocity = new Translation2d(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
+
+    return fieldVelocity.rotateBy(angleBetweenPoses.unaryMinus());
   }
 
   // Returns true when the command should end.

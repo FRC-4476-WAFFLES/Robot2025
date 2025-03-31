@@ -40,7 +40,7 @@ public class SharkCommands {
         return new FunctionalCommand(
         () -> {
             RobotContainer.sharkPivot.setPivotPosition(SharkPivotPosition.L1);
-            RobotContainer.sharkIntake.setIntakeSpeed(-4);
+            RobotContainer.sharkIntake.setIntakeSpeed(-3);
         }, 
         () -> {}, 
         (interrupted) -> {

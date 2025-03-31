@@ -762,13 +762,13 @@ public class DynamicPathing extends SubsystemBase {
         } else {
             // Make two disjointed paths to avoid spline funniness
             var initialBackOffPath = DynamicPathing.simplePathToPose(clearancePose);
-            var arrivalPath = DynamicPathing.generateComplexPath(clearancePose, null, targetAlgaePose);
+            // var arrivalPath = DynamicPathing.generateComplexPath(clearancePose, null, targetAlgaePose);
 
             // Give up if path doesn't exist
-            if (initialBackOffPath.isPresent() && arrivalPath.isPresent()) {
+            if (initialBackOffPath.isPresent()) {
                 arrivalPathingCommand = Commands.sequence(
                     AutoBuilder.followPath(initialBackOffPath.get()),
-                    AutoBuilder.followPath(arrivalPath.get())
+                    new AlignToPose(targetAlgaePose)
                 );
             } else {
                 return null;

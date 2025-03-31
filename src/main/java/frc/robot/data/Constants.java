@@ -140,8 +140,8 @@ public final class Constants {
   public static class ScoringConstants {
     public static final double AUTO_SCORE_PIVOT_NUDGE = 8;
     public static final double ALGAE_TOSS_PIVOT_ANGLE = 155; // Angle at which toss occurs
-    public static final double L1_HEADING_LOCK_ENGAGE_DIFFERENCE = 30; // If within 30deg of L1 angle, engage heading lock 
-    public static final double L1_HEADING_LOCK_RIPOFF_VALUE = 0.3; // Break auto align if joystick value higher than this
+    public static final double L1_HEADING_LOCK_ENGAGE_DIFFERENCE = 45; // If within 30deg of L1 angle, engage heading lock 
+    public static final double L1_HEADING_LOCK_RIPOFF_VALUE = 0.2; // Break auto align if joystick value higher than this
 
     /**
      * Maps scoring levels to their respective elevator and pivot enums
@@ -299,8 +299,8 @@ public final class Constants {
       ALGAE_L1(0.56),
       PROCESSOR(0.135),
       L4(1.50),
-      L3(0.835),
-      L2(0.435),
+      L3(0.84),
+      L2(0.44),
       L1(0.33),
 
       MANUAL_L4(1.440),
@@ -351,7 +351,7 @@ public final class Constants {
     public enum SharkPivotPosition {
       STOWED(0.0),
       DEPLOYED(138.0),
-      L1(25);
+      L1(33);
 
       private final double degrees;
 
