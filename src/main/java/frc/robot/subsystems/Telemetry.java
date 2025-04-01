@@ -12,6 +12,8 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
@@ -44,11 +46,12 @@ public class Telemetry extends SubsystemBase {
     private final DoublePublisher speed = driveStats.getDoubleTopic("Speed").publish();
     private final DoublePublisher odomFreq = driveStats.getDoubleTopic("Odometry Frequency").publish();
 
-    /* Build data */
-    private final NetworkTable buildTable = inst.getTable("BuildInfo");
-    private final StringPublisher deployedBranch = buildTable.getStringTopic("Deployed Branch").publish();
-    private final StringPublisher buildTimeStamp = buildTable.getStringTopic("Build Timestamp").publish();
-    private final StringPublisher repository = buildTable.getStringTopic("Repository").publish();
+    /* Software metadata */
+    private final NetworkTable softwareTable = inst.getTable("SoftwareInfo");
+    private final StringPublisher deployedBranch = softwareTable.getStringTopic("Deployed Branch").publish();
+    private final StringPublisher buildTimeStamp = softwareTable.getStringTopic("Build Timestamp").publish();
+    private final StringPublisher repository = softwareTable.getStringTopic("Repository").publish();
+    private final DoublePublisher lastLoopTimePublsiher = softwareTable.getDoubleTopic("Loop Time (ms)").publish();
 
     /* Power data */
     private final NetworkTable powerTable = inst.getTable("PowerInfo");
@@ -65,7 +68,7 @@ public class Telemetry extends SubsystemBase {
     private final DoublePublisher calculatedDriveY = controlsTable.getDoubleTopic("Calculated Drive Y").publish();
     private final DoublePublisher calculatedDriveRot = controlsTable.getDoubleTopic("Calculated Drive Rotation").publish();
 
-    /* Controls data */
+    /* Swerve debugging data */
     private final NetworkTable swerveTable = inst.getTable("SwerveModule");
     private final DoublePublisher driveSetpoint = swerveTable.getDoubleTopic("DriveSetpoint").publish();
     private final DoublePublisher driveSpeed = swerveTable.getDoubleTopic("DriveSpeed").publish();
@@ -119,6 +122,7 @@ public class Telemetry extends SubsystemBase {
 
     private final double MaxSpeed;
 
+
     /*                 */
     /* Other Variables */
     /*                 */
@@ -126,7 +130,7 @@ public class Telemetry extends SubsystemBase {
     private PowerDistribution powerDistributionHub = new PowerDistribution(1, ModuleType.kRev);
 
     /* Scoring metrics data */
-    private final NetworkTable scoringMetricsTable = inst.getTable("ScoringMetrics");
+    // private final NetworkTable scoringMetricsTable = inst.getTable("ScoringMetrics");
     
     // Remove tracking of averages, counts, and success rates
     // Only keep publishers for the most recent durations
@@ -278,6 +282,14 @@ public class Telemetry extends SubsystemBase {
         // Only publish to SmartDashboard for driver visibility
         SmartDashboard.putNumber("Recent Alignment Time", alignmentTime);
         SmartDashboard.putNumber("Recent Total Scoring Time", totalScoringTime);
+    }
+
+    /**
+     * Update the last recorded loop time
+     * @param loopTime the last loop time in ms
+     */
+    public void updateLoopTimeMetric(double loopTime) {
+        lastLoopTimePublsiher.set(loopTime);
     }
     
     /**

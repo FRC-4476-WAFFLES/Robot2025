@@ -9,6 +9,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -29,6 +30,8 @@ public class Robot extends TimedRobot {
   private Command m_testCommand;
 
   private final RobotContainer m_robotContainer;
+
+  private double lastTimestamp = 0;
 
   Timer m_gcTimer = new Timer();
   /**
@@ -58,6 +61,9 @@ public class Robot extends TimedRobot {
     // Log metadata about the build
     DataLogManager.log("Robot program starting");
     DataLogManager.log("Build date: " + BuildConstants.BUILD_DATE);
+
+    // Use realtime thread priority. This is dangerous and may have consequences for other threads ie. networktables
+    // Threads.setCurrentThreadPriority(true, 10);
   }
 
   /**
@@ -69,12 +75,16 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    lastTimestamp = Timer.getFPGATimestamp();
+
     // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
     // commands, running already-scheduled commands, removing finished or interrupted commands,
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
 
+    // Publish periodic loop time to networktables
+    RobotContainer.telemetry.updateLoopTimeMetric((Timer.getFPGATimestamp() - lastTimestamp) * 1000);
   }
 
   /** This function is called once each time the robot enters Disabled mode. */

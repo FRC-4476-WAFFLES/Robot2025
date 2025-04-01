@@ -97,10 +97,9 @@ public class RobotContainer {
   public static boolean isOperatorOverride = false;
   public static boolean isRunningL1Intake = false;
 
-
   /** The static entry point for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    // Configure the trigger bindings
+    // Configure trigger bindings
     configureBindings();
 
     // Swerve telemetry from odometry thread
