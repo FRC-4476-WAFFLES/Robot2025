@@ -535,11 +535,17 @@ public class Lights extends SubsystemBase {
    * Updates elevator side lights based on targeted elevator height in automatic mode
    */
   private void handleAutomaticElevatorLights() {
+    if (RobotContainer.isHeadingLockedToL1.getAsBoolean()) {
+      setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.ORANGE, LightColours.WHITE, true);
+      setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.ORANGE, LightColours.WHITE, true);
+      return; 
+    }
     if (RobotContainer.sharkIntake.isCoralLoaded()) {
       setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.GREEN, LightColours.WHITE, false);
       setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.GREEN, LightColours.WHITE, false);
       return;
-    } else if (RobotContainer.sharkPivot.getSharkSetpoint() > SharkPivotPosition.L1.getDegrees()) {
+    } 
+    if (RobotContainer.sharkPivot.getSharkSetpoint() > SharkPivotPosition.L1.getDegrees()) {
       // Flash green if intaking
       setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.GREEN, LightColours.BLACK, true);
       setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.GREEN, LightColours.BLACK, true);
@@ -713,17 +719,17 @@ public class Lights extends SubsystemBase {
    * @param range The predefined LED range
    * @param colour The primary color for the LED range
    * @param blinkColour The secondary color for blinking (if enabled)
-   * @param canBlink Whether the LED range should blink
+   * @param shouldBlink Whether the LED range should blink
    */
-  public void setLEDRangeGroup(LedRange range, LightColours colour, LightColours blinkColour, boolean canBlink) {
-    if(canBlink){
+  public void setLEDRangeGroup(LedRange range, LightColours colour, LightColours blinkColour, boolean shouldBlink) {
+    if(shouldBlink){
       if(isBlinkColour) {
         ledRangeColours.put(range, colour);
       } else {
         ledRangeColours.put(range, blinkColour);
       } 
     } else {
-       ledRangeColours.put(range, colour);
+      ledRangeColours.put(range, colour);
     }
   }
 

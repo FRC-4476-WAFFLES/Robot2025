@@ -97,6 +97,8 @@ public class RobotContainer {
   public static boolean isOperatorOverride = false;
   public static boolean isRunningL1Intake = false;
 
+  public static Trigger isHeadingLockedToL1;
+
   /** The static entry point for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure trigger bindings
@@ -300,12 +302,14 @@ public class RobotContainer {
     runningL1Intake.whileTrue(SharkCommands.getIntakeCommand());
     
     // Heading lock for L1
-    sharkCoralLoaded.and(() -> 
+    isHeadingLockedToL1 = sharkCoralLoaded.and(() -> 
       DynamicPathing.isRobotInRangeOfReefL1() && 
       dynamicPathingSubsystem.notRunningAction.getAsBoolean() && 
       Controls.getDriveRotationRaw() < ScoringConstants.L1_HEADING_LOCK_RIPOFF_VALUE &&
       Math.abs(driveSubsystem.getRobotPose().getRotation().minus(dynamicPathingSubsystem.getClosestFaceAngle()).getDegrees()) < ScoringConstants.L1_HEADING_LOCK_ENGAGE_DIFFERENCE
-    ).whileTrue(
+    );
+
+    isHeadingLockedToL1.whileTrue(
       new DriveTeleop(
         Controls::getDriveY, false,
         Controls::getDriveX, false,
