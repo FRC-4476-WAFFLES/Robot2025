@@ -62,8 +62,6 @@ public class PrepareScoreCoral extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return RobotContainer.pivotSubsystem.isPivotAtSetpoint() &&
-           RobotContainer.elevatorSubsystem.isElevatorAtSetpoint() &&
-           !RobotContainer.dynamicPathingSubsystem.isPathing(); // Ends only once pathing is done
+    return false;
   }
 }
