@@ -511,6 +511,13 @@ public class Lights extends SubsystemBase {
       setLEDRange(4, 5, LightColours.BLACK);
     }
 
+    // Funnel sees coral indicator
+    if (intakeSubsystem.funnelSeesCoral()) {
+      setLEDRange(5, 6, LightColours.ORANGE);
+    } else {
+      setLEDRange(5, 6, LightColours.BLACK);
+    }
+
     // Alliance Indicator Light
     var alliance = DriverStation.getAlliance();
     if (alliance.isPresent()) {

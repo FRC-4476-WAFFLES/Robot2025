@@ -4,7 +4,6 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -65,6 +64,8 @@ public class AlignToPose extends Command {
   private static final DoublePublisher thetaOutputPublisher = scoringTable.getDoubleTopic("Theta Output").publish();
   private static final DoublePublisher approachOutputPublisher = scoringTable.getDoubleTopic("Approach Output").publish();
   private static final DoublePublisher strafeOutputPublisher = scoringTable.getDoubleTopic("Strafe Output").publish();
+  private static final DoublePublisher strafeVelocityPublisher = scoringTable.getDoubleTopic("Strafe Velocity").publish();
+  private static final DoublePublisher approachVelocityPublisher = scoringTable.getDoubleTopic("Approach Velocity").publish();
 
 
   /** 
@@ -179,6 +180,9 @@ public class AlignToPose extends Command {
       ));
       strafeRateLimiter.reset(velocityTowardsTarget.getY());
     }
+
+    approachVelocityPublisher.set(velocityTowardsTarget.getX());
+    strafeVelocityPublisher.set(velocityTowardsTarget.getY());
     
     // Apply chosen velocity
     applyFieldVelocity(targetFieldVelocity, targetThetaVelocity);
