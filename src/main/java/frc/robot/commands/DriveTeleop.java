@@ -79,7 +79,7 @@ public class DriveTeleop extends Command {
     );
 
     // Initialize the previous setpoint to the robot's current speeds & module states
-    ChassisSpeeds currentSpeeds = driveSubsystem.getCurrentRobotChassisSpeeds(); // Method to get current robot-relative chassis speeds
+    ChassisSpeeds currentSpeeds = driveSubsystem.getRobotChassisSpeeds(); // Method to get current robot-relative chassis speeds
     
     var modules = driveSubsystem.getModules();
     SwerveModuleState[] currentStates = new SwerveModuleState[4];
@@ -100,31 +100,25 @@ public class DriveTeleop extends Command {
     double speedDeadband = PhysicalConstants.maxSpeed * 0.05;
     double rotationDeadband = PhysicalConstants.maxAngularSpeed * 0.01;
 
-    int sign = 1;
-    if (Math.abs(RobotContainer.driveSubsystem.getOperatorForwardDirection().getDegrees()) > 90) {
-      // probably fipped controls lmao
-      sign = -1;
-    }
-
     var currentPose = driveSubsystem.getRobotPose();
 
     // Reset logic for profiled PID controller
     if (isSetpointTheta) {
       if (previousThetaSetpoint != thetaSupplier.get().getRadians()) {
         previousThetaSetpoint = thetaSupplier.get().getRadians();
-        thetaPidController.reset(currentPose.getRotation().getRadians());
+        thetaPidController.reset(currentPose.getRotation().getRadians(), RobotContainer.driveSubsystem.getRobotChassisSpeeds().omegaRadiansPerSecond);
       }
     }
 
-    double xVelocity = isSetpointX ? (sign * xPidController.calculate(currentPose.getX(), xSupplier.getAsDouble())) : xSupplier.getAsDouble();
-    double yVelocity = isSetpointY ? (sign * yPidController.calculate(currentPose.getY(), ySupplier.getAsDouble())) : ySupplier.getAsDouble();
-    double thetaVelocity = isSetpointTheta ? thetaPidController.calculate(currentPose.getRotation().getRadians(), thetaSupplier.get().getRadians()) : thetaSupplier.get().getRadians();
+    // Flip perspective of drive overrides to be operator relative
+    int flipOperatorPerspectiveSign = 1;
+    if (Math.abs(RobotContainer.driveSubsystem.getOperatorForwardDirection().getDegrees()) > 90) {
+      flipOperatorPerspectiveSign = -1;
+    }
 
-    // SmartDashboard.putNumber("ThetaVelocity", thetaVelocity);
-    
-    // SmartDashboard.putNumber("setpointTheta", thetaSupplier.get().getRadians());
-    
-    // SmartDashboard.putNumber("currentTheta", currentPose.getRotation().getRadians());
+    double xVelocity = isSetpointX ? (flipOperatorPerspectiveSign * xPidController.calculate(currentPose.getX(), xSupplier.getAsDouble())) : xSupplier.getAsDouble();
+    double yVelocity = isSetpointY ? (flipOperatorPerspectiveSign * yPidController.calculate(currentPose.getY(), ySupplier.getAsDouble())) : ySupplier.getAsDouble();
+    double thetaVelocity = isSetpointTheta ? thetaPidController.calculate(currentPose.getRotation().getRadians(), thetaSupplier.get().getRadians()) : thetaSupplier.get().getRadians();
 
     driveSubsystem.setControl(
       driveRequest

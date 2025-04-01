@@ -617,7 +617,7 @@ public class DynamicPathing extends SubsystemBase {
 
         // If coming at speed create curved path to allow for deceleration
         ChassisSpeeds currentSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(
-            RobotContainer.driveSubsystem.getCurrentRobotChassisSpeeds(),
+            RobotContainer.driveSubsystem.getRobotChassisSpeeds(),
             startingPose.getRotation()
         );
 
@@ -799,7 +799,7 @@ public class DynamicPathing extends SubsystemBase {
     public Command createCoralScoreCommand() {
         Pose2d startingPose = RobotContainer.driveSubsystem.getRobotPose();
         Pose2d targetCoralPose = getNearestCoralScoringLocation();
-        ChassisSpeeds speeds = RobotContainer.driveSubsystem.getCurrentRobotChassisSpeeds(); // Robot relative, just needed for magnitude
+        ChassisSpeeds speeds = RobotContainer.driveSubsystem.getRobotChassisSpeeds(); // Robot relative, just needed for magnitude
 
         // Telemetry
         SmartDashboard.putNumberArray("TargetPose Reef", new double[] {

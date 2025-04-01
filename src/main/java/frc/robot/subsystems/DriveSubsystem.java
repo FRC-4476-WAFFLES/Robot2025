@@ -382,7 +382,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
             AutoBuilder.configure(
                 this::getRobotPose, // Supplier of current robot pose
                 this::resetPose, // Consumer for seeding pose against auto
-                this::getCurrentRobotChassisSpeeds,
+                this::getRobotChassisSpeeds,
                 (speeds, feedforwards) -> setControl(autoRequest.withSpeeds(speeds)
                     .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
                     .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
@@ -416,7 +416,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
      * @return true if the robot is stationary, false otherwise.
     */
     public boolean notMoving() {
-        ChassisSpeeds speeds = getCurrentRobotChassisSpeeds();
+        ChassisSpeeds speeds = getRobotChassisSpeeds();
         return Math.abs(speeds.vxMetersPerSecond) < 0.05
                 && Math.abs(speeds.vyMetersPerSecond) < 0.05
                 && Math.abs(speeds.omegaRadiansPerSecond) < 0.1;
@@ -427,7 +427,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
      * @return true if the robot is not rotating, false otherwise.
     */
     public boolean notRotating() {
-        return Math.abs(getCurrentRobotChassisSpeeds().omegaRadiansPerSecond) < 0.1;
+        return Math.abs(getRobotChassisSpeeds().omegaRadiansPerSecond) < 0.1;
     }
 
     /**
@@ -435,7 +435,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
      * @return true if the robot is moving slowly, false otherwise.
     */
     public boolean slowMoving() {
-        ChassisSpeeds speeds = getCurrentRobotChassisSpeeds();
+        ChassisSpeeds speeds = getRobotChassisSpeeds();
         return Math.abs(speeds.vxMetersPerSecond) < 1
                 && Math.abs(speeds.vyMetersPerSecond) < 1
                 && Math.abs(speeds.omegaRadiansPerSecond) < 1;
@@ -461,7 +461,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
      * Gets the current chassis speeds of the robot.
      * @return The current chassis speeds.
     */
-    public ChassisSpeeds getCurrentRobotChassisSpeeds() {
+    public ChassisSpeeds getRobotChassisSpeeds() {
         return getState().Speeds;
     }
 

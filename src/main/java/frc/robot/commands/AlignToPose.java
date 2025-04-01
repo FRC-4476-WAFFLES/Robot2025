@@ -26,6 +26,7 @@ import frc.robot.utils.WafflesUtilities;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
+import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 public class AlignToPose extends Command {
@@ -123,7 +124,7 @@ public class AlignToPose extends Command {
     approachPidController.setTolerance(PosMaxError);
 
     // Reset theta controller
-    thetaPidController.reset(currentPose.getRotation().getRadians(), RobotContainer.driveSubsystem.getCurrentRobotChassisSpeeds().omegaRadiansPerSecond);
+    thetaPidController.reset(currentPose.getRotation().getRadians(), RobotContainer.driveSubsystem.getRobotChassisSpeeds().omegaRadiansPerSecond);
     
     // Reset approach controller
     double distanceToTarget = currentPose.getTranslation().getDistance(targetPose.getTranslation());
@@ -216,12 +217,6 @@ public class AlignToPose extends Command {
     double speedDeadband = PhysicalConstants.maxSpeed * 0.01;
     double rotationDeadband = PhysicalConstants.maxAngularSpeed * 0.003;
 
-    int sign = 1;
-    if (Math.abs(RobotContainer.driveSubsystem.getOperatorForwardDirection().getDegrees()) > 90) {
-      // funny way to flip controls lmao
-      sign = -1;
-    }
-
     // Apply swerve request
     RobotContainer.driveSubsystem.setControl(
       driveRequest
@@ -229,9 +224,10 @@ public class AlignToPose extends Command {
         .withRotationalDeadband(rotationDeadband)
         .withDriveRequestType(DriveRequestType.Velocity)
         .withSteerRequestType(SteerRequestType.MotionMagicExpo)
-        .withVelocityX(sign * targetVelocity.getX())
-        .withVelocityY(sign * targetVelocity.getY())
+        .withVelocityX(targetVelocity.getX())
+        .withVelocityY(targetVelocity.getY())
         .withRotationalRate(targetThetaVelocity)
+        .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance)
     );
   }
 
@@ -241,7 +237,7 @@ public class AlignToPose extends Command {
    */
   private static Translation2d getVelocityTowardsTarget(Pose2d currentPose, Rotation2d angleBetweenPoses) {
     ChassisSpeeds currentSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(
-      RobotContainer.driveSubsystem.getCurrentRobotChassisSpeeds(),
+      RobotContainer.driveSubsystem.getRobotChassisSpeeds(),
       currentPose.getRotation()
     );
     Translation2d fieldVelocity = new Translation2d(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
