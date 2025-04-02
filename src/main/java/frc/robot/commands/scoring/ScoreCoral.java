@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -128,12 +129,15 @@ public class ScoreCoral extends SequentialCommandGroup {
       double velocityMagnitude = Math.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
       
       boolean poseValid = 
-        errorPose.getTranslation().getX() <= chosenParameters.maxDistanceX &&
-        errorPose.getTranslation().getY() <= chosenParameters.maxDistanceY && 
-        errorPose.getRotation().getDegrees() <= chosenParameters.maxThetaDifference.getDegrees();
+        Math.abs(errorPose.getX()) <= chosenParameters.maxDistanceX &&
+        Math.abs(errorPose.getY()) <= chosenParameters.maxDistanceY && 
+        Math.abs(errorPose.getRotation().getDegrees()) <= chosenParameters.maxThetaDifference.getDegrees();
       boolean velocityValid = 
         velocityMagnitude <= chosenParameters.maxVelocity &&
         currentSpeeds.omegaRadiansPerSecond <= chosenParameters.maxThetaVelocity.getRadians();
+
+      SmartDashboard.putNumber("XVEL", errorPose.getX());
+      SmartDashboard.putNumber("YVEL", errorPose.getY());
 
       return poseValid && velocityValid;
     });
@@ -143,7 +147,7 @@ public class ScoreCoral extends SequentialCommandGroup {
       startTimingCommand,
       
       // Main scoring sequence
-      new ParallelRaceGroup(
+      new ParallelDeadlineGroup(
         new SequentialCommandGroup(
           // Wait until doNotScore is released
           new WaitUntilCommand(() -> !Controls.doNotScore.getAsBoolean() && scoreTrigger.getAsBoolean()),
