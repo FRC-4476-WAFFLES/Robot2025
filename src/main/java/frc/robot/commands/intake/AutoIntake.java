@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.RobotContainer;
 import frc.robot.commands.AlignToPose;
 import frc.robot.commands.superstructure.ApplyScoringSetpoint;
@@ -59,7 +58,6 @@ public class AutoIntake {
                 });
 
                 return Commands.deadline(
-                    new WaitCommand(0.3),
                     new CoralIntake(),
                     new AlignToPose(chosenStationPose),
                     new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
