@@ -8,24 +8,24 @@
     "CS4 to Reef",
     "Debug Paths",
     "MIDDLE",
-    "Push",
     "OPP1",
     "OPP2",
+    "Push",
     "Reef to CS1",
     "Reef to CS3",
     "Reef to CS4",
-    "Starting Line (MID)",
-    "Starting Line (TOP)",
-    "Starting Line(BOT)"
+    "US2 to Reef",
+    "US1 To Reef",
+    "US3 to Reef"
   ],
   "autoFolders": [
-    "Four Peice",
+    "Four Piece",
     "Middle",
     "Push",
-    "Three Peice"
+    "Three Piece"
   ],
   "defaultMaxVel": 4.1,
-  "defaultMaxAccel": 5.0,
+  "defaultMaxAccel": 8.0,
   "defaultMaxAngVel": 800.0,
   "defaultMaxAngAccel": 1200.0,
   "defaultNominalVoltage": 12.0,

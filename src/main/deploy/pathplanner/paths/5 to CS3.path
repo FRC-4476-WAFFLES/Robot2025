@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.06,
-        "y": 3.86
+        "x": 2.8567499999999995,
+        "y": 3.8397499999999996
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.4400341998125525,
-        "y": 2.853365875463527
+        "x": 2.236784199812552,
+        "y": 2.833115875463527
       },
       "isLocked": false,
       "linkedName": "Post 5"
@@ -34,7 +34,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.1,
-    "maxAcceleration": 5.0,
+    "maxAcceleration": 8.0,
     "maxAngularVelocity": 800.0,
     "maxAngularAcceleration": 1200.0,
     "nominalVoltage": 12.0,

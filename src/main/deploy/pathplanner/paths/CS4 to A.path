@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 2.859709821428571,
-        "y": 4.312276785714285
+        "x": 2.83725,
+        "y": 4.103
       },
       "prevControl": {
-        "x": 1.709733190706468,
-        "y": 2.5868792789428188
+        "x": 1.687273369277897,
+        "y": 2.377602493228533
       },
       "nextControl": null,
       "isLocked": false,
@@ -34,7 +34,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.1,
-    "maxAcceleration": 5.0,
+    "maxAcceleration": 8.0,
     "maxAngularVelocity": 800.0,
     "maxAngularAcceleration": 1200.0,
     "nominalVoltage": 12.0,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -11.309932474020256
+    "rotation": 0.0
   },
   "reversed": false,
   "folder": "CS3 to Reef",

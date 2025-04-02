@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.859709821428571,
-        "y": 4.312276785714285
+        "x": 2.83725,
+        "y": 4.103
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.20195328179263,
-        "y": 3.0158940758380917
+        "x": 2.179493460364059,
+        "y": 2.806617290123806
       },
       "isLocked": false,
       "linkedName": "Post 6"
@@ -34,7 +34,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.1,
-    "maxAcceleration": 5.0,
+    "maxAcceleration": 8.0,
     "maxAngularVelocity": 800.0,
     "maxAngularAcceleration": 1200.0,
     "nominalVoltage": 12.0,
@@ -48,7 +48,7 @@
   "folder": "Reef to CS3",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -11.309932474020256
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }

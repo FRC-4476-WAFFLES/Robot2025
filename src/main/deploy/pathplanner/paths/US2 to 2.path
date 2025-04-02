@@ -47,7 +47,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.1,
-    "maxAcceleration": 5.0,
+    "maxAcceleration": 8.0,
     "maxAngularVelocity": 800.0,
     "maxAngularAcceleration": 1200.0,
     "nominalVoltage": 12.0,
@@ -58,7 +58,7 @@
     "rotation": 120.52970589993417
   },
   "reversed": false,
-  "folder": "Starting Line (MID)",
+  "folder": "US2 to Reef",
   "idealStartingState": {
     "velocity": 0,
     "rotation": -131.34777721969374

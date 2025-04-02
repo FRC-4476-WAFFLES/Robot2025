@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.859709821428571,
-        "y": 4.312276785714285
+        "x": 2.83725,
+        "y": 4.103
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.123225554456285,
-        "y": 2.2298998136437804
+        "x": 2.100765733027714,
+        "y": 2.0206230279294948
       },
       "isLocked": false,
       "linkedName": "Post 6"
@@ -34,7 +34,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.1,
-    "maxAcceleration": 5.0,
+    "maxAcceleration": 8.0,
     "maxAngularVelocity": 800.0,
     "maxAngularAcceleration": 1200.0,
     "nominalVoltage": 12.0,
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0.4,
-    "rotation": 54.591013070833
+    "rotation": 48.46822925891714
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -11.309932474020256
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }

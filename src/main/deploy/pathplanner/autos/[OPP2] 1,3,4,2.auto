@@ -30,15 +30,28 @@
           }
         },
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "1 to CS4"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "1 to CS4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Set Position Intake"
+                }
+              }
+            ]
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Coral Intake"
+            "name": "Auto Coral Intake"
           }
         },
         {
@@ -67,15 +80,28 @@
           }
         },
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "3 to CS4"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "3 to CS4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Set Position Intake"
+                }
+              }
+            ]
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Coral Intake"
+            "name": "Auto Coral Intake"
           }
         },
         {
@@ -104,15 +130,28 @@
           }
         },
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "4 to CS4"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "4 to CS4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Set Position Intake"
+                }
+              }
+            ]
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Coral Intake"
+            "name": "Auto Coral Intake"
           }
         },
         {
@@ -144,6 +183,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Four Peice",
+  "folder": "Four Piece",
   "choreoAuto": false
 }

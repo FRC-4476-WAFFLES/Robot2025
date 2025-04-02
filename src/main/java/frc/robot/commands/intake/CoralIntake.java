@@ -19,7 +19,7 @@ public class CoralIntake extends Command {
 
   private Trigger funnelTrigger = new Trigger(
     () -> intakeSubsystem.funnelSeesCoral() 
-  ).debounce(0.05); // ~(>_<。)＼ WAIT! They don't love you like I love you anyways...
+  ).debounce(0.03); // ~(>_<。)＼ WAIT! They don't love you like I love you anyways...
 
   /** Creates a new CoralIntake. */
   public CoralIntake() {
