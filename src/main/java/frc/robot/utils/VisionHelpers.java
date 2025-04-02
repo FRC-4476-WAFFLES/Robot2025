@@ -1,10 +1,7 @@
 package frc.robot.utils;
 
-import static frc.robot.data.Constants.VisionConstants.kMultiTagStdDevs;
 import static frc.robot.data.Constants.VisionConstants.kMultiTagStdDevsMT1;
-import static frc.robot.data.Constants.VisionConstants.kSingleTagStdDevs;
 import static frc.robot.data.Constants.VisionConstants.kSingleTagStdDevsMT1;
-import static frc.robot.data.Constants.VisionConstants.kStdDevsMT2;
 import static frc.robot.data.Constants.VisionConstants.kStdDevsMT2ReefTargeting;
 
 import edu.wpi.first.math.Matrix;

@@ -229,7 +229,7 @@ public final class Constants {
         SPIT_ALGAE(140),
         CORAL_INTAKE(1),
         NET(100),
-        L4(71),
+        L4(66),
         L3(34),
         L2(34),
         L1(150),

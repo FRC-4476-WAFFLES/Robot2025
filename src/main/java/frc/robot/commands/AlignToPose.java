@@ -37,16 +37,18 @@ public class AlignToPose extends Command {
   public static final double maxThetaVelocity = 4;
 
   // Refresh profiles if strafing more than this value
-  public static final double strafeResetLimit = 0.2;
+  public static final double strafeResetLimit = 0.1;
+  public static final double approachFeedforwardBlendOuter = 0.2; // Distance at which velocity feedforward begins to lose influence
+  public static final double approachFeedforwardBlendInner = 0.1; // Distance at which velocity feedforward loses all influence
 
   /* Controllers */
-  private ProfiledPIDController approachPidController = new ProfiledPIDController(5.0, 0, 0.2, new Constraints(maxVelocity, maxAcceleration));
+  private ProfiledPIDController approachPidController = new ProfiledPIDController(4, 0, 0.2, new Constraints(maxVelocity, maxAcceleration));
   private ProfiledPIDController thetaPidController = new ProfiledPIDController(7.0, 0, 0.1, new Constraints(maxThetaVelocity, maxThetaAcceleration));
   private SlewRateLimiter strafeRateLimiter = new SlewRateLimiter(maxAcceleration);
 
   /* Constants */
   private static final double PosMaxError = 0.01;
-  private static final double RotMaxError = 1; // degrees
+  private static final double RotMaxError = 0.5; // degrees
 
   /* Data */
   private SwerveRequest.FieldCentric driveRequest = new SwerveRequest.FieldCentric();
@@ -66,6 +68,10 @@ public class AlignToPose extends Command {
   private static final DoublePublisher strafeOutputPublisher = scoringTable.getDoubleTopic("Strafe Output").publish();
   private static final DoublePublisher strafeVelocityPublisher = scoringTable.getDoubleTopic("Strafe Velocity").publish();
   private static final DoublePublisher approachVelocityPublisher = scoringTable.getDoubleTopic("Approach Velocity").publish();
+  private static final DoublePublisher approachSetpointPositionPublisher = scoringTable.getDoubleTopic("Approach Setpoint Position").publish();
+  private static final DoublePublisher approachSetpointVelocityPublisher = scoringTable.getDoubleTopic("Approach Setpoint Velocity").publish();
+  private static final DoublePublisher distancePublisher = scoringTable.getDoubleTopic("Approach Distance").publish();
+  private static final DoublePublisher feedforwardBlendPublisher = scoringTable.getDoubleTopic("Approach FF Blend").publish();
 
 
   /** 
@@ -139,6 +145,11 @@ public class AlignToPose extends Command {
 
     // Reset strafe controller
     strafeRateLimiter.reset(velocityTowardsTarget.getY());
+
+    approachVelocityPublisher.set(velocityTowardsTarget.getX());
+    strafeVelocityPublisher.set(velocityTowardsTarget.getY());
+
+
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -146,9 +157,25 @@ public class AlignToPose extends Command {
   public void execute() {
     var currentPose = RobotContainer.driveSubsystem.getRobotPose();
     double distanceToTarget = currentPose.getTranslation().getDistance(targetPose.getTranslation());
+    Rotation2d angleToTarget = WafflesUtilities.AngleBetweenPoints(currentPose.getTranslation(), targetPose.getTranslation());
+
+    // Calculate velocity feedforward
+    double approachVelocityFeedback = MathUtil.clamp(-approachPidController.calculate(distanceToTarget, 0), -maxSpeed, maxSpeed);
+    double approachVelocityFeedforwardBlend = MathUtil.clamp( 
+      WafflesUtilities.InvLerp(distanceToTarget, approachFeedforwardBlendInner, approachFeedforwardBlendOuter),
+      0, 1);
+    if (distanceToTarget <= approachFeedforwardBlendInner) {
+      approachVelocityFeedforwardBlend = 0;
+    }
+
+    double approachVelocityFeedForward = -approachPidController.getSetpoint().velocity * approachVelocityFeedforwardBlend;
+    
+    feedforwardBlendPublisher.set(approachVelocityFeedforwardBlend);
+
+    approachVelocityFeedback *= 1 - approachVelocityFeedforwardBlend;
 
     // Calculate target velocities
-    double targetApproachVelocity = MathUtil.clamp(-approachPidController.calculate(distanceToTarget, 0), -maxSpeed, maxSpeed);
+    double targetApproachVelocity = approachVelocityFeedForward + approachVelocityFeedback;
     double targetThetaVelocity = thetaPidController.calculate(currentPose.getRotation().getRadians(), targetPose.getRotation().getRadians());
     double targetStrafeVelocity = strafeRateLimiter.calculate(0);
 
@@ -160,13 +187,16 @@ public class AlignToPose extends Command {
       targetThetaVelocity = 0;
     }
 
+    approachSetpointPositionPublisher.set(approachPidController.getSetpoint().position);
+    approachSetpointVelocityPublisher.set(approachPidController.getSetpoint().velocity);
+    distancePublisher.set(distanceToTarget);
+
     // Publish telemetry
     thetaOutputPublisher.set(targetThetaVelocity);
     approachOutputPublisher.set(targetApproachVelocity);
     strafeOutputPublisher.set(targetStrafeVelocity);
 
     // Convert to field velocities
-    Rotation2d angleToTarget = WafflesUtilities.AngleBetweenPoints(currentPose.getTranslation(), targetPose.getTranslation());
     Translation2d targetFieldVelocity = new Translation2d(targetApproachVelocity, targetStrafeVelocity).rotateBy(angleToTarget); 
 
     // Reset motion profiling if strafing fast enough

@@ -536,13 +536,13 @@ public class Lights extends SubsystemBase {
    */
   private void handleAutomaticElevatorLights() {
     if (RobotContainer.isHeadingLockedToL1.getAsBoolean()) {
-      setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.ORANGE, LightColours.WHITE, true);
-      setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.ORANGE, LightColours.WHITE, true);
+      setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.ORANGE, LightColours.BLACK, true);
+      setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.ORANGE, LightColours.BLACK, true);
       return; 
     }
     if (RobotContainer.sharkIntake.isCoralLoaded()) {
-      setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.GREEN, LightColours.WHITE, false);
-      setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.GREEN, LightColours.WHITE, false);
+      setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.GREEN, LightColours.BLACK, false);
+      setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.GREEN, LightColours.BLACK, false);
       return;
     } 
     if (RobotContainer.sharkPivot.getSharkSetpoint() > SharkPivotPosition.L1.getDegrees()) {

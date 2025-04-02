@@ -23,7 +23,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.CodeConstants;
-import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.SharkPivotConstants;
 import frc.robot.data.Constants.SharkPivotConstants.SharkPivotPosition;
 import frc.robot.utils.NetworkUser;

@@ -10,7 +10,9 @@ import java.util.HashSet;
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.networktables.DoublePublisher;
@@ -21,11 +23,13 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
@@ -34,10 +38,52 @@ import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.subsystems.DynamicPathing;
 import frc.robot.commands.AlignToPose;
 import frc.robot.commands.intake.CoralOutake;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.scoring.PickupAlgae;
 
 public class ScoreCoral extends SequentialCommandGroup {
+  /** A collection of scoring parameters */
+  public record CoralScoringParameters(
+    double maxVelocity,
+    Rotation2d maxThetaVelocity,
+
+    double maxDistanceX,
+    double maxDistanceY,
+    Rotation2d maxThetaDifference
+  ) {}
+
+  public static final CoralScoringParameters L4Params = new CoralScoringParameters(
+    0.08, 
+    Rotation2d.fromDegrees(1), 
+    0.01, 
+    0.04, 
+    Rotation2d.fromDegrees(2)
+  );
+
+  public static final CoralScoringParameters L3Params = new CoralScoringParameters(
+    0.08, 
+    Rotation2d.fromDegrees(1), 
+    0.01, 
+    0.04, 
+    Rotation2d.fromDegrees(2)
+  );
+
+  public static final CoralScoringParameters L2Params = new CoralScoringParameters(
+    0.08, 
+    Rotation2d.fromDegrees(1), 
+    0.01, 
+    0.04, 
+    Rotation2d.fromDegrees(2)
+  );
+
+  public static final CoralScoringParameters L1Params = new CoralScoringParameters(
+    0.08, 
+    Rotation2d.fromDegrees(1), 
+    0.01, 
+    0.04, 
+    Rotation2d.fromDegrees(2)
+  );
+
+
   private static final double waitBeforeScoreL4 = 0.1;
   // All scoring commands require these subsystems
   public static final HashSet<Subsystem> commandRequirements = new HashSet<>(Arrays.asList(
@@ -72,30 +118,47 @@ public class ScoreCoral extends SequentialCommandGroup {
       SmartDashboard.putBoolean("ScoreCoralInProgress", false);
     });
 
+    // The parameter set for the current level
+    // Fix later
+    CoralScoringParameters chosenParameters = L4Params;
+
+    // Once this becomes true, release coral
+    Trigger scoreTrigger = new Trigger(() -> {
+      Pose2d errorPose = RobotContainer.driveSubsystem.getRobotPose().relativeTo(finalAlignPose);
+      ChassisSpeeds currentSpeeds = RobotContainer.driveSubsystem.getRobotChassisSpeeds();
+      double velocityMagnitude = Math.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
+      
+      boolean poseValid = 
+        Math.abs(errorPose.getX()) <= chosenParameters.maxDistanceX &&
+        Math.abs(errorPose.getY()) <= chosenParameters.maxDistanceY && 
+        Math.abs(errorPose.getRotation().getDegrees()) <= chosenParameters.maxThetaDifference.getDegrees();
+      boolean velocityValid = 
+        velocityMagnitude <= chosenParameters.maxVelocity &&
+        currentSpeeds.omegaRadiansPerSecond <= chosenParameters.maxThetaVelocity.getRadians();
+
+      SmartDashboard.putNumber("XVEL", errorPose.getX());
+      SmartDashboard.putNumber("YVEL", errorPose.getY());
+
+      return poseValid && velocityValid;
+    });
+
     addCommands(
       // Start timing
       startTimingCommand,
       
       // Main scoring sequence
-      new ParallelCommandGroup(
-        pathingSubsystem.wrapPathingCommand(
-          new SequentialCommandGroup(
-            driveCommand,
-            new AlignToPose(finalAlignPose, maxSpeed, 0, false)
-          )
-        ),
-        new PrepareScoreCoral()
-      ),
-      
-      new ParallelRaceGroup(
+      new ParallelDeadlineGroup(
         new SequentialCommandGroup(
           // Wait until doNotScore is released
-          new WaitUntilCommand(() -> !Controls.doNotScore.getAsBoolean()),
+          new WaitUntilCommand(() -> !Controls.doNotScore.getAsBoolean() && scoreTrigger.getAsBoolean()),
           
           // Outake the coral
           new CoralOutake()
         ),
-        new AlignToPose(finalAlignPose, maxSpeed, Double.MAX_VALUE)
+        pathingSubsystem.wrapPathingCommand(
+          new AlignToPose(finalAlignPose)
+        ),
+        new PrepareScoreCoral()
       ),
       
       // End timing
