@@ -84,15 +84,20 @@ public class SuperstructureControl {
         return new FunctionalCommand(
             () -> {}, 
             () -> {
-                RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.L2);
-                RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.ZERO);
+                if (RobotContainer.intakeSubsystem.isCoralLoaded()) {
+                    RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.L2);
+                    RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.ZERO);
+                }
             }, 
             (interrupted) -> {
+                if (interrupted) {
+                    return;
+                }
                 RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.L4);
                 RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
             },
             () -> DynamicPathing.isElevatorL4Ready(), 
             RobotContainer.elevatorSubsystem
-        );
+        ).withTimeout(2);
     }
 }

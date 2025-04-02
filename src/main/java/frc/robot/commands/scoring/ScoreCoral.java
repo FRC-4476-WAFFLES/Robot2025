@@ -246,6 +246,9 @@ public class ScoreCoral extends SequentialCommandGroup {
    * @return The command to score coral
    */
   public static Command scoreCoralWithSettings(ScoringLevel level, boolean rightSide) {
+    if (!RobotContainer.intakeSubsystem.isCoralLoaded()) {
+      return new InstantCommand();
+    }
     RobotContainer.dynamicPathingSubsystem.setCoralScoringLevel(level);
     RobotContainer.dynamicPathingSubsystem.setCoralScoringSide(rightSide);
     Pose2d targetCoralPose = RobotContainer.dynamicPathingSubsystem.getNearestCoralScoringLocation();

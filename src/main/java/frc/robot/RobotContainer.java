@@ -379,7 +379,12 @@ public class RobotContainer {
       new SetPivotPos(PivotPosition.L1)
     ));
     // SCUFFED
-    NamedCommands.registerCommand("Set Position L2", SuperstructureControl.L4ScorePrepCommand());
+    NamedCommands.registerCommand("Set Position L2", 
+      Commands.deadline(
+        SuperstructureControl.L4ScorePrepCommand(),
+        new CoralIntake().onlyIf(() -> !intakeSubsystem.isCoralLoaded())
+      )
+      );
 
     NamedCommands.registerCommand("Set Position L3", Commands.parallel(
       new SetElevatorPos(ElevatorLevel.L3),
