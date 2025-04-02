@@ -59,7 +59,6 @@ public class AutoIntake {
                 });
 
                 return Commands.deadline(
-                    new WaitCommand(0.5),
                     new CoralIntake(),
                     new AlignToPose(chosenStationPose),
                     new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
