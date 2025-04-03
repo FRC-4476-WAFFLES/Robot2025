@@ -54,7 +54,7 @@ public class ScoreCoral extends SequentialCommandGroup {
   public static final CoralScoringParameters L4Params = new CoralScoringParameters(
     0.08, 
     Rotation2d.fromDegrees(1), 
-    0.01, 
+    0.05, 
     0.04, 
     Rotation2d.fromDegrees(2)
   );
@@ -62,7 +62,7 @@ public class ScoreCoral extends SequentialCommandGroup {
   public static final CoralScoringParameters L3Params = new CoralScoringParameters(
     0.08, 
     Rotation2d.fromDegrees(1), 
-    0.01, 
+    0.05, 
     0.04, 
     Rotation2d.fromDegrees(2)
   );
@@ -120,7 +120,13 @@ public class ScoreCoral extends SequentialCommandGroup {
 
     // The parameter set for the current level
     // Fix later
-    CoralScoringParameters chosenParameters = L4Params;
+    CoralScoringParameters chosenParameters;
+    if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4) {
+      chosenParameters = L4Params;
+    } else {
+      chosenParameters = L3Params;
+    }
+    
 
     // Once this becomes true, release coral
     Trigger scoreTrigger = new Trigger(() -> {

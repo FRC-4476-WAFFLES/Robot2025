@@ -381,8 +381,8 @@ public class RobotContainer {
     // SCUFFED
     NamedCommands.registerCommand("Set Position L2", 
       Commands.deadline(
-        SuperstructureControl.L4ScorePrepCommand(),
-        new CoralIntake().onlyIf(() -> !intakeSubsystem.isCoralLoaded())
+        SuperstructureControl.L4ScorePrepCommand()
+        // new CoralIntake().onlyIf(() -> !intakeSubsystem.isCoralLoaded())
       )
       );
 

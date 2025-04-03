@@ -188,8 +188,8 @@ public final class Constants {
 
     // Intake constantsd
     public static final double CORAL_INTAKE_SPEED = -5; // Rps
-    public static final double ALGAE_HOLD_SPEED = 1.6; // Speed to hold algae in place
-    public static final double ALGAE_INTAKE_SPEED = 30;
+    public static final double ALGAE_HOLD_SPEED = 4; // Speed to hold algae in place
+    public static final double ALGAE_INTAKE_SPEED = 40;
     public static final double FAST_CORAL_INTAKE_SPEED = -10;
 
     // Pivot constants
@@ -295,8 +295,8 @@ public final class Constants {
     public enum ElevatorLevel {
       REST_POSITION(0.0),
       NET(1.50),
-      ALGAE_L2(0.9),
-      ALGAE_L1(0.56),
+      ALGAE_L2(0.88),
+      ALGAE_L1(0.54),
       PROCESSOR(0.135),
       L4(1.50),
       L3(0.84),
