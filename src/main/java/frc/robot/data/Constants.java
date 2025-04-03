@@ -181,15 +181,15 @@ public final class Constants {
   public static class ManipulatorConstants {
     // Detection thresholds
     public static final double CORAL_LOADED_DISTANCE_THRESHOLD = 22.0; // mm
-    public static final double ALGAE_CURRENT_THRESHOLD = 47.0; // amps
+    public static final double ALGAE_CURRENT_THRESHOLD = 60.0; // amps
     public static final double ZERO_DEBOUNCE_TIME = 0.2;
     public static final double ZEROING_SPEED = -0.065; // Slow inwards speed
-    public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.2; // 100ms debounce time
+    public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.4; // 100ms debounce time
 
     // Intake constantsd
     public static final double CORAL_INTAKE_SPEED = -5; // Rps
-    public static final double ALGAE_HOLD_SPEED = 4; // Speed to hold algae in place
-    public static final double ALGAE_INTAKE_SPEED = 40;
+    public static final double ALGAE_HOLD_SPEED = 30; // Speed to hold algae in place
+    public static final double ALGAE_INTAKE_SPEED = 120;
     public static final double FAST_CORAL_INTAKE_SPEED = -10;
 
     // Pivot constants
@@ -222,7 +222,7 @@ public final class Constants {
     public enum PivotPosition {
         ZERO(0),
         CLEARANCE_POSITION(35),
-        CLEARANCE_POSITION_ALGAE(96),
+        CLEARANCE_POSITION_ALGAE(106),
         ALGAE_L2(178.5),
         ALGAE_L1(178.5),
         PROCESSOR(189),

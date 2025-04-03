@@ -53,6 +53,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private boolean noAlgaeFlag = false;
     private boolean algaeLoaded = false;
 
+    private double dutyCycle = 0;
     private Timer algaeLossTimer = new Timer();
 
     private Trigger algaeDetectionTrigger;
@@ -119,7 +120,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private void configureIntakeMotor() {
         TalonFXConfiguration intakeConfigs = new TalonFXConfiguration();
         CurrentLimitsConfigs intakeCurrentLimit = new CurrentLimitsConfigs()
-            .withStatorCurrentLimit(Constants.ManipulatorConstants.STATOR_CURRENT_LIMIT)
+            .withStatorCurrentLimit(80)
             .withStatorCurrentLimitEnable(true);
 
 
@@ -167,31 +168,36 @@ public class Intake extends SubsystemBase implements NetworkUser{
             System.out.print("===============\nLost Algae Detected.");
         }
 
-        if (!usePositionControl) {
-            if (Math.abs(intakeSpeed) < 0.01 && isAlgaeLoaded()) {
-                // When algae is loaded, run intake slowly inward
-                intake.setControl(intakeControlRequest.withVelocity(Constants.ManipulatorConstants.ALGAE_HOLD_SPEED).withSlot(0));
-
-                if (intake.getStatorCurrent().getValueAsDouble() < 4) {
-                    intake.setControl(intakeControlRequest.withVelocity(-120).withSlot(0));
-                    
-                    if (!algaeLossTimer.isRunning()) {
-                        algaeLossTimer.reset();
-                        algaeLossTimer.start();
-                    }
-                }
-            } else if (Math.abs(intakeSpeed) < 0.01 && isCoralLoaded()) {
-                intake.setControl(intakePositionRequest.withOutput(0));
-            } else {
-                intake.setControl(intakeControlRequest.withVelocity(intakeSpeed).withSlot(0));
-            }
+        if (Math.abs(dutyCycle) > 0.01) {
+            intake.set(dutyCycle);
+            
         } else {
-            // Use position control
-            intake.setControl(intakePositionControlRequest.withPosition(targetPosition));
+            if (!usePositionControl) {
+                if (Math.abs(intakeSpeed) < 0.01 && isAlgaeLoaded()) {
+                    // When algae is loaded, run intake slowly inward
+                    intake.setControl(intakeControlRequest.withVelocity(Constants.ManipulatorConstants.ALGAE_HOLD_SPEED).withSlot(0));
 
-            // Auto disable position control once at setpoint & not moving
-            if (isAtTargetPosition() && isIntakeStopped()) {
-                usePositionControl = false;
+                    if (intake.getStatorCurrent().getValueAsDouble() < 4) {
+                        intake.setControl(intakeControlRequest.withVelocity(-120).withSlot(0));
+                        
+                        if (!algaeLossTimer.isRunning()) {
+                            algaeLossTimer.reset();
+                            algaeLossTimer.start();
+                        }
+                    }
+                } else if (Math.abs(intakeSpeed) < 0.01 && isCoralLoaded()) {
+                    intake.setControl(intakePositionRequest.withOutput(0));
+                } else {
+                    intake.setControl(intakeControlRequest.withVelocity(intakeSpeed).withSlot(0));
+                }
+            } else {
+                // Use position control
+                intake.setControl(intakePositionControlRequest.withPosition(targetPosition));
+
+                // Auto disable position control once at setpoint & not moving
+                if (isAtTargetPosition() && isIntakeStopped()) {
+                    usePositionControl = false;
+                }
             }
         }
 
@@ -343,5 +349,12 @@ public class Intake extends SubsystemBase implements NetworkUser{
      */
     public void setPositionControlFlag(boolean positionControl) {
         usePositionControl = positionControl;
+    }
+
+    /*
+     * 
+     */
+    public void setDutyCycle(double dutyCycleval) {
+        dutyCycle = dutyCycleval;
     }
 }

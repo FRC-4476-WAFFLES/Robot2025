@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 3.705,
-        "y": 5.077999999999999
+        "x": 3.55875,
+        "y": 5.34125
       },
       "prevControl": {
-        "x": 3.24796875,
-        "y": 5.65255357142857
+        "x": 3.10171875,
+        "y": 5.915803571428571
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Post 7"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -41,8 +41,8 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0.0,
-    "rotation": 125.00000000000001
+    "velocity": 0.4,
+    "rotation": -60.25511870305781
   },
   "reversed": false,
   "folder": null,

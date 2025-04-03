@@ -41,9 +41,9 @@ public class ScoreNet {
                 // Run intake in during NET_PREP position
                 Commands.parallel(
                     new ApplyScoringSetpoint(ScoringLevel.NET_PREP)
-                    // Commands.runOnce(() -> RobotContainer.intakeSubsystem.setIntakeSpeed(ManipulatorConstants.ALGAE_INTAKE_SPEED))
                 ),
                 Commands.runOnce(() -> RobotContainer.pivotSubsystem.setIsThrowingAlgae(true)),
+                Commands.runOnce(() -> RobotContainer.intakeSubsystem.setIntakeSpeed(0)),
                 Commands.waitSeconds(0.2),
                 algaeToss()
             )
@@ -53,6 +53,7 @@ public class ScoreNet {
 
             RobotContainer.pivotSubsystem.setIsThrowingAlgae(false);
             RobotContainer.intakeSubsystem.setIntakeSpeed(0); // Ensure intake is stopped
+            RobotContainer.intakeSubsystem.setDutyCycle(0);
         });
     }
 
@@ -70,7 +71,7 @@ public class ScoreNet {
                     Commands.waitUntil(() ->   
                         RobotContainer.pivotSubsystem.getPivotPosition() <= ScoringConstants.ALGAE_TOSS_PIVOT_ANGLE
                     ),
-                    Commands.runOnce(() -> {RobotContainer.intakeSubsystem.setIntakeSpeed(-120);}),
+                    Commands.runOnce(() -> {RobotContainer.intakeSubsystem.setDutyCycle(-1);}),
                     Commands.waitSeconds(0.5)
                 ).finallyDo(() -> {
                     RobotContainer.intakeSubsystem.setIntakeSpeed(0);
