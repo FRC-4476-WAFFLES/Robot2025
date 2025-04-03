@@ -92,8 +92,8 @@ public class RobotContainer {
   );
 
   /* Global Robot State */
-  private final SendableChooser<Command> autoChooser;
-  private final SendableChooser<Command> testChooser;
+  private SendableChooser<Command> autoChooser;
+  private  SendableChooser<Command> testChooser;
   public static boolean isOperatorOverride = false;
   public static boolean isRunningL1Intake = false;
 
@@ -105,7 +105,7 @@ public class RobotContainer {
     configureBindings();
 
     // Swerve telemetry from odometry thread
-    driveSubsystem.registerTelemetry(telemetry::telemeterize);
+    // driveSubsystem.registerTelemetry(telemetry::telemeterize);
     driveSubsystem.setDefaultCommand(new DriveTeleop(
       Controls::getDriveY,
       Controls::getDriveX,

@@ -184,7 +184,7 @@ public final class Constants {
     public static final double ALGAE_CURRENT_THRESHOLD = 60.0; // amps
     public static final double ZERO_DEBOUNCE_TIME = 0.2;
     public static final double ZEROING_SPEED = -0.065; // Slow inwards speed
-    public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.4; // 100ms debounce time
+    public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.3; // 100ms debounce time
 
     // Intake constantsd
     public static final double CORAL_INTAKE_SPEED = -5; // Rps
@@ -227,7 +227,7 @@ public final class Constants {
         ALGAE_L1(178.5),
         PROCESSOR(189),
         SPIT_ALGAE(140),
-        CORAL_INTAKE(1),
+        CORAL_INTAKE(2.6),
         NET(100),
         L4(66),
         L3(34),
@@ -351,7 +351,7 @@ public final class Constants {
     public enum SharkPivotPosition {
       STOWED(0.0),
       DEPLOYED(138.0),
-      L1(33);
+      L1(30);
 
       private final double degrees;
 
@@ -374,7 +374,7 @@ public final class Constants {
     public static final double kS = 0.0;
 
     public static final double CORAL_CURRENT_THRESHOLD = 24.0; // amps
-    public static final double CORAL_EJECT_VELOCITY_THRESHOLD = -2; // rps
+    public static final double CORAL_EJECT_VELOCITY_THRESHOLD = -1.5; // rps
 
     public static final double STATOR_CURRENT_LIMIT = 60;
   }

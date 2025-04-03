@@ -72,7 +72,7 @@ public class DynamicPathing extends SubsystemBase {
     public static final double REEF_SCORING_POSITION_OFFSET = PhysicalConstants.withBumperBotHalfWidth + 0.12; 
     public static final double REEF_SCORING_POSITION_OFFSET_L1 = PhysicalConstants.withBumperBotHalfWidth + 0.37; 
     public static final double REEF_SCORING_POSITION_OFFSET_L4 = PhysicalConstants.withBumperBotHalfWidth + 0.015; 
-    public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE = PhysicalConstants.withBumperBotHalfWidth + 0.03; 
+    public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE = PhysicalConstants.withBumperBotHalfWidth + 0.015; 
     public static final double REEF_ALGAE_SAFETY_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 0.35;
     public static final double REEF_ELEVATOR_RETRACTION_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 0.24;
     public static final double L4_ELEVATOR_DEPLOY_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 1.1;
@@ -775,7 +775,7 @@ public class DynamicPathing extends SubsystemBase {
             }
         }
         
-        var backOffPath = DynamicPathing.generateComplexPath(targetAlgaePose, null, clearancePose);
+        var backOffPath = DynamicPathing.generateComplexPath(targetAlgaePose, null, clearancePose, 0.2);
         
         if (backOffPath.isPresent()) {
             // Generate final back off path

@@ -23,6 +23,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
@@ -307,7 +308,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
         // Flush networktables explicitly once to avoid network latency
         // Do not flush once per limelight, since flushing NT is ratelimited to once every 10ms
         // With one or more cameras each flushing periodically, you start seeing loop overruns
-        LimelightHelpers.Flush();
+        NetworkTableInstance.getDefault().flushLocal();
 
 
 

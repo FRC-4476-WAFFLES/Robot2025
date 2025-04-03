@@ -34,8 +34,8 @@ public class CoralIntake extends Command {
     hasDetectedCoral = false;
     
     // Set pivot manipulator motor to coast mode and disable PID
-    RobotContainer.pivotSubsystem.setNeutralMode(NeutralModeValue.Coast);
-    RobotContainer.pivotSubsystem.setPIDEnabled(false);
+    // RobotContainer.pivotSubsystem.setNeutralMode(NeutralModeValue.Coast);
+    // RobotContainer.pivotSubsystem.setPIDEnabled(false);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -66,8 +66,8 @@ public class CoralIntake extends Command {
     RobotContainer.lightsSubsystem.setCoralIntakeRunning(false);
     
     // Set pivot manipulator motor back to brake mode and re-enable PID
-    RobotContainer.pivotSubsystem.setNeutralMode(NeutralModeValue.Brake);
-    RobotContainer.pivotSubsystem.setPIDEnabled(true);
+    // RobotContainer.pivotSubsystem.setNeutralMode(NeutralModeValue.Brake);
+    // RobotContainer.pivotSubsystem.setPIDEnabled(true);
   }
 
   // Returns true when the command should end.

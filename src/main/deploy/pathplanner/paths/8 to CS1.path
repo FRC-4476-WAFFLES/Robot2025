@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.85125,
-        "y": 5.507000000000001
+        "x": 3.9,
+        "y": 5.5264999999999995
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.58846817594746,
-        "y": 6.659510658993445
+        "x": 2.63721817594746,
+        "y": 6.679010658993444
       },
       "isLocked": false,
       "linkedName": "Post 8"
@@ -41,7 +41,7 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0.0,
+    "velocity": 0.6,
     "rotation": -53.426969021480716
   },
   "reversed": false,
