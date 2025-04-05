@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.50025,
-        "y": 5.26325
+        "x": 3.6608851602759143,
+        "y": 5.1192471564870115
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.7290307713634077,
-        "y": 6.122875192090223
+        "x": 2.889665931639322,
+        "y": 5.978872348577234
       },
       "isLocked": false,
-      "linkedName": "Post 7"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.95,
-        "y": 7.03775
+        "x": 1.7216307465952598,
+        "y": 7.31711814824549
       },
       "prevControl": {
-        "x": 2.6798428136131056,
-        "y": 6.225381945888598
+        "x": 2.4514735602083655,
+        "y": 6.504750094134089
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "CS1"
     }
   ],
   "rotationTargets": [],
@@ -48,7 +48,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -60.75117366345309
+    "rotation": -59.920275974857354
   },
   "useDefaultConstraints": true
 }

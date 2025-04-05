@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 5.6745,
-        "y": 5.117
+        "x": 5.3276605897900025,
+        "y": 5.139198302894463
       },
       "prevControl": {
-        "x": 5.99625,
-        "y": 5.06825
+        "x": 5.649410589790002,
+        "y": 5.090448302894463
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0.5,
-    "rotation": -119.99999999999999
+    "rotation": -120.96375653207346
   },
   "reversed": false,
   "folder": "US3 to Reef",

@@ -105,7 +105,7 @@ public class RobotContainer {
     configureBindings();
 
     // Swerve telemetry from odometry thread
-    // driveSubsystem.registerTelemetry(telemetry::telemeterize);
+    driveSubsystem.registerTelemetry(telemetry::telemeterize);
     driveSubsystem.setDefaultCommand(new DriveTeleop(
       Controls::getDriveY,
       Controls::getDriveX,

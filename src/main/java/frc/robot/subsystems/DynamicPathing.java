@@ -337,7 +337,7 @@ public class DynamicPathing extends SubsystemBase {
     public void setCoralScoringSide(boolean rightSide) {
         if (coralScoringRightSide != rightSide) {
             coralScoringRightSide = rightSide;
-            System.out.println("Setting coral scoring to right side: " + coralScoringRightSide);
+            //System.out.println("Setting coral scoring to right side: " + coralScoringRightSide);
             // If we're currently pathing, regenerate the path
             if (isRunningAction && currentPathingSituation == DynamicPathingSituation.REEF_CORAL) {
                 regenerateCurrentCoralPath();
@@ -372,11 +372,11 @@ public class DynamicPathing extends SubsystemBase {
         // If switching to L1 from something else, or from L1 to something else while pathing, regenerate
         if (isPathing && currentPathingSituation == DynamicPathingSituation.REEF_CORAL && (level == ScoringLevel.L1 || coralScoringLevel == ScoringLevel.L1)) {
             regenerateCurrentCoralPath();
-            System.out.println("Regenerating path to go to L1");
+            //System.out.println("Regenerating path to go to L1");
         }
 
         coralScoringLevel = level;
-        System.out.println("Setting coral scoring sevel to: " + coralScoringLevel);
+        //System.out.println("Setting coral scoring sevel to: " + coralScoringLevel);
     }
 
     /**

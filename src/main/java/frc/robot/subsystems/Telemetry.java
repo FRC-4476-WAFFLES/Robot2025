@@ -201,14 +201,15 @@ public class Telemetry extends SubsystemBase {
         odomFreq.set(1.0 / state.OdometryPeriod);
 
         /* Telemeterize the module's states */
-        for (int i = 0; i < 4; ++i) {
-            m_moduleSpeeds[i].setAngle(state.ModuleStates[i].angle);
-            m_moduleDirections[i].setAngle(state.ModuleStates[i].angle);
-            m_moduleSpeeds[i].setLength(state.ModuleStates[i].speedMetersPerSecond / (2 * MaxSpeed));
+        // for (int i = 0; i < 4; ++i) {
+        //     m_moduleSpeeds[i].setAngle(state.ModuleStates[i].angle);
+        //     m_moduleDirections[i].setAngle(state.ModuleStates[i].angle);
+        //     m_moduleSpeeds[i].setLength(state.ModuleStates[i].speedMetersPerSecond / (2 * MaxSpeed));
 
-            SmartDashboard.putData("Module " + i, m_moduleMechanisms[i]);
-        }
+        //     SmartDashboard.putData("Module " + i, m_moduleMechanisms[i]);
+        // }
 
+        // Log individual module states
         driveSpeed.set(state.ModuleStates[0].speedMetersPerSecond);
         anglePos.set(state.ModuleStates[0].angle.getDegrees());
         driveSetpoint.set(state.ModuleTargets[0].speedMetersPerSecond);

@@ -112,7 +112,7 @@ public class VisionHelpers {
         if (numTags == 1 && avgDist > 5)
             estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
         else
-            estStdDevs = estStdDevs.times(1 + (avgDist * avgDist * 4));
+            estStdDevs = estStdDevs.times(1 + (avgDist * avgDist * 5));
 
         return estStdDevs;
     }

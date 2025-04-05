@@ -85,7 +85,7 @@ public final class Constants {
     public static final Matrix<N3, N1> kSingleTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 4);
     public static final Matrix<N3, N1> kMultiTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 3);
 
-    public static final Matrix<N3, N1> kStdDevsMT2ReefTargeting = VecBuilder.fill(0.008,0.008, Double.MAX_VALUE);
+    public static final Matrix<N3, N1> kStdDevsMT2ReefTargeting = VecBuilder.fill(0.01,0.01, Double.MAX_VALUE);
     public static final Matrix<N3, N1> kStdDevsMT2 = VecBuilder.fill(0.25,0.25, Double.MAX_VALUE);
 
     // Reject mt1 poses if further than this from current estimate, removes ambiguity noise
@@ -228,7 +228,7 @@ public final class Constants {
         PROCESSOR(189),
         SPIT_ALGAE(140),
         CORAL_INTAKE(2.6),
-        NET(100),
+        NET(98),
         L4(66),
         L3(34),
         L2(34),
@@ -374,7 +374,7 @@ public final class Constants {
     public static final double kS = 0.0;
 
     public static final double CORAL_CURRENT_THRESHOLD = 24.0; // amps
-    public static final double CORAL_EJECT_VELOCITY_THRESHOLD = -1.5; // rps
+    public static final double CORAL_EJECT_VELOCITY_THRESHOLD = -1.6; // rps
 
     public static final double STATOR_CURRENT_LIMIT = 60;
   }
