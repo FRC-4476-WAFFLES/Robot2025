@@ -312,7 +312,7 @@ public class Lights extends SubsystemBase {
    */
   private void handleEnabledState() {
     // Make sure no animations are running
-    clearHardwareAnimations();
+    // clearHardwareAnimations();
     
     // Update elevator side lights
     if (!RobotContainer.isOperatorOverride) {

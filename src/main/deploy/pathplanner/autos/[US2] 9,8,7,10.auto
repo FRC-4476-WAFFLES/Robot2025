@@ -5,19 +5,13 @@
     "data": {
       "commands": [
         {
-          "type": "path",
-          "data": {
-            "pathName": "[US2] Push"
-          }
-        },
-        {
           "type": "parallel",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "[US2] Push to 9"
+                  "pathName": "US2 to 9"
                 }
               },
               {
@@ -167,7 +161,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "CS1 to 6"
+                  "pathName": "CS1 to 10"
                 }
               },
               {
@@ -182,13 +176,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Autoscore L4 Left"
+            "name": "Autoscore L4 Right"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Push",
+  "folder": "Four Piece",
   "choreoAuto": false
 }

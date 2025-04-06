@@ -165,7 +165,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
             algaeLossTimer.stop();
             algaeLossTimer.reset();
 
-            System.out.print("===============\nLost Algae Detected.");
+            //System.out.print("===============\nLost Algae Detected.");
         }
 
         if (Math.abs(dutyCycle) > 0.01) {

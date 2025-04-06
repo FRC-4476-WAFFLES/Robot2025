@@ -308,7 +308,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
         // Flush networktables explicitly once to avoid network latency
         // Do not flush once per limelight, since flushing NT is ratelimited to once every 10ms
         // With one or more cameras each flushing periodically, you start seeing loop overruns
-        NetworkTableInstance.getDefault().flushLocal();
+        NetworkTableInstance.getDefault().flush();
 
 
 
