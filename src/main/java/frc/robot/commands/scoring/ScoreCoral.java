@@ -60,10 +60,10 @@ public class ScoreCoral extends SequentialCommandGroup {
   );
 
   public static final CoralScoringParameters L3Params = new CoralScoringParameters(
-    0.08, 
-    Rotation2d.fromDegrees(1), 
     0.05, 
-    0.04, 
+    Rotation2d.fromDegrees(1), 
+    0.03, 
+    0.03, 
     Rotation2d.fromDegrees(2)
   );
 
