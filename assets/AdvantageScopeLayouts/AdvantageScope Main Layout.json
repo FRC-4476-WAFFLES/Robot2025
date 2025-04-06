@@ -7,23 +7,28 @@
       "height": 866,
       "state": {
         "sidebar": {
-          "width": 358,
+          "width": 500,
           "expanded": [
-            "/Intake",
             "/Mechanism",
             "/Mechanism/elevatorFirstStagePose",
             "/Mechanism/pivotPose",
             "/Pose/robotPose",
-            "/Mechanism3d",
-            "/Pose",
-            "/SmartDashboard",
             "/SmartDashboard/LL Pose MT1",
             "/SmartDashboard/LL Pose MT2",
-            "/SmartDashboard/TargetPose Reef"
+            "/NT/limelight-right/imu",
+            "/NT/limelight-right/hw",
+            "/NT/limelight-left/imu",
+            "/WheelRadiusTest",
+            "/BuildInfo",
+            "/limelight-right/imu",
+            "/AlignmentMetrics",
+            "/DS",
+            "/Elevator",
+            "/SmartDashboard"
           ]
         },
         "tabs": {
-          "selected": 6,
+          "selected": 9,
           "tabs": [
             {
               "type": 0,
@@ -55,13 +60,24 @@
               },
               "controllerUUID": "mhsi2oapve9yr8js8h0894adeqyjwn8y",
               "renderer": null,
-              "controlsHeight": 200
+              "controlsHeight": 224
             },
             {
               "type": 1,
               "title": "Line Graph",
               "controller": {
-                "leftSources": [],
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/SoftwareInfo/Loop Time (ms)",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  }
+                ],
                 "rightSources": [],
                 "discreteSources": [],
                 "leftLockedRange": null,
@@ -82,6 +98,53 @@
               "controlsHeight": 200
             },
             {
+              "type": 5,
+              "title": "Console",
+              "controller": "console",
+              "controllerUUID": "1wsgxd26yclmidw95ju3ozg5edvrvkw9",
+              "renderer": {
+                "highlight": false
+              },
+              "controlsHeight": 0
+            },
+            {
+              "type": 3,
+              "title": "Alignment POV",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "robotLegacy",
+                    "logKey": "NT:/Pose/robotPose",
+                    "logType": "NumberArray",
+                    "visible": true,
+                    "options": {
+                      "model": "AlexStatic",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  }
+                ],
+                "game": "2025 Field (Welded)",
+                "origin": "blue"
+              },
+              "controllerUUID": "s9jj2c0rtopc37733i57n6lhr5vpxn67",
+              "renderer": {
+                "cameraIndex": 0,
+                "orbitFov": 50,
+                "cameraPosition": [
+                  -3.905505755468894,
+                  0.4999999999999987,
+                  -2.6200150638129585
+                ],
+                "cameraTarget": [
+                  -4.640352613528475,
+                  0.4999999999999991,
+                  -1.9417819953180921
+                ]
+              },
+              "controlsHeight": 200
+            },
+            {
               "type": 2,
               "title": "Odometry",
               "controller": {
@@ -98,7 +161,7 @@
                   },
                   {
                     "type": "ghostLegacy",
-                    "logKey": "NT:/SmartDashboard/LL Pose MT1",
+                    "logKey": "NT:/SmartDashboard/limelight-left Pose MT2 ",
                     "logType": "NumberArray",
                     "visible": true,
                     "options": {
@@ -109,7 +172,60 @@
                   },
                   {
                     "type": "ghostLegacy",
-                    "logKey": "NT:/SmartDashboard/LL Pose MT2",
+                    "logKey": "NT:/SmartDashboard/limelight-right Pose MT2 ",
+                    "logType": "NumberArray",
+                    "visible": true,
+                    "options": {
+                      "color": "#ffff00",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  },
+                  {
+                    "type": "ghostLegacy",
+                    "logKey": "NT:/SmartDashboard/limelight-right Pose MT1",
+                    "logType": "NumberArray",
+                    "visible": false,
+                    "options": {
+                      "color": "#ff8c00",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  },
+                  {
+                    "type": "ghostLegacy",
+                    "logKey": "NT:/SmartDashboard/limelight-left Pose MT1",
+                    "logType": "NumberArray",
+                    "visible": false,
+                    "options": {
+                      "color": "#0000ff",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  },
+                  {
+                    "type": "heatmapLegacy",
+                    "logKey": "/Pose/robotPose",
+                    "logType": "NumberArray",
+                    "visible": false,
+                    "options": {
+                      "timeRange": "enabled",
+                      "format": "Pose2d"
+                    }
+                  },
+                  {
+                    "type": "trajectory",
+                    "logKey": "NT:/PathPlanner/activePath",
+                    "logType": "Pose2d[]",
+                    "visible": false,
+                    "options": {
+                      "color": "#00ff00",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "ghostLegacy",
+                    "logKey": "/SmartDashboard/TargetPose Reef",
                     "logType": "NumberArray",
                     "visible": true,
                     "options": {
@@ -127,56 +243,7 @@
               },
               "controllerUUID": "zu1p67196hex4mt4p78e20uijgzrpxff",
               "renderer": null,
-              "controlsHeight": 200
-            },
-            {
-              "type": 3,
-              "title": "Alignment POV",
-              "controller": {
-                "sources": [
-                  {
-                    "type": "robotLegacy",
-                    "logKey": "NT:/Pose/robotPose",
-                    "logType": "NumberArray",
-                    "visible": true,
-                    "options": {
-                      "model": "AlexStatic",
-                      "format": "Pose2d",
-                      "units": "degrees"
-                    }
-                  },
-                  {
-                    "type": "ghostLegacy",
-                    "logKey": "NT:/SmartDashboard/LL Pose MT2",
-                    "logType": "NumberArray",
-                    "visible": false,
-                    "options": {
-                      "model": "AlexStatic",
-                      "color": "#0000ff",
-                      "format": "Pose2d",
-                      "units": "degrees"
-                    }
-                  }
-                ],
-                "game": "2025 Field (Welded)",
-                "origin": "blue"
-              },
-              "controllerUUID": "s9jj2c0rtopc37733i57n6lhr5vpxn67",
-              "renderer": {
-                "cameraIndex": 0,
-                "orbitFov": 50,
-                "cameraPosition": [
-                  -6.201314821041697,
-                  0.5000000000000002,
-                  0.15916389044930693
-                ],
-                "cameraTarget": [
-                  -5.201385348775629,
-                  0.5000000000000001,
-                  0.17104035851447313
-                ]
-              },
-              "controlsHeight": 200
+              "controlsHeight": 240
             },
             {
               "type": 3,
@@ -203,9 +270,9 @@
                 "cameraIndex": -3,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  -10.28116,
-                  1.5748000000000002,
-                  -1.88861845282827e-15
+                  -10.249862583432362,
+                  1.574800000000001,
+                  2.1272658811792797
                 ],
                 "cameraTarget": [
                   0,
@@ -251,13 +318,6 @@
                     "logType": "Pose3d",
                     "visible": true,
                     "options": {}
-                  },
-                  {
-                    "type": "component",
-                    "logKey": "NT:/Mechanism3d/elevatorCarriage",
-                    "logType": "Pose3d",
-                    "visible": true,
-                    "options": {}
                   }
                 ],
                 "game": "2025 Field (Welded)",
@@ -268,17 +328,17 @@
                 "cameraIndex": -1,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  -5.002764233319744,
-                  1.0193511953978014,
-                  3.0361981532012985
+                  -6.6019089559884865,
+                  5.8993159484372075,
+                  2.305178164945483
                 ],
                 "cameraTarget": [
-                  -5.045648556116226,
-                  0.9194370469488035,
-                  1.1097640526186305
+                  -5.4707874355155734,
+                  2.8724436254829486,
+                  1.5385954583438812
                 ]
               },
-              "controlsHeight": 189
+              "controlsHeight": 222
             },
             {
               "type": 3,
@@ -298,30 +358,6 @@
                   },
                   {
                     "type": "ghostLegacy",
-                    "logKey": "NT:/SmartDashboard/LL Pose MT1",
-                    "logType": "NumberArray",
-                    "visible": true,
-                    "options": {
-                      "model": "AlexStatic",
-                      "color": "#ff0000",
-                      "format": "Pose2d",
-                      "units": "degrees"
-                    }
-                  },
-                  {
-                    "type": "ghostLegacy",
-                    "logKey": "NT:/SmartDashboard/LL Pose MT2",
-                    "logType": "NumberArray",
-                    "visible": true,
-                    "options": {
-                      "model": "AlexStatic",
-                      "color": "#0000ff",
-                      "format": "Pose2d",
-                      "units": "degrees"
-                    }
-                  },
-                  {
-                    "type": "ghostLegacy",
                     "logKey": "NT:/SmartDashboard/TargetPose Reef",
                     "logType": "NumberArray",
                     "visible": true,
@@ -330,6 +366,86 @@
                       "color": "#00ff00",
                       "format": "Pose2d",
                       "units": "degrees"
+                    }
+                  },
+                  {
+                    "type": "ghostLegacy",
+                    "logKey": "NT:/SmartDashboard/limelight-right Pose MT2 ",
+                    "logType": "NumberArray",
+                    "visible": true,
+                    "options": {
+                      "model": "AlexStatic",
+                      "color": "#ffff00",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  },
+                  {
+                    "type": "ghostLegacy",
+                    "logKey": "NT:/SmartDashboard/limelight-left Pose MT2 ",
+                    "logType": "NumberArray",
+                    "visible": true,
+                    "options": {
+                      "model": "AlexStatic",
+                      "color": "#ff00ff",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  },
+                  {
+                    "type": "ghostLegacy",
+                    "logKey": "NT:/SmartDashboard/limelight-left Pose MT1",
+                    "logType": "NumberArray",
+                    "visible": false,
+                    "options": {
+                      "model": "AlexStatic",
+                      "color": "#00ffff",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  },
+                  {
+                    "type": "ghostLegacy",
+                    "logKey": "NT:/SmartDashboard/limelight-right Pose MT1",
+                    "logType": "NumberArray",
+                    "visible": false,
+                    "options": {
+                      "model": "AlexStatic",
+                      "color": "#ffff00",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  },
+                  {
+                    "type": "ghostLegacy",
+                    "logKey": "NT:/SmartDashboard/TargetPose Algae Clearance",
+                    "logType": "NumberArray",
+                    "visible": true,
+                    "options": {
+                      "model": "AlexStatic",
+                      "color": "#ff00ff",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  },
+                  {
+                    "type": "trajectory",
+                    "logKey": "NT:/PathPlanner/activePath",
+                    "logType": "Pose2d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#00ff00",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:/PathPlanner/targetPose",
+                    "logType": "Pose2d",
+                    "visible": false,
+                    "options": {
+                      "model": "AlexStatic",
+                      "color": "#0000ff"
                     }
                   }
                 ],
@@ -341,65 +457,30 @@
                 "cameraIndex": -1,
                 "orbitFov": 50,
                 "cameraPosition": [
-                  -8.142252648975717,
-                  3.1901684659477403,
-                  0.08557733434179585
+                  -7.405542158091367,
+                  3.13753604041341,
+                  -0.1276110780997144
                 ],
                 "cameraTarget": [
-                  -5.288331714755649,
-                  0.6659394313116794,
-                  0.33159985013983495
+                  -6.145650361044059,
+                  1.318835025093029,
+                  -1.128915989860372
                 ]
               },
-              "controlsHeight": 200
+              "controlsHeight": 336
             },
             {
-              "type": 3,
-              "title": "Mess around",
+              "type": 6,
+              "title": "Statistics",
               "controller": {
-                "sources": [
-                  {
-                    "type": "robotLegacy",
-                    "logKey": "NT:/Pose/robotPose",
-                    "logType": "NumberArray",
-                    "visible": true,
-                    "options": {
-                      "model": "2025 KitBot",
-                      "format": "Pose2d",
-                      "units": "radians"
-                    }
-                  },
-                  {
-                    "type": "ghostLegacy",
-                    "logKey": "NT:/SmartDashboard/TargetPose Reef_Flipped",
-                    "logType": "NumberArray",
-                    "visible": true,
-                    "options": {
-                      "model": "AlexStatic",
-                      "color": "#00ff00",
-                      "format": "Pose2d",
-                      "units": "degrees"
-                    }
-                  }
-                ],
-                "game": "2025 Field (Welded)",
-                "origin": "blue"
+                "sources": [],
+                "timeRange": "visible",
+                "rangeMin": 0,
+                "rangeMax": 10,
+                "stepSize": 1
               },
-              "controllerUUID": "kfd8q00ob4lhtf4grobpdvehlag43g0b",
-              "renderer": {
-                "cameraIndex": -1,
-                "orbitFov": 50,
-                "cameraPosition": [
-                  7.633768879291303,
-                  1.8514118694066077,
-                  -0.12774662150218333
-                ],
-                "cameraTarget": [
-                  5.044348880559897,
-                  0.7178998982543824,
-                  -0.17228515257854365
-                ]
-              },
+              "controllerUUID": "o6wvzuovof74owx2fap9605wb619piik",
+              "renderer": null,
               "controlsHeight": 200
             }
           ]
@@ -408,5 +489,5 @@
     }
   ],
   "satellites": [],
-  "version": "4.1.2"
+  "version": "4.1.5"
 }
