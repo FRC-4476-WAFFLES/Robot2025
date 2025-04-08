@@ -5,7 +5,6 @@
 package frc.robot.subsystems;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +50,10 @@ public class Lights extends SubsystemBase {
   private Map<LedRange, LightColours> ledRangeColours = new EnumMap<>(LedRange.class);
   private List<Map.Entry<LedRange, LightColours>> entriesList = new ArrayList<>(); // Allocated once here to avoid allocating in periodic
   private int[][] ledColors;
+  private int[] currentColor = new int[3]; // Reusable array for current color
+  private int[] defaultColor = new int[3]; // Reusable array for default color
+  private int[] flowColor = new int[3]; // Reusable array for flow color
+  private int[] blinkColor = new int[3]; // Reusable array for blink color
 
   private static final Timer blinkTimer = new Timer();
   private boolean isBlinkColour = true;
@@ -88,6 +91,7 @@ public class Lights extends SubsystemBase {
   
   // Pre-calculated smooth rainbow colors for performance
   private int[][] smoothRainbowColors = new int[RAINBOW_SEGMENTS][3]; // [position][r,g,b]
+  private int[] interpolatedColor = new int[3]; // Reusable array for color interpolation
 
   /**
    * Enum containing start and and indicies for various defined LED groups
@@ -227,6 +231,12 @@ public class Lights extends SubsystemBase {
 
     ledColors = new int[LED_COUNT][3];
     
+    // Initialize reusable arrays
+    System.arraycopy(LightColours.BLACK.getRGBValues(), 0, currentColor, 0, 3);
+    System.arraycopy(LightColours.BLACK.getRGBValues(), 0, defaultColor, 0, 3);
+    System.arraycopy(LightColours.FLOW_COLOR.getRGBValues(), 0, flowColor, 0, 3);
+    System.arraycopy(LightColours.BLACK.getRGBValues(), 0, blinkColor, 0, 3);
+    
     // Pre-calculate smooth rainbow colors
     precalculateRainbowColors();
     
@@ -248,23 +258,17 @@ public class Lights extends SubsystemBase {
       int g1 = RAINBOW_COLORS[colorIndex * 3 + 1];
       int b1 = RAINBOW_COLORS[colorIndex * 3 + 2];
       
-      int nextColorIndex = (colorIndex + 1) % RAINBOW_COLOR_COUNT;
-      int r2 = RAINBOW_COLORS[nextColorIndex * 3];
-      int g2 = RAINBOW_COLORS[nextColorIndex * 3 + 1];
-      int b2 = RAINBOW_COLORS[nextColorIndex * 3 + 2];
+      int r2 = RAINBOW_COLORS[(colorIndex + 1) * 3];
+      int g2 = RAINBOW_COLORS[(colorIndex + 1) * 3 + 1];
+      int b2 = RAINBOW_COLORS[(colorIndex + 1) * 3 + 2];
       
-      // Apply cubic interpolation for smoother transitions between colors
-      // This creates more natural-looking gradients than linear interpolation
+      // Interpolate between colors using smoothstep
       float blend = smoothstep(colorBlend);
       
-      // Linear interpolation between colors
-      int r = Math.round(r1 * (1 - blend) + r2 * blend);
-      int g = Math.round(g1 * (1 - blend) + g2 * blend);
-      int b = Math.round(b1 * (1 - blend) + b2 * blend);
-      
-      smoothRainbowColors[i][0] = r;
-      smoothRainbowColors[i][1] = g;
-      smoothRainbowColors[i][2] = b;
+      // Store interpolated color
+      smoothRainbowColors[i][0] = (int)(r1 + blend * (r2 - r1));
+      smoothRainbowColors[i][1] = (int)(g1 + blend * (g2 - g1));
+      smoothRainbowColors[i][2] = (int)(b1 + blend * (b2 - b1));
     }
   }
   
@@ -380,78 +384,31 @@ public class Lights extends SubsystemBase {
    * Handles the rainbow linear animation in disabled state
    */
   private void handleRainbowAnimation() {
-    if (blinkTimer.get() > 0.01) { // Slightly faster for smoother animation
-      // Update rainbow position (move colors down the strip)
+    if (useRainbowAnimation) {
+      // Update rainbow position
       rainbowPosition = (rainbowPosition + 1) % RAINBOW_SEGMENTS;
       
-      // Update wave position for brightness effect
-      wavePosition += 0.07; // Slightly slower wave for a more subtle effect
-      if (wavePosition > 2 * Math.PI) {
-        wavePosition -= 2 * Math.PI;
+      // Apply rainbow colors to LEDs
+      for (int i = 0; i < LED_COUNT; i++) {
+        int colorIndex = (rainbowPosition + rainbowOffsets[i]) % RAINBOW_SEGMENTS;
+        System.arraycopy(smoothRainbowColors[colorIndex], 0, ledColors[i], 0, 3);
+      }
+    } else {
+      // Update flow position
+      flowPosition = (flowPosition + 1) % (LED_COUNT + FLOW_LENGTH);
+      
+      // Clear all LEDs first
+      for (int i = 0; i < LED_COUNT; i++) {
+        System.arraycopy(defaultColor, 0, ledColors[i], 0, 3);
       }
       
-      // Pre-calculate sine values for brightness wave at different phases
-      double[] brightnessValues = new double[16]; // Use a small lookup table to avoid calculating sine repeatedly
-      for (int i = 0; i < brightnessValues.length; i++) {
-        double phase = wavePosition + i * (2 * Math.PI / brightnessValues.length);
-        brightnessValues[i] = 0.6 + 0.4 * Math.sin(phase);
-      }
-      
-      // Apply rainbow colors with the shift - use smoothed colors
-      for (int i = 8; i < LED_COUNT; i++) {
-        int ledPosition = (i - 8) * 3; // Space out the colors more for a smoother gradient
-        int colorIndex = (rainbowPosition + ledPosition) % RAINBOW_SEGMENTS;
-        
-        // Get the color from our pre-calculated smooth rainbow array
-        int r = smoothRainbowColors[colorIndex][0];
-        int g = smoothRainbowColors[colorIndex][1];
-        int b = smoothRainbowColors[colorIndex][2];
-        
-        // Apply brightness wave effect from lookup table
-        int brightnessIndex = ((i - 8) * 2) % brightnessValues.length;
-        double brightness = brightnessValues[brightnessIndex];
-        
-        // Store values in our color array
-        ledColors[i][0] = (int)(r * brightness);
-        ledColors[i][1] = (int)(g * brightness);
-        ledColors[i][2] = (int)(b * brightness);
-      }
-      
-      // Now batch update LEDs by finding contiguous segments with similar colors
-      int startIdx = 8;
-      while (startIdx < LED_COUNT) {
-        int[] currentColor = ledColors[startIdx];
-        int count = 1;
-        int endIdx = startIdx + 1;
-        
-        // Find consecutive LEDs with identical colors for batching
-        // This reduces the number of CANdle API calls significantly
-        while (endIdx < LED_COUNT && 
-               ledColors[endIdx][0] == currentColor[0] &&
-               ledColors[endIdx][1] == currentColor[1] &&
-               ledColors[endIdx][2] == currentColor[2]) {
-          count++;
-          endIdx++;
+      // Apply flow effect
+      for (int i = 0; i < FLOW_LENGTH; i++) {
+        int ledIndex = flowPosition - i;
+        if (ledIndex >= 0 && ledIndex < LED_COUNT) {
+          System.arraycopy(flowColor, 0, ledColors[ledIndex], 0, 3);
         }
-        
-        // If colors are not identical but very similar, still batch them
-        // This further reduces API calls while maintaining visual quality
-        if (count == 1) {
-          while (endIdx < LED_COUNT && 
-                 Math.abs(ledColors[endIdx][0] - currentColor[0]) <= 3 &&
-                 Math.abs(ledColors[endIdx][1] - currentColor[1]) <= 3 &&
-                 Math.abs(ledColors[endIdx][2] - currentColor[2]) <= 3) {
-            count++;
-            endIdx++;
-          }
-        }
-        
-        // Update this batch of LEDs with a single call
-        candle.setLEDs(currentColor[0], currentColor[1], currentColor[2], 0, startIdx, count);
-        startIdx = endIdx;
       }
-      
-      blinkTimer.reset();
     }
   }
 
@@ -748,58 +705,27 @@ public class Lights extends SubsystemBase {
    * Applies chosen colors from ledRangeColours to the physical light hardware
    */
   private void applyLEDRanges() {
-    if (ledRangeColours.isEmpty()) {
-      return; // Don't update if there are no colors to set
-    }
-
-    // Initialize ledColors[] to default color
-    int[] defaultRGB = LightColours.BLACK.getRGBValues();
+    // Clear all LEDs first
     for (int i = 0; i < LED_COUNT; i++) {
-      ledColors[i][0] = defaultRGB[0];
-      ledColors[i][1] = defaultRGB[1];
-      ledColors[i][2] = defaultRGB[2];
+      System.arraycopy(defaultColor, 0, ledColors[i], 0, 3);
     }
-
-    // Convert ledRangeColours entries to a list for sorting
+    
+    // Update entries list without creating new objects
     entriesList.clear();
     entriesList.addAll(ledRangeColours.entrySet());
-
-    // Sort ranges from largest to smallest to give precedence to smaller ranges
-    entriesList.sort((entry1, entry2) -> {
-      int size1 = entry1.getKey().getEnd() - entry1.getKey().getStart();
-      int size2 = entry2.getKey().getEnd() - entry2.getKey().getStart();
-      return Integer.compare(size2, size1); // Largest size first
-    });
-
-    // Apply colors to ledColors[] array
+    
+    // Apply each range
     for (Map.Entry<LedRange, LightColours> entry : entriesList) {
       LedRange range = entry.getKey();
-      LightColours colour = entry.getValue();
-      int[] rgb = colour.getRGBValues();
+      LightColours color = entry.getValue();
+      
+      // Get color values once
+      int[] rgbValues = color.getRGBValues();
+      
+      // Apply color to range
       for (int i = range.getStart(); i < range.getEnd(); i++) {
-        if (i < LED_COUNT) { // Ensure we don't go out of bounds
-          ledColors[i][0] = rgb[0];
-          ledColors[i][1] = rgb[1];
-          ledColors[i][2] = rgb[2];
-        }
+        System.arraycopy(rgbValues, 0, ledColors[i], 0, 3);
       }
-    }
-
-    // Optimize LED updates by grouping contiguous colors
-    int idx = 0;
-    while (idx < LED_COUNT) {
-      int[] currentColor = ledColors[idx];
-      int startIdx = idx;
-      int count = 1;
-      idx++;
-      
-      while (idx < LED_COUNT && Arrays.equals(ledColors[idx], currentColor)) {
-        count++;
-        idx++;
-      }
-      
-      // Update the LEDs for this contiguous range
-      candle.setLEDs(currentColor[0], currentColor[1], currentColor[2], 0, startIdx, count);
     }
   }
 
