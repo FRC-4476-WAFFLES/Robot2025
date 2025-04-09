@@ -70,6 +70,7 @@ public final class Constants {
   /* Digital Ports */
   public static class DigitalOutputs {
     public static final int coastModeSwitch = 4; // Limit Switch
+    public static final int coralSensor = 9; // Coral detection sensor
   }
 
   /* Code */
