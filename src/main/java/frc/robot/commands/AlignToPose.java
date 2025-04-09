@@ -19,6 +19,7 @@ import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.utils.WafflesUtilities;
@@ -26,6 +27,9 @@ import frc.robot.utils.WafflesUtilities;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
+
+import java.util.function.Supplier;
+
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 public class AlignToPose extends Command {
@@ -38,25 +42,27 @@ public class AlignToPose extends Command {
 
   // Refresh profiles if strafing more than this value
   public static final double strafeResetLimit = 0.1;
-  public static final double approachFeedforwardBlendOuter = 0.2; // Distance at which velocity feedforward begins to lose influence
-  public static final double approachFeedforwardBlendInner = 0.1; // Distance at which velocity feedforward loses all influence
+  public static final double approachFeedforwardBlendOuter = 0.05; // Distance at which velocity feedforward begins to lose influence
+  public static final double approachFeedforwardBlendInner = 0.01; // Distance at which velocity feedforward loses all influence
 
   /* Controllers */
-  private ProfiledPIDController approachPidController = new ProfiledPIDController(4.7, 0, 0.2, new Constraints(maxVelocity, maxAcceleration));
+  private ProfiledPIDController approachPidController = new ProfiledPIDController(4.7, 0, 0.05, new Constraints(maxVelocity, maxAcceleration));
   private ProfiledPIDController thetaPidController = new ProfiledPIDController(7.0, 0, 0.1, new Constraints(maxThetaVelocity, maxThetaAcceleration));
-  private SlewRateLimiter strafeRateLimiter = new SlewRateLimiter(maxAcceleration);
+  private SlewRateLimiter strafeRateLimiter = new SlewRateLimiter(maxAcceleration * 6);
 
-  /* Constants */
-  private static final double PosMaxError = 0.01;
-  private static final double RotMaxError = 0.5; // degrees
+  /* Tolerances */
+  private static double PosMaxError = 0.01; // Meters
+  private static Rotation2d RotMaxError = Rotation2d.fromDegrees(0.5);
 
   /* Data */
-  private SwerveRequest.FieldCentric driveRequest = new SwerveRequest.FieldCentric();
-  private final Pose2d targetPose;
-  private final double maxSpeed;
-  private final boolean stopOnceDone;
+  private final Supplier<Pose2d> goalPoseSupplier;
+  private Pose2d goalPose;
 
   private Trigger endTrigger;
+  private double endingDebounce = 0;
+  private boolean lockWheelsOnceFinished;
+
+  private SwerveRequest.FieldCentric driveRequest = new SwerveRequest.FieldCentric();
   
   /* Telemetry Variables */
   private final Timer alignmentTimer = new Timer();
@@ -72,53 +78,78 @@ public class AlignToPose extends Command {
   private static final DoublePublisher approachSetpointVelocityPublisher = scoringTable.getDoubleTopic("Approach Setpoint Velocity").publish();
   private static final DoublePublisher distancePublisher = scoringTable.getDoubleTopic("Approach Distance").publish();
   private static final DoublePublisher feedforwardBlendPublisher = scoringTable.getDoubleTopic("Approach FF Blend").publish();
+  private static final StructPublisher<Pose2d> goalPosePublisher = scoringTable.getStructTopic("Goal Pose", Pose2d.struct).publish();
 
 
   /** 
-   * Command that drives the robot to align with coral scoring
+   * Command that drives the robot to align with a desired pose
+   * @param targetPoseSupplier The goal pose for the robot to align to as a supplier
    */
-  public AlignToPose(Pose2d targetPose, double maxSpeed, double endingDebounce, boolean lockOnceDone) {
-    // Use addRequirements() here to declare subsystem dependencies.
+  public AlignToPose(Supplier<Pose2d> targetPoseSupplier) {
     addRequirements(RobotContainer.driveSubsystem);
 
     thetaPidController.enableContinuousInput(-Math.PI, Math.PI);
 
-    this.targetPose = targetPose;
-    this.maxSpeed = maxSpeed;
-    this.stopOnceDone = lockOnceDone;
+    goalPoseSupplier = targetPoseSupplier;
 
-    endTrigger = new Trigger(() -> isWithinRangeOfTarget(targetPose))
+    endTrigger = new Trigger(() -> isAtGoal())
     .debounce(endingDebounce);
   }
 
   /** 
-   * Command that drives the robot to align with coral scoring
-   */
-  public AlignToPose(Pose2d targetPose, double maxSpeed, double endingDebounce) {
-    // Default to no speed limit
-    this(targetPose, maxSpeed, endingDebounce, true);
-  }
-
-  /** 
-   * Command that drives the robot to align with coral scoring
-   */
-  public AlignToPose(Pose2d targetPose, double maxSpeed) {
-    // Default to no speed limit
-    this(targetPose, maxSpeed, 0, true);
-  }
-
-  /** 
-   * Command that drives the robot to align with coral scoring
+   * Command that drives the robot to align with a desired pose
+   * @param targetPose The goal pose for the robot to align to
    */
   public AlignToPose(Pose2d targetPose) {
-    // Default to no speed limit
-    this(targetPose, Double.MAX_VALUE, 0, true);
+    // Convenience so you don't have to write a supplier
+    this(() -> targetPose);
   }
+
+  /**
+   * Sets if wheels should be locked once alignment finishes
+   * @param lockWheelsOnceFinished A boolean
+   */
+  public void withShouldLockWheels(boolean lockWheelsOnceFinished) {
+    this.lockWheelsOnceFinished = lockWheelsOnceFinished;
+  }
+
+  /**
+   * Sets the time to wait once at the target before ending the command (defaults to zero) 
+   * @param endingDebounce A time in seconds
+   */
+  public void withEndingDebounce(double endingDebounce) {
+    this.endingDebounce = endingDebounce;
+
+    endTrigger = new Trigger(() -> isAtGoal())
+    .debounce(endingDebounce);
+  }
+
+  /**
+   * Sets the max position tolerance for being on target (default 0.01 meters)
+   * @param tolerance a value in meters
+   */
+  public void withPositionTolerance(double tolerance) {
+    PosMaxError = tolerance;
+    approachPidController.setTolerance(PosMaxError);
+  }
+
+  /**
+   * Sets the max rotation tolerance for being on target (default 0.5 degrees)
+   * @param tolerance a rotation
+   */
+  public void withThetaTolerance(Rotation2d tolerance) {
+    RotMaxError = tolerance;
+    thetaPidController.setTolerance(RotMaxError.getDegrees());
+  }
+  
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
     isAligningPublisher.set(true);
+
+    // Update goal pose once from supplier
+    goalPose = goalPoseSupplier.get();
     
     // Start the alignment timer
     alignmentTimer.reset();
@@ -127,15 +158,15 @@ public class AlignToPose extends Command {
     var currentPose = RobotContainer.driveSubsystem.getRobotPose();
 
     // Set tolerances
-    thetaPidController.setTolerance(RotMaxError);
+    thetaPidController.setTolerance(RotMaxError.getDegrees());
     approachPidController.setTolerance(PosMaxError);
 
     // Reset theta controller
     thetaPidController.reset(currentPose.getRotation().getRadians(), RobotContainer.driveSubsystem.getRobotChassisSpeeds().omegaRadiansPerSecond);
     
     // Reset approach controller
-    double distanceToTarget = currentPose.getTranslation().getDistance(targetPose.getTranslation());
-    Translation2d velocityTowardsTarget = getVelocityTowardsTarget(currentPose, WafflesUtilities.AngleBetweenPoints(currentPose.getTranslation(), targetPose.getTranslation()));
+    double distanceToTarget = currentPose.getTranslation().getDistance(goalPose.getTranslation());
+    Translation2d velocityTowardsTarget = getVelocityTowardsTarget(currentPose, WafflesUtilities.AngleBetweenPoints(currentPose.getTranslation(), goalPose.getTranslation()));
 
     approachPidController.reset(distanceToTarget, 
       Math.min(
@@ -148,60 +179,64 @@ public class AlignToPose extends Command {
 
     approachVelocityPublisher.set(velocityTowardsTarget.getX());
     strafeVelocityPublisher.set(velocityTowardsTarget.getY());
-
-
+    goalPosePublisher.set(goalPose);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    var currentPose = RobotContainer.driveSubsystem.getRobotPose();
-    double distanceToTarget = currentPose.getTranslation().getDistance(targetPose.getTranslation());
-    Rotation2d angleToTarget = WafflesUtilities.AngleBetweenPoints(currentPose.getTranslation(), targetPose.getTranslation());
+    // Update goal pose once from supplier
+    goalPose = goalPoseSupplier.get();
 
-    // Calculate velocity feedforward
-    double approachVelocityFeedback = MathUtil.clamp(-approachPidController.calculate(distanceToTarget, 0), -maxSpeed, maxSpeed);
+    Pose2d currentPose = RobotContainer.driveSubsystem.getRobotPose();
+    double distanceToTarget = currentPose.getTranslation().getDistance(goalPose.getTranslation());
+    Rotation2d angleToTarget = WafflesUtilities.AngleBetweenPoints(currentPose.getTranslation(), goalPose.getTranslation());
+    Translation2d velocityTowardsTarget = getVelocityTowardsTarget(currentPose, angleToTarget); // This is in target space
+
+    // Blend between feedforward and feedback control
     double approachVelocityFeedforwardBlend = MathUtil.clamp( 
-      WafflesUtilities.InvLerp(distanceToTarget, approachFeedforwardBlendInner, approachFeedforwardBlendOuter),
+      WafflesUtilities.InvLerp(approachFeedforwardBlendInner, approachFeedforwardBlendOuter, distanceToTarget),
       0, 1);
-    if (distanceToTarget <= approachFeedforwardBlendInner) {
-      approachVelocityFeedforwardBlend = 0;
-    }
-
-    double approachVelocityFeedForward = -approachPidController.getSetpoint().velocity * approachVelocityFeedforwardBlend;
-    
+    approachVelocityFeedforwardBlend = WafflesUtilities.QuadraticEaseOut(approachVelocityFeedforwardBlend); // Square blending factor for smoothness
     feedforwardBlendPublisher.set(approachVelocityFeedforwardBlend);
 
-    approachVelocityFeedback *= 1 - approachVelocityFeedforwardBlend;
+    // Calculate velocity feedforward
+    double approachVelocityFeedback = -approachPidController.calculate(distanceToTarget, 0);
+    double approachVelocityFeedForward = -approachPidController.getSetpoint().velocity;
 
     // Calculate target velocities
-    double targetApproachVelocity = approachVelocityFeedForward + approachVelocityFeedback;
-    double targetThetaVelocity = thetaPidController.calculate(currentPose.getRotation().getRadians(), targetPose.getRotation().getRadians());
+    double targetApproachVelocity = 
+      (approachVelocityFeedForward * approachVelocityFeedforwardBlend) +
+      (approachVelocityFeedback * (1 - approachVelocityFeedforwardBlend));
+    double targetThetaVelocity = thetaPidController.calculate(currentPose.getRotation().getRadians(), goalPose.getRotation().getRadians());
     double targetStrafeVelocity = strafeRateLimiter.calculate(0);
 
     // Deadband target velocities
     if (distanceToTarget < PosMaxError) {
       targetApproachVelocity = 0;
     }
-    if (Math.abs(currentPose.getRotation().minus(targetPose.getRotation()).getDegrees()) < RotMaxError) {
+    if (Math.abs(currentPose.getRotation().minus(goalPose.getRotation()).getDegrees()) < RotMaxError.getDegrees()) {
       targetThetaVelocity = 0;
     }
 
+    // Publish telemetry
     approachSetpointPositionPublisher.set(approachPidController.getSetpoint().position);
     approachSetpointVelocityPublisher.set(approachPidController.getSetpoint().velocity);
     distancePublisher.set(distanceToTarget);
 
-    // Publish telemetry
     thetaOutputPublisher.set(targetThetaVelocity);
     approachOutputPublisher.set(targetApproachVelocity);
     strafeOutputPublisher.set(targetStrafeVelocity);
+
+    approachVelocityPublisher.set(velocityTowardsTarget.getX());
+    strafeVelocityPublisher.set(velocityTowardsTarget.getY());
+    goalPosePublisher.set(goalPose);
 
     // Convert to field velocities
     Translation2d targetFieldVelocity = new Translation2d(targetApproachVelocity, targetStrafeVelocity).rotateBy(angleToTarget); 
 
     // Reset motion profiling if strafing fast enough
-    Translation2d velocityTowardsTarget = getVelocityTowardsTarget(currentPose, angleToTarget);
-    if (velocityTowardsTarget.getY() > strafeResetLimit) {
+    if (Math.abs(velocityTowardsTarget.getY()) > strafeResetLimit) {
       // Approach velocity is negative since we PID towards zero
       approachPidController.reset(distanceToTarget, 
         Math.min(
@@ -210,9 +245,6 @@ public class AlignToPose extends Command {
       ));
       strafeRateLimiter.reset(velocityTowardsTarget.getY());
     }
-
-    approachVelocityPublisher.set(velocityTowardsTarget.getX());
-    strafeVelocityPublisher.set(velocityTowardsTarget.getY());
     
     // Apply chosen velocity
     applyFieldVelocity(targetFieldVelocity, targetThetaVelocity);
@@ -228,22 +260,23 @@ public class AlignToPose extends Command {
     double finalAlignmentTime = alignmentTimer.get();
     alignmentTimePublisher.set(finalAlignmentTime);
 
-    if (stopOnceDone) {
+    if (lockWheelsOnceFinished) {
       // Stop drivetrain
       applyFieldVelocity(Translation2d.kZero, 0);
     }
   }
 
-  /*
+  /**
    * If current pose is within a certain range of target
    */
-  public static boolean isWithinRangeOfTarget(Pose2d target) {
+  public boolean isAtGoal() {
     var currentPose = RobotContainer.driveSubsystem.getRobotPose();
-    return currentPose.getTranslation().getDistance(target.getTranslation()) <= PosMaxError &&
-      Math.abs(currentPose.getRotation().minus(target.getRotation()).getDegrees()) < RotMaxError;
+
+    return currentPose.getTranslation().getDistance(goalPose.getTranslation()) <= PosMaxError &&
+      Math.abs(currentPose.getRotation().minus(goalPose.getRotation()).getDegrees()) < RotMaxError.getDegrees();
   }
 
-  /*
+  /**
    * Helper method to apply a chosen field velocity to the drivetrain
    */
   private void applyFieldVelocity(Translation2d targetVelocity, double targetThetaVelocity) {
@@ -265,7 +298,7 @@ public class AlignToPose extends Command {
     );
   }
 
-  /*
+  /**
    * Calculates current velocity towards the target pose 
    * X+ is forward
    */
@@ -279,7 +312,6 @@ public class AlignToPose extends Command {
     return fieldVelocity.rotateBy(angleBetweenPoses.unaryMinus());
   }
 
-  // Returns true when the command should end.
   @Override
   public boolean isFinished() {
     return endTrigger.getAsBoolean();
