@@ -17,12 +17,19 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -55,6 +62,8 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   // Hardware Components
   private final TalonFX elevatorMotorLeader;
   private final TalonFX elevatorMotorFollower;
+
+  private ElevatorSim elevatorSim;
 
   // Instance Variables
   private double elevatorSetpointMeters = 0;
@@ -143,6 +152,18 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     zeroingDebounceTrigger = new Trigger(() -> {
       return elevatorMotorLeader.getStatorCurrent().getValueAsDouble() > ElevatorConstants.STALL_CURRENT_THRESHOLD;   
     }).debounce(ElevatorConstants.ZERO_DEBOUNCE_TIME);
+
+    if (RobotBase.isSimulation()) {
+      elevatorSim = new ElevatorSim(
+        3,
+        0.7,
+        DCMotor.getKrakenX60Foc(2), 
+        0, 
+        ElevatorConstants.MAX_ELEVATOR_HEIGHT, 
+        true,
+        0
+      );
+    }
   }
 
   /**
@@ -296,6 +317,17 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    */
   public double getElevatorPositionMeters(){
     return elevatorMotorLeader.getPosition().getValueAsDouble();
+  }
+
+  /**
+   * Gets a percentage value for how extended the elevator is
+   * @return a 0-1 double representing percentage
+   */
+  public double getElevatorExtendedPercent() {
+    return MathUtil.clamp( 
+      getElevatorPositionMeters() / ElevatorConstants.MAX_ELEVATOR_HEIGHT,
+      0, 1
+    );
   }
 
   /**
@@ -453,5 +485,32 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     }
     
     return CollisionType.NONE;
+  }
+
+  @Override 
+  public void simulationPeriodic() {
+    var talonFXSim = elevatorMotorLeader.getSimState();
+
+    // set the supply voltage of the TalonFX
+    talonFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+
+    // get the motor voltage of the TalonFX
+    var motorVoltage = talonFXSim.getMotorVoltageMeasure();
+
+    // use the motor voltage to calculate new position and velocity
+    // using WPILib's DCMotorSim class for physics simulation
+    elevatorSim.setInputVoltage(-motorVoltage.in(Volts));
+    elevatorSim.update(0.020); // assume 20 ms loop time
+
+    // apply the new rotor position and velocity to the TalonFX;
+    // note that this is rotor position/velocity (before gear ratio), but
+    // WPILIB sim objects return mechanism position/velocity (after gear ratio)
+    // System.out.println(elevatorSim.getPositionMeters());
+    talonFXSim.setRawRotorPosition(-elevatorSim.getPositionMeters() * PhysicalConstants.elevatorReductionToMeters);
+    talonFXSim.setRotorVelocity(-elevatorSim.getVelocityMetersPerSecond() * PhysicalConstants.elevatorReductionToMeters);
+
+    RoboRioSim.setVInVoltage(
+      BatterySim.calculateDefaultBatteryLoadedVoltage(elevatorSim.getCurrentDrawAmps())
+    );
   }
 }
