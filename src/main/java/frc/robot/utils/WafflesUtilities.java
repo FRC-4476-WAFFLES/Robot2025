@@ -126,6 +126,14 @@ public class WafflesUtilities {
         return p2.minus(p1).getAngle();
     }
 
+    /*
+     * Eases exponentially out over a range of 0-1
+     * Inputs must be clamped
+     */
+    public static double QuadraticEaseOut(double v) {
+        return 1 - Math.pow(1-v, 2);
+    }
+
     /**
      * Returns the angle for the driver's forward direction, depending on alliance
      * @return a rotation2d representing driver forward in field space
