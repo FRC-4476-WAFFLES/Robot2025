@@ -277,7 +277,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
      * @return true if coral is detected
      */
     public boolean isCoralLoaded() {
-        return coralSensor.get(); // Digital input is inverted (true when not pressed, false when pressed)
+        return !coralSensor.get(); // Digital input is inverted (true when not pressed, false when pressed)
     }
 
     /**
