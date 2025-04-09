@@ -17,6 +17,7 @@ import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -38,6 +39,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private final TalonFX intake;
     private LaserCan intakeLaserCan;
     private LaserCan funnelLaserCan;
+    private final DigitalInput coralSensor;
 
     // Control Objects
     private final MotionMagicVelocityVoltage intakeControlRequest = new MotionMagicVelocityVoltage(0);
@@ -70,6 +72,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private final DoublePublisher intakeVelocityNT = intakeTable.getDoubleTopic("Intake Velocity").publish();
     private final DoublePublisher intakePositionNT = intakeTable.getDoubleTopic("Intake Position").publish();
     private final DoublePublisher intakeTargetPositionNT = intakeTable.getDoubleTopic("Intake Target Position").publish();
+    private final BooleanPublisher coralSensorRawNT = intakeTable.getBooleanTopic("Coral Sensor Raw").publish();
 
     private final BooleanPublisher isIntakingAlgaeNT = intakeTable.getBooleanTopic("IsIntaking").publish();
     private final BooleanPublisher isOutakingAlgaeNT = intakeTable.getBooleanTopic("IsOutaking").publish();
@@ -79,6 +82,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
         SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
 
         intake = new TalonFX(Constants.CANIds.intakeMotor);
+        coralSensor = new DigitalInput(Constants.DigitalOutputs.coralSensor);
 
         // Configure hardware
         configureIntakeMotor();
@@ -269,11 +273,11 @@ public class Intake extends SubsystemBase implements NetworkUser{
     }
 
     /**
-     * Checks if coral is loaded using the laser distance sensor
-     * @return true if coral is detected within threshold distance
+     * Checks if coral is loaded using the digital sensor
+     * @return true if coral is detected
      */
     public boolean isCoralLoaded() {
-        return intakeLaserDistance <= Constants.ManipulatorConstants.CORAL_LOADED_DISTANCE_THRESHOLD;
+        return !coralSensor.get(); // Digital input is inverted (true when not pressed, false when pressed)
     }
 
     /**
@@ -316,6 +320,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
         intakeVelocityNT.set(intake.getVelocity().getValueAsDouble());
         intakePositionNT.set(intake.getPosition().getValueAsDouble());
         intakeTargetPositionNT.set(targetPosition);
+        coralSensorRawNT.set(coralSensor.get());
 
         isIntakingAlgaeNT.set(isIntakingAlgae());
         isOutakingAlgaeNT.set(isOuttakingAlgae());
