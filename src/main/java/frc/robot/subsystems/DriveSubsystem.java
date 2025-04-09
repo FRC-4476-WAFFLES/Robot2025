@@ -23,7 +23,10 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
@@ -56,6 +59,11 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
     private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
     private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
+
+    /* Telemetry */
+    private final NetworkTable driveStats = NetworkTableInstance.getDefault().getTable("Drive");
+    private final StructPublisher<ChassisSpeeds> chassisSpeedsNT = driveStats.getStructTopic("Chassis Speeds", ChassisSpeeds.struct).publish();
+    private final DoublePublisher speedNT = driveStats.getDoubleTopic("Speed").publish();
 
     /* Vision */
     // Since odometry is already handled in the drive subsystem, might as well handle vision here too
@@ -285,6 +293,11 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
         }
 
         updateVisionOdometry();
+
+        // Publish Telemetry
+        ChassisSpeeds currentSpeeds = getRobotChassisSpeeds();
+        chassisSpeedsNT.set(currentSpeeds);
+        speedNT.set(Math.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond));
     }
 
     /**

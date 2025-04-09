@@ -37,8 +37,11 @@ public class AlignToPose extends Command {
   public static final double maxAcceleration = 5.0;
   public static final double maxVelocity = 4;
 
-  public static final double maxThetaAcceleration = 15;
-  public static final double maxThetaVelocity = 4;
+  public static final double maxThetaAcceleration = 20;
+  public static final double maxThetaVelocity = 6;
+
+  // Counteracts the "orbiting" effect caused by always being "attracted" to the target pose
+  public static final double retrogradeAccelerationMultiplier = 4;
 
   // Refresh profiles if strafing more than this value
   public static final double strafeResetLimit = 0.1;
@@ -48,7 +51,7 @@ public class AlignToPose extends Command {
   /* Controllers */
   private ProfiledPIDController approachPidController = new ProfiledPIDController(4.7, 0, 0.05, new Constraints(maxVelocity, maxAcceleration));
   private ProfiledPIDController thetaPidController = new ProfiledPIDController(7.0, 0, 0.1, new Constraints(maxThetaVelocity, maxThetaAcceleration));
-  private SlewRateLimiter strafeRateLimiter = new SlewRateLimiter(maxAcceleration * 6);
+  private SlewRateLimiter strafeRateLimiter = new SlewRateLimiter(maxAcceleration * retrogradeAccelerationMultiplier);
 
   /* Tolerances */
   private static double PosMaxError = 0.01; // Meters
@@ -193,6 +196,13 @@ public class AlignToPose extends Command {
     Rotation2d angleToTarget = WafflesUtilities.AngleBetweenPoints(currentPose.getTranslation(), goalPose.getTranslation());
     Translation2d velocityTowardsTarget = getVelocityTowardsTarget(currentPose, angleToTarget); // This is in target space
 
+    // Approach velocity is negative since we PID towards zero
+    approachPidController.reset(distanceToTarget, 
+      Math.min(
+        0.0,
+        -velocityTowardsTarget.getX()
+    ));
+
     // Blend between feedforward and feedback control
     double approachVelocityFeedforwardBlend = MathUtil.clamp( 
       WafflesUtilities.InvLerp(approachFeedforwardBlendInner, approachFeedforwardBlendOuter, distanceToTarget),
@@ -237,12 +247,6 @@ public class AlignToPose extends Command {
 
     // Reset motion profiling if strafing fast enough
     if (Math.abs(velocityTowardsTarget.getY()) > strafeResetLimit) {
-      // Approach velocity is negative since we PID towards zero
-      approachPidController.reset(distanceToTarget, 
-        Math.min(
-          0.0,
-          -velocityTowardsTarget.getX()
-      ));
       strafeRateLimiter.reset(velocityTowardsTarget.getY());
     }
     

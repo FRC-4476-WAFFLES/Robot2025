@@ -41,9 +41,6 @@ public class Telemetry extends SubsystemBase {
 
     /* Robot speeds for general checking */
     private final NetworkTable driveStats = inst.getTable("Drive");
-    private final DoublePublisher velocityX = driveStats.getDoubleTopic("Velocity X").publish();
-    private final DoublePublisher velocityY = driveStats.getDoubleTopic("Velocity Y").publish();
-    private final DoublePublisher speed = driveStats.getDoubleTopic("Speed").publish();
     private final DoublePublisher odomFreq = driveStats.getDoubleTopic("Odometry Frequency").publish();
 
     /* Software metadata */
@@ -91,34 +88,34 @@ public class Telemetry extends SubsystemBase {
     /*                            */
 
     /* Keep a reference of the last pose to calculate the speeds */
-    private Pose2d m_lastPose = new Pose2d();
-    private double lastTime = Utils.getCurrentTimeSeconds();
+    // private Pose2d m_lastPose = new Pose2d();
+    // private double lastTime = Utils.getCurrentTimeSeconds();
 
     /* Mechanisms to represent the swerve module states */
-    private final Mechanism2d[] m_moduleMechanisms = new Mechanism2d[] {
-        new Mechanism2d(1, 1),
-        new Mechanism2d(1, 1),
-        new Mechanism2d(1, 1),
-        new Mechanism2d(1, 1),
-    };
-    /* A direction and length changing ligament for speed representation */
-    private final MechanismLigament2d[] m_moduleSpeeds = new MechanismLigament2d[] {
-        m_moduleMechanisms[0].getRoot("RootSpeed", 0.5, 0.5).append(new MechanismLigament2d("Speed", 0.5, 0)),
-        m_moduleMechanisms[1].getRoot("RootSpeed", 0.5, 0.5).append(new MechanismLigament2d("Speed", 0.5, 0)),
-        m_moduleMechanisms[2].getRoot("RootSpeed", 0.5, 0.5).append(new MechanismLigament2d("Speed", 0.5, 0)),
-        m_moduleMechanisms[3].getRoot("RootSpeed", 0.5, 0.5).append(new MechanismLigament2d("Speed", 0.5, 0)),
-    };
-    /* A direction changing and length constant ligament for module direction */
-    private final MechanismLigament2d[] m_moduleDirections = new MechanismLigament2d[] {
-        m_moduleMechanisms[0].getRoot("RootDirection", 0.5, 0.5)
-            .append(new MechanismLigament2d("Direction", 0.1, 0, 0, new Color8Bit(Color.kWhite))),
-        m_moduleMechanisms[1].getRoot("RootDirection", 0.5, 0.5)
-            .append(new MechanismLigament2d("Direction", 0.1, 0, 0, new Color8Bit(Color.kWhite))),
-        m_moduleMechanisms[2].getRoot("RootDirection", 0.5, 0.5)
-            .append(new MechanismLigament2d("Direction", 0.1, 0, 0, new Color8Bit(Color.kWhite))),
-        m_moduleMechanisms[3].getRoot("RootDirection", 0.5, 0.5)
-            .append(new MechanismLigament2d("Direction", 0.1, 0, 0, new Color8Bit(Color.kWhite))),
-    };
+    // private final Mechanism2d[] m_moduleMechanisms = new Mechanism2d[] {
+    //     new Mechanism2d(1, 1),
+    //     new Mechanism2d(1, 1),
+    //     new Mechanism2d(1, 1),
+    //     new Mechanism2d(1, 1),
+    // };
+    // /* A direction and length changing ligament for speed representation */
+    // private final MechanismLigament2d[] m_moduleSpeeds = new MechanismLigament2d[] {
+    //     m_moduleMechanisms[0].getRoot("RootSpeed", 0.5, 0.5).append(new MechanismLigament2d("Speed", 0.5, 0)),
+    //     m_moduleMechanisms[1].getRoot("RootSpeed", 0.5, 0.5).append(new MechanismLigament2d("Speed", 0.5, 0)),
+    //     m_moduleMechanisms[2].getRoot("RootSpeed", 0.5, 0.5).append(new MechanismLigament2d("Speed", 0.5, 0)),
+    //     m_moduleMechanisms[3].getRoot("RootSpeed", 0.5, 0.5).append(new MechanismLigament2d("Speed", 0.5, 0)),
+    // };
+    // /* A direction changing and length constant ligament for module direction */
+    // private final MechanismLigament2d[] m_moduleDirections = new MechanismLigament2d[] {
+    //     m_moduleMechanisms[0].getRoot("RootDirection", 0.5, 0.5)
+    //         .append(new MechanismLigament2d("Direction", 0.1, 0, 0, new Color8Bit(Color.kWhite))),
+    //     m_moduleMechanisms[1].getRoot("RootDirection", 0.5, 0.5)
+    //         .append(new MechanismLigament2d("Direction", 0.1, 0, 0, new Color8Bit(Color.kWhite))),
+    //     m_moduleMechanisms[2].getRoot("RootDirection", 0.5, 0.5)
+    //         .append(new MechanismLigament2d("Direction", 0.1, 0, 0, new Color8Bit(Color.kWhite))),
+    //     m_moduleMechanisms[3].getRoot("RootDirection", 0.5, 0.5)
+    //         .append(new MechanismLigament2d("Direction", 0.1, 0, 0, new Color8Bit(Color.kWhite))),
+    // };
 
     private final double MaxSpeed;
 
@@ -187,17 +184,17 @@ public class Telemetry extends SubsystemBase {
         });
 
         /* Telemeterize the robot's general speeds */
-        double currentTime = Utils.getCurrentTimeSeconds();
-        double diffTime = currentTime - lastTime;
-        lastTime = currentTime;
-        Translation2d distanceDiff = pose.minus(m_lastPose).getTranslation();
-        m_lastPose = pose;
+        // double currentTime = Utils.getCurrentTimeSeconds();
+        // double diffTime = currentTime - lastTime;
+        // lastTime = currentTime;
+        // Translation2d distanceDiff = pose.minus(m_lastPose).getTranslation();
+        // m_lastPose = pose;
 
-        Translation2d velocities = distanceDiff.div(diffTime);
+        // Translation2d velocities = distanceDiff.div(diffTime);
 
-        speed.set(velocities.getNorm());
-        velocityX.set(velocities.getX());
-        velocityY.set(velocities.getY());
+        // speed.set(velocities.getNorm());
+        // velocityX.set(velocities.getX());
+        // velocityY.set(velocities.getY());
         odomFreq.set(1.0 / state.OdometryPeriod);
 
         /* Telemeterize the module's states */
