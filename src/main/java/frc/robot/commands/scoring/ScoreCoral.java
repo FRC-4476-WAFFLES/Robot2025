@@ -7,11 +7,8 @@ package frc.robot.commands.scoring;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -19,26 +16,20 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
-import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.Subsystem;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
-import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.subsystems.DynamicPathing;
 import frc.robot.commands.AlignToPose;
 import frc.robot.commands.intake.CoralOutake;
-import frc.robot.commands.scoring.PickupAlgae;
 
 public class ScoreCoral extends SequentialCommandGroup {
   /** A collection of scoring parameters */
@@ -68,23 +59,14 @@ public class ScoreCoral extends SequentialCommandGroup {
   );
 
   public static final CoralScoringParameters L2Params = new CoralScoringParameters(
-    0.08, 
+    0.05, 
     Rotation2d.fromDegrees(1), 
-    0.01, 
-    0.04, 
-    Rotation2d.fromDegrees(2)
-  );
-
-  public static final CoralScoringParameters L1Params = new CoralScoringParameters(
-    0.08, 
-    Rotation2d.fromDegrees(1), 
-    0.01, 
-    0.04, 
+    0.03, 
+    0.03, 
     Rotation2d.fromDegrees(2)
   );
 
 
-  private static final double waitBeforeScoreL4 = 0.1;
   // All scoring commands require these subsystems
   public static final HashSet<Subsystem> commandRequirements = new HashSet<>(Arrays.asList(
     RobotContainer.driveSubsystem, 
@@ -118,13 +100,14 @@ public class ScoreCoral extends SequentialCommandGroup {
       SmartDashboard.putBoolean("ScoreCoralInProgress", false);
     });
 
-    // The parameter set for the current level
-    // Fix later
+    // Pick the parameter set for the current level
     CoralScoringParameters chosenParameters;
     if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4) {
       chosenParameters = L4Params;
-    } else {
+    } else if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L3) {
       chosenParameters = L3Params;
+    } else {
+      chosenParameters = L2Params;
     }
     
 
@@ -141,9 +124,6 @@ public class ScoreCoral extends SequentialCommandGroup {
       boolean velocityValid = 
         velocityMagnitude <= chosenParameters.maxVelocity &&
         currentSpeeds.omegaRadiansPerSecond <= chosenParameters.maxThetaVelocity.getRadians();
-
-      SmartDashboard.putNumber("XVEL", errorPose.getX());
-      SmartDashboard.putNumber("YVEL", errorPose.getY());
 
       return poseValid && velocityValid;
     });
