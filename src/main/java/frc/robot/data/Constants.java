@@ -76,6 +76,7 @@ public final class Constants {
   /* Code */
   public static class CodeConstants {
     public static final int SUBSYSTEM_NT_UPDATE_RATE = 20; // How many times a second subsystems will publish to NT. Reduce if performance is suffering.
+    public static final boolean FORCE_LOAD_SIM_CORAL = true;
   }
 
   /* Vision */

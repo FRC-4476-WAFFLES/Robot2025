@@ -18,6 +18,7 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -277,6 +278,10 @@ public class Intake extends SubsystemBase implements NetworkUser{
      * @return true if coral is detected
      */
     public boolean isCoralLoaded() {
+        if (RobotBase.isSimulation()) {
+            // Coral override for sim
+            return CodeConstants.FORCE_LOAD_SIM_CORAL;
+        }
         return !coralSensor.get(); // Digital input is inverted (true when not pressed, false when pressed)
     }
 
