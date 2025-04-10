@@ -254,7 +254,7 @@ public class RobotContainer {
     Controls.dynamicPathingButton.whileTrue(
       Commands.defer(
         () -> dynamicPathingSubsystem.getCurrentDynamicActionCommand(), 
-        ScoreCoral.commandRequirements
+        DynamicPathing.actionCommandRequirements
       )
       // On start - Begin rumble and start dynamic pathing
       .beforeStarting(() -> Controls.operatorController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.5))
@@ -287,7 +287,7 @@ public class RobotContainer {
     );
 
     // Manual net toss
-    Controls.operatorController.povDown().whileTrue(Commands.defer(() -> ScoreNet.getScoreNetCommand(0, Rotation2d.kZero, false), ScoreCoral.commandRequirements).onlyIf(() -> RobotContainer.intakeSubsystem.isAlgaeLoaded()));
+    Controls.operatorController.povDown().whileTrue(Commands.defer(() -> ScoreNet.getScoreNetCommand(0, Rotation2d.kZero, false), DynamicPathing.actionCommandRequirements).onlyIf(() -> RobotContainer.intakeSubsystem.isAlgaeLoaded()));
   
     // L1 Intake / Outtake
     Controls.rightJoystick.button(4).onTrue(
@@ -372,19 +372,19 @@ public class RobotContainer {
     // Add other commands to be able to run them in autos
     // NamedCommands.registerCommand("exampleCommand", exampleCommand);
     
-    
+    // Sends the elevator up in stages in preparation for L4 score
+    // Name is legacy that isn't worth changing in pathplanner at this point
+    NamedCommands.registerCommand("Set Position L2", 
+      Commands.deadline(
+        SuperstructureControl.L4ScorePrepCommand()
+      )
+    );
+
     // Direct position commands for both elevator and pivot
     NamedCommands.registerCommand("Set Position L1", Commands.parallel(
       new SetElevatorPos(ElevatorLevel.L1),
       new SetPivotPos(PivotPosition.L1)
     ));
-    // SCUFFED
-    NamedCommands.registerCommand("Set Position L2", 
-      Commands.deadline(
-        SuperstructureControl.L4ScorePrepCommand()
-        // new CoralIntake().onlyIf(() -> !intakeSubsystem.isCoralLoaded())
-      )
-      );
 
     NamedCommands.registerCommand("Set Position L3", Commands.parallel(
       new SetElevatorPos(ElevatorLevel.L3),
@@ -410,37 +410,31 @@ public class RobotContainer {
       new SetElevatorPos(ElevatorLevel.ALGAE_L2),
       new SetPivotPos(PivotPosition.ALGAE_L2)
     ));
+
+    // Auto score commands
     
     // L4 
     NamedCommands.registerCommand("Autoscore L4 Right", Commands.defer(
-      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L4, true), ScoreCoral.commandRequirements)
+      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L4, true), DynamicPathing.actionCommandRequirements)
     );
     NamedCommands.registerCommand("Autoscore L4 Left", Commands.defer(
-      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L4, false), ScoreCoral.commandRequirements)
+      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L4, false), DynamicPathing.actionCommandRequirements)
     );
 
     // L3
     NamedCommands.registerCommand("Autoscore L3 Right", Commands.defer(
-      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L3, true), ScoreCoral.commandRequirements)
+      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L3, true), DynamicPathing.actionCommandRequirements)
     );
     NamedCommands.registerCommand("Autoscore L3 Left", Commands.defer(
-      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L3, false), ScoreCoral.commandRequirements)
+      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L3, false), DynamicPathing.actionCommandRequirements)
     );
 
     // L2
     NamedCommands.registerCommand("Autoscore L2 Right", Commands.defer(
-      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L2, true), ScoreCoral.commandRequirements)
+      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L2, true), DynamicPathing.actionCommandRequirements)
     );
     NamedCommands.registerCommand("Autoscore L2 Left", Commands.defer(
-      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L2, false), ScoreCoral.commandRequirements)
-    );
-
-    // L1
-    NamedCommands.registerCommand("Autoscore L1 Right", Commands.defer(
-      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L1, true), ScoreCoral.commandRequirements)
-    );
-    NamedCommands.registerCommand("Autoscore L1 Left", Commands.defer(
-      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L1, false), ScoreCoral.commandRequirements)
+      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L2, false), DynamicPathing.actionCommandRequirements)
     );
 
     // Coral Intake
@@ -456,7 +450,14 @@ public class RobotContainer {
       )
     );
 
-    
+    // Algae manipulation
+    NamedCommands.registerCommand("Auto Algae Intake", Commands.defer(
+      () -> dynamicPathingSubsystem.createAlgaePickupCommand(), DynamicPathing.actionCommandRequirements
+    ));
+
+    NamedCommands.registerCommand("Net Shot", Commands.defer(
+      () -> dynamicPathingSubsystem.createScoreNetCommand(), DynamicPathing.actionCommandRequirements
+    ));
 
     // Auto Coral Intake
     NamedCommands.registerCommand("Auto Coral Intake", AutoIntake.GetAutoIntakeCommand());

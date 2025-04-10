@@ -66,15 +66,6 @@ public class ScoreCoral extends SequentialCommandGroup {
     Rotation2d.fromDegrees(2)
   );
 
-
-  // All scoring commands require these subsystems
-  public static final HashSet<Subsystem> commandRequirements = new HashSet<>(Arrays.asList(
-    RobotContainer.driveSubsystem, 
-    RobotContainer.pivotSubsystem, 
-    RobotContainer.elevatorSubsystem, 
-    RobotContainer.intakeSubsystem
-  ));
-
   /* Timing variables */
   private final Timer totalScoringTimer = new Timer();
   private static final NetworkTable scoringTable = NetworkTableInstance.getDefault().getTable("ScoringMetrics");
@@ -211,7 +202,7 @@ public class ScoreCoral extends SequentialCommandGroup {
         // Return empty command otherwise
         return new InstantCommand();
 
-      }, commandRequirements)
+      }, DynamicPathing.actionCommandRequirements)
     );
   }
   

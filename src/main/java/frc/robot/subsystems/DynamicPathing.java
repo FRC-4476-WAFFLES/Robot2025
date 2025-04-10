@@ -1,6 +1,8 @@
 package frc.robot.subsystems;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Controls;
@@ -103,8 +106,14 @@ public class DynamicPathing extends SubsystemBase {
     /* Angular units are radians per second */
     public static final double MAX_ANGULAR_SPEED = 1 * Math.PI;
     public static final double MAX_ANGULAR_ACCELERATION = 2 * Math.PI;
-    
-    private static final Intake intakeSubsystem = RobotContainer.intakeSubsystem;
+
+    // All scoring commands require these subsystems
+    public static final HashSet<Subsystem> actionCommandRequirements = new HashSet<>(Arrays.asList(
+        RobotContainer.driveSubsystem, 
+        RobotContainer.pivotSubsystem, 
+        RobotContainer.elevatorSubsystem, 
+        RobotContainer.intakeSubsystem
+    ));
 
     /* Persistent state */
     private boolean coralScoringRightSide = false;
@@ -138,7 +147,9 @@ public class DynamicPathing extends SubsystemBase {
     /**
      * Returns the current DynamicPathingSituation
      */
-    private static DynamicPathingSituation getDynamicPathingSituation() {
+    private static DynamicPathingSituation getDynamicPathingSituation() {    
+        Intake intakeSubsystem = RobotContainer.intakeSubsystem;
+
         if (!intakeSubsystem.isCoralLoaded() && !intakeSubsystem.isAlgaeLoaded() && isRobotInRangeOfHumanPlayer()) {
             return DynamicPathingSituation.HUMAN_PICKUP;
         }
@@ -266,10 +277,7 @@ public class DynamicPathing extends SubsystemBase {
                 break;
 
             case NET: {
-                    Rotation2d targetNetRotation = WafflesUtilities.FlipAngleIfRedAlliance(NET_SCORING_ANGLE);
-                    double targetNetX = WafflesUtilities.FlipXIfRedAlliance(NET_LINE_X_BLUE); 
-
-                    cmd = ScoreNet.getScoreNetCommand(targetNetX, targetNetRotation, true);
+                    cmd = createScoreNetCommand();
                 }
                 break;
 
@@ -725,9 +733,14 @@ public class DynamicPathing extends SubsystemBase {
 
     /**
      * Creates an algae pickup command using the current robot position and the nearest algae pickup location.
-     * @return A command to pick up algae, or null if not possible
+     * @return A command to pick up algae, or an empty command if not possible
      */
     public Command createAlgaePickupCommand() {
+        if (RobotContainer.intakeSubsystem.isCoralLoaded() || RobotContainer.intakeSubsystem.isAlgaeLoaded()){
+            // Refuse to pickup algae if the intake is already occupied
+            return new InstantCommand();
+        }
+
         Pose2d startingPose = RobotContainer.driveSubsystem.getRobotPose();
         Pose2d targetAlgaePose = getNearestAlgaePickupLocation();
         Pose2d clearancePose = getNearestAlgaeClearanceLocation();
@@ -757,7 +770,7 @@ public class DynamicPathing extends SubsystemBase {
             if (pickupPath.isPresent()) {
                 arrivalPathingCommand = AutoBuilder.followPath(pickupPath.get());
             } else {
-                return null;
+                return new InstantCommand();
             }
         } else {
             // Make two disjointed paths to avoid spline funniness
@@ -771,7 +784,7 @@ public class DynamicPathing extends SubsystemBase {
                     new AlignToPose(targetAlgaePose)
                 );
             } else {
-                return null;
+                return new InstantCommand();
             }
         }
         
@@ -789,7 +802,21 @@ public class DynamicPathing extends SubsystemBase {
             );
         }
         
-        return null;
+        return new InstantCommand();
+    }
+
+    /**
+     * Creates a command that scores algae in the net
+     * @return A command to score algae, or a new instantCommand if not possible
+     */
+    public Command createScoreNetCommand() {
+        if (!RobotContainer.intakeSubsystem.isAlgaeLoaded()) {
+            return new InstantCommand();
+        }
+        Rotation2d targetNetRotation = WafflesUtilities.FlipAngleIfRedAlliance(NET_SCORING_ANGLE);
+        double targetNetX = WafflesUtilities.FlipXIfRedAlliance(NET_LINE_X_BLUE); 
+
+        return ScoreNet.getScoreNetCommand(targetNetX, targetNetRotation, true);
     }
 
     /**
