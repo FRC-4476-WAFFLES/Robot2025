@@ -36,8 +36,8 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 public class AlignToPose extends Command {
   /* Approach Constants */
-  public static final double maxAccelerationElevatorUp = 5.0;
-  public static final double maxAccelerationElevatorDown = 8.0;
+  public static final double maxAccelerationElevatorUp = 4.0;
+  public static final double maxAccelerationElevatorDown = 5.0;
   public static final double maxVelocity = 4;
 
   public static final double maxThetaAcceleration = 20;
@@ -49,11 +49,11 @@ public class AlignToPose extends Command {
 
   // Refresh profiles if strafing more than this value
   public static final double strafeResetLimit = 0.1;
-  public static final double approachFeedforwardBlendOuter = 0.05; // Distance at which velocity feedforward begins to lose influence
-  public static final double approachFeedforwardBlendInner = 0.01; // Distance at which velocity feedforward loses all influence
+  public static final double approachFeedforwardBlendOuter = 0.45; // Distance at which velocity feedforward begins to lose influence
+  public static final double approachFeedforwardBlendInner = 0.02; // Distance at which velocity feedforward loses all influence
 
   /* Controllers */
-  private ProfiledPIDController approachPidController = new ProfiledPIDController(4.7, 0, 0.05, new Constraints(maxVelocity, maxAccelerationElevatorDown));
+  private ProfiledPIDController approachPidController = new ProfiledPIDController(3, 0, 0.05, new Constraints(maxVelocity, maxAccelerationElevatorDown));
   private ProfiledPIDController thetaPidController = new ProfiledPIDController(7.0, 0, 0.1, new Constraints(maxThetaVelocity, maxThetaAcceleration));
 
   /* Tolerances */
@@ -223,11 +223,13 @@ public class AlignToPose extends Command {
     double maxInstantaneousAcceleration = measuredDeltaTime * maxAcceleration; // How much acceleration the drivetrain can pull this loop
 
     // Approach velocity is negative since we PID towards zero
-    approachPidController.reset(distanceToTarget, 
-      Math.min(
-        0.0,
-        -velocityTowardsTarget.getX()
-    ));
+    if (distanceToTarget > 0.3 && Math.abs(velocityTowardsTarget.getX()) < 0.4) {
+      approachPidController.reset(distanceToTarget, 
+        Math.min(
+          0.0,
+          -velocityTowardsTarget.getX()
+      ));
+    }
 
     // Convert to field velocities
     Translation2d targetFieldVelocity;
@@ -246,7 +248,7 @@ public class AlignToPose extends Command {
 
       // Calculate velocity feedforward
       double approachVelocityFeedback = -approachPidController.calculate(distanceToTarget, 0);
-      double approachVelocityFeedForward = -approachPidController.getSetpoint().velocity;
+      double approachVelocityFeedForward = Math.max(-approachPidController.getSetpoint().velocity, 0.3);
 
       // Calculate target velocities
       double targetApproachVelocity = 
@@ -336,8 +338,8 @@ public class AlignToPose extends Command {
    */
   private void applyFieldVelocity(Translation2d targetVelocity, double targetThetaVelocity) {
     // Drivetrain deadbands
-    double speedDeadband = PhysicalConstants.maxSpeed * 0.01;
-    double rotationDeadband = PhysicalConstants.maxAngularSpeed * 0.003;
+    double speedDeadband = PhysicalConstants.maxSpeed * 0.001;
+    double rotationDeadband = PhysicalConstants.maxAngularSpeed * 0.001;
 
     // Apply swerve request
     RobotContainer.driveSubsystem.setControl(

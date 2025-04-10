@@ -282,7 +282,8 @@ public class Intake extends SubsystemBase implements NetworkUser{
             // Coral override for sim
             return CodeConstants.FORCE_LOAD_SIM_CORAL;
         }
-        return !coralSensor.get(); // Digital input is inverted (true when not pressed, false when pressed)
+        // return !coralSensor.get(); // Digital input is inverted (true when not pressed, false when pressed)
+        return intakeLaserDistance <= Constants.ManipulatorConstants.CORAL_LOADED_DISTANCE_THRESHOLD;
     }
 
     /**
