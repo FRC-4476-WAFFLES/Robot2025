@@ -189,7 +189,7 @@ public final class Constants {
     public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.3; // 100ms debounce time
 
     // Intake constantsd
-    public static final double CORAL_INTAKE_SPEED = -10; // Rps
+    public static final double CORAL_INTAKE_SPEED = -5; // Rps
     public static final double ALGAE_HOLD_SPEED = 30; // Speed to hold algae in place
     public static final double ALGAE_INTAKE_SPEED = 120;
     public static final double FAST_CORAL_INTAKE_SPEED = -10;
