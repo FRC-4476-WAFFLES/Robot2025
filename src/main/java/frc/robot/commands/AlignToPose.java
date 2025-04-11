@@ -118,37 +118,45 @@ public class AlignToPose extends Command {
    * Sets if wheels should be locked once alignment finishes
    * @param lockWheelsOnceFinished A boolean
    */
-  public void withShouldLockWheels(boolean lockWheelsOnceFinished) {
+  public AlignToPose withShouldLockWheels(boolean lockWheelsOnceFinished) {
     this.lockWheelsOnceFinished = lockWheelsOnceFinished;
+
+    return this;
   }
 
   /**
    * Sets the time to wait once at the target before ending the command (defaults to zero) 
    * @param endingDebounce A time in seconds
    */
-  public void withEndingDebounce(double endingDebounce) {
+  public AlignToPose withEndingDebounce(double endingDebounce) {
     this.endingDebounce = endingDebounce;
 
     endTrigger = new Trigger(() -> isAtGoal())
     .debounce(endingDebounce);
+
+    return this;
   }
 
   /**
    * Sets the max position tolerance for being on target (default 0.01 meters)
    * @param tolerance a value in meters
    */
-  public void withPositionTolerance(double tolerance) {
+  public AlignToPose withPositionTolerance(double tolerance) {
     PosMaxError = tolerance;
     approachPidController.setTolerance(PosMaxError);
+
+    return this;
   }
 
   /**
    * Sets the max rotation tolerance for being on target (default 0.5 degrees)
    * @param tolerance a rotation
    */
-  public void withThetaTolerance(Rotation2d tolerance) {
+  public AlignToPose withThetaTolerance(Rotation2d tolerance) {
     RotMaxError = tolerance;
     thetaPidController.setTolerance(RotMaxError.getDegrees());
+
+    return this;
   }
   
 

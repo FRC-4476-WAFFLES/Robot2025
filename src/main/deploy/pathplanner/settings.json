@@ -8,19 +8,21 @@
     "CS4 to Reef",
     "Debug Paths",
     "MIDDLE",
+    "Net",
     "OPP1",
     "OPP2",
     "Push",
     "Reef to CS1",
     "Reef to CS3",
     "Reef to CS4",
-    "US2 to Reef",
     "US1 To Reef",
+    "US2 to Reef",
     "US3 to Reef"
   ],
   "autoFolders": [
     "Four Piece",
     "Middle",
+    "Algae",
     "Push",
     "Three Piece"
   ],

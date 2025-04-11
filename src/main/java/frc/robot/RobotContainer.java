@@ -459,6 +459,15 @@ public class RobotContainer {
       () -> dynamicPathingSubsystem.createScoreNetCommand(), DynamicPathing.actionCommandRequirements
     ));
 
+    NamedCommands.registerCommand("Net Shot Prep", Commands.parallel(
+      Commands.sequence(
+        Commands.runOnce(() -> elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.ALGAE_L2)),
+        Commands.waitSeconds(0.5), // Goofy wait
+        Commands.runOnce(() -> elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.NET_PREP))
+      ),
+      new SetPivotPos(PivotPosition.NET_PREP)
+    ));
+
     // Auto Coral Intake
     NamedCommands.registerCommand("Auto Coral Intake", AutoIntake.GetAutoIntakeCommand());
   }

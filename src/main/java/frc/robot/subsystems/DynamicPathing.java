@@ -71,7 +71,7 @@ public class DynamicPathing extends SubsystemBase {
 
     /* Various robot to reef distances */
     /* Robot is assumed to have bumpers on */
-    public static final double REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE = PhysicalConstants.withBumperBotHalfWidth + 0.65; 
+    public static final double REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE = PhysicalConstants.withBumperBotHalfWidth + 0.5; 
     public static final double REEF_SCORING_POSITION_OFFSET = PhysicalConstants.withBumperBotHalfWidth + 0.12; 
     public static final double REEF_SCORING_POSITION_OFFSET_L1 = PhysicalConstants.withBumperBotHalfWidth + 0.37; 
     public static final double REEF_SCORING_POSITION_OFFSET_L4 = PhysicalConstants.withBumperBotHalfWidth + 0.015; 
@@ -467,6 +467,15 @@ public class DynamicPathing extends SubsystemBase {
     }
 
     /**
+     * Gets coordinates in field space to the nearest algae safety position
+     * @return The coordinates 
+     */
+    public Pose2d getNearestAlgaeSafetyLocation() {
+        return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), false, true, REEF_ALGAE_SAFETY_DISTANCE);
+    }
+    
+
+    /**
      * Gets coordinates in field space to the nearest coral scoring position or algae pickup point.
      * @param pose The robot's position in field space (meters)
      * @param rightSide Choose the coral scoring position on the right side of the robot, otherwise the left one is chosen. This depends on the robot's forward orientation.
@@ -736,14 +745,16 @@ public class DynamicPathing extends SubsystemBase {
      * @return A command to pick up algae, or an empty command if not possible
      */
     public Command createAlgaePickupCommand() {
-        if (RobotContainer.intakeSubsystem.isCoralLoaded() || RobotContainer.intakeSubsystem.isAlgaeLoaded()){
+        if (RobotContainer.intakeSubsystem.isAlgaeLoaded()){
             // Refuse to pickup algae if the intake is already occupied
+            // Not checking for coral on purpose (Sometimes sensor is slow and we think we still have it?)
             return new InstantCommand();
         }
 
         Pose2d startingPose = RobotContainer.driveSubsystem.getRobotPose();
         Pose2d targetAlgaePose = getNearestAlgaePickupLocation();
         Pose2d clearancePose = getNearestAlgaeClearanceLocation();
+        Pose2d safetyPose = getNearestAlgaeSafetyLocation();
 
         // Publish telemetry
         SmartDashboard.putNumberArray("TargetPose Reef", new double[] {
@@ -777,6 +788,9 @@ public class DynamicPathing extends SubsystemBase {
             var initialBackOffPath = DynamicPathing.simplePathToPose(clearancePose);
             // var arrivalPath = DynamicPathing.generateComplexPath(clearancePose, null, targetAlgaePose);
 
+            // new AlignToPose(clearancePose)
+            // .withPositionTolerance(0.04)
+            // .withThetaTolerance(Rotation2d.fromDegrees(3)),
             // Give up if path doesn't exist
             if (initialBackOffPath.isPresent()) {
                 arrivalPathingCommand = Commands.sequence(
@@ -788,7 +802,7 @@ public class DynamicPathing extends SubsystemBase {
             }
         }
         
-        var backOffPath = DynamicPathing.generateComplexPath(targetAlgaePose, null, clearancePose, 0.2);
+        var backOffPath = DynamicPathing.generateComplexPath(targetAlgaePose, null, safetyPose, 0.4);
         
         if (backOffPath.isPresent()) {
             // Generate final back off path

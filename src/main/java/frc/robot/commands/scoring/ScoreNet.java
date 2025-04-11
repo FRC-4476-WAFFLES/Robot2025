@@ -33,9 +33,7 @@ public class ScoreNet {
             alignCommand = new InstantCommand();
         }
 
-        return Commands.parallel(
-            // Alignment
-            alignCommand,
+        return Commands.deadline(
             // Score sequence (Operator controlled)
             Commands.sequence(
                 // Run intake in during NET_PREP position
@@ -46,7 +44,9 @@ public class ScoreNet {
                 Commands.runOnce(() -> RobotContainer.intakeSubsystem.setIntakeSpeed(0)),
                 Commands.waitSeconds(0.2),
                 algaeToss()
-            )
+            ),
+            // Alignment
+            alignCommand
         ).finallyDo(() -> {
             RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
             RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
@@ -72,7 +72,7 @@ public class ScoreNet {
                         RobotContainer.pivotSubsystem.getPivotPosition() <= ScoringConstants.ALGAE_TOSS_PIVOT_ANGLE
                     ),
                     Commands.runOnce(() -> {RobotContainer.intakeSubsystem.setDutyCycle(-1);}),
-                    Commands.waitSeconds(0.5)
+                    Commands.waitSeconds(0.4)
                 ).finallyDo(() -> {
                     RobotContainer.intakeSubsystem.setIntakeSpeed(0);
                 })
