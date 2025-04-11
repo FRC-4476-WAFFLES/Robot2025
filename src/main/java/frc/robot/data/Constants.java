@@ -145,6 +145,8 @@ public final class Constants {
     public static final double L1_HEADING_LOCK_ENGAGE_DIFFERENCE = 45; // If within 30deg of L1 angle, engage heading lock 
     public static final double L1_HEADING_LOCK_RIPOFF_VALUE = 0.2; // Break auto align if joystick value higher than this
 
+    // Makes the elevator go up more in net autos, we can tip over but it *is* faster! :)
+    public static final boolean USE_RISKY_NET_AUTO = false;
     /**
      * Maps scoring levels to their respective elevator and pivot enums
      */

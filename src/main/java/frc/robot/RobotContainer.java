@@ -462,8 +462,9 @@ public class RobotContainer {
     NamedCommands.registerCommand("Net Shot Prep", Commands.parallel(
       Commands.sequence(
         Commands.runOnce(() -> elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.ALGAE_L2)),
-        Commands.waitSeconds(0.5), // Goofy wait
+        Commands.waitSeconds(0.6), // Goofy wait
         Commands.runOnce(() -> elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.NET_PREP))
+          .onlyIf(() -> ScoringConstants.USE_RISKY_NET_AUTO)
       ),
       new SetPivotPos(PivotPosition.NET_PREP)
     ));
