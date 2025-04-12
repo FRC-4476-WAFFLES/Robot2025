@@ -46,7 +46,7 @@ public class ScoreCoral extends SequentialCommandGroup {
     0.05, 
     Rotation2d.fromDegrees(1), 
     0.05, 
-    0.04, 
+    0.03, 
     Rotation2d.fromDegrees(2)
   );
 
@@ -65,6 +65,9 @@ public class ScoreCoral extends SequentialCommandGroup {
     0.03, 
     Rotation2d.fromDegrees(2)
   );
+
+  // Avoids super early releases
+  public static final double PIVOT_DEADBAND_L4 = 24; 
 
   /* Timing variables */
   private final Timer totalScoringTimer = new Timer();
@@ -116,7 +119,13 @@ public class ScoreCoral extends SequentialCommandGroup {
         velocityMagnitude <= chosenParameters.maxVelocity &&
         currentSpeeds.omegaRadiansPerSecond <= chosenParameters.maxThetaVelocity.getRadians();
 
-      return poseValid && velocityValid;
+      // Only for L4
+      boolean pivotValidL4 = true;
+      if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4) {
+        pivotValidL4 = Math.abs(RobotContainer.pivotSubsystem.getPivotPosition() - PivotPosition.L4.getDegrees()) < PIVOT_DEADBAND_L4; 
+      }
+
+      return poseValid && velocityValid && pivotValidL4;
     });
 
     addCommands(

@@ -48,7 +48,7 @@
   "folder": "Net",
   "idealStartingState": {
     "velocity": 0.2,
-    "rotation": 179.58780725859773
+    "rotation": -150.0
   },
   "useDefaultConstraints": true
 }

@@ -57,7 +57,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private boolean algaeLoaded = false;
 
     private double dutyCycle = 0;
-    private Timer algaeLossTimer = new Timer();
+    // private Timer algaeLossTimer = new Timer();
 
     private Trigger algaeDetectionTrigger;
 
@@ -89,7 +89,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
         configureIntakeMotor();
         configureLaserCAN();
 
-        algaeLossTimer.reset();
+        // algaeLossTimer.reset();
 
         algaeDetectionTrigger = new Trigger(
             () -> intake.getStatorCurrent().getValueAsDouble() > ManipulatorConstants.ALGAE_CURRENT_THRESHOLD 
@@ -165,13 +165,13 @@ public class Intake extends SubsystemBase implements NetworkUser{
     
     @Override
     public void periodic() {
-        if (algaeLossTimer.get() > 1) {
-            algaeLoaded = false;
-            algaeLossTimer.stop();
-            algaeLossTimer.reset();
+        // if (algaeLossTimer.get() > 1) {
+        //     algaeLoaded = false;
+        //     algaeLossTimer.stop();
+        //     algaeLossTimer.reset();
 
-            //System.out.print("===============\nLost Algae Detected.");
-        }
+        //     //System.out.print("===============\nLost Algae Detected.");
+        // }
 
         if (Math.abs(dutyCycle) > 0.01) {
             intake.set(dutyCycle);
@@ -185,10 +185,10 @@ public class Intake extends SubsystemBase implements NetworkUser{
                     if (intake.getStatorCurrent().getValueAsDouble() < 4) {
                         intake.setControl(intakeControlRequest.withVelocity(-120).withSlot(0));
                         
-                        if (!algaeLossTimer.isRunning()) {
-                            algaeLossTimer.reset();
-                            algaeLossTimer.start();
-                        }
+                        // if (!algaeLossTimer.isRunning()) {
+                        //     algaeLossTimer.reset();
+                        //     algaeLossTimer.start();
+                        // }
                     }
                 } else if (Math.abs(intakeSpeed) < 0.01 && isCoralLoaded()) {
                     intake.setControl(intakePositionRequest.withOutput(0));
@@ -235,8 +235,8 @@ public class Intake extends SubsystemBase implements NetworkUser{
             algaeLoaded = true;
 
             // Reset algae loss conditions
-            algaeLossTimer.stop();
-            algaeLossTimer.reset();
+            // algaeLossTimer.stop();
+            // algaeLossTimer.reset();
         } else if (isOuttakingAlgae()) {
             algaeLoaded = false;
         }

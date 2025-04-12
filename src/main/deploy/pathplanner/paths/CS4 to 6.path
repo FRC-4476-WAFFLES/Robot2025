@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.9305,
-        "y": 0.9927499999999998
+        "x": 1.6779575892857141,
+        "y": 0.7735491071428566
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.5448316700148803,
-        "y": 1.715606448141663
+        "x": 2.2922892593005946,
+        "y": 1.49640555528452
       },
       "isLocked": false,
       "linkedName": "CS4"
@@ -51,7 +51,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 48.46822925891714
+    "rotation": 53.426969021480716
   },
   "useDefaultConstraints": true
 }

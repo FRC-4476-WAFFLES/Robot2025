@@ -3,29 +3,45 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.03483606557377,
-        "y": 2.748309426229507
+        "x": 0.73125,
+        "y": 1.4003348214285711
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.609389637002343,
-        "y": 2.4153295155152206
+        "x": 0.6090271233920561,
+        "y": 2.5271174697514915
       },
       "isLocked": false,
-      "linkedName": "Post 2"
+      "linkedName": "CS3"
     },
     {
       "anchor": {
-        "x": 0.7120065789473684,
-        "y": 1.3501644736842104
+        "x": 0.73125,
+        "y": 3.130524553571428
       },
       "prevControl": {
-        "x": 1.617686180144041,
-        "y": 1.7321211123291367
+        "x": 0.5981330646417514,
+        "y": 2.7745022698864186
+      },
+      "nextControl": {
+        "x": 0.9189311596095331,
+        "y": 3.6324792813377496
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 3.080840163934426,
+        "y": 3.8511782786885242
+      },
+      "prevControl": {
+        "x": 1.7036335356644035,
+        "y": 4.101782966934931
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "CS3"
+      "linkedName": "Post 5"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +58,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 54.59100000000001
+    "rotation": 0.0
   },
   "reversed": false,
-  "folder": "Reef to CS3",
+  "folder": "Dodge",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 120.52970589993417
+    "rotation": 54.59100000000001
   },
   "useDefaultConstraints": true
 }

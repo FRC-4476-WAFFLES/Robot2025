@@ -10,7 +10,9 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -287,7 +289,7 @@ public class RobotContainer {
     );
 
     // Manual net toss
-    Controls.operatorController.povDown().whileTrue(Commands.defer(() -> ScoreNet.getScoreNetCommand(0, Rotation2d.kZero, false), DynamicPathing.actionCommandRequirements).onlyIf(() -> RobotContainer.intakeSubsystem.isAlgaeLoaded()));
+    Controls.operatorController.povDown().whileTrue(Commands.defer(() -> ScoreNet.getScoreNetCommand(0, () -> Rotation2d.kZero, false), DynamicPathing.actionCommandRequirements).onlyIf(() -> RobotContainer.intakeSubsystem.isAlgaeLoaded()));
   
     // L1 Intake / Outtake
     Controls.rightJoystick.button(4).onTrue(
@@ -471,6 +473,26 @@ public class RobotContainer {
 
     // Auto Coral Intake
     NamedCommands.registerCommand("Auto Coral Intake", AutoIntake.GetAutoIntakeCommand());
+
+    // Seconds REMAINING in auto [THIS HAS CONSEQUENCES DON'T MESS IT UP]
+    double WAIT_ONE_MATCH_TIME = 7;
+    // Seconds REMAINING in auto [DO NOT MIX THIS UP]
+    double WAIT_TWO_MATCH_TIME = 9;
+    NamedCommands.registerCommand("Wait One", 
+      Commands.either(
+        new WaitUntilCommand(() -> Timer.getMatchTime() < WAIT_ONE_MATCH_TIME), 
+        new WaitCommand(999), // Do nothing if we're too late starting 
+        () -> Timer.getMatchTime() < WAIT_ONE_MATCH_TIME
+      )
+    );
+
+    NamedCommands.registerCommand("Wait Two", 
+    Commands.either(
+        new WaitUntilCommand(() -> Timer.getMatchTime() < WAIT_TWO_MATCH_TIME), 
+        new WaitCommand(999), // Do nothing if we're too late starting 
+        () -> Timer.getMatchTime() < WAIT_TWO_MATCH_TIME
+      )
+    );
   }
 
   /**

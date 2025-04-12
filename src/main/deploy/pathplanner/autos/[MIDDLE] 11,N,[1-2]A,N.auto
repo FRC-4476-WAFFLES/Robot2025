@@ -11,7 +11,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "US2 to 9"
+                  "pathName": "MIDDLE To 11"
                 }
               },
               {
@@ -30,19 +30,25 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "named",
+          "data": {
+            "name": "Auto Algae Intake"
+          }
+        },
+        {
+          "type": "deadline",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "9 to CS1"
+                  "pathName": "11 To Net"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "Set Position Intake"
+                  "name": "Net Shot Prep"
                 }
               }
             ]
@@ -51,23 +57,29 @@
         {
           "type": "named",
           "data": {
-            "name": "Auto Coral Intake"
+            "name": "Net Shot"
           }
         },
         {
-          "type": "parallel",
+          "type": "named",
+          "data": {
+            "name": "Set Position Algae L2"
+          }
+        },
+        {
+          "type": "deadline",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "CS1 to 8"
+                  "pathName": "Net1 to [1-2]A"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "Set Position L2"
+                  "name": "Set Position Algae L2"
                 }
               }
             ]
@@ -76,23 +88,23 @@
         {
           "type": "named",
           "data": {
-            "name": "Autoscore L4 Left"
+            "name": "Auto Algae Intake"
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "8 to CS1"
+                  "pathName": "[1-2]A To Net"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "Set Position Intake"
+                  "name": "Net Shot Prep"
                 }
               }
             ]
@@ -101,38 +113,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Auto Coral Intake"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "CS1 to 7"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Set Position L2"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Autoscore L4 Right"
+            "name": "Net Shot"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "Three Piece",
+  "folder": "Algae",
   "choreoAuto": false
 }

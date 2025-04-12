@@ -64,6 +64,11 @@ public class DynamicPathing extends SubsystemBase {
     public static final double NET_MAX_SCORING_X = Units.inchesToMeters(340);
     public static final double NET_MAX_SCORING_Y = Units.inchesToMeters(317);
 
+    public static final double NET_TURN_LEFT_Y = Units.inchesToMeters(222.6);
+    public static final double NET_TURN_RIGHT_Y = Units.inchesToMeters(253.4);
+
+    public static final Rotation2d NET_TURN_AMOUNT = Rotation2d.fromDegrees(30);
+
     /* Reef physical parameters */
     public static final Translation2d REEF_CENTER_BLUE = new Translation2d(Units.inchesToMeters(176.745), Units.inchesToMeters(158.50)); 
     public static final double REEF_INRADIUS = 0.81901;
@@ -827,10 +832,30 @@ public class DynamicPathing extends SubsystemBase {
         if (!RobotContainer.intakeSubsystem.isAlgaeLoaded()) {
             return new InstantCommand();
         }
+
         Rotation2d targetNetRotation = WafflesUtilities.FlipAngleIfRedAlliance(NET_SCORING_ANGLE);
+        Rotation2d netRotationLeft = targetNetRotation.plus(NET_TURN_AMOUNT);
+        Rotation2d netRotationRight = targetNetRotation.minus(NET_TURN_AMOUNT);
         double targetNetX = WafflesUtilities.FlipXIfRedAlliance(NET_LINE_X_BLUE); 
 
-        return ScoreNet.getScoreNetCommand(targetNetX, targetNetRotation, true);
+        return ScoreNet.getScoreNetCommand(targetNetX, () -> {   
+                Pose2d currentPose = RobotContainer.driveSubsystem.getRobotPose();
+                double Y = WafflesUtilities.FlipYIfRedAlliance(currentPose.getY());
+                if (Y < NET_TURN_LEFT_Y) {
+                    return netRotationLeft;
+                } else if (Y > NET_TURN_RIGHT_Y) {
+                    return netRotationRight;
+                }
+
+                double diffL = Math.abs(currentPose.getRotation().minus(netRotationLeft).getDegrees());
+                double diffR = Math.abs(currentPose.getRotation().minus(netRotationRight).getDegrees());
+                if (diffL < diffR) {
+                    return netRotationLeft;
+                }
+                return netRotationRight; 
+            },
+            true
+        );
     }
 
     /**

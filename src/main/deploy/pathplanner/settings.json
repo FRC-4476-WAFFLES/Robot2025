@@ -9,6 +9,7 @@
     "Debug Paths",
     "MIDDLE",
     "Net",
+    "Dodge",
     "OPP1",
     "OPP2",
     "Push",
@@ -20,9 +21,9 @@
     "US3 to Reef"
   ],
   "autoFolders": [
-    "Four Piece",
-    "Middle",
     "Algae",
+    "Four Piece",
+    "Two Piece",
     "Push",
     "Three Piece"
   ],

@@ -4,6 +4,8 @@
 
 package frc.robot.commands.scoring;
 
+import java.util.function.Supplier;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -22,11 +24,11 @@ import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 /** Factory for algae toss command */
 public class ScoreNet {
 
-    public static Command getScoreNetCommand(double targetNetX, Rotation2d targetNetRotation, boolean doAlign) {
+    public static Command getScoreNetCommand(double targetNetX, Supplier<Rotation2d> targetNetRotation, boolean doAlign) {
         Command alignCommand = new DriveTeleop(
             () -> targetNetX, true, // Just pid to setpoint should be () -> targetNetX
             Controls::getDriveX, false,
-            () -> targetNetRotation, true
+            targetNetRotation, true
         );
 
         if (!doAlign) {
@@ -41,7 +43,6 @@ public class ScoreNet {
                     new ApplyScoringSetpoint(ScoringLevel.NET_PREP)
                 ),
                 Commands.runOnce(() -> RobotContainer.pivotSubsystem.setIsThrowingAlgae(true)),
-                Commands.runOnce(() -> RobotContainer.intakeSubsystem.setIntakeSpeed(0)),
                 Commands.waitSeconds(0.2),
                 algaeToss()
             ),
@@ -64,6 +65,7 @@ public class ScoreNet {
     private static Command algaeToss() {
         return Commands.sequence(
             Commands.waitUntil(Controls.doNotScore.negate()),
+            Commands.runOnce(() -> RobotContainer.intakeSubsystem.setIntakeSpeed(0)),
             Commands.parallel(
                 new ApplyScoringSetpoint(ScoringLevel.NET),
                 // Release at the same point
