@@ -3,45 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.937750000000001,
-        "y": 3.86
+        "x": 3.179631696428571,
+        "y": 7.152399553571428
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.352642535648442,
-        "y": 2.6878419232776176
+        "x": 2.1483469757106235,
+        "y": 6.9049880599950315
       },
       "isLocked": false,
-      "linkedName": "Post 12"
+      "linkedName": "Dodge Point"
     },
     {
       "anchor": {
-        "x": 6.098102678571427,
-        "y": 1.1783482142857145
+        "x": 0.7834821428571428,
+        "y": 6.656194196428571
       },
       "prevControl": {
-        "x": 6.705301339285713,
-        "y": 1.6796754075148042
-      },
-      "nextControl": {
-        "x": 5.541834646363757,
-        "y": 0.719071359258258
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 3.2775669642857137,
-        "y": 0.7409040178571433
-      },
-      "prevControl": {
-        "x": 4.889576518889832,
-        "y": 0.584066063937301
+        "x": 1.047206256318544,
+        "y": 6.721967018875481
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Dodge Point"
+      "linkedName": "CS2"
     }
   ],
   "rotationTargets": [],
@@ -58,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 54.59100000000001
+    "rotation": -54.162347045721745
   },
   "reversed": false,
   "folder": "Dodge",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": -46.48401467566214
   },
   "useDefaultConstraints": true
 }

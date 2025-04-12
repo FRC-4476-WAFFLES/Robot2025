@@ -36,7 +36,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "12 To CS3 [1] Dodge"
+                  "pathName": "12 To CS2 [1] Dodge"
                 }
               },
               {
@@ -57,7 +57,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "CS3 [1] To CS3"
+            "pathName": "CS2 [1] To CS2"
           }
         },
         {
@@ -79,7 +79,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "CS3 To 11"
+                  "pathName": "CS2 To 11"
                 }
               },
               {
