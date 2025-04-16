@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -64,6 +65,8 @@ public class Telemetry extends SubsystemBase {
     private final DoublePublisher calculatedDriveX = controlsTable.getDoubleTopic("Calculated Drive X").publish();
     private final DoublePublisher calculatedDriveY = controlsTable.getDoubleTopic("Calculated Drive Y").publish();
     private final DoublePublisher calculatedDriveRot = controlsTable.getDoubleTopic("Calculated Drive Rotation").publish();
+
+    private final DoublePublisher matchTime = controlsTable.getDoubleTopic("Match Time").publish();
 
     /* Swerve debugging data */
     private final NetworkTable swerveTable = inst.getTable("SwerveModule");
@@ -152,24 +155,26 @@ public class Telemetry extends SubsystemBase {
         // This method will be called once per scheduler run
         publishPDHInfo();
 
+        matchTime.set(Timer.getMatchTime());
+
         // Pathplanner Telemetry
         // Logging callback for current robot pose
-        PathPlannerLogging.setLogCurrentPoseCallback((pose) -> {
-            // Do whatever you want with the pose here
-            // pathplannerCurrentPoseNT.set(pose);
-        });
+        // PathPlannerLogging.setLogCurrentPoseCallback((pose) -> {
+        //     // Do whatever you want with the pose here
+        //     // pathplannerCurrentPoseNT.set(pose);
+        // });
 
-        // Logging callback for target robot pose
-        PathPlannerLogging.setLogTargetPoseCallback((pose) -> {
-            // Do whatever you want with the pose here
-            // pathplannerTargetPoseNT.set(pose);
-        });
+        // // Logging callback for target robot pose
+        // PathPlannerLogging.setLogTargetPoseCallback((pose) -> {
+        //     // Do whatever you want with the pose here
+        //     // pathplannerTargetPoseNT.set(pose);
+        // });
 
-        // Logging callback for the active path, this is sent as a list of poses
-        PathPlannerLogging.setLogActivePathCallback((poses) -> {
-            // Do whatever you want with the poses here
-            // pathplannerCurrentTrajectory.set(poses.toArray(trajTypeArray));
-        });
+        // // Logging callback for the active path, this is sent as a list of poses
+        // PathPlannerLogging.setLogActivePathCallback((poses) -> {
+        //     // Do whatever you want with the poses here
+        //     // pathplannerCurrentTrajectory.set(poses.toArray(trajTypeArray));
+        // });
     }
 
     /* Accept the swerve drive state and telemeterize it to smartdashboard */

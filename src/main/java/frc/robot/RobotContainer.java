@@ -475,14 +475,14 @@ public class RobotContainer {
     NamedCommands.registerCommand("Auto Coral Intake", AutoIntake.GetAutoIntakeCommand());
 
     // Seconds REMAINING in auto [THIS HAS CONSEQUENCES DON'T MESS IT UP]
-    double WAIT_ONE_MATCH_TIME = 7;
+    double WAIT_ONE_MATCH_TIME = 9;
     // Seconds REMAINING in auto [DO NOT MIX THIS UP]
-    double WAIT_TWO_MATCH_TIME = 9;
+    double WAIT_TWO_MATCH_TIME = 6;
     NamedCommands.registerCommand("Wait One", 
       Commands.either(
         new WaitUntilCommand(() -> Timer.getMatchTime() < WAIT_ONE_MATCH_TIME), 
         new WaitCommand(999), // Do nothing if we're too late starting 
-        () -> Timer.getMatchTime() < WAIT_ONE_MATCH_TIME
+        () -> Timer.getMatchTime() >= WAIT_ONE_MATCH_TIME
       )
     );
 
@@ -490,7 +490,7 @@ public class RobotContainer {
     Commands.either(
         new WaitUntilCommand(() -> Timer.getMatchTime() < WAIT_TWO_MATCH_TIME), 
         new WaitCommand(999), // Do nothing if we're too late starting 
-        () -> Timer.getMatchTime() < WAIT_TWO_MATCH_TIME
+        () -> Timer.getMatchTime() >= WAIT_TWO_MATCH_TIME
       )
     );
   }
