@@ -5,7 +5,6 @@
 package frc.robot.commands.scoring;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
@@ -23,44 +22,13 @@ import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.commands.AlignToPose;
 import frc.robot.commands.intake.CoralOutake;
+import frc.robot.data.Constants.ScoringConstants;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
+import frc.robot.data.Constants.ScoringConstants.CoralScoringParameters;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.subsystems.DynamicPathing;
 
 public class ScoreCoral extends SequentialCommandGroup {
-  /** A collection of scoring parameters */
-  public record CoralScoringParameters(
-    double maxVelocity,
-    Rotation2d maxThetaVelocity,
-
-    double maxDistanceX,
-    double maxDistanceY,
-    Rotation2d maxThetaDifference
-  ) {}
-
-  public static final CoralScoringParameters L4Params = new CoralScoringParameters(
-    0.05, 
-    Rotation2d.fromDegrees(1), 
-    0.05, 
-    0.03, 
-    Rotation2d.fromDegrees(2)
-  );
-
-  public static final CoralScoringParameters L3Params = new CoralScoringParameters(
-    0.03, 
-    Rotation2d.fromDegrees(1), 
-    0.03, 
-    0.03, 
-    Rotation2d.fromDegrees(2)
-  );
-
-  public static final CoralScoringParameters L2Params = new CoralScoringParameters(
-    0.03, 
-    Rotation2d.fromDegrees(1), 
-    0.03, 
-    0.03, 
-    Rotation2d.fromDegrees(2)
-  );
 
   // Avoids super early releases
   public static final double PIVOT_DEADBAND_L4 = 24; 
@@ -93,11 +61,11 @@ public class ScoreCoral extends SequentialCommandGroup {
     // Pick the parameter set for the current level
     CoralScoringParameters chosenParameters;
     if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4) {
-      chosenParameters = L4Params;
+      chosenParameters = ScoringConstants.L4Params;
     } else if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L3) {
-      chosenParameters = L3Params;
+      chosenParameters = ScoringConstants.L3Params;
     } else {
-      chosenParameters = L2Params;
+      chosenParameters = ScoringConstants.L2Params;
     }
     
 
@@ -108,12 +76,12 @@ public class ScoreCoral extends SequentialCommandGroup {
       double velocityMagnitude = Math.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
       
       boolean poseValid = 
-        Math.abs(errorPose.getX()) <= chosenParameters.maxDistanceX &&
-        Math.abs(errorPose.getY()) <= chosenParameters.maxDistanceY && 
-        Math.abs(errorPose.getRotation().getDegrees()) <= chosenParameters.maxThetaDifference.getDegrees();
+        Math.abs(errorPose.getX()) <= chosenParameters.maxDistanceX() &&
+        Math.abs(errorPose.getY()) <= chosenParameters.maxDistanceY() && 
+        Math.abs(errorPose.getRotation().getDegrees()) <= chosenParameters.maxThetaDifference().getDegrees();
       boolean velocityValid = 
-        velocityMagnitude <= chosenParameters.maxVelocity &&
-        currentSpeeds.omegaRadiansPerSecond <= chosenParameters.maxThetaVelocity.getRadians();
+        velocityMagnitude <= chosenParameters.maxVelocity() &&
+        currentSpeeds.omegaRadiansPerSecond <= chosenParameters.maxThetaVelocity().getRadians();
 
       // Only for L4
       boolean pivotValidL4 = true;

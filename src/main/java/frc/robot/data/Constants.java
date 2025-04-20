@@ -6,6 +6,7 @@ package frc.robot.data;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -181,6 +182,40 @@ public final class Constants {
           return pivotPosition;
       }
     }
+
+    /** A collection of scoring parameters */
+    public record CoralScoringParameters(
+      double maxVelocity,
+      Rotation2d maxThetaVelocity,
+
+      double maxDistanceX,
+      double maxDistanceY,
+      Rotation2d maxThetaDifference
+    ) {}
+
+    public static final CoralScoringParameters L4Params = new CoralScoringParameters(
+      0.05, 
+      Rotation2d.fromDegrees(1), 
+      0.05, 
+      0.03, 
+      Rotation2d.fromDegrees(2)
+    );
+
+    public static final CoralScoringParameters L3Params = new CoralScoringParameters(
+      0.03, 
+      Rotation2d.fromDegrees(1), 
+      0.03, 
+      0.03, 
+      Rotation2d.fromDegrees(2)
+    );
+
+    public static final CoralScoringParameters L2Params = new CoralScoringParameters(
+      0.03, 
+      Rotation2d.fromDegrees(1), 
+      0.03, 
+      0.03, 
+      Rotation2d.fromDegrees(2)
+    );
   }
 
   /* Manipulator Constants */
