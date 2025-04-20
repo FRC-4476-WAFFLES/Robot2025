@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Volts;
 
 import java.util.function.Supplier;
 
@@ -37,7 +38,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.data.Constants.VisionConstants;
 import frc.robot.data.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.LimelightContainer;
-import frc.robot.utils.LimelightHelpers;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -84,6 +84,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
     private boolean hasSeenValidOdometry = false;
     
     /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
+    @SuppressWarnings("unused")
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
         new SysIdRoutine.Config(
             null,        // Use default ramp rate (1 V/s)
@@ -100,6 +101,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
     );
 
     /* SysId routine for characterizing steer. This is used to find PID gains for the steer motors. */
+    @SuppressWarnings("unused")
     private final SysIdRoutine m_sysIdRoutineSteer = new SysIdRoutine(
         new SysIdRoutine.Config(
             null,        // Use default ramp rate (1 V/s)

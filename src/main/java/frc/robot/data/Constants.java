@@ -9,7 +9,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import static edu.wpi.first.units.Units.MetersPerSecond;
+import edu.wpi.first.units.Units;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 
@@ -122,7 +122,7 @@ public final class Constants {
   /* Physical */
   public static class PhysicalConstants {
     // Placeholder values. Tune.
-    public static final double maxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+    public static final double maxSpeed = TunerConstants.kSpeedAt12Volts.in(Units.MetersPerSecond);
     public static final double maxAngularSpeed = 6; // Max Rad/s
 
     public static final double withBumperBotHalfWidth = 0.460; // m
@@ -147,6 +147,8 @@ public final class Constants {
 
     // Makes the elevator go up more in net autos, we can tip over but it *is* faster! :)
     public static final boolean USE_RISKY_NET_AUTO = true;
+    public static final boolean USE_CORAL_SCORE_PATH_PLANNING = false; // Too slow / inconsistently latent on rio2
+
     /**
      * Maps scoring levels to their respective elevator and pivot enums
      */

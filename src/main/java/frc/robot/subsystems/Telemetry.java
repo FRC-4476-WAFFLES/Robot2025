@@ -1,28 +1,19 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
-import com.pathplanner.lib.util.PathPlannerLogging;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 import frc.robot.data.BuildConstants;
@@ -120,7 +111,7 @@ public class Telemetry extends SubsystemBase {
     //         .append(new MechanismLigament2d("Direction", 0.1, 0, 0, new Color8Bit(Color.kWhite))),
     // };
 
-    private final double MaxSpeed;
+    // private final double MaxSpeed;
 
 
     /*                 */
@@ -136,12 +127,10 @@ public class Telemetry extends SubsystemBase {
     // Only keep publishers for the most recent durations
 
     /**
-     * Construct a telemetry subsystem, with the specified max speed of the robot
-     * 
-     * @param maxSpeed Maximum speed in meters per second
+     * Construct a telemetry subsystem
      */
-    public Telemetry(double maxSpeed) {
-        MaxSpeed = maxSpeed;
+    public Telemetry() {
+        // MaxSpeed = PhysicalConstants.maxSpeed;
 
         // Publish build info once to networktables
         publishBuildInfo();

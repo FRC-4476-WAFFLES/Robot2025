@@ -23,16 +23,12 @@ import com.ctre.phoenix.led.RainbowAnimation;
 import com.ctre.phoenix.led.StrobeAnimation;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
-import static frc.robot.RobotContainer.driveSubsystem;
-import static frc.robot.RobotContainer.dynamicPathingSubsystem;
-import static frc.robot.RobotContainer.elevatorSubsystem;
-import static frc.robot.RobotContainer.intakeSubsystem;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
@@ -62,7 +58,7 @@ public class Lights extends SubsystemBase {
   
   // Animation control variables
   private boolean useRainbowAnimation = false; // When false, use the default yellow flow animation
-  private int[] rainbowOffsets = new int[LED_COUNT]; // Stores color offset for each LED
+  // private int[] rainbowOffsets = new int[LED_COUNT]; // Stores color offset for each LED
   private static final int[] RAINBOW_COLORS = {
     255, 0, 0,     // Red
     255, 127, 0,   // Orange
@@ -85,7 +81,7 @@ public class Lights extends SubsystemBase {
   
   // Animation switching control
   private static final Timer animationSwitchTimer = new Timer();
-  private static final double ANIMATION_SWITCH_INTERVAL = 60.0; // Switch animations every 60 seconds
+  // private static final double ANIMATION_SWITCH_INTERVAL = 60.0; // Switch animations every 60 seconds
   
   // Pre-calculated smooth rainbow colors for performance
   private int[][] smoothRainbowColors = new int[RAINBOW_SEGMENTS][3]; // [position][r,g,b]
@@ -384,6 +380,7 @@ public class Lights extends SubsystemBase {
   /**
    * Handles the rainbow linear animation in disabled state
    */
+  @SuppressWarnings("unused")
   private void handleRainbowAnimation() {
     if (blinkTimer.get() > 0.01) { // Slightly faster for smoother animation
       // Update rainbow position (move colors down the strip)
@@ -463,6 +460,7 @@ public class Lights extends SubsystemBase {
   /**
    * Switches to the other animation and resets the timer
    */
+  @SuppressWarnings("unused")
   private void switchAnimation() {
     useRainbowAnimation = !useRainbowAnimation;
     
@@ -480,14 +478,14 @@ public class Lights extends SubsystemBase {
    */
   private void updateDiagnosticIndicators() {
     // Algae Loaded
-    if (intakeSubsystem.isAlgaeLoaded()) {
+    if (RobotContainer.intakeSubsystem.isAlgaeLoaded()) {
       setLEDRange(0, 1, LightColours.DARKGREEN);
     } else {
       setLEDRange(0, 1, LightColours.BLACK);
     }
     
     // Coral Loaded
-    if (intakeSubsystem.isCoralLoaded()) {
+    if (RobotContainer.intakeSubsystem.isCoralLoaded()) {
       setLEDRange(1, 2, LightColours.WHITE);
     } else {
       setLEDRange(1, 2, LightColours.BLACK);
@@ -510,14 +508,14 @@ public class Lights extends SubsystemBase {
     }
 
     // Can see tag indicator
-    if (driveSubsystem.limelightsSeeTag()) {
+    if (RobotContainer.driveSubsystem.limelightsSeeTag()) {
       setLEDRange(4, 5, LightColours.PINK);
     } else {
       setLEDRange(4, 5, LightColours.BLACK);
     }
 
     // Funnel sees coral indicator
-    if (intakeSubsystem.funnelSeesCoral()) {
+    if (RobotContainer.intakeSubsystem.funnelSeesCoral()) {
       setLEDRange(5, 6, LightColours.ORANGE);
     } else {
       setLEDRange(5, 6, LightColours.BLACK);
@@ -557,8 +555,8 @@ public class Lights extends SubsystemBase {
       return;
     }
 
-    ScoringLevel scoringLevel = dynamicPathingSubsystem.getCoralScoringLevel();
-    boolean isRightSide = dynamicPathingSubsystem.getCoralScoringSide();
+    ScoringLevel scoringLevel = RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel();
+    boolean isRightSide = RobotContainer.dynamicPathingSubsystem.getCoralScoringSide();
     
     switch (scoringLevel) {
       case L1:
@@ -594,8 +592,8 @@ public class Lights extends SubsystemBase {
    * Updates elevator side lights based on current elevator height setpoint in manual mode
    */
   private void handleManualElevatorLights() {
-    ElevatorLevel elevatorLevel =  elevatorSubsystem.getElevatorSetpointEnum();
-    boolean hasCoralLoaded = intakeSubsystem.isCoralLoaded();
+    ElevatorLevel elevatorLevel =  RobotContainer.elevatorSubsystem.getElevatorSetpointEnum();
+    boolean hasCoralLoaded = RobotContainer.intakeSubsystem.isCoralLoaded();
     setElevatorLevelPattern(elevatorLevel, hasCoralLoaded);
   }
 

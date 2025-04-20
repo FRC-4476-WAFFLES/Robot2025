@@ -4,20 +4,18 @@
 
 package frc.robot.commands.scoring;
 
-import static frc.robot.RobotContainer.dynamicPathingSubsystem;
-import static frc.robot.RobotContainer.elevatorSubsystem;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
-import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants;
-import frc.robot.data.Constants.ScoringConstants;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.subsystems.DynamicPathing;
+import frc.robot.subsystems.Elevator;
 
 /* Continuously adjusts position of elevator and pivot to desired scoring level */
 public class PrepareScoreCoral extends Command {
+  private final Elevator elevatorSubsystem = RobotContainer.elevatorSubsystem;
+
   /** Creates a new PrepareCoralScore. */
   public PrepareScoreCoral() {
     addRequirements(RobotContainer.pivotSubsystem, RobotContainer.elevatorSubsystem);

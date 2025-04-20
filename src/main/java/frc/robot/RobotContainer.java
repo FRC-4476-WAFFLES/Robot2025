@@ -10,7 +10,6 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -18,7 +17,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -44,7 +42,6 @@ import frc.robot.commands.test.TestElevatorAuto;
 import frc.robot.commands.test.WheelRadiusCharacterization;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
-import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.Constants.ScoringConstants;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.data.TunerConstants;
@@ -82,7 +79,7 @@ public class RobotContainer {
   /* Do not control harware, but have state and or periodic methods */
   /* Can be required by commands to mutex lock actions like pathing */
   public static final DynamicPathing dynamicPathingSubsystem = new DynamicPathing();
-  public static final Telemetry telemetry = new Telemetry(PhysicalConstants.maxSpeed);
+  public static final Telemetry telemetry = new Telemetry();
   public static final MechanismPoses mechanismPoses = new MechanismPoses();
 
   /* Commands */
@@ -341,6 +338,7 @@ public class RobotContainer {
   }
 
   /** Binds controls to run drivetrain sysID */
+  @SuppressWarnings("unused")
   private void sysIDBindings() {
     // Drive bindings
     Controls.operatorController.a().whileTrue(

@@ -1,9 +1,5 @@
 package frc.robot.utils;
 
-import static frc.robot.data.Constants.VisionConstants.kMultiTagStdDevsMT1;
-import static frc.robot.data.Constants.VisionConstants.kSingleTagStdDevsMT1;
-import static frc.robot.data.Constants.VisionConstants.kStdDevsMT2ReefTargeting;
-
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -42,7 +38,7 @@ public class VisionHelpers {
      * @param estimatedPose The estimated pose to guess standard deviations for.
      */
     public static Matrix<N3, N1> getEstimationStdDevsLimelight(Pose2d estimatedPose, RawFiducial[] tags) {
-        var estStdDevs = kSingleTagStdDevsMT1;
+        var estStdDevs = VisionConstants.kSingleTagStdDevsMT1;
 
         int numTags = 0;
         double avgDist = 0;
@@ -60,7 +56,7 @@ public class VisionHelpers {
 
         // Decrease std devs if multiple targets are visible
         if (numTags > 1)
-            estStdDevs = kMultiTagStdDevsMT1;
+            estStdDevs = VisionConstants.kMultiTagStdDevsMT1;
         
         if (avgAmbiguity > 0.7) {
             return VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
@@ -86,7 +82,7 @@ public class VisionHelpers {
      * This should only be used when there are targets visible.
      */
     public static Matrix<N3, N1> getEstimationStdDevsLimelightMT2(RawFiducial[] tags) {
-        var estStdDevs = kStdDevsMT2ReefTargeting;
+        var estStdDevs = VisionConstants.kStdDevsMT2ReefTargeting;
 
         // var pathingSituation = RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation();
         // if (pathingSituation == DynamicPathingSituation.REEF_ALGAE || pathingSituation == DynamicPathingSituation.REEF_CORAL) {

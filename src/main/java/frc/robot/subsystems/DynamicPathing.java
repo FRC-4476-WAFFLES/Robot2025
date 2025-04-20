@@ -13,8 +13,6 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
 import com.pathplanner.lib.util.FlippingUtil;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -39,10 +37,10 @@ import frc.robot.commands.scoring.PickupAlgae;
 import frc.robot.commands.scoring.ScoreCoral;
 import frc.robot.commands.scoring.ScoreNet;
 import frc.robot.commands.superstructure.ApplyScoringSetpoint;
-import frc.robot.data.Constants;
-import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
+import frc.robot.data.Constants.PhysicalConstants;
+import frc.robot.data.Constants.ScoringConstants;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.utils.WafflesUtilities;
 
@@ -862,6 +860,7 @@ public class DynamicPathing extends SubsystemBase {
      * Creates an algae pickup command using the current robot position and the nearest algae pickup location.
      * @return A command to pick up algae, or null if not possible
      */
+    @SuppressWarnings("unused")
     public Command createCoralScoreCommand() {
         Pose2d startingPose = RobotContainer.driveSubsystem.getRobotPose();
         Pose2d targetCoralPose = getNearestCoralScoringLocation();
@@ -881,9 +880,8 @@ public class DynamicPathing extends SubsystemBase {
             debugFlippedPose.getRotation().getDegrees()
         });
 
-        // If too close just use PID
-        //startingPose.getTranslation().getDistance(targetCoralPose.getTranslation()) < 0.6
-        if (true) {
+        // If too close or overridden just use PID
+        if (!ScoringConstants.USE_CORAL_SCORE_PATH_PLANNING || startingPose.getTranslation().getDistance(targetCoralPose.getTranslation()) < 0.6) {
             return ScoreCoral.scoreCoralWithPathAndAlgae(new InstantCommand(), targetCoralPose, Double.MAX_VALUE);
         }
 

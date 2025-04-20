@@ -4,13 +4,10 @@
 
 package frc.robot.commands.intake;
 
-import static frc.robot.RobotContainer.intakeSubsystem;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.ManipulatorConstants;
-import com.ctre.phoenix6.signals.NeutralModeValue;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class CoralIntake extends Command {
@@ -18,7 +15,7 @@ public class CoralIntake extends Command {
   private double targetPosition = 0;
 
   private Trigger funnelTrigger = new Trigger(
-    () -> intakeSubsystem.funnelSeesCoral() 
+    () -> RobotContainer.intakeSubsystem.funnelSeesCoral() 
   ).debounce(0.03); // ~(>_<。)＼ WAIT! They don't love you like I love you anyways...
 
   /** Creates a new CoralIntake. */

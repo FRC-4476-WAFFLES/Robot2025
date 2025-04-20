@@ -1,8 +1,5 @@
 package frc.robot.utils;
 
-import static frc.robot.data.Constants.VisionConstants.kMultiTagStdDevs;
-import static frc.robot.data.Constants.VisionConstants.kSingleTagStdDevs;
-
 import java.io.IOException;
 import java.util.Optional;
 
@@ -27,7 +24,11 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.robot.Robot;
+import frc.robot.data.Constants.VisionConstants;
 
+/*
+ * This class is a bit of a mess, and is in serious need of a rewrite. It is currently unused for 2025
+ */
 public class PhotonVisionWrapper {
     private final PhotonCamera camera;
     private PhotonPoseEstimator photonEstimator;
@@ -98,37 +99,44 @@ public class PhotonVisionWrapper {
     }
 
     public PhotonPipelineResult getLatestResult() {
-        return camera.getLatestResult();
+        var results = camera.getAllUnreadResults();
+        if (results.size() > 0) {
+            return results.get(results.size() - 1);
+        }
+        return new PhotonPipelineResult();
     }
 
     /**
-     * The latest estimated robot pose on the field from vision data. This may be
+     * The latest estimated robot poses on the field from vision data. This may be
      * empty. This should
      * only be called once per loop.
      *
-     * @return An {@link EstimatedRobotPose} with an estimated pose, estimate
+     * @return An {@link EstimatedRobotPose} with a list of estimated poses, estimate
      *         timestamp, and targets
      *         used for estimation.
      */
-    public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
+    public Optional<EstimatedRobotPose> getEstimatedGlobalPoses() {
         // Query the latest result from PhotonVision
-        var result = camera.getLatestResult();
+        var results = camera.getAllUnreadResults();
 
-        var visionEst = photonEstimator.update(result);
-        double latestTimestamp = camera.getLatestResult().getTimestampSeconds();
-        boolean newResult = Math.abs(latestTimestamp - lastEstTimestamp) > 1e-5;
-        if (Robot.isSimulation()) {
-            visionEst.ifPresentOrElse(
-                    est -> getSimDebugField()
-                            .getObject("VisionEstimation")
-                            .setPose(est.estimatedPose.toPose2d()),
-                    () -> {
-                        if (newResult)
-                            getSimDebugField().getObject("VisionEstimation").setPoses();
-                    });
+        Optional<EstimatedRobotPose> visionEst = Optional.empty();
+        for (var result : results) {
+            visionEst = photonEstimator.update(result);
+            double latestTimestamp = result.getTimestampSeconds();
+            boolean newResult = Math.abs(latestTimestamp - lastEstTimestamp) > 1e-5;
+            if (Robot.isSimulation()) {
+                visionEst.ifPresentOrElse(
+                        est -> getSimDebugField()
+                                .getObject("VisionEstimation")
+                                .setPose(est.estimatedPose.toPose2d()),
+                        () -> {
+                            if (newResult)
+                                getSimDebugField().getObject("VisionEstimation").setPoses();
+                        });
+            }
+            if (newResult)
+                lastEstTimestamp = latestTimestamp;
         }
-        if (newResult)
-            lastEstTimestamp = latestTimestamp;
         return visionEst;
     }
 
@@ -142,7 +150,7 @@ public class PhotonVisionWrapper {
      * @param estimatedPose The estimated pose to guess standard deviations for.
      */
     public Matrix<N3, N1> getEstimationStdDevs(Pose2d estimatedPose) {
-        var estStdDevs = kSingleTagStdDevs;
+        var estStdDevs = VisionConstants.kSingleTagStdDevs;
         var targets = getLatestResult().getTargets();
         int numTags = 0;
         double avgDist = 0;
@@ -158,7 +166,7 @@ public class PhotonVisionWrapper {
         avgDist /= numTags;
         // Decrease std devs if multiple targets are visible
         if (numTags > 1)
-            estStdDevs = kMultiTagStdDevs;
+            estStdDevs = VisionConstants.kMultiTagStdDevs;
         // Increase std devs based on (average) distance
         if (numTags == 1 && avgDist > 4)
             estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
