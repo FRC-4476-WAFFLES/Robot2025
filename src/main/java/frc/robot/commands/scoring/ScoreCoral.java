@@ -29,9 +29,7 @@ import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.subsystems.DynamicPathing;
 
 public class ScoreCoral extends SequentialCommandGroup {
-
-  // Avoids super early releases
-  public static final double PIVOT_DEADBAND_L4 = 24; 
+  public static final double PIVOT_MIN_ANGLE_L4 = 24; // Avoids super early releases
 
   /* Timing variables */
   private final Timer totalScoringTimer = new Timer();
@@ -86,7 +84,7 @@ public class ScoreCoral extends SequentialCommandGroup {
       // Only for L4
       boolean pivotValidL4 = true;
       if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4) {
-        pivotValidL4 = Math.abs(RobotContainer.pivotSubsystem.getPivotPosition() - PivotPosition.L4.getDegrees()) < PIVOT_DEADBAND_L4; 
+        pivotValidL4 = Math.abs(RobotContainer.pivotSubsystem.getPivotPosition() - PivotPosition.L4.getDegrees()) < PIVOT_MIN_ANGLE_L4; 
       }
 
       return poseValid && velocityValid && pivotValidL4;
