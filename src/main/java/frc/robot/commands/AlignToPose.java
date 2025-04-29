@@ -226,67 +226,76 @@ public class AlignToPose extends Command {
     );
     Translation2d velocityTowardsTarget = getVelocityTowardsTarget(currentSpeeds, angleToTarget); // This is in target space
     double maxInstantaneousAcceleration = measuredDeltaTime * maxAcceleration; // How much acceleration the drivetrain can pull this loop
+    Translation2d currentVelocityVector = new Translation2d(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
 
     // Approach velocity is negative since we PID towards zero
-    if (distanceToTarget > 0.3 && Math.abs(velocityTowardsTarget.getX()) < 0.4) {
+    // if (distanceToTarget > 0.3 && Math.abs(velocityTowardsTarget.getX()) < 0.4) {
       approachPidController.reset(distanceToTarget, 
         Math.min(
           0.0,
           -velocityTowardsTarget.getX()
       ));
-    }
+    // }
 
     // Convert to field velocities
     Translation2d targetFieldVelocity;
 
-    // If lateral velocity is less than max instant acceleration rate
-    if (Math.abs(velocityTowardsTarget.getY()) < maxInstantaneousAcceleration * onTargetVelocityDeadbandScale) {
-      isAligningVelocityPublisher.set(false);
-      // Drive to pose with PID
+    // Drive to pose with PID
 
-      // Blend between feedforward and feedback control
-      double approachVelocityFeedforwardBlend = MathUtil.clamp( 
-        WafflesUtilities.InvLerp(approachFeedforwardBlendInner, approachFeedforwardBlendOuter, distanceToTarget),
-        0, 1);
-      approachVelocityFeedforwardBlend = WafflesUtilities.QuadraticEaseOut(approachVelocityFeedforwardBlend); // Square blending factor for smoothness
-      feedforwardBlendPublisher.set(approachVelocityFeedforwardBlend);
+    // Blend between feedforward and feedback control
+    double approachVelocityFeedforwardBlend = MathUtil.clamp( 
+      WafflesUtilities.InvLerp(approachFeedforwardBlendInner, approachFeedforwardBlendOuter, distanceToTarget),
+      0, 1);
+    approachVelocityFeedforwardBlend = WafflesUtilities.QuadraticEaseOut(approachVelocityFeedforwardBlend); // Square blending factor for smoothness
+    feedforwardBlendPublisher.set(approachVelocityFeedforwardBlend);
 
-      // Calculate velocity feedforward
-      double approachVelocityFeedback = -approachPidController.calculate(distanceToTarget, 0);
-      double approachVelocityFeedForward = Math.max(-approachPidController.getSetpoint().velocity, 0.3);
+    // Calculate velocity feedforward
+    double approachVelocityFeedback = -approachPidController.calculate(distanceToTarget, 0);
+    double approachVelocityFeedForward = Math.max(-approachPidController.getSetpoint().velocity, 0.3);
 
-      // Calculate target velocities
-      double targetApproachVelocity = 
-        (approachVelocityFeedForward * approachVelocityFeedforwardBlend) +
-        (approachVelocityFeedback * (1 - approachVelocityFeedforwardBlend));
-      
-      // Deadband target velocity
-      if (distanceToTarget < PosMaxError) {
-        targetApproachVelocity = 0;
-      }
+    // Calculate target velocities
+    double targetApproachVelocity = 
+      (approachVelocityFeedForward * approachVelocityFeedforwardBlend) +
+      (approachVelocityFeedback * (1 - approachVelocityFeedforwardBlend));
 
-      approachOutputPublisher.set(targetApproachVelocity);
+    // Calculate final field velocity
+    Translation2d desiredVelocity = new Translation2d(targetApproachVelocity, angleToTarget); 
+    // Acceleration desired to reach target velocity in single interation
+    Translation2d appliedAcceleration = desiredVelocity.minus(currentVelocityVector).div(measuredDeltaTime); 
 
-      // Calculate final field velocity
-      targetFieldVelocity = new Translation2d(targetApproachVelocity, angleToTarget); 
-    } else {
-      isAligningVelocityPublisher.set(true);
-      // If there is too much lateral speed, instead rotate the current velocity towards the target as fast as possible
-      double currentVelocityMagnitude = Math.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
-      Rotation2d currentVelocityDirection = new Rotation2d(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
-
-      // Constrained by current velocity & max acceleration
-      Rotation2d maxTurnRate = Rotation2d.fromRadians(2 * Math.asin(maxInstantaneousAcceleration / 2 * currentVelocityMagnitude));
-      double lerpValue = MathUtil.clamp(
-        maxTurnRate.getRadians() / Math.abs(angleToTarget.minus(currentVelocityDirection).getRadians()), 
-        0, 1
-      );
-
-      Rotation2d newVelocityAngle = currentVelocityDirection.interpolate(angleToTarget, lerpValue);
-
-      // Calculate final field velocity
-      targetFieldVelocity = new Translation2d(currentVelocityMagnitude - (alignmentDecelerationMultiplier * maxInstantaneousAcceleration), newVelocityAngle);
+    // Limit to real acceleration limits
+    double desiredAccelMagnitude = appliedAcceleration.getNorm();
+    if (desiredAccelMagnitude > maxInstantaneousAcceleration) {
+      // limit magnitude of vector
+      appliedAcceleration = appliedAcceleration.times(maxInstantaneousAcceleration / desiredAccelMagnitude);
     }
+
+    targetFieldVelocity = currentVelocityVector.plus(appliedAcceleration);
+
+    // Deadband target velocity
+    if (distanceToTarget < PosMaxError) {
+      targetApproachVelocity = 0;
+    }
+    approachOutputPublisher.set(targetApproachVelocity);
+
+    // } else {
+
+    //   // If there is too much lateral speed, instead rotate the current velocity towards the target as fast as possible
+    //   double currentVelocityMagnitude = Math.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
+    //   Rotation2d currentVelocityDirection = new Rotation2d(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
+
+    //   // Constrained by current velocity & max acceleration
+    //   Rotation2d maxTurnRate = Rotation2d.fromRadians(2 * Math.asin(maxInstantaneousAcceleration / 2 * currentVelocityMagnitude));
+    //   double lerpValue = MathUtil.clamp(
+    //     maxTurnRate.getRadians() / Math.abs(angleToTarget.minus(currentVelocityDirection).getRadians()), 
+    //     0, 1
+    //   );
+
+    //   Rotation2d newVelocityAngle = currentVelocityDirection.interpolate(angleToTarget, lerpValue);
+
+    //   // Calculate final field velocity
+    //   targetFieldVelocity = new Translation2d(currentVelocityMagnitude - (alignmentDecelerationMultiplier * maxInstantaneousAcceleration), newVelocityAngle);
+    // }
 
     // Calculate rotation output
     double targetThetaVelocity = thetaPidController.calculate(currentPose.getRotation().getRadians(), goalPose.getRotation().getRadians());
