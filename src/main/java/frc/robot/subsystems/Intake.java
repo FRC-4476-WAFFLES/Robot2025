@@ -8,7 +8,6 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import au.grapplerobotics.LaserCan;
@@ -26,6 +25,7 @@ import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
+import frc.robot.utils.IO.TalonFXIO;
 
 /**
  * The Intake subsystem handles the robot's intake mechanism.
@@ -35,7 +35,7 @@ import frc.robot.utils.SubsystemNetworkManager;
  */
 public class Intake extends SubsystemBase implements NetworkUser{
     // Hardware Components
-    private final TalonFX intake;
+    private final TalonFXIO intake;
     private LaserCan intakeLaserCan;
     private LaserCan funnelLaserCan;
     private final DigitalInput coralSensor;
@@ -53,9 +53,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private boolean usePositionControl = false;
     private boolean noAlgaeFlag = false;
     private boolean algaeLoaded = false;
-
     private double dutyCycle = 0;
-    // private Timer algaeLossTimer = new Timer();
 
     private Trigger algaeDetectionTrigger;
 
@@ -80,17 +78,15 @@ public class Intake extends SubsystemBase implements NetworkUser{
     public Intake() {
         SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
 
-        intake = new TalonFX(Constants.CANIds.intakeMotor);
+        intake = new TalonFXIO(Constants.CANIds.intakeMotor);
         coralSensor = new DigitalInput(Constants.DigitalOutputs.coralSensor);
 
         // Configure hardware
         configureIntakeMotor();
         configureLaserCAN();
 
-        // algaeLossTimer.reset();
-
         algaeDetectionTrigger = new Trigger(
-            () -> intake.getStatorCurrent().getValueAsDouble() > ManipulatorConstants.ALGAE_CURRENT_THRESHOLD 
+            () -> intake.signals().statorCurrent().getValueAsDouble() > ManipulatorConstants.ALGAE_CURRENT_THRESHOLD 
             && isIntakingAlgae() 
             && !isCoralLoaded()
         ).debounce(ManipulatorConstants.ALGAE_DETECTION_DEBOUNCE_TIME);
@@ -163,14 +159,6 @@ public class Intake extends SubsystemBase implements NetworkUser{
     
     @Override
     public void periodic() {
-        // if (algaeLossTimer.get() > 1) {
-        //     algaeLoaded = false;
-        //     algaeLossTimer.stop();
-        //     algaeLossTimer.reset();
-
-        //     //System.out.print("===============\nLost Algae Detected.");
-        // }
-
         if (Math.abs(dutyCycle) > 0.01) {
             intake.set(dutyCycle);
             
@@ -180,13 +168,8 @@ public class Intake extends SubsystemBase implements NetworkUser{
                     // When algae is loaded, run intake slowly inward
                     intake.setControl(intakeControlRequest.withVelocity(Constants.ManipulatorConstants.ALGAE_HOLD_SPEED).withSlot(0));
 
-                    if (intake.getStatorCurrent().getValueAsDouble() < 4) {
+                    if (intake.signals().statorCurrent().getValueAsDouble() < 4) {
                         intake.setControl(intakeControlRequest.withVelocity(-120).withSlot(0));
-                        
-                        // if (!algaeLossTimer.isRunning()) {
-                        //     algaeLossTimer.reset();
-                        //     algaeLossTimer.start();
-                        // }
                     }
                 } else if (Math.abs(intakeSpeed) < 0.01 && isCoralLoaded()) {
                     intake.setControl(intakePositionRequest.withOutput(0));
@@ -232,9 +215,6 @@ public class Intake extends SubsystemBase implements NetworkUser{
         if (algaeDetectionTrigger.getAsBoolean()) {
             algaeLoaded = true;
 
-            // Reset algae loss conditions
-            // algaeLossTimer.stop();
-            // algaeLossTimer.reset();
         } else if (isOuttakingAlgae()) {
             algaeLoaded = false;
         }
@@ -299,15 +279,15 @@ public class Intake extends SubsystemBase implements NetworkUser{
     }
 
     public boolean isOuttakingAlgae() {
-        return isAlgaeLoaded() && intake.getVelocity().getValueAsDouble() < -12;
+        return isAlgaeLoaded() && intake.signals().velocity().getValueAsDouble() < -12;
     }
 
     public boolean isAtTargetPosition() {
-        return Math.abs(intake.getPosition().getValueAsDouble() - targetPosition) < 0.1;
+        return Math.abs(intake.signals().position().getValueAsDouble() - targetPosition) < 0.1;
     }
 
     public boolean isIntakeStopped() {
-        return Math.abs(intake.getVelocity().getValueAsDouble()) < 0.1;
+        return Math.abs(intake.signals().velocity().getValueAsDouble()) < 0.1;
     }
 
     /**
@@ -320,9 +300,9 @@ public class Intake extends SubsystemBase implements NetworkUser{
         coralLoadedNT.set(isCoralLoaded());
         algaeLoadedNT.set(isAlgaeLoaded());
         intakeSetpointNT.set(intakeSpeed);
-        intakeCurrentDrawNT.set(intake.getStatorCurrent().getValueAsDouble());
-        intakeVelocityNT.set(intake.getVelocity().getValueAsDouble());
-        intakePositionNT.set(intake.getPosition().getValueAsDouble());
+        intakeCurrentDrawNT.set(intake.signals().statorCurrent().getValueAsDouble());
+        intakeVelocityNT.set(intake.signals().velocity().getValueAsDouble());
+        intakePositionNT.set(intake.signals().position().getValueAsDouble());
         intakeTargetPositionNT.set(targetPosition);
         coralSensorRawNT.set(coralSensor.get());
 
@@ -350,7 +330,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
      * @return The current position in motor rotations
      */
     public double getCurrentPosition() {
-        return intake.getPosition().getValueAsDouble();
+        return intake.signals().position().getValueAsDouble();
     }
 
     /**
@@ -361,7 +341,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
     }
 
     /*
-     * 
+     * Apply duty cycle
      */
     public void setDutyCycle(double dutyCycleval) {
         dutyCycle = dutyCycleval;

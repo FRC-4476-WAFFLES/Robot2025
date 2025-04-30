@@ -4,7 +4,6 @@
 
 package frc.robot.utils;
 
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.pathplanner.lib.util.FlippingUtil;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -19,16 +18,6 @@ public class WafflesUtilities {
      */
     private WafflesUtilities() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
-    }
-
-    /**
-     * Checks if a TalonFX motor's stator current is over a specified threshold
-     * @param talonFX The TalonFX motor to check
-     * @param currentThreshold The current threshold to compare against
-     * @return true if the stator current is over the threshold, false otherwise
-     */
-    public static boolean isOverThreshold(TalonFX talonFX, double currentThreshold) {
-        return talonFX.getStatorCurrent().getValueAsDouble() > currentThreshold;
     }
 
     /**

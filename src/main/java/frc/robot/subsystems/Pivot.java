@@ -12,7 +12,6 @@ import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.Slot2Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -35,6 +34,7 @@ import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.subsystems.Elevator.CollisionType;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
+import frc.robot.utils.IO.TalonFXIO;
 
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import edu.wpi.first.math.util.Units;
@@ -49,7 +49,7 @@ import edu.wpi.first.math.util.Units;
  */
 public class Pivot extends SubsystemBase implements NetworkUser {
     // Hardware Components
-    private final TalonFX pivot;
+    private final TalonFXIO pivot;
     private final CANcoder pivotAbsoluteEncoder;
 
     // Control Objects
@@ -103,7 +103,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
 
         // Initialize hardware
-        pivot = new TalonFX(CANIds.pivotMotor);
+        pivot = new TalonFXIO(CANIds.pivotMotor);
         pivotAbsoluteEncoder = new CANcoder(CANIds.pivotAbsoluteEncoder);
         
         // Configure hardware
@@ -114,7 +114,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         resetInternalEncoder();
 
         zeroingDebounceTrigger = new Trigger(() -> {
-            return pivot.getTorqueCurrent().getValueAsDouble() < -ManipulatorConstants.PIVOT_CURRENT_THRESHOLD;     
+            return pivot.signals().torqueCurrent().getValueAsDouble() < -ManipulatorConstants.PIVOT_CURRENT_THRESHOLD;     
         }).debounce(ManipulatorConstants.ZERO_DEBOUNCE_TIME);
     }
 
@@ -323,7 +323,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
      * @return Current angle in degrees
      */
     public double getPivotPosition() {
-        return pivot.getPosition().getValueAsDouble() * 360;
+        return pivot.signals().position().getValueAsDouble() * 360;
     }
 
     /**
@@ -359,8 +359,8 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         pivotSetpointNT.set(pivotSetpointAngle);
         pivotAngleNT.set(getPivotPosition());
         isZeroingNT.set(isZeroingPivot);
-        pivotCurrentDrawNT.set(pivot.getTorqueCurrent().getValueAsDouble());
-        pivotVelocityNT.set(pivot.getVelocity().getValueAsDouble());
+        pivotCurrentDrawNT.set(pivot.signals().torqueCurrent().getValueAsDouble());
+        pivotVelocityNT.set(pivot.signals().velocity().getValueAsDouble());
     }
 
     @Override

@@ -29,8 +29,6 @@ public class LimelightContainer {
         // Update valid tag IDs, done periodically since they may change on the fly later
         LimelightHelpers.SetFiducialIDFiltersOverride(limelightName, VisionHelpers.getValidTagIDs());
 
-        //System.out.println(getPigeon2().getAngularVelocityZWorld().getValueAsDouble());
-
         // Integrate position from mt2
         LimelightHelpers.PoseEstimate mt2Result = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
         if (mt2Result != null) {

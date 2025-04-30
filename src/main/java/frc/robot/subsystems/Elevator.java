@@ -14,7 +14,6 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 
@@ -42,6 +41,7 @@ import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
+import frc.robot.utils.IO.TalonFXIO;
 
 public class Elevator extends SubsystemBase implements NetworkUser {
   /**
@@ -59,8 +59,8 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   }
 
   // Hardware Components
-  private final TalonFX elevatorMotorLeader;
-  private final TalonFX elevatorMotorFollower;
+  private final TalonFXIO elevatorMotorLeader;
+  private final TalonFXIO elevatorMotorFollower;
 
   private ElevatorSim elevatorSim;
 
@@ -143,13 +143,13 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   public Elevator() {
     SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
 
-    elevatorMotorLeader = new TalonFX(CANIds.elevator1);
-    elevatorMotorFollower = new TalonFX(CANIds.elevator2);
+    elevatorMotorLeader = new TalonFXIO(CANIds.elevator1);
+    elevatorMotorFollower = new TalonFXIO(CANIds.elevator2);
 
     configureElevatorMotors();
 
     zeroingDebounceTrigger = new Trigger(() -> {
-      return elevatorMotorLeader.getStatorCurrent().getValueAsDouble() > ElevatorConstants.STALL_CURRENT_THRESHOLD;   
+      return elevatorMotorLeader.signals().statorCurrent().getValueAsDouble() > ElevatorConstants.STALL_CURRENT_THRESHOLD;   
     }).debounce(ElevatorConstants.ZERO_DEBOUNCE_TIME);
 
     if (RobotBase.isSimulation()) {
@@ -315,7 +315,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    * @return The current elevator position in meters.
    */
   public double getElevatorPositionMeters(){
-    return elevatorMotorLeader.getPosition().getValueAsDouble();
+    return elevatorMotorLeader.signals().position().getValueAsDouble();
   }
 
   /**
@@ -402,9 +402,9 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     elevatorPositionNT.set(getElevatorPositionMeters());
     elevatorIsZeroingNT.set(isZeroingElevator);
     isAtSetpointNT.set(isElevatorAtSetpoint());
-    leaderCurrentDrawNT.set(elevatorMotorLeader.getStatorCurrent().getValueAsDouble());
-    followerCurrentDrawNT.set(elevatorMotorFollower.getStatorCurrent().getValueAsDouble());
-    elevatorVelocityNT.set(elevatorMotorLeader.getVelocity().getValueAsDouble());
+    leaderCurrentDrawNT.set(elevatorMotorLeader.signals().statorCurrent().getValueAsDouble());
+    followerCurrentDrawNT.set(elevatorMotorFollower.signals().statorCurrent().getValueAsDouble());
+    elevatorVelocityNT.set(elevatorMotorLeader.signals().velocity().getValueAsDouble());
   }
 
   /**
@@ -412,7 +412,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    * @return The leader motor's current draw in amps
    */
   public double getLeaderCurrent() {
-    return elevatorMotorLeader.getStatorCurrent().getValueAsDouble();
+    return elevatorMotorLeader.signals().statorCurrent().getValueAsDouble();
   }
 
   /**
@@ -420,7 +420,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    * @return The follower motor's current draw in amps
    */
   public double getFollowerCurrent() {
-    return elevatorMotorFollower.getStatorCurrent().getValueAsDouble();
+    return elevatorMotorFollower.signals().statorCurrent().getValueAsDouble();
   }
 
   /**
