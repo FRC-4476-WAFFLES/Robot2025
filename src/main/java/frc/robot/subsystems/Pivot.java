@@ -34,6 +34,7 @@ import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.subsystems.Elevator.CollisionType;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
+import frc.robot.utils.IO.CANcoderIO;
 import frc.robot.utils.IO.TalonFXIO;
 
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
@@ -50,7 +51,7 @@ import edu.wpi.first.math.util.Units;
 public class Pivot extends SubsystemBase implements NetworkUser {
     // Hardware Components
     private final TalonFXIO pivot;
-    private final CANcoder pivotAbsoluteEncoder;
+    private final CANcoderIO pivotAbsoluteEncoder;
 
     // Control Objects
     private final MotionMagicExpoVoltage motionMagicRequest = new MotionMagicExpoVoltage(0);
@@ -104,7 +105,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
         // Initialize hardware
         pivot = new TalonFXIO(CANIds.pivotMotor);
-        pivotAbsoluteEncoder = new CANcoder(CANIds.pivotAbsoluteEncoder);
+        pivotAbsoluteEncoder = new CANcoderIO(CANIds.pivotAbsoluteEncoder);
         
         // Configure hardware
         configureCANCoder();

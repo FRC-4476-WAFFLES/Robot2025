@@ -68,7 +68,7 @@ public class CANcoderIO extends CANcoder{
         );
 
         // Eliminate unused signals
-        optimizeBusUtilization(CodeConstants.DISABLE_UNUSED_STATUS_SIGNALS ? 0 : 4, 0.2);
+        // optimizeBusUtilization(CodeConstants.DISABLE_UNUSED_STATUS_SIGNALS ? 0 : 4, 0.2);
 
         // Register signals to be refreshed as a group
         PhoenixHelpers.RegisterStatusSignals(
