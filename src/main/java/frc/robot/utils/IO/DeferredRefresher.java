@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /** Base class for asynchronously refreshing a value which normally blocks while being read */
 public class DeferredRefresher<T> {

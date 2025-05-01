@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.data.Constants.VisionConstants;
 import frc.robot.subsystems.DriveSubsystem;
 
-/** Encapsulates the logic for megatag based localization with a megatag */
+/** Encapsulates the logic for megatag based localization with a limelight */
 public class LimelightContainer {
     private String limelightName;
     private DriveSubsystem driveSubsystem;

@@ -73,6 +73,11 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    // Time full loop refresh rate including waiting / background tasks that might affect loop stability
+    EpochTimer.EndEpoch("RobotRefresh");
+    EpochTimer.BeginEpoch("RobotRefresh");
+
+    
     // Refresh CAN signals from CTRE devices
     EpochTimer.BeginEpoch("PhoenixRefresh"); {
       PhoenixHelpers.refreshAllSignals();
@@ -88,12 +93,6 @@ public class Robot extends TimedRobot {
 
       // Publish periodic loop time to networktables
     } EpochTimer.EndEpoch("Periodic");
-
-
-
-    // Time full loop refresh rate including waiting / background tasks that might affect loop stability
-    EpochTimer.EndEpoch("RobotRefresh");
-    EpochTimer.BeginEpoch("RobotRefresh");
   }
 
   /** This function is called once each time the robot enters Disabled mode. */

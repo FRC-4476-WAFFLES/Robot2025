@@ -30,6 +30,10 @@ public class EpochTimer {
 
     private static HashMap<String, Epoch> EpochMap = new HashMap<>();
 
+    /**
+     * Begins a time measurement epoch
+     * @param name the name of the epoch
+     */
     public static void BeginEpoch(String name) {
         Epoch chosenEpoch;
         if (EpochMap.containsKey(name)) {
@@ -42,6 +46,10 @@ public class EpochTimer {
         chosenEpoch.lastTime = Timer.getFPGATimestamp();
     }
 
+    /**
+     * Ends a time measurement epoch and logs it's length to networktables automatically
+     * @param name the name of the epoch
+     */
     public static double EndEpoch(String name) {
         if (EpochMap.containsKey(name)) {
             double timeElapsed = Timer.getFPGATimestamp() - EpochMap.get(name).lastTime;

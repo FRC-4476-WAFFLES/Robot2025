@@ -104,8 +104,11 @@ public class Telemetry extends SubsystemBase {
     private boolean canConfigFailed = false;
     private Trigger rioCanErrorTrigger = new Trigger(() -> {
         CANJNI.getCANStatus(rioCanStatus);
+        
         return rioCanStatus.receiveErrorCount > 0 || rioCanStatus.transmitErrorCount > 0;
     }).debounce(0.25);
+    
+    
 
     // Async CANivore bus status checking
     private CANBus CANivoreBus = new CANBus(CANIds.CANivoreName);
@@ -162,15 +165,13 @@ public class Telemetry extends SubsystemBase {
         operatorControllerDisconnected.set(!Controls.operatorController.isConnected());
 
         // Check for CAN errors
-        if (RobotBase.isReal()) {
-            rioCanError.set(rioCanErrorTrigger.getAsBoolean());
-            canivoreError.set(drivetrainCanErrorTrigger.getAsBoolean());
-            
-            if (canConfigFailed || rioCanErrorTrigger.getAsBoolean() || drivetrainCanErrorTrigger.getAsBoolean()) {
-                canFaultDetected.set(true);
-            } else {
-                canFaultDetected.set(false);
-            }
+        rioCanError.set(rioCanErrorTrigger.getAsBoolean());
+        canivoreError.set(drivetrainCanErrorTrigger.getAsBoolean());
+        
+        if (canConfigFailed || rioCanErrorTrigger.getAsBoolean() || drivetrainCanErrorTrigger.getAsBoolean()) {
+            canFaultDetected.set(true);
+        } else {
+            canFaultDetected.set(false);
         }
         
 
