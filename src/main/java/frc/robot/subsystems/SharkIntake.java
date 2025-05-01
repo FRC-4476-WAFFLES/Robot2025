@@ -19,6 +19,7 @@ import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.Constants.SharkIntakeConstants;
 import frc.robot.utils.NetworkUser;
+import frc.robot.utils.PhoenixHelpers;
 import frc.robot.utils.SubsystemNetworkManager;
 import frc.robot.utils.IO.TalonFXIO;
 
@@ -103,7 +104,7 @@ public class SharkIntake extends SubsystemBase implements NetworkUser{
         intakeConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         intakeConfigs.MotorOutput.DutyCycleNeutralDeadband = 0.01;
 
-        intake.getConfigurator().apply(intakeConfigs);
+        PhoenixHelpers.tryConfig(() -> intake.getConfigurator().apply(intakeConfigs));
     }
     
     @Override

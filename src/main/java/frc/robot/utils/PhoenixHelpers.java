@@ -5,8 +5,13 @@
 package frc.robot.utils;
 
 import java.util.HashMap;
+import java.util.function.Supplier;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusCode;
+
+import frc.robot.RobotContainer;
+import frc.robot.subsystems.Telemetry;
 
 public class PhoenixHelpers {
     // Maps a canbus to an array of status signals on that bus to be refreshed 
@@ -35,5 +40,25 @@ public class PhoenixHelpers {
         for (var entry : statusSignalBusMap.entrySet()) {
             BaseStatusSignal.refreshAll(entry.getValue());
         }
+    }
+
+    /** 
+     * Attempts the desired task more than once if failed, up to a limit 
+     * @param maxAttempts The max number of attempts
+     * @param task A supplier for the config function
+     */
+    public static void tryConfig(int maxAttempts, Supplier<StatusCode> task) {
+        for (int i = 0; i < maxAttempts; i++) {
+            if (task.get().isOK()) return;
+        }
+        RobotContainer.telemetry.setCANConfigErrorFlag();
+    }
+
+    /** 
+     * Attempts the desired task more than once if failed, up to 4 times
+     * @param task A supplier for the config function
+     */
+    public static void tryConfig(Supplier<StatusCode> task) {
+        tryConfig(4, task);
     }
 }

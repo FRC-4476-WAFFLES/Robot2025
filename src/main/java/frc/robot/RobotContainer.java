@@ -95,7 +95,6 @@ public class RobotContainer {
   private  SendableChooser<Command> testChooser;
   public static boolean isOperatorOverride = false;
   public static boolean isRunningL1Intake = false;
-
   public static Trigger isHeadingLockedToL1;
 
   /** The static entry point for the robot. Contains subsystems, OI devices, and commands. */

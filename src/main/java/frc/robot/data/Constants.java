@@ -59,6 +59,9 @@ public final class Constants {
     public static final int funnelLaserCan = 30;
 
     public static final int CANdle = 26;
+
+    // Canivore
+    public static final String CANivoreName = "Drivetrain Backup";
   }
 
   /* PWM Outputs */
@@ -74,6 +77,8 @@ public final class Constants {
 
   /* Code */
   public static class CodeConstants {
+    public static final double PERIODIC_LOOP_TIME = 0.02;
+
     public static final int SUBSYSTEM_NT_UPDATE_RATE = 20; // How many times a second subsystems will publish to NT. Reduce if performance is suffering.
     public static final boolean FORCE_LOAD_SIM_CORAL = true;
 
@@ -117,6 +122,9 @@ public final class Constants {
     public static final int[] BLUE_VALID_REEF_TAG_IDs = {
       17, 18, 19, 20, 21, 22  
     };
+
+    // Limelights are considered disconnected if their heartbeat value is older than this many seconds
+    public static final double LL_HEARTBEAT_MIN_FREQ = 0.5;
   }
 
   /* Field */

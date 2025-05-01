@@ -4,9 +4,12 @@
 
 package frc.robot.utils;
 
+import java.util.jar.Attributes.Name;
+
 import com.ctre.phoenix6.Utils;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.data.Constants.VisionConstants;
 import frc.robot.subsystems.DriveSubsystem;
@@ -15,6 +18,12 @@ import frc.robot.subsystems.DriveSubsystem;
 public class LimelightContainer {
     private String limelightName;
     private DriveSubsystem driveSubsystem;
+
+    // Check if limelight is connected
+    private double lastHeartbeatValue = -1;
+    private double lastHeartbeatTime = -1;
+
+    private boolean isAlive = false;
 
     public LimelightContainer(String name, DriveSubsystem subsystem) {
         limelightName = name;
@@ -26,6 +35,17 @@ public class LimelightContainer {
      * LimelightHelpers.Flush() or equivalent must be called after all limelights have run update() 
      */
     public void update() {
+        // Check for limelight heartbeat
+        double heartBeat = LimelightHelpers.getLimelightNTDouble(limelightName, "tb");
+        if (lastHeartbeatValue != heartBeat) {
+            lastHeartbeatValue = heartBeat;
+            lastHeartbeatTime = Timer.getFPGATimestamp();
+        }
+        isAlive = (Timer.getFPGATimestamp() - lastHeartbeatTime) < VisionConstants.LL_HEARTBEAT_MIN_FREQ;
+
+        // Do not integrate last reported pose if limelight disconnected
+        if (!isAlive) return;
+
         // Update valid tag IDs, done periodically since they may change on the fly later
         LimelightHelpers.SetFiducialIDFiltersOverride(limelightName, VisionHelpers.getValidTagIDs());
 
@@ -101,7 +121,6 @@ public class LimelightContainer {
             // Seeding in disabled (Uses IMU mode 1)
             LimelightHelpers.SetRobotOrientation_NoFlush(limelightName, driveSubsystem.getRobotPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
         }
-
         // SetRobotOrientation_NoFlush() is used since SetRobotOrientation() flushes NT implicitly
     }
 
@@ -110,7 +129,7 @@ public class LimelightContainer {
      * @return A boolean
      */
     public boolean canSeeTag() {
-        return LimelightHelpers.getTV(limelightName);
+        return LimelightHelpers.getTV(limelightName) && isAlive;
     }
 
     /**
@@ -125,5 +144,20 @@ public class LimelightContainer {
      */
     public void onMoving() {
         LimelightHelpers.SetIMUMode(limelightName, VisionConstants.MOVING_LL_IMU_MODE); 
+    }
+
+    /**
+     * Check for limelight heartbeat
+     */
+    public boolean isAlive() {
+        return isAlive;
+    }
+
+    /**
+     * Return the limelight's name
+     * @return string
+     */
+    public String getName() {
+        return limelightName;
     }
 }

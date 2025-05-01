@@ -40,6 +40,7 @@ import frc.robot.data.Constants.ElevatorConstants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.utils.NetworkUser;
+import frc.robot.utils.PhoenixHelpers;
 import frc.robot.utils.SubsystemNetworkManager;
 import frc.robot.utils.IO.TalonFXIO;
 
@@ -207,8 +208,8 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     elevatorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     // Apply Configurations
-    elevatorMotorLeader.getConfigurator().apply(elevatorConfig);
-    elevatorMotorFollower.getConfigurator().apply(elevatorConfig);
+    PhoenixHelpers.tryConfig(() -> elevatorMotorLeader.getConfigurator().apply(elevatorConfig));
+    PhoenixHelpers.tryConfig(() -> elevatorMotorFollower.getConfigurator().apply(elevatorConfig));
 
     // Make Follower Motor
     elevatorMotorFollower.setControl(new Follower(CANIds.elevator1, false));

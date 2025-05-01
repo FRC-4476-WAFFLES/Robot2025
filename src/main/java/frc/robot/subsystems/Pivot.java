@@ -33,6 +33,7 @@ import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.subsystems.Elevator.CollisionType;
 import frc.robot.utils.NetworkUser;
+import frc.robot.utils.PhoenixHelpers;
 import frc.robot.utils.SubsystemNetworkManager;
 import frc.robot.utils.IO.CANcoderIO;
 import frc.robot.utils.IO.TalonFXIO;
@@ -125,7 +126,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     private void configureCANCoder() {
         CANcoderConfiguration config = new CANcoderConfiguration();
         config.MagnetSensor.MagnetOffset = PhysicalConstants.pivotAbsoluteEncoderOffset;
-        pivotAbsoluteEncoder.getConfigurator().apply(config);
+        PhoenixHelpers.tryConfig(() -> pivotAbsoluteEncoder.getConfigurator().apply(config));
     }
 
     /**
@@ -200,7 +201,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         pivotConfigs.Voltage.SupplyVoltageTimeConstant = 0.1;
         pivotConfigs.CurrentLimits.StatorCurrentLimit = 60;
 
-        pivot.getConfigurator().apply(pivotConfigs);
+        PhoenixHelpers.tryConfig(() -> pivot.getConfigurator().apply(pivotConfigs));
     }
 
     @Override

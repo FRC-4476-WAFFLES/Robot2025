@@ -25,6 +25,7 @@ import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.SharkPivotConstants;
 import frc.robot.data.Constants.SharkPivotConstants.SharkPivotPosition;
 import frc.robot.utils.NetworkUser;
+import frc.robot.utils.PhoenixHelpers;
 import frc.robot.utils.SubsystemNetworkManager;
 import frc.robot.utils.IO.TalonFXIO;
 
@@ -133,7 +134,7 @@ public class SharkPivot extends SubsystemBase implements NetworkUser {
     pivotConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
     // Apply Configuration
-    pivotMotor.getConfigurator().apply(pivotConfig);
+    PhoenixHelpers.tryConfig(() -> pivotMotor.getConfigurator().apply(pivotConfig));
     
     // Reset the position to zero at startup
     // This assumes the pivot is at its zero position when the robot starts

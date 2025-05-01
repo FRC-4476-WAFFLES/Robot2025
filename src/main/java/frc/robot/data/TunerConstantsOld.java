@@ -12,7 +12,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.*;
-
+import frc.robot.data.Constants.CANIds;
 import frc.robot.subsystems.DriveSubsystem;
 
 /*
@@ -73,7 +73,7 @@ public class TunerConstantsOld {
 
     // CAN bus that the devices are located on;
     // All swerve devices must share the same CAN bus
-    public static final CANBus kCANBus = new CANBus("DriveTrain_CANBUS", "./logs/example.hoot");
+    public static final CANBus kCANBus = new CANBus(CANIds.CANivoreName, "./logs/example.hoot");
 
     // Theoretical free speed (m/s) at 12 V applied output;
     // This needs to be tuned to your individual robot

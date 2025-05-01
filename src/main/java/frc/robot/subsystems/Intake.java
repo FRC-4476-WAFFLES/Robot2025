@@ -24,7 +24,9 @@ import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.utils.NetworkUser;
+import frc.robot.utils.PhoenixHelpers;
 import frc.robot.utils.SubsystemNetworkManager;
+import frc.robot.utils.IO.DeferredRefresher;
 import frc.robot.utils.IO.TalonFXIO;
 
 /**
@@ -39,6 +41,39 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private LaserCan intakeLaserCan;
     private LaserCan funnelLaserCan;
     private final DigitalInput coralSensor;
+
+    // Deferred Refreshers
+    private DeferredRefresher<Double> intakeLaserCanRefresher = new DeferredRefresher<Double>(
+        "Intake LaserCAN", 
+        CodeConstants.PERIODIC_LOOP_TIME, 
+        () -> {
+            if (intakeLaserCan != null) {
+                var measurement = intakeLaserCan.getMeasurement();
+                if (measurement != null) {
+                    if (measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
+                        return (double)measurement.distance_mm;
+                    }
+                }
+            }
+            return null;
+        }
+    );
+
+    private DeferredRefresher<Double> funnelLaserCanRefresher = new DeferredRefresher<Double>(
+        "Funnel LaserCAN", 
+        CodeConstants.PERIODIC_LOOP_TIME, 
+        () -> {
+            if (funnelLaserCan != null) {
+                var measurement = funnelLaserCan.getMeasurement();
+                if (measurement != null) {
+                    if (measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
+                        return (double)measurement.distance_mm;
+                    }
+                }
+            } 
+            return null;
+        }
+    );
 
     // Control Objects
     private final MotionMagicVelocityVoltage intakeControlRequest = new MotionMagicVelocityVoltage(0);
@@ -154,7 +189,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
 
         intakeConfigs.MotorOutput.DutyCycleNeutralDeadband = 0.01;
 
-        intake.getConfigurator().apply(intakeConfigs);
+        PhoenixHelpers.tryConfig(() -> intake.getConfigurator().apply(intakeConfigs));
     }
     
     @Override
@@ -224,23 +259,15 @@ public class Intake extends SubsystemBase implements NetworkUser{
      * Updates the coral sensor's internal state
      */
     private void updateCoralSensors() {
-        if (intakeLaserCan != null) {
-            var measurement = intakeLaserCan.getMeasurement();
-            if (measurement != null) {
-                if (measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
-                    intakeLaserDistance = measurement.distance_mm;
-                }
-            }
+        var intakeSensorResult = intakeLaserCanRefresher.getLatestValue();
+        if (intakeSensorResult.isPresent()) {
+            intakeLaserDistance = intakeSensorResult.get();
         }
-
-        if (funnelLaserCan != null) {
-            var measurement = funnelLaserCan.getMeasurement();
-            if (measurement != null) {
-                if (measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
-                    funnelLaserDistance = measurement.distance_mm;
-                }
-            }
-        } 
+        
+        var funnelSensorResult = funnelLaserCanRefresher.getLatestValue();
+        if (funnelSensorResult.isPresent()) {
+            funnelLaserDistance = funnelSensorResult.get();
+        }
     }
 
     /**
