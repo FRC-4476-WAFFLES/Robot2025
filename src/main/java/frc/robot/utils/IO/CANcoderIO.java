@@ -17,7 +17,7 @@ import frc.robot.utils.PhoenixHelpers;
 /** A shim on top of CANcoders which optimizes their CAN usage automatically */
 public class CANcoderIO extends CANcoder{
     // A collection of signals needed by robot code
-    public record TalonFXIOSignals(
+    public record CANcoderIOSignals(
         StatusSignal<Angle> position,
         StatusSignal<AngularVelocity> velocity,
         StatusSignal<Angle> absolutePosition
@@ -25,7 +25,7 @@ public class CANcoderIO extends CANcoder{
 
     private final String CANName;
 
-    private TalonFXIOSignals statusSignals;
+    private CANcoderIOSignals statusSignals;
 
     /**
      * Constructs a CANcoderIO with a CAN ID
@@ -52,7 +52,7 @@ public class CANcoderIO extends CANcoder{
      */
     private void setup() {
         // Init record with signals  
-        statusSignals = new TalonFXIOSignals(
+        statusSignals = new CANcoderIOSignals(
             getPosition(), 
             getVelocity(), 
             getAbsolutePosition()
@@ -79,7 +79,7 @@ public class CANcoderIO extends CANcoder{
         );
     }
 
-    public TalonFXIOSignals signals() {
+    public CANcoderIOSignals signals() {
         return statusSignals;
     }
 }
