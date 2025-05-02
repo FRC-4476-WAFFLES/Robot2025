@@ -4,8 +4,6 @@
 
 package frc.robot.commands.test;
 
-import static frc.robot.RobotContainer.driveSubsystem;
-
 import com.ctre.phoenix6.swerve.SwerveRequest.SysIdSwerveRotation;
 import com.ctre.phoenix6.swerve.SwerveRequest.ApplyRobotSpeeds;
 
@@ -18,7 +16,9 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.RobotContainer;
 import frc.robot.data.TunerConstants;
+import frc.robot.subsystems.DriveSubsystem;
 
 
 /**
@@ -30,6 +30,8 @@ public class WheelRadiusCharacterization {
   public static final double TEST_TOP_SPEED = 0.6; // Radians / s
 
   public static final double TEST_DURATION = 60; // seconds
+
+  private static final DriveSubsystem driveSubsystem = RobotContainer.driveSubsystem;
   
   // Class should not be instanciated, so constructor is private
   private WheelRadiusCharacterization() {}

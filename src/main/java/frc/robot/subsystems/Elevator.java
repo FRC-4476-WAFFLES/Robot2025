@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
@@ -18,7 +20,6 @@ import com.ctre.phoenix6.signals.InvertedValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
@@ -37,12 +38,10 @@ import frc.robot.RobotContainer;
 import frc.robot.data.Constants.CANIds;
 import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.ElevatorConstants;
-import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
+import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.SubsystemNetworkManager;
-
-import static edu.wpi.first.units.Units.Volts;
 
 public class Elevator extends SubsystemBase implements NetworkUser {
   /**

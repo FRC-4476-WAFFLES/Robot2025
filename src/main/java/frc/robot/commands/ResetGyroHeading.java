@@ -5,8 +5,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-
-import static frc.robot.RobotContainer.*;
+import frc.robot.RobotContainer;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ResetGyroHeading extends Command {
@@ -25,7 +24,7 @@ public class ResetGyroHeading extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    driveSubsystem.seedFieldCentric();
+    RobotContainer.driveSubsystem.seedFieldCentric();
   }
 
   // Called once the command ends or is interrupted.

@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.data.Constants.VisionConstants;
 import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.utils.LimelightHelpers.PoseEstimate;
 
 /** Encapsulates the logic for megatag based localization with a megatag */
 public class LimelightContainer {

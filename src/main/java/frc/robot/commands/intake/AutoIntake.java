@@ -16,13 +16,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.RobotContainer;
 import frc.robot.commands.AlignToPose;
 import frc.robot.commands.superstructure.ApplyScoringSetpoint;
 import frc.robot.data.Constants.FieldConstants;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
-import frc.robot.subsystems.DynamicPathing;
 import frc.robot.utils.WafflesUtilities;
 
 /** Auto Intake */

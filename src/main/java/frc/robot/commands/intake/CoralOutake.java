@@ -4,18 +4,16 @@
 
 package frc.robot.commands.intake;
 
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.Command;
-
-import static frc.robot.RobotContainer.intakeSubsystem;
-
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
+import frc.robot.subsystems.Intake;
 
 
 public class CoralOutake extends Command {
   public static final double OUTTAKE_POSITION_CHANGE = 6; // rotations
+
+  private final Intake intakeSubsystem = RobotContainer.intakeSubsystem;
   
   private double outtakeEndPosition = 0;
   /** Creates a new CoralIntake. */

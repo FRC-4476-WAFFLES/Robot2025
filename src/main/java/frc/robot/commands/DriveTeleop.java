@@ -4,31 +4,26 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.math.controller.HolonomicDriveController;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.RobotContainer;
-import frc.robot.data.Constants.PhysicalConstants;
-
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-
 import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.swerve.SwerveSetpoint;
 import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 
-
-import static frc.robot.RobotContainer.*;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.RobotContainer;
+import frc.robot.data.Constants.PhysicalConstants;
+import frc.robot.subsystems.DriveSubsystem;
 
 public class DriveTeleop extends Command {
   private final DoubleSupplier xSupplier;
@@ -44,10 +39,14 @@ public class DriveTeleop extends Command {
 
   private double previousThetaSetpoint;
 
+  // Unused setpoint generator variables
+  @SuppressWarnings("unused")
   private final SwerveSetpointGenerator setpointGenerator;
+  @SuppressWarnings("unused")
   private SwerveSetpoint previousSetpoint;
 
   private SwerveRequest.FieldCentric driveRequest = new SwerveRequest.FieldCentric();
+  private DriveSubsystem driveSubsystem = RobotContainer.driveSubsystem;
 
   /** 
    * Command that drives the robot field-oriented following velocities given by suppliers 

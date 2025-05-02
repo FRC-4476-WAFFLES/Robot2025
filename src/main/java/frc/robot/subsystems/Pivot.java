@@ -4,9 +4,6 @@
 
 package frc.robot.subsystems;
 
-import static frc.robot.RobotContainer.elevatorSubsystem;
-import static frc.robot.RobotContainer.intakeSubsystem;
-
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
@@ -220,7 +217,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
         // Real jank but ok
         int slot = 0;
-        if (intakeSubsystem.isAlgaeLoaded() && !isThrowingAlgae) {
+        if (RobotContainer.intakeSubsystem.isAlgaeLoaded() && !isThrowingAlgae) {
             // while algae is loaded, use a slower profile
             slot = 1;
         }
@@ -231,7 +228,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         Elevator.CollisionType collisionPrediction = RobotContainer.elevatorSubsystem.getCurrentCollisionPotential();
 
         if (isInAlgaeDangerZone() &&
-            intakeSubsystem.isAlgaeLoaded() && 
+            RobotContainer.intakeSubsystem.isAlgaeLoaded() && 
             pivotSetpointAngle < PivotPosition.CLEARANCE_POSITION_ALGAE.getDegrees()
         ) {
 
@@ -391,8 +388,8 @@ public class Pivot extends SubsystemBase implements NetworkUser {
      * Returns if the elevator is (or will be) in a situation where the pivot with algae can hit the robot's structure
      */
     public boolean isInAlgaeDangerZone() {
-        return elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER ||
-        elevatorSubsystem.getElevatorSetpointMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER;
+        return RobotContainer.elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER ||
+            RobotContainer.elevatorSubsystem.getElevatorSetpointMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER;
     }
 
     /**

@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.PubSubOption;
 
 /**
  * A utility that provides a quick and easy way to configure a PID controller from networktables
@@ -50,29 +49,29 @@ public class NetworkConfiguredPID {
         groupTable = inst.getTable("PID Configuration");
         instanceTable = groupTable.getSubTable(this.name);
 
-        PTopic = instanceTable.getDoubleTopic("P Value").getEntry(0, PubSubOption.pollStorage(10));
-        ITopic = instanceTable.getDoubleTopic("I Value").getEntry(0, PubSubOption.pollStorage(10));
-        DTopic = instanceTable.getDoubleTopic("D Value").getEntry(0, PubSubOption.pollStorage(10));
+        PTopic = instanceTable.getDoubleTopic("P Value").getEntry(0);
+        ITopic = instanceTable.getDoubleTopic("I Value").getEntry(0);
+        DTopic = instanceTable.getDoubleTopic("D Value").getEntry(0);
        
         PTopic.set(2);
         ITopic.set(0);
         DTopic.set(0);
 
-        GTopic = instanceTable.getDoubleTopic("Gravity Feedforward").getEntry(0, PubSubOption.pollStorage(10));
-        STopic = instanceTable.getDoubleTopic("Friction Feedforward").getEntry(0, PubSubOption.pollStorage(10));
-        VTopic = instanceTable.getDoubleTopic("Velocity Feedforward").getEntry(0, PubSubOption.pollStorage(10));
-        ATopic = instanceTable.getDoubleTopic("Acceleration Feedforward").getEntry(0, PubSubOption.pollStorage(10));
+        GTopic = instanceTable.getDoubleTopic("Gravity Feedforward").getEntry(0);
+        STopic = instanceTable.getDoubleTopic("Friction Feedforward").getEntry(0);
+        VTopic = instanceTable.getDoubleTopic("Velocity Feedforward").getEntry(0);
+        ATopic = instanceTable.getDoubleTopic("Acceleration Feedforward").getEntry(0);
         
         GTopic.set(0);
         STopic.set(0);
         VTopic.set(0);
         ATopic.set(0);
 
-        MotionMagicCruiseVelocity = instanceTable.getDoubleTopic("MotionMagic CruiseVelocity").getEntry(0, PubSubOption.pollStorage(10));
-        MotionMagicAcceleration = instanceTable.getDoubleTopic("MotionMagic Acceleration").getEntry(0, PubSubOption.pollStorage(10));
-        MotionMagicJerk = instanceTable.getDoubleTopic("MotionMagic Jerk").getEntry(0, PubSubOption.pollStorage(10));
-        MotionMagicExpo_kA = instanceTable.getDoubleTopic("MotionMagic kA").getEntry(0, PubSubOption.pollStorage(10));
-        MotionMagicExpo_kV = instanceTable.getDoubleTopic("MotionMagic kV").getEntry(0, PubSubOption.pollStorage(10));
+        MotionMagicCruiseVelocity = instanceTable.getDoubleTopic("MotionMagic CruiseVelocity").getEntry(0);
+        MotionMagicAcceleration = instanceTable.getDoubleTopic("MotionMagic Acceleration").getEntry(0);
+        MotionMagicJerk = instanceTable.getDoubleTopic("MotionMagic Jerk").getEntry(0);
+        MotionMagicExpo_kA = instanceTable.getDoubleTopic("MotionMagic kA").getEntry(0);
+        MotionMagicExpo_kV = instanceTable.getDoubleTopic("MotionMagic kV").getEntry(0);
 
         MotionMagicCruiseVelocity.set(1);
         MotionMagicAcceleration.set(2);
