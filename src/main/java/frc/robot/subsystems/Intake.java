@@ -270,6 +270,11 @@ public class Intake extends SubsystemBase implements NetworkUser{
      * @return a boolean
      */
     public boolean isAlgaeLoaded() {
+        if (RobotBase.isSimulation()) {
+            // algae override for sim
+            return CodeConstants.FORCE_LOAD_SIM_ALGAE;
+        }
+
         return algaeLoaded;
     }
 

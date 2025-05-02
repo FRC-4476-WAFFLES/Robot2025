@@ -76,7 +76,8 @@ public final class Constants {
   /* Code */
   public static class CodeConstants {
     public static final int SUBSYSTEM_NT_UPDATE_RATE = 20; // How many times a second subsystems will publish to NT. Reduce if performance is suffering.
-    public static final boolean FORCE_LOAD_SIM_CORAL = true;
+    public static final boolean FORCE_LOAD_SIM_CORAL = false;
+    public static final boolean FORCE_LOAD_SIM_ALGAE = false;
   }
 
   /* Vision */
@@ -303,7 +304,7 @@ public final class Constants {
       ALGAE_L1(0.54),
       PROCESSOR(0.135),
       L4(1.50),
-      L3(0.845),
+      L3(0.865),
       L2(0.44),
       L1(0.33),
 
@@ -355,7 +356,7 @@ public final class Constants {
     public enum SharkPivotPosition {
       STOWED(0.0),
       DEPLOYED(138.0),
-      L1(28);
+      L1(27);
 
       private final double degrees;
 

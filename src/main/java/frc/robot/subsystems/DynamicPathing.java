@@ -67,7 +67,7 @@ public class DynamicPathing extends SubsystemBase {
     public static final double NET_TURN_LEFT_Y = Units.inchesToMeters(222.6);
     public static final double NET_TURN_RIGHT_Y = Units.inchesToMeters(253.4);
 
-    public static final Rotation2d NET_TURN_AMOUNT = Rotation2d.fromDegrees(30);
+    public static final Rotation2d NET_TURN_AMOUNT = Rotation2d.fromDegrees(20);
 
     /* Reef physical parameters */
     public static final Translation2d REEF_CENTER_BLUE = new Translation2d(Units.inchesToMeters(176.745), Units.inchesToMeters(158.50)); 
@@ -101,7 +101,7 @@ public class DynamicPathing extends SubsystemBase {
     public static final double PROCESSOR_SCORING_DISTANCE_Y = 0.35; // Distance from processor Y in meters to score from 
 
     /* Net physical parameters */
-    public static final double NET_LINE_X_BLUE = 7.80; // Meters
+    public static final double NET_LINE_X_BLUE = 7.815; // Meters
     public static final Rotation2d NET_SCORING_ANGLE = Rotation2d.k180deg;
 
     /* Path following parameters */
@@ -298,7 +298,7 @@ public class DynamicPathing extends SubsystemBase {
                         new AlgaeOutake()
                     ).finallyDo(() -> {
                         RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
-                        RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
+                        // RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
                     });
                     
                 }
@@ -778,16 +778,21 @@ public class DynamicPathing extends SubsystemBase {
         Command arrivalPathingCommand;
         if (isPastAlgaeClearancePoint()) {
             // Make one smooth path in
-            var pickupPath = DynamicPathing.generateComplexPath(startingPose, 
-                new Translation2d[] {clearancePose.getTranslation()}, 
-                targetAlgaePose);
+            // var pickupPath = DynamicPathing.generateComplexPath(startingPose, 
+            //     new Translation2d[] {clearancePose.getTranslation()}, 
+            //     targetAlgaePose);
 
             // Give up if path doesn't exist
-            if (pickupPath.isPresent()) {
-                arrivalPathingCommand = AutoBuilder.followPath(pickupPath.get());
-            } else {
-                return new InstantCommand();
-            }
+            // if (pickupPath.isPresent()) {
+            arrivalPathingCommand = Commands.sequence(
+                new AlignToPose(clearancePose)
+                    .withPositionTolerance(0.06)
+                    .withThetaTolerance(Rotation2d.fromDegrees(1.5)),
+                new AlignToPose(targetAlgaePose)
+            );
+            // } else {
+            //     return new InstantCommand();
+            // }
         } else {
             // Make two disjointed paths to avoid spline funniness
             var initialBackOffPath = DynamicPathing.simplePathToPose(clearancePose);

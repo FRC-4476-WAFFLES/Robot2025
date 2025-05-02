@@ -142,7 +142,7 @@ public class ScoreCoral extends SequentialCommandGroup {
           new CoralOutake()
         ),
         pathingSubsystem.wrapPathingCommand(
-          new AlignToPose(finalAlignPose)
+          new AlignToPose(finalAlignPose).withEndingDebounce(10)
         ),
         new PrepareScoreCoral()
       ),
