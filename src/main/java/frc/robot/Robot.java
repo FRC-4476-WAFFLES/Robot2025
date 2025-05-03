@@ -29,7 +29,7 @@ public class Robot extends TimedRobot {
 
   private final RobotContainer m_robotContainer;
 
-  private double lastTimestamp = 0;
+  public static boolean canConfigFailed = false;
 
   Timer m_gcTimer = new Timer();
   /**
@@ -182,5 +182,12 @@ public class Robot extends TimedRobot {
     if (m_testCommand != null) {
       m_testCommand.cancel();
     }
+  }
+
+  /**
+   * Indicate that there is a CAN fault in configuring devices
+   */
+  public static void setCANConfigErrorFlag() {
+    canConfigFailed = true;
   }
 }

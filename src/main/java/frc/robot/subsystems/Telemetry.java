@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Controls;
+import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import frc.robot.data.BuildConstants;
 import frc.robot.data.Constants.CANIds;
@@ -101,12 +102,12 @@ public class Telemetry extends SubsystemBase {
 
     // CAN checking variables
     private CANStatus rioCanStatus = new CANStatus();
-    private boolean canConfigFailed = false;
-    private Trigger rioCanErrorTrigger = new Trigger(() -> {
+
+    private Trigger rioCanStatusTrigger = new Trigger(() -> {    
         CANJNI.getCANStatus(rioCanStatus);
         
-        return rioCanStatus.receiveErrorCount > 0 || rioCanStatus.transmitErrorCount > 0;
-    }).debounce(0.25);
+        return rioCanStatus.receiveErrorCount == 0 && rioCanStatus.transmitErrorCount == 0;
+    }).debounce(2); // If error seen in last two seconds, report issue
     
     
 
@@ -117,15 +118,17 @@ public class Telemetry extends SubsystemBase {
         CodeConstants.PERIODIC_LOOP_TIME, 
         () -> CANivoreBus.getStatus()
     );
-    private Trigger drivetrainCanErrorTrigger = new Trigger(() -> {
+    private Trigger drivetrainCanStatusTrigger = new Trigger(() -> {
         var canStatus = canivoreRefresher.getLatestValue();
         if (canStatus.isPresent()) {
-            return (!canStatus.get().Status.isOK()
-            || canStatus.get().TEC > 0
-            || canStatus.get().REC > 0);
+            SmartDashboard.putNumber("ERR", canStatus.get().TEC + canStatus.get().REC);
+        
+            return (canStatus.get().Status.isOK()
+            && canStatus.get().TEC == 0
+            && canStatus.get().REC == 0);
         }
-        return true; // Error if not present
-    }).debounce(0.25);
+        return false; // Error if not present
+    }).debounce(2); // If error seen in last two seconds, report issue
 
     /*                 */
     /*  Alerts System  */
@@ -165,10 +168,11 @@ public class Telemetry extends SubsystemBase {
         operatorControllerDisconnected.set(!Controls.operatorController.isConnected());
 
         // Check for CAN errors
-        rioCanError.set(rioCanErrorTrigger.getAsBoolean());
-        canivoreError.set(drivetrainCanErrorTrigger.getAsBoolean());
+        rioCanError.set(!rioCanStatusTrigger.getAsBoolean());
+        canivoreError.set(!drivetrainCanStatusTrigger.getAsBoolean());
         
-        if (canConfigFailed || rioCanErrorTrigger.getAsBoolean() || drivetrainCanErrorTrigger.getAsBoolean()) {
+        // System.out.println(RobotContainer.canConfigFailed);
+        if (Robot.canConfigFailed || !rioCanStatusTrigger.getAsBoolean() || !drivetrainCanStatusTrigger.getAsBoolean()) {
             canFaultDetected.set(true);
         } else {
             canFaultDetected.set(false);
@@ -312,13 +316,6 @@ public class Telemetry extends SubsystemBase {
      */
     public void recordScoringTime(double alignmentTime, double totalTime) {
         updateScoringMetrics(alignmentTime, totalTime);
-    }
-
-    /**
-     * Indicate that there is a CAN fault in configuring devices
-     */
-    public void setCANConfigErrorFlag() {
-        canConfigFailed = true;
     }
 
     /**
