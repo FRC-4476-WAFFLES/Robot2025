@@ -50,12 +50,12 @@ public class AlignToPose extends Command {
   public static final double approachFeedforwardBlendInner = 0.02; // Distance at which velocity feedforward loses all influence
 
   /* Controllers */
-  private ProfiledPIDController approachPidController = new ProfiledPIDController(3, 0, 0.05, new Constraints(maxVelocity, maxAccelerationElevatorDown));
+  private ProfiledPIDController approachPidController = new ProfiledPIDController(3.6, 0, 0.05, new Constraints(maxVelocity, maxAccelerationElevatorDown));
   private ProfiledPIDController thetaPidController = new ProfiledPIDController(7.0, 0, 0.1, new Constraints(maxThetaVelocity, maxThetaAcceleration));
 
   /* Tolerances */
-  private static double PosMaxError = 0.01; // Meters
-  private static Rotation2d RotMaxError = Rotation2d.fromDegrees(0.5);
+  private double PosMaxError = 0.01; // Meters
+  private Rotation2d RotMaxError = Rotation2d.fromDegrees(0.5);
 
   /* Data */
   private final Supplier<Pose2d> goalPoseSupplier;
@@ -63,7 +63,7 @@ public class AlignToPose extends Command {
 
   private Trigger endTrigger;
   private double endingDebounce = 0;
-  private boolean lockWheelsOnceFinished;
+  private boolean lockWheelsOnceFinished = true;
 
   private double lastMeasuredTime = 0;
 

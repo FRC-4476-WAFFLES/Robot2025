@@ -84,7 +84,7 @@ public class LimelightContainer {
             if(mt1Result.tagCount > 0) 
             {
                 if (Double.isNaN(mt1Result.pose.getX()) || 
-                    Double.isNaN(mt1Result.pose.getY()) ||
+                    Double.isNaN(mt1Result.pose.getY()) || 
                     Double.isNaN(mt1Result.pose.getRotation().getDegrees())) 
                 {
                     return;
