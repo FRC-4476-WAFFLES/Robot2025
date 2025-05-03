@@ -35,6 +35,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.RobotContainer;
 import frc.robot.data.Constants.VisionConstants;
 import frc.robot.data.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.LimelightContainer;
@@ -71,8 +72,8 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
     //     frc.robot.data.VisionConstants.kRobotToLeftCamera);
     // private Vision visionRight = new Vision(frc.robot.data.VisionConstants.kCameraRight,
     //     frc.robot.data.VisionConstants.kRobotToRightCamera);
-    private final LimelightContainer leftLimelight = new LimelightContainer(VisionConstants.LIMELIGHT_NAME_L, this);
-    private final LimelightContainer rightLimelight = new LimelightContainer(VisionConstants.LIMELIGHT_NAME_R, this);
+    public final LimelightContainer leftLimelight = new LimelightContainer(VisionConstants.LIMELIGHT_NAME_L, this);
+    public final LimelightContainer rightLimelight = new LimelightContainer(VisionConstants.LIMELIGHT_NAME_R, this);
 
     /* Swerve request used for autos */
     private final SwerveRequest.ApplyRobotSpeeds autoRequest = new SwerveRequest.ApplyRobotSpeeds()
@@ -325,68 +326,10 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
         // With one or more cameras each flushing periodically, you start seeing loop overruns
         NetworkTableInstance.getDefault().flush();
 
-
-
-        // Commented out sicne we don't have a camera setup figured out yet
-        // var visionEstimationLeft = visionLeft.getEstimatedGlobalPose();
-        // var visionEstimationRight = visionRight.getEstimatedGlobalPose();
-
-        // if (visionEstimationLeft.isPresent() && visionEstimationRight.isPresent()) {
-        //     var estLeft = visionEstimationLeft.get();
-        //     Pose2d estPoseLeft = estLeft.estimatedPose.toPose2d();
-        //     Matrix<N3, N1> estStdDevsLeft = visionLeft.getEstimationStdDevs(estPoseLeft);
-
-        //     var estRight = visionEstimationRight.get();
-        //     Pose2d estPoseRight = estRight.estimatedPose.toPose2d();
-        //     Matrix<N3, N1> estStdDevsRight = visionRight.getEstimationStdDevs(estPoseRight);
-
-        //     // Determine which camera has a better estimate based on total variance
-        //     double totalVarianceLeft = Math.pow(estStdDevsLeft.get(0, 0), 2) + Math.pow(estStdDevsLeft.get(1, 0), 2) + Math.pow(estStdDevsLeft.get(2, 0), 2);
-        //     double totalVarianceRight = Math.pow(estStdDevsRight.get(0, 0), 2) + Math.pow(estStdDevsRight.get(1, 0), 2) + Math.pow(estStdDevsRight.get(2, 0), 2);
-
-        //     Pose2d selectedPose;
-        //     double selectedTimestamp;
-        //     Matrix<N3, N1> selectedStdDevs;
-
-        //     if (totalVarianceLeft < totalVarianceRight) {
-        //         selectedPose = estPoseLeft;
-        //         selectedTimestamp = estLeft.timestampSeconds;
-        //         selectedStdDevs = estStdDevsLeft;
-        //     } else {
-        //         selectedPose = estPoseRight;
-        //         selectedTimestamp = estRight.timestampSeconds;
-        //         selectedStdDevs = estStdDevsRight;
-        //     }
-
-        //     SmartDashboard.putNumberArray("Camera Pose", new double[] {
-        //         selectedPose.getX(),
-        //         selectedPose.getY(),
-        //         selectedPose.getRotation().getDegrees()
-        //     });
-
-        //     addVisionMeasurement(selectedPose, Utils.fpgaToCurrentTime(selectedTimestamp), selectedStdDevs);
-        // } else {
-        //     var presentEstimation = visionEstimationLeft.isPresent() ? visionEstimationLeft : visionEstimationRight;
-        //     if (presentEstimation.isPresent()) {
-        //         var est = presentEstimation.get();
-        //         Pose2d estPose = est.estimatedPose.toPose2d();
-
-                
-
-        //         Matrix<N3, N1> estStdDevs = visionEstimationLeft.isPresent()
-        //                 ? visionLeft.getEstimationStdDevs(estPose)
-        //                 : visionRight.getEstimationStdDevs(estPose);
-
-                
-        //         SmartDashboard.putNumberArray("Camera Pose", new double[] {
-        //             estPose.getX(),
-        //             estPose.getY(),
-        //             estPose.getRotation().getDegrees()
-        //         });
-
-        //         addVisionMeasurement(estPose, Utils.fpgaToCurrentTime(est.timestampSeconds), estStdDevs);
-        //     }
-        // }
+        // Provide vision fault warning
+        RobotContainer.telemetry.setVisionFault(
+            !leftLimelight.isAlive() || !rightLimelight.isAlive()
+        );
     }
 
     /**

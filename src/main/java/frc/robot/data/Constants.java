@@ -36,6 +36,14 @@ public final class Constants {
     public static final int steeringBackRight = 7; 
     public static final int drivingBackRight = 8; 
 
+    // Drive Sensors
+    public static final int frontLeftAbsoluteEncoder = 19; // CANcoder
+    public static final int frontRightAbsoluteEncoder = 20; // CANcoder
+    public static final int backLeftAbsoluteEncoder = 21; // CANcoder
+    public static final int backRightAbsoluteEncoder = 22; // CANcoder
+
+    public static final int pidgeon = 25;
+
     // Other Motors
     public static final int elevator1 = 9; 
     public static final int elevator2 = 10; 
@@ -44,23 +52,16 @@ public final class Constants {
     public static final int sharkPivotMotor = 12;
     public static final int sharkIntakeMotor = 13;
     
-    // Sensors
-    
-    public static final int frontLeftAbsoluteEncoder = 19; // CANcoder
-    public static final int frontRightAbsoluteEncoder = 20; // CANcoder
-    public static final int backLeftAbsoluteEncoder = 21; // CANcoder
-    public static final int backRightAbsoluteEncoder = 22; // CANcoder
-    // public static final int coralPivotAbsoluteEncoder = 24;
-    // public static final int coralPivotAbsoluteEncoderOffset = 0;
-
+    // Other Sensors
     public static final int pivotAbsoluteEncoder = 28;
     
     public static final int intakeLaserCan = 29;
     public static final int funnelLaserCan = 30;
 
-    public static final int pidgeon = 25;
-
     public static final int CANdle = 26;
+
+    // Canivore
+    public static final String CANivoreName = "Drivetrain Backup";
   }
 
   /* PWM Outputs */
@@ -76,9 +77,20 @@ public final class Constants {
 
   /* Code */
   public static class CodeConstants {
+    public static final double PERIODIC_LOOP_TIME = 0.02;
+
     public static final int SUBSYSTEM_NT_UPDATE_RATE = 20; // How many times a second subsystems will publish to NT. Reduce if performance is suffering.
+
     public static final boolean FORCE_LOAD_SIM_CORAL = false;
     public static final boolean FORCE_LOAD_SIM_ALGAE = false;
+
+    // Disable all nonessential CAN status signals, potentially reducing CAN pressure
+    public static final boolean DISABLE_UNUSED_STATUS_SIGNALS = true; 
+
+    // Frequencies in hertz for CAN refresh rates
+    public static final double FD_CAN_FREQUENCY = 100;
+    public static final double BASE_CAN_FREQUENCY = 50;
+    public static final double LOW_IMPORTANCE_CAN_FREQUENCY = 20;
   }
 
   /* Vision */
@@ -112,6 +124,9 @@ public final class Constants {
     public static final int[] BLUE_VALID_REEF_TAG_IDs = {
       17, 18, 19, 20, 21, 22  
     };
+
+    // Limelights are considered disconnected if their heartbeat value is older than this many seconds
+    public static final double LL_HEARTBEAT_MIN_FREQ = 0.5;
   }
 
   /* Field */

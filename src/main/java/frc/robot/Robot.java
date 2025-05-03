@@ -14,7 +14,9 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.data.BuildConstants;
+import frc.robot.utils.EpochTimer;
 import frc.robot.utils.NetworkConfiguredPID;
+import frc.robot.utils.PhoenixHelpers;
 import frc.robot.utils.SubsystemNetworkManager;
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -71,16 +73,26 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    lastTimestamp = Timer.getFPGATimestamp();
+    // Time full loop refresh rate including waiting / background tasks that might affect loop stability
+    EpochTimer.EndEpoch("RobotRefresh");
+    EpochTimer.BeginEpoch("RobotRefresh");
 
-    // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
-    // commands, running already-scheduled commands, removing finished or interrupted commands,
-    // and running subsystem periodic() methods.  This must be called from the robot's periodic
-    // block in order for anything in the Command-based framework to work.
-    CommandScheduler.getInstance().run();
+    
+    // Refresh CAN signals from CTRE devices
+    EpochTimer.BeginEpoch("PhoenixRefresh"); {
+      PhoenixHelpers.refreshAllSignals();
+    } EpochTimer.EndEpoch("PhoenixRefresh");
 
-    // Publish periodic loop time to networktables
-    RobotContainer.telemetry.updateLoopTimeMetric((Timer.getFPGATimestamp() - lastTimestamp) * 1000);
+    // Periodic Loop
+    EpochTimer.BeginEpoch("Periodic"); {
+      // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
+      // commands, running already-scheduled commands, removing finished or interrupted commands,
+      // and running subsystem periodic() methods.  This must be called from the robot's periodic
+      // block in order for anything in the Command-based framework to work.
+      CommandScheduler.getInstance().run();
+
+      // Publish periodic loop time to networktables
+    } EpochTimer.EndEpoch("Periodic");
   }
 
   /** This function is called once each time the robot enters Disabled mode. */

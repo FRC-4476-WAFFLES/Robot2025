@@ -12,7 +12,6 @@ import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.Slot2Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -34,7 +33,10 @@ import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.subsystems.Elevator.CollisionType;
 import frc.robot.utils.NetworkUser;
+import frc.robot.utils.PhoenixHelpers;
 import frc.robot.utils.SubsystemNetworkManager;
+import frc.robot.utils.IO.CANcoderIO;
+import frc.robot.utils.IO.TalonFXIO;
 
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import edu.wpi.first.math.util.Units;
@@ -49,8 +51,8 @@ import edu.wpi.first.math.util.Units;
  */
 public class Pivot extends SubsystemBase implements NetworkUser {
     // Hardware Components
-    private final TalonFX pivot;
-    private final CANcoder pivotAbsoluteEncoder;
+    private final TalonFXIO pivot;
+    private final CANcoderIO pivotAbsoluteEncoder;
 
     // Control Objects
     private final MotionMagicExpoVoltage motionMagicRequest = new MotionMagicExpoVoltage(0);
@@ -103,8 +105,8 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
 
         // Initialize hardware
-        pivot = new TalonFX(CANIds.pivotMotor);
-        pivotAbsoluteEncoder = new CANcoder(CANIds.pivotAbsoluteEncoder);
+        pivot = new TalonFXIO(CANIds.pivotMotor);
+        pivotAbsoluteEncoder = new CANcoderIO(CANIds.pivotAbsoluteEncoder);
         
         // Configure hardware
         configureCANCoder();
@@ -114,7 +116,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         resetInternalEncoder();
 
         zeroingDebounceTrigger = new Trigger(() -> {
-            return pivot.getTorqueCurrent().getValueAsDouble() < -ManipulatorConstants.PIVOT_CURRENT_THRESHOLD;     
+            return pivot.signals().torqueCurrent().getValueAsDouble() < -ManipulatorConstants.PIVOT_CURRENT_THRESHOLD;     
         }).debounce(ManipulatorConstants.ZERO_DEBOUNCE_TIME);
     }
 
@@ -124,7 +126,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     private void configureCANCoder() {
         CANcoderConfiguration config = new CANcoderConfiguration();
         config.MagnetSensor.MagnetOffset = PhysicalConstants.pivotAbsoluteEncoderOffset;
-        pivotAbsoluteEncoder.getConfigurator().apply(config);
+        PhoenixHelpers.tryConfig(() -> pivotAbsoluteEncoder.getConfigurator().apply(config));
     }
 
     /**
@@ -199,7 +201,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         pivotConfigs.Voltage.SupplyVoltageTimeConstant = 0.1;
         pivotConfigs.CurrentLimits.StatorCurrentLimit = 60;
 
-        pivot.getConfigurator().apply(pivotConfigs);
+        PhoenixHelpers.tryConfig(() -> pivot.getConfigurator().apply(pivotConfigs));
     }
 
     @Override
@@ -323,7 +325,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
      * @return Current angle in degrees
      */
     public double getPivotPosition() {
-        return pivot.getPosition().getValueAsDouble() * 360;
+        return pivot.signals().position().getValueAsDouble() * 360;
     }
 
     /**
@@ -359,8 +361,8 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         pivotSetpointNT.set(pivotSetpointAngle);
         pivotAngleNT.set(getPivotPosition());
         isZeroingNT.set(isZeroingPivot);
-        pivotCurrentDrawNT.set(pivot.getTorqueCurrent().getValueAsDouble());
-        pivotVelocityNT.set(pivot.getVelocity().getValueAsDouble());
+        pivotCurrentDrawNT.set(pivot.signals().torqueCurrent().getValueAsDouble());
+        pivotVelocityNT.set(pivot.signals().velocity().getValueAsDouble());
     }
 
     @Override

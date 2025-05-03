@@ -95,7 +95,6 @@ public class RobotContainer {
   private  SendableChooser<Command> testChooser;
   public static boolean isOperatorOverride = false;
   public static boolean isRunningL1Intake = false;
-
   public static Trigger isHeadingLockedToL1;
 
   /** The static entry point for the robot. Contains subsystems, OI devices, and commands. */
@@ -523,21 +522,5 @@ public class RobotContainer {
    */
   public Command getTestCommand() {
     return testChooser.getSelected();
-  }
-
-  /**
-   * Gets the elevator subsystem instance.
-   * @return The elevator subsystem
-   */
-  public Elevator getElevator() {
-    return elevatorSubsystem;
-  }
-
-  /**
-   * Gets the drive subsystem instance.
-   * @return The drive subsystem
-   */
-  public DriveSubsystem getDriveSubsystem() {
-    return driveSubsystem;
   }
 }

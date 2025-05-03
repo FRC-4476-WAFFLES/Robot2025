@@ -5,7 +5,6 @@ import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
@@ -20,7 +19,9 @@ import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.Constants.SharkIntakeConstants;
 import frc.robot.utils.NetworkUser;
+import frc.robot.utils.PhoenixHelpers;
 import frc.robot.utils.SubsystemNetworkManager;
+import frc.robot.utils.IO.TalonFXIO;
 
 /**
  * The SharkIntake subsystem handles the robot's L1 intake mechanism.
@@ -29,7 +30,7 @@ import frc.robot.utils.SubsystemNetworkManager;
  */
 public class SharkIntake extends SubsystemBase implements NetworkUser{
     // Hardware Components
-    private final TalonFX intake;
+    private final TalonFXIO intake;
 
     // Control Objects
     private final MotionMagicVelocityVoltage intakeControlRequest = new MotionMagicVelocityVoltage(0);
@@ -55,18 +56,18 @@ public class SharkIntake extends SubsystemBase implements NetworkUser{
     public SharkIntake() {
         SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
 
-        intake = new TalonFX(Constants.CANIds.sharkIntakeMotor);
+        intake = new TalonFXIO(Constants.CANIds.sharkIntakeMotor);
 
         // Configure hardware
         configureIntakeMotor();
 
         // Construct debounced trigger
         coralCurrentThresholdMet = new Trigger(
-            () -> intake.getTorqueCurrent().getValueAsDouble() > SharkIntakeConstants.CORAL_CURRENT_THRESHOLD
+            () -> intake.signals().torqueCurrent().getValueAsDouble() > SharkIntakeConstants.CORAL_CURRENT_THRESHOLD
         ).debounce(CORAL_DETECTION_DEBOUNCE_TIME);
 
         coralEjectionVelocityMet = new Trigger(
-            () -> intake.getVelocity().getValueAsDouble() < SharkIntakeConstants.CORAL_EJECT_VELOCITY_THRESHOLD
+            () -> intake.signals().velocity().getValueAsDouble() < SharkIntakeConstants.CORAL_EJECT_VELOCITY_THRESHOLD
         ).debounce(CORAL_EJECTION_DEBOUNCE_TIME);
     }
 
@@ -103,7 +104,7 @@ public class SharkIntake extends SubsystemBase implements NetworkUser{
         intakeConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         intakeConfigs.MotorOutput.DutyCycleNeutralDeadband = 0.01;
 
-        intake.getConfigurator().apply(intakeConfigs);
+        PhoenixHelpers.tryConfig(() -> intake.getConfigurator().apply(intakeConfigs));
     }
     
     @Override
@@ -144,8 +145,8 @@ public class SharkIntake extends SubsystemBase implements NetworkUser{
     public void updateNetwork() {
         coralLoadedNT.set(isCoralLoaded());
         intakeSetpointNT.set(intakeSpeed);
-        intakeCurrentDrawNT.set(intake.getTorqueCurrent().getValueAsDouble());
-        intakeVelocityNT.set(intake.getVelocity().getValueAsDouble());
+        intakeCurrentDrawNT.set(intake.signals().torqueCurrent().getValueAsDouble());
+        intakeVelocityNT.set(intake.signals().velocity().getValueAsDouble());
     }
 
     @Override

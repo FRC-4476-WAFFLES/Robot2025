@@ -1,7 +1,15 @@
 package frc.robot.subsystems;
 
+import java.util.ArrayList;
+import java.util.Optional;
+
+import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.CANBus.CANBusStatus;
+import com.ctre.phoenix6.jni.CANBusJNI;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
+import edu.wpi.first.hal.can.CANJNI;
+import edu.wpi.first.hal.can.CANStatus;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
@@ -9,14 +17,22 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.data.BuildConstants;
+import frc.robot.data.Constants.CANIds;
+import frc.robot.data.Constants.CodeConstants;
+import frc.robot.utils.IO.DeferredRefresher;
 
 public class Telemetry extends SubsystemBase {
     /*                         */
@@ -40,7 +56,6 @@ public class Telemetry extends SubsystemBase {
     private final StringPublisher deployedBranch = softwareTable.getStringTopic("Deployed Branch").publish();
     private final StringPublisher buildTimeStamp = softwareTable.getStringTopic("Build Timestamp").publish();
     private final StringPublisher repository = softwareTable.getStringTopic("Repository").publish();
-    private final DoublePublisher lastLoopTimePublsiher = softwareTable.getDoubleTopic("Loop Time (ms)").publish();
 
     /* Power data */
     private final NetworkTable powerTable = inst.getTable("PowerInfo");
@@ -76,42 +91,6 @@ public class Telemetry extends SubsystemBase {
     //     .getStructArrayTopic("PPCurrentTrajectory", Pose2d.struct).publish();
 
     // private final Pose2d[] trajTypeArray = new Pose2d[0];
-    
-    /*                            */
-    /* Swerve Telemetry Variables */
-    /*                            */
-
-    /* Keep a reference of the last pose to calculate the speeds */
-    // private Pose2d m_lastPose = new Pose2d();
-    // private double lastTime = Utils.getCurrentTimeSeconds();
-
-    /* Mechanisms to represent the swerve module states */
-    // private final Mechanism2d[] m_moduleMechanisms = new Mechanism2d[] {
-    //     new Mechanism2d(1, 1),
-    //     new Mechanism2d(1, 1),
-    //     new Mechanism2d(1, 1),
-    //     new Mechanism2d(1, 1),
-    // };
-    // /* A direction and length changing ligament for speed representation */
-    // private final MechanismLigament2d[] m_moduleSpeeds = new MechanismLigament2d[] {
-    //     m_moduleMechanisms[0].getRoot("RootSpeed", 0.5, 0.5).append(new MechanismLigament2d("Speed", 0.5, 0)),
-    //     m_moduleMechanisms[1].getRoot("RootSpeed", 0.5, 0.5).append(new MechanismLigament2d("Speed", 0.5, 0)),
-    //     m_moduleMechanisms[2].getRoot("RootSpeed", 0.5, 0.5).append(new MechanismLigament2d("Speed", 0.5, 0)),
-    //     m_moduleMechanisms[3].getRoot("RootSpeed", 0.5, 0.5).append(new MechanismLigament2d("Speed", 0.5, 0)),
-    // };
-    // /* A direction changing and length constant ligament for module direction */
-    // private final MechanismLigament2d[] m_moduleDirections = new MechanismLigament2d[] {
-    //     m_moduleMechanisms[0].getRoot("RootDirection", 0.5, 0.5)
-    //         .append(new MechanismLigament2d("Direction", 0.1, 0, 0, new Color8Bit(Color.kWhite))),
-    //     m_moduleMechanisms[1].getRoot("RootDirection", 0.5, 0.5)
-    //         .append(new MechanismLigament2d("Direction", 0.1, 0, 0, new Color8Bit(Color.kWhite))),
-    //     m_moduleMechanisms[2].getRoot("RootDirection", 0.5, 0.5)
-    //         .append(new MechanismLigament2d("Direction", 0.1, 0, 0, new Color8Bit(Color.kWhite))),
-    //     m_moduleMechanisms[3].getRoot("RootDirection", 0.5, 0.5)
-    //         .append(new MechanismLigament2d("Direction", 0.1, 0, 0, new Color8Bit(Color.kWhite))),
-    // };
-
-    // private final double MaxSpeed;
 
 
     /*                 */
@@ -120,11 +99,45 @@ public class Telemetry extends SubsystemBase {
 
     private PowerDistribution powerDistributionHub = new PowerDistribution(1, ModuleType.kRev);
 
-    /* Scoring metrics data */
-    // private final NetworkTable scoringMetricsTable = inst.getTable("ScoringMetrics");
+    // CAN checking variables
+    private CANStatus rioCanStatus = new CANStatus();
+    private boolean canConfigFailed = false;
+    private Trigger rioCanErrorTrigger = new Trigger(() -> {
+        CANJNI.getCANStatus(rioCanStatus);
+        
+        return rioCanStatus.receiveErrorCount > 0 || rioCanStatus.transmitErrorCount > 0;
+    }).debounce(0.25);
     
-    // Remove tracking of averages, counts, and success rates
-    // Only keep publishers for the most recent durations
+    
+
+    // Async CANivore bus status checking
+    private CANBus CANivoreBus = new CANBus(CANIds.CANivoreName);
+    DeferredRefresher<CANBusStatus> canivoreRefresher = new DeferredRefresher<>(
+        "CANivore Status", 
+        CodeConstants.PERIODIC_LOOP_TIME, 
+        () -> CANivoreBus.getStatus()
+    );
+    private Trigger drivetrainCanErrorTrigger = new Trigger(() -> {
+        var canStatus = canivoreRefresher.getLatestValue();
+        if (canStatus.isPresent()) {
+            return (!canStatus.get().Status.isOK()
+            || canStatus.get().TEC > 0
+            || canStatus.get().REC > 0);
+        }
+        return true; // Error if not present
+    }).debounce(0.25);
+
+    /*                 */
+    /*  Alerts System  */
+    /*                 */
+
+    private final Alert canFaultDetected = new Alert("CAN fault detected [See Console]", AlertType.kError);
+    private final Alert rioCanError = new Alert("RIO CAN bus error", AlertType.kError);
+    private final Alert canivoreError = new Alert("CANivore bus error", AlertType.kError);
+    private final Alert visionFaultDetected = new Alert("", AlertType.kError);
+    private final Alert joystickLeftDisconnected = new Alert("Joystick L disconnected [port 0].", AlertType.kWarning);
+    private final Alert joystickRightDisconnected = new Alert("Joystick R disconnected [port 1].", AlertType.kWarning); 
+    private final Alert operatorControllerDisconnected = new Alert("Operator controller disconnected [port 2].", AlertType.kWarning); 
 
     /**
      * Construct a telemetry subsystem
@@ -145,6 +158,22 @@ public class Telemetry extends SubsystemBase {
         publishPDHInfo();
 
         matchTime.set(Timer.getMatchTime());
+
+        // Update controls warnings
+        joystickLeftDisconnected.set(!Controls.leftJoystick.isConnected());
+        joystickRightDisconnected.set(!Controls.rightJoystick.isConnected());
+        operatorControllerDisconnected.set(!Controls.operatorController.isConnected());
+
+        // Check for CAN errors
+        rioCanError.set(rioCanErrorTrigger.getAsBoolean());
+        canivoreError.set(drivetrainCanErrorTrigger.getAsBoolean());
+        
+        if (canConfigFailed || rioCanErrorTrigger.getAsBoolean() || drivetrainCanErrorTrigger.getAsBoolean()) {
+            canFaultDetected.set(true);
+        } else {
+            canFaultDetected.set(false);
+        }
+        
 
         // Pathplanner Telemetry
         // Logging callback for current robot pose
@@ -275,14 +304,6 @@ public class Telemetry extends SubsystemBase {
         SmartDashboard.putNumber("Recent Alignment Time", alignmentTime);
         SmartDashboard.putNumber("Recent Total Scoring Time", totalScoringTime);
     }
-
-    /**
-     * Update the last recorded loop time
-     * @param loopTime the last loop time in ms
-     */
-    public void updateLoopTimeMetric(double loopTime) {
-        lastLoopTimePublsiher.set(loopTime);
-    }
     
     /**
      * Record a scoring operation timing
@@ -291,5 +312,30 @@ public class Telemetry extends SubsystemBase {
      */
     public void recordScoringTime(double alignmentTime, double totalTime) {
         updateScoringMetrics(alignmentTime, totalTime);
+    }
+
+    /**
+     * Indicate that there is a CAN fault in configuring devices
+     */
+    public void setCANConfigErrorFlag() {
+        canConfigFailed = true;
+    }
+
+    /**
+     * Indicate that there is a CAN fault
+     */
+    public void setVisionFault(boolean value) {
+        visionFaultDetected.set(value);
+        if (value) {
+            ArrayList<String> details = new ArrayList<>();
+            if (!RobotContainer.driveSubsystem.leftLimelight.isAlive()) {
+                details.add(RobotContainer.driveSubsystem.leftLimelight.getName());
+            }
+            if (!RobotContainer.driveSubsystem.rightLimelight.isAlive()) {
+                details.add(RobotContainer.driveSubsystem.rightLimelight.getName());
+            }
+
+            visionFaultDetected.setText("Vision fault detected [" + String.join(", ", details) + "]");
+        }
     }
 }

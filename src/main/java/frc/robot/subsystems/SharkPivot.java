@@ -9,7 +9,6 @@ import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
@@ -26,7 +25,9 @@ import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.SharkPivotConstants;
 import frc.robot.data.Constants.SharkPivotConstants.SharkPivotPosition;
 import frc.robot.utils.NetworkUser;
+import frc.robot.utils.PhoenixHelpers;
 import frc.robot.utils.SubsystemNetworkManager;
+import frc.robot.utils.IO.TalonFXIO;
 
 /**
  * The SharkPivot subsystem is responsible for pivoting the L1 Intake (Shark)
@@ -34,7 +35,7 @@ import frc.robot.utils.SubsystemNetworkManager;
  */
 public class SharkPivot extends SubsystemBase implements NetworkUser {
   // Hardware Components
-  public final TalonFX pivotMotor;
+  public final TalonFXIO pivotMotor;
 
   // Instance Variables
   private double angleSetpoint = 0;
@@ -79,13 +80,13 @@ public class SharkPivot extends SubsystemBase implements NetworkUser {
     SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
 
     // Initialize hardware
-    pivotMotor = new TalonFX(Constants.CANIds.sharkPivotMotor);
+    pivotMotor = new TalonFXIO(Constants.CANIds.sharkPivotMotor);
 
     // Configure hardware
     configurePivotMotor();
 
     zeroingDebounceTrigger = new Trigger(() -> {
-      return pivotMotor.getTorqueCurrent().getValueAsDouble() < -SharkPivotConstants.PIVOT_CURRENT_THRESHOLD;     
+      return pivotMotor.signals().torqueCurrent().getValueAsDouble() < -SharkPivotConstants.PIVOT_CURRENT_THRESHOLD;     
     }).debounce(SharkPivotConstants.ZERO_DEBOUNCE_TIME);
   }
 
@@ -133,7 +134,7 @@ public class SharkPivot extends SubsystemBase implements NetworkUser {
     pivotConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
     // Apply Configuration
-    pivotMotor.getConfigurator().apply(pivotConfig);
+    PhoenixHelpers.tryConfig(() -> pivotMotor.getConfigurator().apply(pivotConfig));
     
     // Reset the position to zero at startup
     // This assumes the pivot is at its zero position when the robot starts
@@ -186,7 +187,7 @@ public class SharkPivot extends SubsystemBase implements NetworkUser {
   public double getPivotDegrees() {
     // Get the position in rotations and convert to degrees
     // The SensorToMechanismRatio is automatically applied by the Phoenix library
-    return pivotMotor.getPosition().getValueAsDouble() * 360.0;
+    return pivotMotor.signals().position().getValueAsDouble() * 360.0;
   }
 
   /**
