@@ -45,7 +45,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
     // Deferred Refreshers
     private DeferredRefresher<Double> intakeLaserCanRefresher = new DeferredRefresher<Double>(
         "Intake LaserCAN", 
-        CodeConstants.PERIODIC_LOOP_TIME, 
+        0.01, // 100hz
         () -> {
             if (intakeLaserCan != null) {
                 var measurement = intakeLaserCan.getMeasurement();
@@ -61,7 +61,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
 
     private DeferredRefresher<Double> funnelLaserCanRefresher = new DeferredRefresher<Double>(
         "Funnel LaserCAN", 
-        CodeConstants.PERIODIC_LOOP_TIME, 
+        0.01, 
         () -> {
             if (funnelLaserCan != null) {
                 var measurement = funnelLaserCan.getMeasurement();

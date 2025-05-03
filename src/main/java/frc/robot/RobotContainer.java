@@ -66,6 +66,13 @@ import frc.robot.subsystems.Telemetry;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
 
+  /* Global Robot State */
+  private SendableChooser<Command> autoChooser;
+  private  SendableChooser<Command> testChooser;
+  public static boolean isOperatorOverride = false;
+  public static boolean isRunningL1Intake = false;
+  public static Trigger isHeadingLockedToL1;
+
   /* Hardware Subsystems */
   public static final DriveSubsystem driveSubsystem = TunerConstants.createDrivetrain();
   public static final Pivot pivotSubsystem = new Pivot();
@@ -89,13 +96,6 @@ public class RobotContainer {
     Controls.operatorController::getRightTriggerAxis,
     Controls.operatorController::getLeftTriggerAxis
   );
-
-  /* Global Robot State */
-  private SendableChooser<Command> autoChooser;
-  private  SendableChooser<Command> testChooser;
-  public static boolean isOperatorOverride = false;
-  public static boolean isRunningL1Intake = false;
-  public static Trigger isHeadingLockedToL1;
 
   /** The static entry point for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {

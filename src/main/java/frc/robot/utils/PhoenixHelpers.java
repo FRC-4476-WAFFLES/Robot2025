@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 
+import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.Telemetry;
 
@@ -51,7 +52,7 @@ public class PhoenixHelpers {
         for (int i = 0; i < maxAttempts; i++) {
             if (task.get().isOK()) return;
         }
-        RobotContainer.telemetry.setCANConfigErrorFlag();
+        Robot.setCANConfigErrorFlag();
     }
 
     /** 

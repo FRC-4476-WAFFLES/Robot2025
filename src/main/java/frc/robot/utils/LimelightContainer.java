@@ -36,7 +36,7 @@ public class LimelightContainer {
      */
     public void update() {
         // Check for limelight heartbeat
-        double heartBeat = LimelightHelpers.getLimelightNTDouble(limelightName, "tb");
+        double heartBeat = LimelightHelpers.getLimelightNTDouble(limelightName, "hb");
         if (lastHeartbeatValue != heartBeat) {
             lastHeartbeatValue = heartBeat;
             lastHeartbeatTime = Timer.getFPGATimestamp();
