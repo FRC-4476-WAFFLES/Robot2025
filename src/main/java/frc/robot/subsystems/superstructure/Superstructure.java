@@ -9,26 +9,24 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Superstructure extends SubsystemBase {
   public enum SuperStructureState {
     ZERO(0, 0),
-    CLEARANCE_POSITION(35, ),
-    CLEARANCE_POSITION_ALGAE(106),
-    ALGAE_L2(178.5),
-    ALGAE_L1(178.5),
-    PROCESSOR(189),
-    SPIT_ALGAE(140),
-    CORAL_INTAKE(2.6),
-    NET(98),
-    L4(66),
-    L3(34),
-    L2(34),
-    L1(150),
+    ALGAE_L2(178.5,0.88),
+    ALGAE_L1(178.5,0.54),
+    PROCESSOR(189,0.135),
+    SPIT_ALGAE(140,0.2),//elevator height is random here
+    CORAL_INTAKE(2.6,0),
+    NET(98,1.5),
+    L4(66,1.50),
+    L3(34,0.865),
+    L2(34,0.44),
+    L1(150,0.33),
 
     // Maybe manual mode
-    MANUAL_L4(71.0),
-    MANUAL_L3(24.0),
-    MANUAL_L2(24.0),
-    MANUAL_L1(150),
+    MANUAL_L4(71.0,1.440),
+    MANUAL_L3(24.0,0.6772),
+    MANUAL_L2(24.0,0.280),
+    MANUAL_L1(150,0.33),
 
-    NET_PREP(180);
+    NET_PREP(180,1.3);
 
     private final double pivotAngle;
     private final double elevatorHeight;
