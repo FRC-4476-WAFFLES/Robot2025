@@ -308,7 +308,10 @@ public class AlignToPose extends Command {
     goalPosePublisher.set(goalPose);
     
     // Apply chosen velocity
-    applyFieldVelocity(targetFieldVelocity, targetThetaVelocity);
+    // applyFieldVelocity(targetFieldVelocity, targetThetaVelocity);
+
+
+    
   }
 
   // Called once the command ends or is interrupted.

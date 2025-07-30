@@ -10,7 +10,7 @@ import frc.robot.data.Constants.ElevatorConstants;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.subsystems.DynamicPathing;
-import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.superstructure.Elevator;
 
 /* Continuously adjusts position of elevator and pivot to desired scoring level */
 public class PrepareScoreCoral extends Command {

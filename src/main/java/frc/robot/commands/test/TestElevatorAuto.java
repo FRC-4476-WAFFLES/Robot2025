@@ -13,7 +13,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.data.Constants.ElevatorConstants;
-import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.superstructure.Elevator;
 
 public class TestElevatorAuto extends SequentialCommandGroup {
   private Elevator elevatorSubsystem;

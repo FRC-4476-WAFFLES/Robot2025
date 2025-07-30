@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems;
+package frc.robot.subsystems.superstructure;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -31,7 +31,7 @@ import frc.robot.data.Constants.ElevatorConstants;
 import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
-import frc.robot.subsystems.Elevator.CollisionType;
+import frc.robot.subsystems.superstructure.Elevator.CollisionType;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.PhoenixHelpers;
 import frc.robot.utils.SubsystemNetworkManager;

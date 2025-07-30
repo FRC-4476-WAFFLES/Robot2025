@@ -47,14 +47,14 @@ import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.data.TunerConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.DynamicPathing;
-import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Lights;
 import frc.robot.subsystems.MechanismPoses;
-import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.SharkIntake;
 import frc.robot.subsystems.SharkPivot;
 import frc.robot.subsystems.Telemetry;
+import frc.robot.subsystems.superstructure.Elevator;
+import frc.robot.subsystems.superstructure.Pivot;
 
 
 /**
