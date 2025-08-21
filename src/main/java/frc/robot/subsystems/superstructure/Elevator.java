@@ -43,8 +43,9 @@ import frc.robot.utils.NetworkUser;
 import frc.robot.utils.PhoenixHelpers;
 import frc.robot.utils.SubsystemNetworkManager;
 import frc.robot.utils.IO.TalonFXIO;
+import frc.robot.utils.lib.WafflesMechanism;
 
-public class Elevator extends SubsystemBase implements NetworkUser {
+public class Elevator extends WafflesMechanism {
   /**
    * Enum representing different types of potential collisions
    */
@@ -66,28 +67,22 @@ public class Elevator extends SubsystemBase implements NetworkUser {
   private ElevatorSim elevatorSim;
 
   // Instance Variables
-  private double elevatorSetpointMeters = 0;
+  private Trigger zeroingDebounceTrigger;
   private boolean isZeroingElevator = false;
-
-  private MotionMagicExpoVoltage motionMagicRequest = new MotionMagicExpoVoltage(0);
-
-  // Networktables Variables 
-  private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
-  private final NetworkTable elevatorTable = inst.getTable("Elevator");
-
-  private final DoublePublisher elevatorSetpointNT = elevatorTable.getDoubleTopic("Setpoint (Meters)").publish();
-  private final DoublePublisher elevatorPositionNT = elevatorTable.getDoubleTopic("Current Position (Meters)").publish();
-  private final DoublePublisher elevatorVelocityNT = elevatorTable.getDoubleTopic("Current Velocity (rps)").publish();
-  private final BooleanPublisher elevatorIsZeroingNT = elevatorTable.getBooleanTopic("Is Zeroing").publish();
-  private final BooleanPublisher isAtSetpointNT = elevatorTable.getBooleanTopic("Elevator at Setpoint").publish();
-  private final DoublePublisher leaderCurrentDrawNT = elevatorTable.getDoubleTopic("Leader Motor Current (Amps)").publish();
-  private final DoublePublisher followerCurrentDrawNT = elevatorTable.getDoubleTopic("Follower Motor Current (Amps)").publish();
-
+  
   private ElevatorLevel currentSetpointEnum = ElevatorLevel.REST_POSITION; 
   private CollisionType currentCollisionPrediction = CollisionType.NONE;
   private CollisionType potentialCollisionPrediction = CollisionType.NONE; // If the movement could induce collision
 
-  private Trigger zeroingDebounceTrigger;
+  private MotionMagicExpoVoltage motionMagicRequest = new MotionMagicExpoVoltage(0);
+
+  // Networktables Variables 
+  private final DoublePublisher elevatorPositionNT = networkTable.getDoubleTopic("Current Position (Meters)").publish();
+  private final DoublePublisher elevatorVelocityNT = networkTable.getDoubleTopic("Current Velocity (rps)").publish();
+  private final BooleanPublisher elevatorIsZeroingNT = networkTable.getBooleanTopic("Is Zeroing").publish();
+  private final BooleanPublisher isAtSetpointNT = networkTable.getBooleanTopic("Elevator at Setpoint").publish();
+  private final DoublePublisher leaderCurrentDrawNT = networkTable.getDoubleTopic("Leader Motor Current (Amps)").publish();
+  private final DoublePublisher followerCurrentDrawNT = networkTable.getDoubleTopic("Follower Motor Current (Amps)").publish();
   
   // -------------------- Tuning Code --------------------
   // private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
@@ -141,9 +136,8 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     elevatorMotorLeader.setControl(sysIDRequest.withOutput(volts));
   }
 
-  public Elevator() {
-    SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
 
+  public Elevator() {
     elevatorMotorLeader = new TalonFXIO(CANIds.elevator1);
     elevatorMotorFollower = new TalonFXIO(CANIds.elevator2);
 
@@ -217,73 +211,31 @@ public class Elevator extends SubsystemBase implements NetworkUser {
 
 
   @Override
-  public void periodic() {
-    // Updated always so pivot always gets accurate information
-    currentCollisionPrediction = isCollisionPredicted(elevatorSetpointMeters);
-
+  public void periodicImpl() {
     if (isZeroingElevator) {
       handleElevatorZeroPeriodic();
-    } else {
-      // Main control logic
-      double chosenElevatorPosition = elevatorSetpointMeters;
-
-      if (currentCollisionPrediction == Elevator.CollisionType.NONE) {
-        // Safe to move elevator
-        // Move elevator to setpoint
-        chosenElevatorPosition = elevatorSetpointMeters; // not necessary but sanity check I guess
-      } else if(currentCollisionPrediction == Elevator.CollisionType.ENTERING_FROM_ABOVE) {
-        // Move to safe setpoint
-        chosenElevatorPosition = ElevatorConstants.COLLISION_ZONE_UPPER;
-      } else if(currentCollisionPrediction == Elevator.CollisionType.ENTERING_FROM_BELOW) {
-        // Move to safe setpoint
-        chosenElevatorPosition = ElevatorConstants.COLLISION_ZONE_LOWER;
-      } else {
-        // Try to stop motor
-        chosenElevatorPosition = getElevatorPositionMeters();
-      }
-
-      // If elevator is high enough to use first stage, apply feedforward
-      // Not needed for carriage only motion due to CF springs
-      // double chosenFeedforward = 0;
-      // if (getElevatorPositionMeters() > ElevatorConstants.FIRST_STAGE_START_HEIGHT) {
-      //   chosenFeedforward = ElevatorConstants.kG;
-      // }
-      // double chosenFeedforward = ElevatorConstants.kG; // withFeedForward(chosenFeedforward)
-
-      // Apply chosen setpoint
-      elevatorMotorLeader.setControl(motionMagicRequest.withPosition(chosenElevatorPosition).withSlot(0));
+      return;
     }
 
-    // Update network tables
-    updateNetwork();
+    // If elevator is high enough to use first stage, apply feedforward
+    // Not needed for carriage only motion due to CF springs
+    // double chosenFeedforward = 0;
+    // if (getElevatorPositionMeters() > ElevatorConstants.FIRST_STAGE_START_HEIGHT) {
+    //   chosenFeedforward = ElevatorConstants.kG;
+    // }
+    // double chosenFeedforward = ElevatorConstants.kG; // withFeedForward(chosenFeedforward)
+
+    // Apply chosen setpoint
+    elevatorMotorLeader.setControl(motionMagicRequest.withPosition(constrainedSetpoint).withSlot(0));
   }
 
-  /**
-   * Run periodically while zeroing elevator
-   */
-  private void handleElevatorZeroPeriodic() {
-    if (zeroingDebounceTrigger.getAsBoolean() && isZeroingElevator) {
-      // Stop the elevator
-      elevatorMotorLeader.set(0);
+  @Override
+  protected void applyConstraints() {
+    // Updated always so pivot always gets accurate information
+    currentCollisionPrediction = isCollisionPredicted(setpoint);
 
-      // Set the current position as the new zero
-      elevatorMotorLeader.setPosition(0);
-
-      // Reset the target position
-      elevatorSetpointMeters = 0;
-
-      isZeroingElevator = false;
-
-      DriverStation.reportWarning("Elevator zeroed successfully", false);
-    }
-  }
-
-  /**
-   * Sets the target position of the elevator.
-   * @param setpoint Target position in meters.
-   */
-  public void setElevatorSetpoint(double setpoint){
-    elevatorSetpointMeters = MathUtil.clamp(setpoint, ElevatorConstants.MIN_ELEVATOR_HEIGHT, ElevatorConstants.MAX_ELEVATOR_HEIGHT);
+    runConstraint(this::collisionConstraint, getName());
+    runConstraint(this::mechanismLimitsConstraint, "Mechanism Limits");
   }
 
   /**
@@ -291,7 +243,7 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    * @param setpoint Target position (either ElevatorLevel enum or height in meters)
    */
   public void setElevatorSetpoint(ElevatorLevel setpoint) {
-    setElevatorSetpoint(setpoint.getHeight());
+    applySetpoint(setpoint.getHeight());
     currentSetpointEnum = setpoint;    
   }
 
@@ -301,14 +253,6 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    */
   public ElevatorLevel getElevatorSetpointEnum(){
     return currentSetpointEnum;
-  }
-
-  /**
-   * Gets the target position of the elevator.
-   * @return the setpoint Target position in meters.
-   */
-  public double getElevatorSetpointMeters(){
-    return elevatorSetpointMeters;
   }
 
   /**
@@ -350,62 +294,9 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    * Checks if the elevator is at the desired position.
    * @return true if elevator is at desired position, false otherwise.
    */
-  public boolean isElevatorAtSetpoint() {
-    return Math.abs(getElevatorPositionMeters() - elevatorSetpointMeters) < ElevatorConstants.ELEVATOR_DEAD_ZONE;
-  }
-
-  /**
-   * Checks if the elevator is currently performing it's zeroing routine
-   * @return true if elevator zeroing
-   */
-  public boolean isZeroing() {
-    return isZeroingElevator;
-  }
-
-  /**
-   * Begins zeroing the elevator.
-   */
-  public void zeroElevator() {
-    // Drive elevator down slowly
-    if (isZeroingElevator) {
-      // Allow the operator to cancel zeroing elevator by pressing button again, in case zeroing fails
-      isZeroingElevator = false;
-      elevatorMotorLeader.set(0);
-      DriverStation.reportWarning("Elevator zeroing canceled", false);
-
-      return;
-    }
-
-    elevatorMotorLeader.set(ElevatorConstants.ZEROING_SPEED);
-    isZeroingElevator = true;
-  }
-  
-
-  /* Networktables methods */
-
-  /**
-   * Initializes network tables. Could be used to make shuffleboard layouts programmatically.
-   * Currently unused but required by NetworkUser interface.
-   */
   @Override
-  public void initializeNetwork() {
-    // Could be used to make shuffleboard layouts programatically
-    // Currently unused
-  }
-
-  /**
-   * Updates network table values with current elevator state.
-   * This method is called automatically by the SubsystemNetworkManager.
-   */
-  @Override
-  public void updateNetwork() {
-    elevatorSetpointNT.set(elevatorSetpointMeters);
-    elevatorPositionNT.set(getElevatorPositionMeters());
-    elevatorIsZeroingNT.set(isZeroingElevator);
-    isAtSetpointNT.set(isElevatorAtSetpoint());
-    leaderCurrentDrawNT.set(elevatorMotorLeader.signals().statorCurrent().getValueAsDouble());
-    followerCurrentDrawNT.set(elevatorMotorFollower.signals().statorCurrent().getValueAsDouble());
-    elevatorVelocityNT.set(elevatorMotorLeader.signals().velocity().getValueAsDouble());
+  public boolean atSetpoint() {
+    return Math.abs(getElevatorPositionMeters() - setpoint) < ElevatorConstants.ELEVATOR_DEAD_ZONE;
   }
 
   /**
@@ -422,6 +313,34 @@ public class Elevator extends SubsystemBase implements NetworkUser {
    */
   public double getFollowerCurrent() {
     return elevatorMotorFollower.signals().statorCurrent().getValueAsDouble();
+  }
+
+  /*             */
+  /* Constraints */
+  /*             */
+
+  private double mechanismLimitsConstraint() {
+    return MathUtil.clamp(setpoint, ElevatorConstants.MIN_ELEVATOR_HEIGHT, ElevatorConstants.MAX_ELEVATOR_HEIGHT);
+  }
+
+  private double collisionConstraint() {
+    if (currentCollisionPrediction == Elevator.CollisionType.NONE) {
+      // Safe to move elevator
+      // Move elevator to setpoint
+      return setpoint;
+
+    } else if(currentCollisionPrediction == Elevator.CollisionType.ENTERING_FROM_ABOVE) {
+      // Move to safe setpoint
+      return ElevatorConstants.COLLISION_ZONE_UPPER;
+
+    } else if(currentCollisionPrediction == Elevator.CollisionType.ENTERING_FROM_BELOW) {
+      // Move to safe setpoint
+      return ElevatorConstants.COLLISION_ZONE_LOWER;
+
+    }
+
+    // Try to stop motor in place
+    return getElevatorPositionMeters();
   }
 
   /**
@@ -485,7 +404,76 @@ public class Elevator extends SubsystemBase implements NetworkUser {
     }
     
     return CollisionType.NONE;
+  } 
+
+
+  /*             */
+  /*   Network   */
+  /*             */
+  
+  @Override
+  public void updateNetwork() {
+    elevatorPositionNT.set(getElevatorPositionMeters());
+    elevatorIsZeroingNT.set(isZeroingElevator);
+    isAtSetpointNT.set(atSetpoint());
+    leaderCurrentDrawNT.set(elevatorMotorLeader.signals().statorCurrent().getValueAsDouble());
+    followerCurrentDrawNT.set(elevatorMotorFollower.signals().statorCurrent().getValueAsDouble());
+    elevatorVelocityNT.set(elevatorMotorLeader.signals().velocity().getValueAsDouble());
   }
+  
+  /*             */
+  /*   Zeroing   */
+  /*             */
+  
+  /**
+   * Checks if the elevator is currently performing it's zeroing routine
+   * @return true if elevator zeroing
+   */
+  public boolean isZeroing() {
+    return isZeroingElevator;
+  }
+
+  /**
+   * Begins zeroing the elevator.
+   */
+  public void zeroElevator() {
+    // Drive elevator down slowly
+    if (isZeroingElevator) {
+      // Allow the operator to cancel zeroing elevator by pressing button again, in case zeroing fails
+      isZeroingElevator = false;
+      elevatorMotorLeader.set(0);
+      DriverStation.reportWarning("Elevator zeroing canceled", false);
+
+      return;
+    }
+
+    elevatorMotorLeader.set(ElevatorConstants.ZEROING_SPEED);
+    isZeroingElevator = true;
+  }
+  
+  /**
+   * Run periodically while zeroing elevator
+   */
+  private void handleElevatorZeroPeriodic() {
+    if (zeroingDebounceTrigger.getAsBoolean() && isZeroingElevator) {
+      // Stop the elevator
+      elevatorMotorLeader.set(0);
+
+      // Set the current position as the new zero
+      elevatorMotorLeader.setPosition(0);
+
+      // Reset the target position
+      setpoint = 0;
+
+      isZeroingElevator = false;
+
+      DriverStation.reportWarning("Elevator zeroed successfully", false);
+    }
+  }
+
+  /*              */
+  /*  Simulation  */
+  /*              */
 
   @Override 
   public void simulationPeriodic() {

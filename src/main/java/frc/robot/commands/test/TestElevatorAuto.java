@@ -73,25 +73,25 @@ public class TestElevatorAuto extends SequentialCommandGroup {
       
       // Move to minimum height (should already be there after zeroing)
       new WaitCommand(0.5),
-      Commands.runOnce(() -> elevator.setElevatorSetpoint(ElevatorConstants.MIN_ELEVATOR_HEIGHT)),
+      Commands.runOnce(() -> elevator.applySetpoint(ElevatorConstants.MIN_ELEVATOR_HEIGHT)),
       Commands.parallel(
-        new WaitUntilCommand(() -> elevator.isElevatorAtSetpoint()),
+        new WaitUntilCommand(() -> elevator.atSetpoint()),
         monitorCurrentCommand()
       ),
       
       // Move to maximum height
       new WaitCommand(0.5),
-      Commands.runOnce(() -> elevator.setElevatorSetpoint(ElevatorConstants.MAX_ELEVATOR_HEIGHT)),
+      Commands.runOnce(() -> elevator.applySetpoint(ElevatorConstants.MAX_ELEVATOR_HEIGHT)),
       Commands.parallel(
-        new WaitUntilCommand(() -> elevator.isElevatorAtSetpoint()),
+        new WaitUntilCommand(() -> elevator.atSetpoint()),
         monitorCurrentCommand()
       ),
       
       // Move back to minimum height
       new WaitCommand(0.5),
-      Commands.runOnce(() -> elevator.setElevatorSetpoint(ElevatorConstants.MIN_ELEVATOR_HEIGHT)),
+      Commands.runOnce(() -> elevator.applySetpoint(ElevatorConstants.MIN_ELEVATOR_HEIGHT)),
       Commands.parallel(
-        new WaitUntilCommand(() -> elevator.isElevatorAtSetpoint()),
+        new WaitUntilCommand(() -> elevator.atSetpoint()),
         monitorCurrentCommand()
       ),
 

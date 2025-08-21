@@ -43,6 +43,6 @@ public class SetPivotPos extends Command {
   @Override
   public boolean isFinished() {
     // return false;
-    return RobotContainer.pivotSubsystem.isPivotAtSetpoint();
+    return RobotContainer.pivotSubsystem.atSetpoint();
   }
 }

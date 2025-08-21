@@ -11,7 +11,6 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.Slot2Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -19,29 +18,22 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.CANIds;
-import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.ElevatorConstants;
 import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.subsystems.superstructure.Elevator.CollisionType;
-import frc.robot.utils.NetworkUser;
 import frc.robot.utils.PhoenixHelpers;
-import frc.robot.utils.SubsystemNetworkManager;
 import frc.robot.utils.IO.CANcoderIO;
 import frc.robot.utils.IO.TalonFXIO;
 import frc.robot.utils.lib.WafflesMechanism;
 
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import edu.wpi.first.math.util.Units;
-
 
 
 /**
@@ -94,8 +86,6 @@ public class Pivot extends WafflesMechanism {
     // }
 
     public Pivot() {
-        SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
-
         // Initialize hardware
         pivot = new TalonFXIO(CANIds.pivotMotor);
         pivotAbsoluteEncoder = new CANcoderIO(CANIds.pivotAbsoluteEncoder);
@@ -304,12 +294,12 @@ public class Pivot extends WafflesMechanism {
 
     public boolean isInBumperDangerZone() {
         return RobotContainer.elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT ||
-            RobotContainer.elevatorSubsystem.getElevatorSetpointMeters() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT;
+            RobotContainer.elevatorSubsystem.getSetpoint() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT;
     }
 
     public boolean isInAlgaeDangerZone() {
         return RobotContainer.elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER ||
-            RobotContainer.elevatorSubsystem.getElevatorSetpointMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER;
+            RobotContainer.elevatorSubsystem.getSetpoint() <= ElevatorConstants.COLLISION_ZONE_UPPER;
     }
 
     /*             */

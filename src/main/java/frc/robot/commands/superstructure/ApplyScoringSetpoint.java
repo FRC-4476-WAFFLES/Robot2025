@@ -33,7 +33,7 @@ public class ApplyScoringSetpoint extends Command {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return RobotContainer.pivotSubsystem.isPivotAtSetpoint() &&
-                RobotContainer.elevatorSubsystem.isElevatorAtSetpoint();
+        return RobotContainer.pivotSubsystem.atSetpoint() &&
+                RobotContainer.elevatorSubsystem.atSetpoint();
     }
 }

@@ -28,7 +28,7 @@ public class ManualElevatorControl extends Command {
   @Override
   public void execute() {
     if (RobotContainer.isOperatorOverride){
-      elevatorSubsystem.setElevatorSetpoint(elevatorSubsystem.getElevatorPositionMeters() + (Controls.getOperatorRightY() * Controls.MANUAL_ELEVATOR_CONTROL_MULTIPLIER));
+      elevatorSubsystem.applySetpoint(elevatorSubsystem.getElevatorPositionMeters() + (Controls.getOperatorRightY() * Controls.MANUAL_ELEVATOR_CONTROL_MULTIPLIER));
     }
   }
 

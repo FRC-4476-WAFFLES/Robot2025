@@ -14,7 +14,9 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.units.Unit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.data.Constants.CodeConstants;
 import frc.robot.utils.NetworkUser;
+import frc.robot.utils.SubsystemNetworkManager;
 
 /**
  * Provides shared subsystem boilerplate.
@@ -34,7 +36,9 @@ public class WafflesMechanism extends SubsystemBase implements NetworkUser {
   private final StringPublisher constraintsNT = networkTable.getStringTopic("Applied Constraints").publish();
 
   /** Creates a new WafflesMechanism. */
-  public WafflesMechanism() {}
+  public WafflesMechanism() {
+    SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
+  }
 
   @Override
   public final void periodic() {
@@ -45,6 +49,7 @@ public class WafflesMechanism extends SubsystemBase implements NetworkUser {
     applyConstraints();
     logAppliedConstraints();
     constrainedSetpointNT.set(constrainedSetpoint);
+    setpointNT.set(setpoint);
 
     // Run actual periodic implementation
     periodicImpl();
@@ -61,7 +66,6 @@ public class WafflesMechanism extends SubsystemBase implements NetworkUser {
    */
   public void applySetpoint(double value) {
     setpoint = value;
-    setpointNT.set(setpoint);
   }
   
   /**

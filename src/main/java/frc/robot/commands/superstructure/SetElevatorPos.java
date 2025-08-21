@@ -43,7 +43,7 @@ public class SetElevatorPos extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return RobotContainer.elevatorSubsystem.isElevatorAtSetpoint(); // Run continuously until interrupted
+    return RobotContainer.elevatorSubsystem.atSetpoint(); // Run continuously until interrupted
     // return false;
   }
 }
