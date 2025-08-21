@@ -212,13 +212,10 @@ public class Pivot extends WafflesMechanism {
     @Override
     protected void applyConstraints() {
         // Highest priority constraints should be run last
-        runConstraint(this::collisionConstraint, "Physical Collision");
-        runConstraint(this::algaeConstraint, "Algae Constraint");
-        runConstraint(
-            () -> RobotContainer.elevatorSubsystem.isZeroing() ? PivotPosition.CLEARANCE_POSITION.getDegrees() : setpoint, 
-            "Elevator Zeroing Constraint"
-        );
-        runConstraint(this::mechanismLimitsConstraint, "Mechanism Limits");
+        runConstraint(collisionConstraint(), "Physical Collision");
+        runConstraint(algaeConstraint(), "Algae Constraint");
+        runConstraint(elevatorZeroingConstraint(),  "Elevator Zeroing Constraint");
+        runConstraint(mechanismLimitsConstraint(), "Mechanism Limits");
     }
 
     /**
@@ -257,6 +254,10 @@ public class Pivot extends WafflesMechanism {
     /*             */
     /* Constraints */
     /*             */
+
+    private double elevatorZeroingConstraint() {
+        return RobotContainer.elevatorSubsystem.isZeroing() ? PivotPosition.CLEARANCE_POSITION.getDegrees() : setpoint;
+    }
 
     private double mechanismLimitsConstraint() {
         return MathUtil.clamp(setpoint, ManipulatorConstants.PIVOT_MIN_ANGLE, ManipulatorConstants.PIVOT_MAX_ANGLE);

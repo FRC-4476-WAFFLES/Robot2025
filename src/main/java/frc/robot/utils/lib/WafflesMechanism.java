@@ -94,12 +94,11 @@ public class WafflesMechanism extends SubsystemBase implements NetworkUser {
 
   /**
    * Runs a constraint. Allows tracking what constraints are active for easy debugging. 
-   * @param constraint a function that returns the mechanism's allowed position after a constraint is applied
+   * @param constraint the setpoint after a constraint has been applied
    * @param name the name of the constraint
    */
-  protected void runConstraint(Supplier<Double> constraint, String name) {
+  protected void runConstraint(Double constraintResult, String name) {
     // A constraint function returns either the setpoint, or some constrained setpoint if needed
-    Double constraintResult = constraint.get();
     appliedConstraints.put(name, constraintResult.equals(setpoint));
     constrainedSetpoint = constraintResult;
   }
