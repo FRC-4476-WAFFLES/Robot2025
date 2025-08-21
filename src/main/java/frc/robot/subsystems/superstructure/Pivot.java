@@ -37,6 +37,7 @@ import frc.robot.utils.PhoenixHelpers;
 import frc.robot.utils.SubsystemNetworkManager;
 import frc.robot.utils.IO.CANcoderIO;
 import frc.robot.utils.IO.TalonFXIO;
+import frc.robot.utils.lib.WafflesMechanism;
 
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import edu.wpi.first.math.util.Units;
@@ -49,33 +50,24 @@ import edu.wpi.first.math.util.Units;
  * - A pivot motor for positioning the intake
  * - A CANCoder for absolute position feedback
  */
-public class Pivot extends SubsystemBase implements NetworkUser {
+public class Pivot extends WafflesMechanism {
     // Hardware Components
     private final TalonFXIO pivot;
     private final CANcoderIO pivotAbsoluteEncoder;
 
     // Control Objects
     private final MotionMagicExpoVoltage motionMagicRequest = new MotionMagicExpoVoltage(0);
-    // private final DynamicMotionMagicVoltage slowMotionMagicRequest = new DynamicMotionMagicVoltage(0, ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY / 25, ManipulatorConstants.PIVOT_MOTION_ACCELERATION / 25, ManipulatorConstants.PIVOT_MOTION_JERK / 25);
 
     // State variables
-    private double pivotSetpointAngle = 0;
     private boolean isZeroingPivot = false;
     private boolean isThrowingAlgae = false;
-    private boolean isPIDEnabled = true; // Add a flag to track PID state
-
-
 
     // Network Tables
-    private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    private final NetworkTable pivotTable = inst.getTable("Pivot");
-    private final DoublePublisher pivotSetpointNT = pivotTable.getDoubleTopic("Setpoint (Degrees)").publish();
-    private final DoublePublisher realPivotSetpointNT = pivotTable.getDoubleTopic("Real Setpoint (Degrees)").publish();
-    private final DoublePublisher pivotAngleNT = pivotTable.getDoubleTopic("Current Angle (Degrees)").publish();
-    private final DoublePublisher pivotVelocityNT = pivotTable.getDoubleTopic("Current Velocity (rps)").publish();
-    private final DoublePublisher pivotCurrentDrawNT = pivotTable.getDoubleTopic("Current Draw (Amps)").publish();
-    private final BooleanPublisher isAtSetpointNT = pivotTable.getBooleanTopic("Pivot at Setpoint").publish();
-    private final BooleanPublisher isZeroingNT = pivotTable.getBooleanTopic("Is Zeroing").publish();
+    private final DoublePublisher pivotAngleNT = networkTable.getDoubleTopic("Current Angle (Degrees)").publish();
+    private final DoublePublisher pivotVelocityNT = networkTable.getDoubleTopic("Current Velocity (rps)").publish();
+    private final DoublePublisher pivotCurrentDrawNT = networkTable.getDoubleTopic("Current Draw (Amps)").publish();
+    private final BooleanPublisher isZeroingNT = networkTable.getBooleanTopic("Is Zeroing").publish();
+    protected final BooleanPublisher isAtSetpointNT = networkTable.getBooleanTopic("Pivot at Setpoint").publish();
 
     private Trigger zeroingDebounceTrigger;
 
@@ -113,7 +105,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
         configurePivotMotor();
 
         // Initialize position
-        resetInternalEncoder();
+        setPivotPosition(PivotPosition.ZERO);
 
         zeroingDebounceTrigger = new Trigger(() -> {
             return pivot.signals().torqueCurrent().getValueAsDouble() < -ManipulatorConstants.PIVOT_CURRENT_THRESHOLD;     
@@ -143,9 +135,6 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
         // Motion Magic
         MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs()
-            // .withMotionMagicCruiseVelocity(Constants.ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY)
-            // .withMotionMagicAcceleration(Constants.ManipulatorConstants.PIVOT_MOTION_ACCELERATION)
-            // .withMotionMagicJerk(Constants.ManipulatorConstants.PIVOT_MOTION_JERK)
             .withMotionMagicCruiseVelocity(ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY)
             .withMotionMagicExpo_kV(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY)
             .withMotionMagicExpo_kA(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_ACCELERATION);
@@ -205,15 +194,10 @@ public class Pivot extends SubsystemBase implements NetworkUser {
     }
 
     @Override
-    public void periodic() {
+    public void periodicImpl() {
         // Handle zeroing first
         if (isZeroingPivot) {
             handlePivotZeroPeriodic();
-            return;
-        }
-
-        // Skip PID control if disabled
-        if (!isPIDEnabled) {
             return;
         }
 
@@ -224,62 +208,126 @@ public class Pivot extends SubsystemBase implements NetworkUser {
             slot = 1;
         }
 
-        // Update motor controls
-
-        double chosenPivotAngle = 0;
-        Elevator.CollisionType collisionPrediction = RobotContainer.elevatorSubsystem.getCurrentCollisionPotential();
-
-        if (isInAlgaeDangerZone() &&
-            RobotContainer.intakeSubsystem.isAlgaeLoaded() && 
-            pivotSetpointAngle < PivotPosition.CLEARANCE_POSITION_ALGAE.getDegrees()
-        ) {
-
-            // if we have an algae, we can't fully retract when we are below the crossbar of the elevator
-            chosenPivotAngle = PivotPosition.CLEARANCE_POSITION_ALGAE.getDegrees();
-        }
-        else if (collisionPrediction == CollisionType.NONE || pivotSetpointAngle > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE) {
-            // Check for bumper collision, and limit angle if so
-            if (isInBumperDangerZone() && pivotSetpointAngle > ManipulatorConstants.PIVOT_BUMPER_CLEARANCE_ANGLE) {
-                // Move to max safe angle
-                chosenPivotAngle = ManipulatorConstants.PIVOT_BUMPER_CLEARANCE_ANGLE;
-            } else {
-                // If we're past the safety angle, or aren't in danger of hitting anything, move pivot normally
-                chosenPivotAngle = pivotSetpointAngle;
-            }
-        } else {
-            // Not safe in some way, move pivot out of the way
-            chosenPivotAngle = PivotPosition.CLEARANCE_POSITION.getDegrees();
-        }
-
-
-        // Don't think we need this anymore since we are far away when autopathing for L4. Will help with stability of the pivot when scoring L4.
-        // // Auto dodge L4
-        // if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4 && 
-        //     RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.REEF_CORAL &&
-        //     !RobotContainer.isOperatorOverride) {
-        //     if (pivotSetpointAngle > ManipulatorConstants.PIVOT_L4_CLEARANCE_ANGLE && isInL4DangerZone()) {
-        //         chosenPivotAngle = ManipulatorConstants.PIVOT_L4_CLEARANCE_ANGLE;
-        //         // System.out.println("DANGER ZONE L4");
-        //     }
-        // }
-
-        if (RobotContainer.elevatorSubsystem.isZeroing()) {
-            // Not safe since zeroing
-            chosenPivotAngle = PivotPosition.CLEARANCE_POSITION.getDegrees();
-        }
-
-        realPivotSetpointNT.set(chosenPivotAngle);
-
         // Account for zero not being vertical
         double pivotAngleFromVertical = getPivotPosition() - 40;
         double gravityFeedforward = ManipulatorConstants.PIVOT_kG_HORIZONTAL * Math.sin(Units.degreesToRadians(pivotAngleFromVertical));
 
         pivot.setControl(motionMagicRequest
-            .withPosition(chosenPivotAngle / 360)
+            .withPosition(constrainedSetpoint / 360)
             .withFeedForward(gravityFeedforward)
             .withSlot(slot)
         );
     }
+
+    @Override
+    protected void applyConstraints() {
+        // Highest priority constraints should be run last
+        runConstraint(this::collisionConstraint, "Physical Collision");
+        runConstraint(this::algaeConstraint, "Algae Constraint");
+        runConstraint(
+            () -> RobotContainer.elevatorSubsystem.isZeroing() ? PivotPosition.CLEARANCE_POSITION.getDegrees() : setpoint, 
+            "Elevator Zeroing Constraint"
+        );
+        runConstraint(this::mechanismLimitsConstraint, "Mechanism Limits");
+    }
+
+    /**
+     * Sets the target angle of the pivot mechanism
+     * @param setpoint A PivotPosition enum
+     */
+    public void setPivotPosition(PivotPosition setpoint) {
+        applySetpoint(setpoint.getDegrees());
+    }
+
+    /**
+     * Gets the current pivot angle
+     * @return Current angle in degrees
+     */
+    public double getPivotPosition() {
+        return pivot.signals().position().getValueAsDouble() * 360;
+    }
+
+    /**
+     * Checks if pivot is at the target position
+     * @return true if within deadband of setpoint
+     */
+    @Override
+    public boolean atSetpoint() {
+        double deadband = RobotContainer.intakeSubsystem.isAlgaeLoaded() ? ManipulatorConstants.PIVOT_ANGLE_DEADBAND * 3: ManipulatorConstants.PIVOT_ANGLE_DEADBAND;
+        return Math.abs(getPivotPosition() - setpoint) < deadband;
+    }
+
+    /**
+     * Sets if the pivot is throwing algae
+     */
+    public void setIsThrowingAlgae(boolean val) {
+        isThrowingAlgae = val;
+    }
+
+    /*             */
+    /* Constraints */
+    /*             */
+
+    private double mechanismLimitsConstraint() {
+        return MathUtil.clamp(setpoint, ManipulatorConstants.PIVOT_MIN_ANGLE, ManipulatorConstants.PIVOT_MAX_ANGLE);
+    }
+
+    private double algaeConstraint() {
+        if (isInAlgaeDangerZone() &&
+            RobotContainer.intakeSubsystem.isAlgaeLoaded() && 
+            setpoint < PivotPosition.CLEARANCE_POSITION_ALGAE.getDegrees()
+        ) {
+            // if we have an algae, we can't fully retract when we are below the crossbar of the elevator
+            return PivotPosition.CLEARANCE_POSITION_ALGAE.getDegrees();
+        }
+
+        return setpoint;
+    }
+
+    private double collisionConstraint() {
+        CollisionType collisionPrediction = RobotContainer.elevatorSubsystem.getCurrentCollisionPotential();
+        
+        if (collisionPrediction == CollisionType.NONE || setpoint > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE) {
+            // Check for bumper collision, and limit angle if so
+            if (isInBumperDangerZone() && setpoint > ManipulatorConstants.PIVOT_BUMPER_CLEARANCE_ANGLE) {
+                // Move to max safe angle
+                return ManipulatorConstants.PIVOT_BUMPER_CLEARANCE_ANGLE;
+            } else {
+                // If we're past the safety angle, or aren't in danger of hitting anything, move pivot normally
+                return setpoint;
+            }
+        }
+
+        // Not safe in some way, move pivot out of the way
+        return PivotPosition.CLEARANCE_POSITION.getDegrees();
+    }
+
+    public boolean isInBumperDangerZone() {
+        return RobotContainer.elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT ||
+            RobotContainer.elevatorSubsystem.getElevatorSetpointMeters() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT;
+    }
+
+    public boolean isInAlgaeDangerZone() {
+        return RobotContainer.elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER ||
+            RobotContainer.elevatorSubsystem.getElevatorSetpointMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER;
+    }
+
+    /*             */
+    /*   Network   */
+    /*             */
+
+    @Override
+    public void updateNetwork() {
+        pivotAngleNT.set(getPivotPosition());
+        isZeroingNT.set(isZeroingPivot);
+        pivotCurrentDrawNT.set(pivot.signals().torqueCurrent().getValueAsDouble());
+        pivotVelocityNT.set(pivot.signals().velocity().getValueAsDouble());
+        isAtSetpointNT.set(atSetpoint());
+    }
+
+    /*             */
+    /*   Zeroing   */
+    /*             */
 
     /**
      * Run periodically while zeroing pivot
@@ -294,7 +342,7 @@ public class Pivot extends SubsystemBase implements NetworkUser {
 
             pivot.set(0);
             pivot.setPosition(0.0);
-            setPivotPosition(0);
+            applySetpoint(0);
             
             isZeroingPivot = false;
             DriverStation.reportWarning("Pivot zeroed successfully", false);
@@ -302,96 +350,6 @@ public class Pivot extends SubsystemBase implements NetworkUser {
             return;
         }
         pivot.set(ManipulatorConstants.ZEROING_SPEED);
-    }
-
-    /**
-     * Sets the target angle of the pivot mechanism
-     * @param setpoint A PivotPosition enum
-     */
-    public void setPivotPosition(PivotPosition setpoint) {
-        setPivotPosition(setpoint.getDegrees());
-    }
-
-    /**
-     * Sets the target angle of the pivot mechanism
-     * @param setpoint A number in degrees
-     */
-    public void setPivotPosition(double targetDegrees) {
-        pivotSetpointAngle = MathUtil.clamp(targetDegrees, ManipulatorConstants.PIVOT_MIN_ANGLE, ManipulatorConstants.PIVOT_MAX_ANGLE);
-    }
-
-    /**
-     * Gets the current pivot angle
-     * @return Current angle in degrees
-     */
-    public double getPivotPosition() {
-        return pivot.signals().position().getValueAsDouble() * 360;
-    }
-
-    /**
-     * Gets the current pivot setpoint
-     * @return Current setpoint angle in degrees
-     */
-    public double getPivotSetpoint() {
-        return pivotSetpointAngle;
-    }
-
-    /**
-     * Checks if pivot is at the target position
-     * @return true if within deadband of setpoint
-     */
-    public boolean isPivotAtSetpoint() {
-        double deadband = RobotContainer.intakeSubsystem.isAlgaeLoaded() ? ManipulatorConstants.PIVOT_ANGLE_DEADBAND * 3: ManipulatorConstants.PIVOT_ANGLE_DEADBAND;
-        return Math.abs(getPivotPosition() - pivotSetpointAngle) < deadband;
-    }
-
-    /*
-     * Zero pivot encoder
-     */
-    private void resetInternalEncoder() {
-        setPivotPosition(PivotPosition.ZERO);
-    }
-
-    /**
-     * This method is called automatically by the SubsystemNetworkManager
-     */
-    @Override
-    public void updateNetwork() {
-        isAtSetpointNT.set(isPivotAtSetpoint());
-        pivotSetpointNT.set(pivotSetpointAngle);
-        pivotAngleNT.set(getPivotPosition());
-        isZeroingNT.set(isZeroingPivot);
-        pivotCurrentDrawNT.set(pivot.signals().torqueCurrent().getValueAsDouble());
-        pivotVelocityNT.set(pivot.signals().velocity().getValueAsDouble());
-    }
-
-    @Override
-    public void initializeNetwork() {
-        // Network initialization if needed
-    }
-
-    /*
-     * Returns if the elevator is (or will be) in a situation where the pivot can hit the bumpers
-     */
-    public boolean isInBumperDangerZone() {
-        return RobotContainer.elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT ||
-            RobotContainer.elevatorSubsystem.getElevatorSetpointMeters() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT;
-    }
-
-    /*
-     * Returns if the elevator is (or will be) in a situation where the pivot can hit the L4 posts
-     */
-    public boolean isInL4DangerZone() {
-        return RobotContainer.elevatorSubsystem.getElevatorPositionMeters() >= ElevatorConstants.PIVOT_L4_CLEAR_HEIGHT_MIN &&
-            RobotContainer.elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.PIVOT_L4_CLEAR_HEIGHT_MAX;
-    }
-
-    /*
-     * Returns if the elevator is (or will be) in a situation where the pivot with algae can hit the robot's structure
-     */
-    public boolean isInAlgaeDangerZone() {
-        return RobotContainer.elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER ||
-            RobotContainer.elevatorSubsystem.getElevatorSetpointMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER;
     }
 
     /**
@@ -421,31 +379,5 @@ public class Pivot extends SubsystemBase implements NetworkUser {
      */
     public boolean isZeroing() {
         return isZeroingPivot;
-    }
-
-    
-    public void setIsThrowingAlgae(boolean val) {
-        isThrowingAlgae = val;
-    }
-
-    /**
-     * Sets the neutral mode of the pivot motor
-     * @param mode The NeutralModeValue to set (Coast or Brake)
-     */
-    public void setNeutralMode(NeutralModeValue mode) {
-        pivot.setNeutralMode(mode);
-    }
-
-    /**
-     * Enables or disables PID control of the pivot motor
-     * @param enabled true to enable PID control, false to disable
-     */
-    public void setPIDEnabled(boolean enabled) {
-        isPIDEnabled = enabled;
-        
-        // If we're disabling PID, stop the motor
-        if (!enabled) {
-            pivot.stopMotor();
-        }
     }
 }

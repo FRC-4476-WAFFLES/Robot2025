@@ -9,7 +9,13 @@ package frc.robot.utils;
  * Managed through the static SubsystemNetworkManager class
  */
 public interface NetworkUser {
+    /**
+     * This method is called automatically by the SubsystemNetworkManager
+     */
     public void initializeNetwork();
     
+    /**
+     * This method is called automatically by the SubsystemNetworkManager
+     */
     public void updateNetwork();
 } 

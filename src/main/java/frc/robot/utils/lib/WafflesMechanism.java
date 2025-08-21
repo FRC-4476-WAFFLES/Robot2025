@@ -7,58 +7,99 @@ package frc.robot.utils.lib;
 import java.util.HashMap;
 import java.util.function.Supplier;
 
+import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.units.Unit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.utils.NetworkUser;
 
-public class WafflesMechanism extends SubsystemBase {
-  private Unit setpoint;
-  private Unit constrainedSetpoint;
+/**
+ * Provides shared subsystem boilerplate.
+ * Offers a constrained mechanisms system & Networktables boilerplate 
+ */
+public class WafflesMechanism extends SubsystemBase implements NetworkUser {
+  protected double setpoint;
+  protected double constrainedSetpoint;
 
   private final HashMap<String, Boolean> appliedConstraints = new HashMap<String, Boolean>();
 
-  private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
-  private final NetworkTable networkTable = inst.getTable(this.getClass().getSimpleName());
-  private final DoublePublisher setpointNT = networkTable.getDoubleTopic("Setpoint").publish();
-  private final DoublePublisher constrainedSetpointNT = networkTable.getDoubleTopic("ConstrainedSetpoint").publish();
+  protected final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+  protected final NetworkTable networkTable = inst.getTable(this.getClass().getSimpleName());
+  protected final DoublePublisher setpointNT = networkTable.getDoubleTopic("Setpoint").publish();
+  protected final DoublePublisher constrainedSetpointNT = networkTable.getDoubleTopic("Constrained Setpoint").publish();
 
   private final StringPublisher constraintsNT = networkTable.getStringTopic("Applied Constraints").publish();
 
   /** Creates a new WafflesMechanism. */
-  public WafflesMechanism() {
-
-  }
+  public WafflesMechanism() {}
 
   @Override
-  public void periodic() {
+  public final void periodic() {
     // This method will be called once per scheduler run
 
     // Apply constraints
     constrainedSetpoint = setpoint;
     applyConstraints();
     logAppliedConstraints();
+    constrainedSetpointNT.set(constrainedSetpoint);
 
-    // Do stuff
+    // Run actual periodic implementation
+    periodicImpl();
   }
 
-  /* Applies a setpoint */
-  public void setSetpoint(Unit value) {
+  /**
+   * A direct analogue of the SubsystemBase periodic() method for use in WafflesMechanisms
+   */
+  protected void periodicImpl() {}
+
+  /**
+   * Applies a setpoint to the mechanism
+   * @param value setpoint value
+   */
+  public void applySetpoint(double value) {
     setpoint = value;
+    setpointNT.set(setpoint);
   }
-
-  /* Override if constraints are desired */
-  public void applyConstraints() {
-    // eg. runConstraint(() -> 2, "exampleConstraint");
-  }
-
-  /* Override with actual implementation */
+  
+  /**
+   * Designed to be overridden, true by default
+   * @return Is the mechanism within an allowed deadzone of it's setpoint 
+   */
   public boolean atSetpoint() {
     return true;
   }
+  
+  /**
+   * Gets the current mechanism setpoint
+   */
+  public double getSetpoint() {
+    return setpoint;
+  }
 
+  /**
+   * Should be overridden to apply constraints to the mechanism's setpoint
+   * Constraints are applied with runConstraint()
+   * eg. runConstraint(exampleConstraintFunc, "exampleConstraint");
+   */
+  protected void applyConstraints() {
+    // eg. runConstraint(() -> 2, "exampleConstraint");
+  }
+
+  /**
+   * Runs a constraint. Allows tracking what constraints are active for easy debugging. 
+   * @param constraint a function that returns the mechanism's allowed position after a constraint is applied
+   * @param name the name of the constraint
+   */
+  protected void runConstraint(Supplier<Double> constraint, String name) {
+    // A constraint function returns either the setpoint, or some constrained setpoint if needed
+    Double constraintResult = constraint.get();
+    appliedConstraints.put(name, constraintResult.equals(setpoint));
+    constrainedSetpoint = constraintResult;
+  }
+  
   /* Publishes the currently applied constraints to networktables */
   private void logAppliedConstraints() {
     String output = "";
@@ -70,11 +111,9 @@ public class WafflesMechanism extends SubsystemBase {
     constraintsNT.set(output);
   }
 
-  /* Runs a constraint */
-  private void runConstraint(Supplier<Unit> constraint, String name) {
-    // A constraint function returns either the setpoint, or some constrained setpoint if needed
-    Unit constraintResult = constraint.get();
-    appliedConstraints.put(name, constraintResult.equals(setpoint));
-    constrainedSetpoint = constraintResult;
-  }
+  @Override
+  public void updateNetwork() {}
+
+  @Override
+  public void initializeNetwork() {}
 }
