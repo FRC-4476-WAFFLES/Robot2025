@@ -2,6 +2,7 @@ package frc.robot.commands.superstructure;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
+import frc.robot.subsystems.superstructure.Superstructure;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 
 /* Continuously adjusts position of elevator and pivot to desired scoring level */
@@ -9,7 +10,7 @@ public class ApplySuperstructureState extends Command {
     private final SuperstructureState level;
     /** Creates a new ApplyScoringSetpoint. */
     public ApplySuperstructureState(SuperstructureState scoringLevel) {
-        addRequirements(RobotContainer.superstructure.pivot, RobotContainer.superstructure.elevator);
+        addRequirements(RobotContainer.superstructure.requirements);
         level = scoringLevel;
     }
 

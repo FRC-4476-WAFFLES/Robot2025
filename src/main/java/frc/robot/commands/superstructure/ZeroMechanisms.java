@@ -13,7 +13,7 @@ public class ZeroMechanisms extends Command {
     // private Timer elevatorTimer = new Timer() ;
 
     public ZeroMechanisms() {
-        addRequirements(RobotContainer.superstructure.elevator, RobotContainer.superstructure.pivot);
+        addRequirements(RobotContainer.superstructure.requirements);
     }
 
     @Override
