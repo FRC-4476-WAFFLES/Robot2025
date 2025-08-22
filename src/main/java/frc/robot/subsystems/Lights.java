@@ -32,7 +32,7 @@ import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
-import frc.robot.data.Constants.SharkPivotConstants.SharkPivotPosition;
+import frc.robot.data.Constants.GroundPivotPosition;
 import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
 
 public class Lights extends SubsystemBase {

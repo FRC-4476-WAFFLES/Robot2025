@@ -22,18 +22,18 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.CodeConstants;
-import frc.robot.data.Constants.SharkPivotConstants;
-import frc.robot.data.Constants.SharkPivotConstants.SharkPivotPosition;
+import frc.robot.data.Constants.GroundPivotConstants;
+import frc.robot.data.Constants.GroundPivotConstants.GroundPivotPosition;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.PhoenixHelpers;
 import frc.robot.utils.SubsystemNetworkManager;
 import frc.robot.utils.IO.TalonFXIO;
 
 /**
- * The SharkPivot subsystem is responsible for pivoting the L1 Intake (Shark)
+ * The SharkPivot subsystem is responsible for pivoting the L1 Intake 
  * It controls a single pivot motor. 
  */
-public class SharkPivot extends SubsystemBase implements NetworkUser {
+public class GroundPivot extends SubsystemBase implements NetworkUser {
   // Hardware Components
   public final TalonFXIO pivotMotor;
 
@@ -45,7 +45,7 @@ public class SharkPivot extends SubsystemBase implements NetworkUser {
   
   // Networktables Variables 
   private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
-  private final NetworkTable sharkPivotTable = inst.getTable("Shark Pivot");
+  private final NetworkTable sharkPivotTable = inst.getTable("Ground Pivot");
 
   private final DoublePublisher sharkPivotSetpointNT = sharkPivotTable.getDoubleTopic("Setpoint (Degrees)").publish();
   private final DoublePublisher sharkPivotAngleNT = sharkPivotTable.getDoubleTopic("Current Angle (Degrees)").publish();
@@ -71,23 +71,23 @@ public class SharkPivot extends SubsystemBase implements NetworkUser {
 
   //   pivotMotor.getConfigurator().apply(motionMagicConfigs);
 
-  //   System.out.println("Refreshing PID values from networktables for shark pivot");
+  //   System.out.println("Refreshing PID values from networktables for ground pivot");
   // }
 
 
   /** Creates a new L1 Pivot Subsystem. */
-  public SharkPivot() {
+  public GroundPivot() {
     SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
 
     // Initialize hardware
-    pivotMotor = new TalonFXIO(Constants.CANIds.sharkPivotMotor);
+    pivotMotor = new TalonFXIO(Constants.CANIds.groundPivotMotor);
 
     // Configure hardware
     configurePivotMotor();
 
     zeroingDebounceTrigger = new Trigger(() -> {
-      return pivotMotor.signals().torqueCurrent().getValueAsDouble() < -SharkPivotConstants.PIVOT_CURRENT_THRESHOLD;     
-    }).debounce(SharkPivotConstants.ZERO_DEBOUNCE_TIME);
+      return pivotMotor.signals().torqueCurrent().getValueAsDouble() < -GroundPivotConstants.PIVOT_CURRENT_THRESHOLD;     
+    }).debounce(GroundPivotConstants.ZERO_DEBOUNCE_TIME);
   }
 
   private void configurePivotMotor() {
@@ -96,25 +96,25 @@ public class SharkPivot extends SubsystemBase implements NetworkUser {
 
     // Current Limits
     CurrentLimitsConfigs pivotCurrentLimits = new CurrentLimitsConfigs();
-    pivotCurrentLimits.StatorCurrentLimit = SharkPivotConstants.STATOR_CURRENT_LIMIT;
+    pivotCurrentLimits.StatorCurrentLimit = GroundPivotConstants.STATOR_CURRENT_LIMIT;
     pivotCurrentLimits.StatorCurrentLimitEnable = true;
 
     pivotConfig.CurrentLimits = pivotCurrentLimits;
     
     // PID Gains
     var slot0Configs = new Slot0Configs();
-    slot0Configs.kS = SharkPivotConstants.kS;
-    slot0Configs.kP = SharkPivotConstants.kP;
-    slot0Configs.kI = SharkPivotConstants.kI;
-    slot0Configs.kD = SharkPivotConstants.kD;
+    slot0Configs.kS = GroundPivotConstants.kS;
+    slot0Configs.kP = GroundPivotConstants.kP;
+    slot0Configs.kI = GroundPivotConstants.kI;
+    slot0Configs.kD = GroundPivotConstants.kD;
 
     pivotConfig.Slot0 = slot0Configs;
 
     // Motion Magic
     MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
-    motionMagicConfigs.MotionMagicCruiseVelocity = SharkPivotConstants.MOTION_CRUISE_VELOCITY;
-    motionMagicConfigs.MotionMagicAcceleration = SharkPivotConstants.MOTION_ACCELERATION;
-    motionMagicConfigs.MotionMagicJerk = SharkPivotConstants.MOTION_JERK;
+    motionMagicConfigs.MotionMagicCruiseVelocity = GroundPivotConstants.MOTION_CRUISE_VELOCITY;
+    motionMagicConfigs.MotionMagicAcceleration = GroundPivotConstants.MOTION_ACCELERATION;
+    motionMagicConfigs.MotionMagicJerk = GroundPivotConstants.MOTION_JERK;
     pivotConfig.MotionMagic = motionMagicConfigs;
 
     // Configure Mechanism Reduction
@@ -122,7 +122,7 @@ public class SharkPivot extends SubsystemBase implements NetworkUser {
     // For example, if the motor needs to rotate 10 times to rotate the mechanism once,
     // the SensorToMechanismRatio would be 10.0
     // This allows us to use degrees directly as our control unit
-    pivotConfig.Feedback.SensorToMechanismRatio = Constants.PhysicalConstants.sharkPivotReduction;
+    pivotConfig.Feedback.SensorToMechanismRatio = Constants.PhysicalConstants.groundPivotReduction;
     
     // Set neutral mode to brake
     pivotConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
@@ -161,26 +161,26 @@ public class SharkPivot extends SubsystemBase implements NetworkUser {
   }
 
   /**
-   * Sets the angle setpoint for the shark
+   * Sets the angle setpoint for the ground pivot
    * 
    * @param setpoint the setpoint in degrees
    */
   public void setPivotSetpoint(double setpoint) {
     // Clamp the setpoint to valid range
-    angleSetpoint = MathUtil.clamp(setpoint, SharkPivotConstants.MIN_ANGLE, SharkPivotConstants.MAX_ANGLE);
+    angleSetpoint = MathUtil.clamp(setpoint, GroundPivotConstants.MIN_ANGLE, GroundPivotConstants.MAX_ANGLE);
   }
 
   /**
-   * Sets the shark position using a predefined SharkPivot enum
+   * Sets the ground pivot position using a predefined SharkPivot enum
    * 
    * @param position The SharkPivotPosition enum value
    */
-  public void setPivotPosition(SharkPivotPosition position) {
+  public void setPivotPosition(GroundPivotPosition position) {
     setPivotSetpoint(position.getDegrees());
   }
 
   /**
-   * Gets the current angle of the shark in degrees.
+   * Gets the current angle of the ground pivot in degrees.
    * 
    * @return The current angle in degrees.
    */
@@ -191,15 +191,15 @@ public class SharkPivot extends SubsystemBase implements NetworkUser {
   }
 
   /**
-   * Checks if the shark pivot is within a deadband of the desired setpoint
-   * @return true if shark is at setpoint
+   * Checks if the ground pivot is within a deadband of the desired setpoint
+   * @return true if ground pivot is at setpoint
    */
   public boolean isPivotAtSetpoint() {
-    return Math.abs(angleSetpoint - getPivotDegrees()) < SharkPivotConstants.DEAD_ZONE;
+    return Math.abs(angleSetpoint - getPivotDegrees()) < GroundPivotConstants.DEAD_ZONE;
   }
 
   /**
-   * Gets the current shark setpoint
+   * Gets the current ground pivot setpoint
    * @return Current setpoint angle in degrees
    */
   public double getSharkSetpoint() {
@@ -216,11 +216,11 @@ public class SharkPivot extends SubsystemBase implements NetworkUser {
       setPivotSetpoint(0);
       
       isZeroingPivot = false;
-      DriverStation.reportWarning("PivotShark zeroed successfully", false);
+      DriverStation.reportWarning("Ground Pivot zeroed successfully", false);
       
       return;
     }
-    pivotMotor.set(SharkPivotConstants.ZEROING_SPEED);
+    pivotMotor.set(GroundPivotConstants.ZEROING_SPEED);
   }
 
   /**
@@ -230,7 +230,7 @@ public class SharkPivot extends SubsystemBase implements NetworkUser {
     if (isZeroingPivot) {
       isZeroingPivot = false;
       pivotMotor.set(0);
-      DriverStation.reportWarning("PivotShark zeroing canceled", false);
+      DriverStation.reportWarning("Ground Pivot zeroing canceled", false);
           
       return;
     }

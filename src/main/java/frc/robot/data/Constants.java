@@ -49,9 +49,10 @@ public final class Constants {
     public static final int elevator2 = 10; 
     public static final int intakeMotor = 14;
     public static final int pivotMotor = 15;
-    public static final int sharkPivotMotor = 12;
-    public static final int sharkIntakeMotor = 13;
-    
+    public static final int groundPivotMotor = 12;
+    public static final int groundIntakeMotorRight = 13;
+    public static final int groundIntakeMotorLeft= 32;//random canID
+    public static final int groundIntakeMotorMid=33;
     // Other Sensors
     public static final int pivotAbsoluteEncoder = 28;
     
@@ -145,8 +146,8 @@ public final class Constants {
     public static final double withBumperBotHalfWidth = 0.460; // m
 
     // In number of motor rotations per mechanism rotation
-    public static final double sharkIntakeReduction = 9.0; 
-    public static final double sharkPivotReduction = 37.92592592592592592; 
+    public static final double groundIntakeReduction = 9.0; 
+    public static final double groundPivotReduction = 37.92592592592592592; 
     public static final double pivotReduction = 52.5625; 
     public static final double intakeReduction = 2.5;
 
@@ -380,8 +381,8 @@ public final class Constants {
     }
   }
   
-  /* Shark Pivot Constants */
-  public static class SharkPivotConstants {
+  /* Ground Pivot Constants */
+  public static class GroundPivotConstants {
     // Control constants
     public static final double DEAD_ZONE = 5.0; // In degrees
     public static final double MIN_ANGLE = 0.0; // Minimum angle in degrees
@@ -404,15 +405,15 @@ public final class Constants {
     public static final double kD = 0.01;
     public static final double kS = 0.0;
 
-    // Predefined positions for the shark (in degrees)
-    public enum SharkPivotPosition {
+    // Predefined positions for the ground pivot (in degrees)
+    public enum GroundPivotPosition {
       STOWED(0.0),
       DEPLOYED(138.0),
       L1(27);
 
       private final double degrees;
 
-      SharkPivotPosition(double degrees) {
+      GroundPivotPosition(double degrees) {
         this.degrees = degrees;
       }
 
@@ -422,16 +423,13 @@ public final class Constants {
     }
   }
 
-  /* Shark Intake Constants */
-  public static class SharkIntakeConstants {
+  /* Ground Intake Constants */
+  public static class GroundIntakeConstants {
     // PID Values
     public static final double kP = 60.0;
     public static final double kI = 0.0;
     public static final double kD = 0.01;
     public static final double kS = 0.0;
-
-    public static final double CORAL_CURRENT_THRESHOLD = 24.0; // amps
-    public static final double CORAL_EJECT_VELOCITY_THRESHOLD = -1.6; // rps
 
     public static final double STATOR_CURRENT_LIMIT = 60;
   }
