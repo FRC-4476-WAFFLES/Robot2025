@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.CANrangeConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -7,6 +9,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.hardware.CANrange;
 
 import au.grapplerobotics.LaserCan;
 import edu.wpi.first.networktables.BooleanPublisher;
@@ -37,11 +40,11 @@ public class GroundIntake extends SubsystemBase implements NetworkUser{
     private LaserCan leftLaserCan;
     private LaserCan midLaserCan;
     private LaserCan rightLaserCan;
+    private CANrange CANrange = new CANrange(Constants.CANIds.groundIntakeCanRange);
     // Control Objects
     private final MotionMagicVelocityVoltage intakeRightControlRequest = new MotionMagicVelocityVoltage(0);
     private final MotionMagicVelocityVoltage intakeLeftControlRequest = new MotionMagicVelocityVoltage(0);
     private final MotionMagicVelocityVoltage intakeMidControlRequest = new MotionMagicVelocityVoltage(0);
-
     // State Variables
     public enum GroundIntakeState {
         //TODO make actual states depending on what we want to do
@@ -69,9 +72,8 @@ public class GroundIntake extends SubsystemBase implements NetworkUser{
             return midSpeed;
         }
     }
-    private GroundIntakeState currentState = GroundIntakeState.ZERO;
-
-    private boolean coralLoaded = false;
+    private GroundIntakeState currentState = GroundIntakeState.INTAKE;
+    private boolean coralInRange=false;
 
     // Network Tables
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
@@ -91,6 +93,9 @@ public class GroundIntake extends SubsystemBase implements NetworkUser{
         intakeLeft = new TalonFXIO(Constants.CANIds.groundIntakeMotorLeft);
         intakeMid = new TalonFXIO(Constants.CANIds.groundIntakeMotorMid);
         // Configure hardware
+        CANrangeConfiguration canRangeConfigs = new CANrangeConfiguration();
+        canRangeConfigs.ProximityParams.ProximityThreshold = Constants.GroundIntakeConstants.CANRANGE_PROXIMITY_THRESHOLD;
+        CANrange.getConfigurator().apply(canRangeConfigs);
         configureIntakeMotors();
     }
 
@@ -136,19 +141,20 @@ public class GroundIntake extends SubsystemBase implements NetworkUser{
         intakeRight.setControl(intakeRightControlRequest.withVelocity(currentState.getRightSpeed()).withSlot(0));
         intakeLeft.setControl(intakeLeftControlRequest.withVelocity(currentState.getLeftSpeed()).withSlot(0));//not sure if they will be following same speed 
         intakeMid.setControl(intakeMidControlRequest.withVelocity(currentState.getMidSpeed()).withSlot(0));
-        detectCoralLoaded();
+        isCoralLoaded();
     }
 
     /**
      * Checks if coral is present in the intake based on current draw
      * @return true if coral is detected
      */
-    public void detectCoralLoaded() {
-        //we use ctre canrange can now. Yay LaSeRs 
-    }
-
     public boolean isCoralLoaded() {
-        return coralLoaded;
+        coralInRange = CANrange.getIsDetected().getValue();
+        if (coralInRange) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -163,6 +169,7 @@ public class GroundIntake extends SubsystemBase implements NetworkUser{
         rightIntakeVelocityNT.set(intakeRight.signals().velocity().getValueAsDouble());
         leftIntakeVelocityNT.set(intakeLeft.signals().velocity().getValueAsDouble());
         midIntakeVelocityNT.set(intakeMid.signals().velocity().getValueAsDouble());
+        coralLoadedNT.set(isCoralLoaded());
     }
 
     @Override

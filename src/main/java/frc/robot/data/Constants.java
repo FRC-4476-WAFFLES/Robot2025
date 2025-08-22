@@ -58,7 +58,7 @@ public final class Constants {
     
     public static final int intakeLaserCan = 29;
     public static final int funnelLaserCan = 30;
-
+    public static final int groundIntakeCanRange = 35;
     public static final int CANdle = 26;
 
     // Canivore
@@ -430,7 +430,7 @@ public final class Constants {
     public static final double kI = 0.0;
     public static final double kD = 0.01;
     public static final double kS = 0.0;
-
     public static final double STATOR_CURRENT_LIMIT = 60;
+    public static final double CANRANGE_PROXIMITY_THRESHOLD = 60;//TODO remember to tune number
   }
 }
