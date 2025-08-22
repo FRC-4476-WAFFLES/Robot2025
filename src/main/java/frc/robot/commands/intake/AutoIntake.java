@@ -18,17 +18,17 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.RobotContainer;
 import frc.robot.commands.AlignToPose;
-import frc.robot.commands.superstructure.ApplyScoringSetpoint;
+import frc.robot.commands.superstructure.ApplySuperstructureState;
 import frc.robot.data.Constants.FieldConstants;
-import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
+import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 import frc.robot.utils.WafflesUtilities;
 
 /** Auto Intake */
 public class AutoIntake {
     public static final HashSet<Subsystem> commandRequirements = new HashSet<>(Arrays.asList(
         RobotContainer.driveSubsystem, 
-        RobotContainer.pivotSubsystem, 
-        RobotContainer.elevatorSubsystem, 
+        RobotContainer.superstructure.pivot, 
+        RobotContainer.superstructure.elevator, 
         RobotContainer.intakeSubsystem
     ));
 
@@ -59,7 +59,7 @@ public class AutoIntake {
                 return Commands.deadline(
                     new CoralIntake(),
                     new AlignToPose(chosenStationPose),
-                    new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
+                    new ApplySuperstructureState(SuperstructureState.CORAL_INTAKE)
                 );
             }, 
             commandRequirements

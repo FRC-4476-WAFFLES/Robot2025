@@ -4,8 +4,6 @@
 
 package frc.robot.utils;
 
-import java.util.jar.Attributes.Name;
-
 import com.ctre.phoenix6.Utils;
 
 import edu.wpi.first.wpilibj.DriverStation;

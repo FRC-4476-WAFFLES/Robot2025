@@ -32,18 +32,13 @@ import frc.robot.commands.intake.CoralIntake;
 import frc.robot.commands.scoring.ScoreCoral;
 import frc.robot.commands.scoring.ScoreNet;
 import frc.robot.commands.shark.SharkCommands;
-import frc.robot.commands.superstructure.ApplyScoringSetpoint;
-import frc.robot.commands.superstructure.SetElevatorPos;
-import frc.robot.commands.superstructure.SetPivotPos;
+import frc.robot.commands.superstructure.ApplySuperstructureState;
 import frc.robot.commands.superstructure.SuperstructureControl;
 import frc.robot.commands.superstructure.ZeroMechanisms;
 import frc.robot.commands.test.TestDriveAuto;
 import frc.robot.commands.test.TestElevatorAuto;
 import frc.robot.commands.test.WheelRadiusCharacterization;
-import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
-import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.ScoringConstants;
-import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.data.TunerConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.DynamicPathing;
@@ -55,6 +50,8 @@ import frc.robot.subsystems.SharkPivot;
 import frc.robot.subsystems.Telemetry;
 import frc.robot.subsystems.superstructure.Elevator;
 import frc.robot.subsystems.superstructure.Pivot;
+import frc.robot.subsystems.superstructure.Superstructure;
+import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 
 
 /**
@@ -75,9 +72,8 @@ public class RobotContainer {
 
   /* Hardware Subsystems */
   public static final DriveSubsystem driveSubsystem = TunerConstants.createDrivetrain();
-  public static final Pivot pivotSubsystem = new Pivot();
+  public static final Superstructure superstructure = new Superstructure(); // Contains two other subsystems
   public static final Intake intakeSubsystem = new Intake();
-  public static final Elevator elevatorSubsystem = new Elevator();
   public static final Lights lightsSubsystem = new Lights();
   public static final SharkIntake sharkIntake = new SharkIntake();
   public static final SharkPivot sharkPivot = new SharkPivot();
@@ -114,8 +110,8 @@ public class RobotContainer {
     intakeSubsystem.setDefaultCommand(axisIntakeControl);
 
     // Default superstructure commands
-    pivotSubsystem.setDefaultCommand(SuperstructureControl.PivotDefaultCommand());
-    elevatorSubsystem.setDefaultCommand(SuperstructureControl.ElevatorDefaultCommand());
+    superstructure.pivot.setDefaultCommand(SuperstructureControl.PivotDefaultCommand());
+    superstructure.elevator.setDefaultCommand(SuperstructureControl.ElevatorDefaultCommand());
 
     // Register commands to be used by pathplanner autos
     registerNamedCommands();
@@ -154,16 +150,16 @@ public class RobotContainer {
 
     // Normal mode button bindings
     inNormalMode.and(Controls.operatorController.a()).onTrue(
-      new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L1); })
+      new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(SuperstructureState.L1); })
     );
     inNormalMode.and(Controls.operatorController.x()).onTrue(
-      new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L2); })
+      new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(SuperstructureState.L2); })
     );
     inNormalMode.and(Controls.operatorController.b()).onTrue(
-      new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L3); })
+      new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(SuperstructureState.L3); })
     );
     inNormalMode.and(Controls.operatorController.y()).onTrue(
-      new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(ScoringLevel.L4); })
+      new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(SuperstructureState.L4); })
     );
 
     // SysID routines
@@ -173,77 +169,53 @@ public class RobotContainer {
     Controls.operatorController.leftBumper().whileTrue(
       Commands.parallel(
         new CoralIntake(),
-        new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
+        new ApplySuperstructureState(SuperstructureState.CORAL_INTAKE)
       )    
     );
 
     // Operator Algea out
     dynamicPathingSubsystem.notRunningAction.and(Controls.algaeOut).whileTrue(
       new SequentialCommandGroup(
-        new InstantCommand(() -> RobotContainer.pivotSubsystem.setIsThrowingAlgae(true)),
+        new InstantCommand(() -> RobotContainer.superstructure.pivot.setIsThrowingAlgae(true)),
         new ParallelRaceGroup(
-          new ApplyScoringSetpoint(ScoringLevel.SPIT_ALGAE),
+          new ApplySuperstructureState(SuperstructureState.SPIT_ALGAE),
           new WaitCommand(0.45) // wait some amount of time ¯\_(ツ)_/¯
         ),
         new AlgaeOutake()
       ).finallyDo(() -> {
-        RobotContainer.pivotSubsystem.setIsThrowingAlgae(false);
+        RobotContainer.superstructure.pivot.setIsThrowingAlgae(false);
       })
     ).onFalse(restPosition);
     
     // Override mode immediately moves to position while held
     inOverrideMode.and(Controls.operatorController.a()).whileTrue(
       Commands.either(
-        Commands.parallel(
-          new SetElevatorPos(ElevatorLevel.MANUAL_L1),
-          new SetPivotPos(PivotPosition.MANUAL_L1)
-        ), 
-        Commands.parallel(
-          new SetElevatorPos(ElevatorLevel.PROCESSOR),
-          new SetPivotPos(PivotPosition.PROCESSOR)
-        ), 
+        new ApplySuperstructureState(SuperstructureState.MANUAL_L1),
+        new ApplySuperstructureState(SuperstructureState.PROCESSOR), 
         () -> intakeSubsystem.isCoralLoaded()
       )
     ).onFalse(restPosition);
 
     inOverrideMode.and(Controls.operatorController.x()).whileTrue(
       Commands.either(
-        Commands.parallel(
-          new SetElevatorPos(ElevatorLevel.MANUAL_L2),
-          new SetPivotPos(PivotPosition.MANUAL_L2)
-        ), 
-        Commands.parallel(
-          new SetElevatorPos(ElevatorLevel.ALGAE_L1),
-          new SetPivotPos(PivotPosition.ALGAE_L1)
-        ), 
+        new ApplySuperstructureState(SuperstructureState.MANUAL_L2), 
+        new ApplySuperstructureState(SuperstructureState.ALGAE_L1),
         () -> intakeSubsystem.isCoralLoaded()
       )
     ).onFalse(restPosition);
 
     inOverrideMode.and(Controls.operatorController.b()).whileTrue(
       Commands.either(
-        Commands.parallel(
-          new SetElevatorPos(ElevatorLevel.MANUAL_L3),
-          new SetPivotPos(PivotPosition.MANUAL_L3)
-        ), 
-        Commands.parallel(
-          new SetElevatorPos(ElevatorLevel.ALGAE_L2),
-          new SetPivotPos(PivotPosition.ALGAE_L2)
-        ), 
+        new ApplySuperstructureState(SuperstructureState.MANUAL_L3), 
+        new ApplySuperstructureState(SuperstructureState.ALGAE_L2),
         () -> intakeSubsystem.isCoralLoaded()
       )
     ).onFalse(restPosition);
 
     inOverrideMode.and(Controls.operatorController.y()).whileTrue(
       Commands.either(
-        Commands.parallel(
-          new SetElevatorPos(ElevatorLevel.MANUAL_L4),
-          new SetPivotPos(PivotPosition.MANUAL_L4)
-        ), 
-        Commands.parallel(
-          new SetElevatorPos(ElevatorLevel.NET),
-          new SetPivotPos(PivotPosition.NET)
-        ), 
+        new ApplySuperstructureState(SuperstructureState.MANUAL_L4), 
+        new ApplySuperstructureState(SuperstructureState.NET),
         () -> intakeSubsystem.isCoralLoaded()
       )
     ).onFalse(restPosition);
@@ -341,16 +313,16 @@ public class RobotContainer {
   private void sysIDBindings() {
     // Drive bindings
     Controls.operatorController.a().whileTrue(
-     elevatorSubsystem.m_sysIdRoutineElevator.quasistatic(Direction.kForward)
+     superstructure.elevator.m_sysIdRoutineElevator.quasistatic(Direction.kForward)
     );
     Controls.operatorController.x().whileTrue(
-      elevatorSubsystem.m_sysIdRoutineElevator.quasistatic(Direction.kReverse)
+      superstructure.elevator.m_sysIdRoutineElevator.quasistatic(Direction.kReverse)
     );
     Controls.operatorController.b().whileTrue(
-      elevatorSubsystem.m_sysIdRoutineElevator.dynamic(Direction.kForward)
+      superstructure.elevator.m_sysIdRoutineElevator.dynamic(Direction.kForward)
     );
     Controls.operatorController.y().whileTrue(
-      elevatorSubsystem.m_sysIdRoutineElevator.dynamic(Direction.kReverse)
+      superstructure.elevator.m_sysIdRoutineElevator.dynamic(Direction.kReverse)
     );
 
     // Datalog controls needed by sysID
@@ -381,71 +353,63 @@ public class RobotContainer {
 
     // Direct position commands for both elevator and pivot
     NamedCommands.registerCommand("Set Position L1", Commands.parallel(
-      new SetElevatorPos(ElevatorLevel.L1),
-      new SetPivotPos(PivotPosition.L1)
+      new ApplySuperstructureState(SuperstructureState.L1)
     ));
-
     NamedCommands.registerCommand("Set Position L3", Commands.parallel(
-      new SetElevatorPos(ElevatorLevel.L3),
-      new SetPivotPos(PivotPosition.L3)
+      new ApplySuperstructureState(SuperstructureState.L3)
     ));
     NamedCommands.registerCommand("Set Position L4", Commands.parallel(
-      new SetElevatorPos(ElevatorLevel.L4),
-      new SetPivotPos(PivotPosition.L4)
+      new ApplySuperstructureState(SuperstructureState.L4)
     ));
     NamedCommands.registerCommand("Set Position Processor", Commands.parallel(
-      new SetElevatorPos(ElevatorLevel.PROCESSOR),
-      new SetPivotPos(PivotPosition.PROCESSOR)
+      new ApplySuperstructureState(SuperstructureState.PROCESSOR)
     ));
     NamedCommands.registerCommand("Set Position Net", Commands.parallel(
-      new SetElevatorPos(ElevatorLevel.NET),
-      new SetPivotPos(PivotPosition.NET)
+      new ApplySuperstructureState(SuperstructureState.NET)
     ));
     NamedCommands.registerCommand("Set Position Algae L1", Commands.parallel(
-      new SetElevatorPos(ElevatorLevel.ALGAE_L1),
-      new SetPivotPos(PivotPosition.ALGAE_L1)
+      new ApplySuperstructureState(SuperstructureState.ALGAE_L1)
     ));
     NamedCommands.registerCommand("Set Position Algae L2", Commands.parallel(
-      new SetElevatorPos(ElevatorLevel.ALGAE_L2),
-      new SetPivotPos(PivotPosition.ALGAE_L2)
+      new ApplySuperstructureState(SuperstructureState.ALGAE_L2)
     ));
 
     // Auto score commands
     
     // L4 
     NamedCommands.registerCommand("Autoscore L4 Right", Commands.defer(
-      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L4, true), DynamicPathing.actionCommandRequirements)
+      () -> ScoreCoral.scoreCoralWithSettings(SuperstructureState.L4, true), DynamicPathing.actionCommandRequirements)
     );
     NamedCommands.registerCommand("Autoscore L4 Left", Commands.defer(
-      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L4, false), DynamicPathing.actionCommandRequirements)
+      () -> ScoreCoral.scoreCoralWithSettings(SuperstructureState.L4, false), DynamicPathing.actionCommandRequirements)
     );
 
     // L3
     NamedCommands.registerCommand("Autoscore L3 Right", Commands.defer(
-      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L3, true), DynamicPathing.actionCommandRequirements)
+      () -> ScoreCoral.scoreCoralWithSettings(SuperstructureState.L3, true), DynamicPathing.actionCommandRequirements)
     );
     NamedCommands.registerCommand("Autoscore L3 Left", Commands.defer(
-      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L3, false), DynamicPathing.actionCommandRequirements)
+      () -> ScoreCoral.scoreCoralWithSettings(SuperstructureState.L3, false), DynamicPathing.actionCommandRequirements)
     );
 
     // L2
     NamedCommands.registerCommand("Autoscore L2 Right", Commands.defer(
-      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L2, true), DynamicPathing.actionCommandRequirements)
+      () -> ScoreCoral.scoreCoralWithSettings(SuperstructureState.L2, true), DynamicPathing.actionCommandRequirements)
     );
     NamedCommands.registerCommand("Autoscore L2 Left", Commands.defer(
-      () -> ScoreCoral.scoreCoralWithSettings(ScoringLevel.L2, false), DynamicPathing.actionCommandRequirements)
+      () -> ScoreCoral.scoreCoralWithSettings(SuperstructureState.L2, false), DynamicPathing.actionCommandRequirements)
     );
 
     // Coral Intake
     NamedCommands.registerCommand("Coral Intake", Commands.parallel(
       new CoralIntake(),
-      new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
+      new ApplySuperstructureState(SuperstructureState.CORAL_INTAKE)
     ));
 
     NamedCommands.registerCommand("Set Position Intake", 
       Commands.sequence(
         new WaitUntilCommand(() -> DynamicPathing.isElevatorRetractionSafe()),
-        new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
+        new ApplySuperstructureState(SuperstructureState.CORAL_INTAKE)
       )
     );
 
@@ -460,12 +424,12 @@ public class RobotContainer {
 
     NamedCommands.registerCommand("Net Shot Prep", Commands.parallel(
       Commands.sequence(
-        Commands.runOnce(() -> elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.ALGAE_L2)),
+        Commands.runOnce(() -> superstructure.elevator.applySetpoint(SuperstructureState.ALGAE_L2)),
         Commands.waitSeconds(0.6), // Goofy wait
-        Commands.runOnce(() -> elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.NET_PREP))
+        Commands.runOnce(() -> superstructure.elevator.applySetpoint(SuperstructureState.NET_PREP))
           .onlyIf(() -> ScoringConstants.USE_RISKY_NET_AUTO)
       ),
-      new SetPivotPos(PivotPosition.NET_PREP)
+      Commands.runOnce(() -> superstructure.elevator.applySetpoint(SuperstructureState.ALGAE_L2))
     ));
 
     // Auto Coral Intake
@@ -501,7 +465,7 @@ public class RobotContainer {
     chooser.setDefaultOption("None", Commands.none());
     chooser.addOption("Wheel Radius Characterization", WheelRadiusCharacterization.GetCharacterizationCommand());
     chooser.addOption("Test Drivetrain", new TestDriveAuto(driveSubsystem));
-    chooser.addOption("Test Elevator", new TestElevatorAuto(elevatorSubsystem));
+    chooser.addOption("Test Elevator", new TestElevatorAuto(superstructure.elevator));
 
     return chooser;
   }

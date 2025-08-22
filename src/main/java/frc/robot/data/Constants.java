@@ -11,8 +11,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.Units;
-import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
-import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -166,39 +164,6 @@ public final class Constants {
     public static final boolean USE_RISKY_NET_AUTO = true;
     public static final boolean USE_CORAL_SCORE_PATH_PLANNING = false; // Too slow / inconsistently latent on rio2
 
-    /**
-     * Maps scoring levels to their respective elevator and pivot enums
-     */
-    public enum ScoringLevel {
-      L1(PivotPosition.L1, ElevatorLevel.L1),
-      L2(PivotPosition.L2, ElevatorLevel.L2),
-      L3(PivotPosition.L3, ElevatorLevel.L3),
-      L4(PivotPosition.L4, ElevatorLevel.L4),
-      ALGAE_L1(PivotPosition.ALGAE_L1, ElevatorLevel.ALGAE_L1),
-      ALGAE_L2(PivotPosition.ALGAE_L2, ElevatorLevel.ALGAE_L2),
-      CORAL_INTAKE(PivotPosition.CORAL_INTAKE, ElevatorLevel.REST_POSITION),
-      PROCESSOR(PivotPosition.PROCESSOR, ElevatorLevel.PROCESSOR),
-      SPIT_ALGAE(PivotPosition.SPIT_ALGAE, ElevatorLevel.PROCESSOR),
-      NET(PivotPosition.NET, ElevatorLevel.NET),
-      NET_PREP(PivotPosition.NET_PREP, ElevatorLevel.NET_PREP);
-      
-      private final PivotPosition pivotPosition;
-      private final ElevatorLevel elevatorLevel;
-
-      ScoringLevel(PivotPosition pivotPosition, ElevatorLevel elevatorLevel) {
-          this.pivotPosition = pivotPosition;
-          this.elevatorLevel = elevatorLevel;
-      }
-
-      public ElevatorLevel getElevatorLevel() {
-          return elevatorLevel;
-      }
-
-      public PivotPosition getPivotPosition() {
-          return pivotPosition;
-      }
-    }
-
     /** A collection of scoring parameters */
     public record CoralScoringParameters(
       double maxVelocity,
@@ -256,6 +221,9 @@ public final class Constants {
     public static final double PIVOT_BUMPER_CLEARANCE_ANGLE = 150; // degrees
     public static final double PIVOT_L4_CLEARANCE_ANGLE = 28;
 
+    public static final double PIVOT_CLEARANCE_POSITION = 35;
+    public static final double PIVOT_CLEARANCE_POSITION_ALGAE = 105;
+
     // Motor configuration
     public static final double PIVOT_MOTION_CRUISE_VELOCITY = 6;
     public static final double PIVOT_MOTION_ACCELERATION = 30.0;
@@ -274,41 +242,6 @@ public final class Constants {
     public static final double PIVOT_kG_HORIZONTAL = -0.3; 
 
     public static final double PIVOT_kP_ALGAE_SLOW = 40.0;
-
-    // Pivot Positions
-    public enum PivotPosition {
-        ZERO(0),
-        CLEARANCE_POSITION(35),
-        CLEARANCE_POSITION_ALGAE(106),
-        ALGAE_L2(178.5),
-        ALGAE_L1(178.5),
-        PROCESSOR(189),
-        SPIT_ALGAE(140),
-        CORAL_INTAKE(2.6),
-        NET(98),
-        L4(66),
-        L3(34),
-        L2(34),
-        L1(150),
-
-        // Maybe manual mode
-        MANUAL_L4(71.0),
-        MANUAL_L3(24.0),
-        MANUAL_L2(24.0),
-        MANUAL_L1(150),
-
-        NET_PREP(180);
-
-        private final double pivotDegrees;
-
-        PivotPosition(double pivotDegrees) {
-            this.pivotDegrees = pivotDegrees;
-        }
-
-        public double getDegrees() {
-            return pivotDegrees;
-        }
-    }
   }
 
   /* Elevator Constants */
@@ -349,35 +282,35 @@ public final class Constants {
     public static final double kG = 0.36; 
 
     // Predefined heights for the elevator (in meters)
-    public enum ElevatorLevel {
-      REST_POSITION(0.0),
-      NET(1.50),
-      ALGAE_L2(0.88),
-      ALGAE_L1(0.54),
-      PROCESSOR(0.135),
-      L4(1.50),
-      L3(0.865),
-      L2(0.44),
-      L1(0.33),
+    // public enum ElevatorLevel {
+    //   REST_POSITION(0.0),
+    //   NET(1.50),
+    //   ALGAE_L2(0.88),
+    //   ALGAE_L1(0.54),
+    //   PROCESSOR(0.135),
+    //   L4(1.50),
+    //   L3(0.865),
+    //   L2(0.44),
+    //   L1(0.33),
 
-      MANUAL_L4(1.440),
-      MANUAL_L3(0.6772),
-      MANUAL_L2(0.280),
-      MANUAL_L1(0.33),
+    //   MANUAL_L4(1.440),
+    //   MANUAL_L3(0.6772),
+    //   MANUAL_L2(0.280),
+    //   MANUAL_L1(0.33),
 
-      NET_PREP(1.3);
+    //   NET_PREP(1.3);
 
 
-      private final double height;
+    //   private final double height;
 
-      ElevatorLevel(double height) {
-        this.height = height;
-      }
+    //   ElevatorLevel(double height) {
+    //     this.height = height;
+    //   }
 
-      public double getHeight() {
-        return height;
-      }
-    }
+    //   public double getHeight() {
+    //     return height;
+    //   }
+    // }
   }
   
   /* Shark Pivot Constants */

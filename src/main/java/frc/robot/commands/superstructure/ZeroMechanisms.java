@@ -6,23 +6,23 @@ package frc.robot.commands.superstructure;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
-import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
+import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 
 public class ZeroMechanisms extends Command {
     private boolean hasStartedPivot = false;
     // private Timer elevatorTimer = new Timer() ;
 
     public ZeroMechanisms() {
-        addRequirements(RobotContainer.elevatorSubsystem, RobotContainer.pivotSubsystem);
+        addRequirements(RobotContainer.superstructure.elevator, RobotContainer.superstructure.pivot);
     }
 
     @Override
     public void initialize() {
         // Start elevator zeroing first
-        RobotContainer.elevatorSubsystem.zeroElevator();
+        RobotContainer.superstructure.elevator.zeroElevator();
         hasStartedPivot = false;
 
-        RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
+        RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.ZERO);
 
         RobotContainer.sharkPivot.zeroPivot();
 
@@ -33,8 +33,8 @@ public class ZeroMechanisms extends Command {
     @Override
     public void execute() {
         // Once elevator is done zeroing, start pivot zeroing
-        if (!RobotContainer.elevatorSubsystem.isZeroing() && !hasStartedPivot) {
-            RobotContainer.pivotSubsystem.zeroPivot();
+        if (!RobotContainer.superstructure.elevator.isZeroing() && !hasStartedPivot) {
+            RobotContainer.superstructure.pivot.zeroPivot();
             hasStartedPivot = true;
         }
     }
@@ -43,11 +43,11 @@ public class ZeroMechanisms extends Command {
     public void end(boolean interrupted) {
         // If interrupted, make sure to stop both mechanisms
         if (interrupted) {
-            if (RobotContainer.elevatorSubsystem.isZeroing()) {
-                RobotContainer.elevatorSubsystem.zeroElevator(); // Calling again cancels zeroing
+            if (RobotContainer.superstructure.elevator.isZeroing()) {
+                RobotContainer.superstructure.elevator.zeroElevator(); // Calling again cancels zeroing
             }
-            if (RobotContainer.pivotSubsystem.isZeroing()) {
-                RobotContainer.pivotSubsystem.zeroPivot(); // Calling again cancels zeroing
+            if (RobotContainer.superstructure.pivot.isZeroing()) {
+                RobotContainer.superstructure.pivot.zeroPivot(); // Calling again cancels zeroing
             }
             if (RobotContainer.sharkPivot.isZeroing()) {
                 RobotContainer.sharkPivot.zeroPivot(); // Calling again cancels zeroing
@@ -60,9 +60,9 @@ public class ZeroMechanisms extends Command {
     @Override
     public boolean isFinished() {
         // Command is done when elevator is zeroed and pivot is zeroed
-        return !RobotContainer.elevatorSubsystem.isZeroing() && 
+        return !RobotContainer.superstructure.elevator.isZeroing() && 
                hasStartedPivot && 
-               !RobotContainer.pivotSubsystem.isZeroing() &&
+               !RobotContainer.superstructure.pivot.isZeroing() &&
                !RobotContainer.sharkPivot.isZeroing();
     }
 } 

@@ -8,10 +8,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.RobotContainer;
-import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
-import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
+import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.subsystems.DynamicPathing;
 import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
+import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 
 /** Contains command factories that control the superstructure */
 public class SuperstructureControl {
@@ -37,14 +37,14 @@ public class SuperstructureControl {
 
                 // Go to L2 automatically if in range to speed up motion
                 if (RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.REEF_CORAL) {
-                    RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.L2);
+                    RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.L2);
                 } else {
-                    RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
+                    RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.ZERO);
                 }
             }, 
             (interrupted) -> {},
             () -> false, 
-            RobotContainer.elevatorSubsystem
+            RobotContainer.superstructure.elevator
         );
     }
 
@@ -62,21 +62,20 @@ public class SuperstructureControl {
                 
                 // Go to L2 automatically if in range to speed up motion
                 if (RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.REEF_CORAL) {
-                    RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.L2);
+                    RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.L2);
                 } else {
-                    RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.ZERO);
+                    RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.ZERO);
                 }
             }, 
             (interrupted) -> {},
             () -> false, 
-            RobotContainer.pivotSubsystem
+            RobotContainer.superstructure.pivot
         );
     }
 
     public static Command RestPositionCommand() {
         return new InstantCommand(() -> {
-            RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
-            RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.ZERO);
+            RobotContainer.superstructure.applySuperstructureState(SuperstructureState.ZERO);
         });
     }
 
@@ -85,19 +84,19 @@ public class SuperstructureControl {
             () -> {}, 
             () -> {
                 if (RobotContainer.intakeSubsystem.isCoralLoaded()) {
-                    RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.L2);
-                    RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.ZERO);
+                    RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.L2);
+                    RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.ZERO);
                 }
             }, 
             (interrupted) -> {
                 if (interrupted) {
                     return;
                 }
-                RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.L4);
-                RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
+                RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.L4);
+                RobotContainer.superstructure.pivot.applySetpoint(ManipulatorConstants.PIVOT_CLEARANCE_POSITION);
             },
             () -> DynamicPathing.isElevatorL4Ready(), 
-            RobotContainer.elevatorSubsystem
+            RobotContainer.superstructure.elevator
         ).withTimeout(2);
     }
 }
