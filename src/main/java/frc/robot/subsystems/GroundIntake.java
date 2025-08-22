@@ -28,7 +28,7 @@ import frc.robot.utils.SubsystemNetworkManager;
 import frc.robot.utils.IO.TalonFXIO;
 
 /**
- * The SharkIntake subsystem handles the robot's L1 intake mechanism.
+ * The GroundIntake subsystem handles the robot's L1 intake mechanism.
  * It controls:
  * - An intake motor for collecting game pieces
  */

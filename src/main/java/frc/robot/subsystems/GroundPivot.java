@@ -30,7 +30,7 @@ import frc.robot.utils.SubsystemNetworkManager;
 import frc.robot.utils.IO.TalonFXIO;
 
 /**
- * The SharkPivot subsystem is responsible for pivoting the L1 Intake 
+ * The GroundPivot subsystem is responsible for pivoting the L1 Intake 
  * It controls a single pivot motor. 
  */
 public class GroundPivot extends SubsystemBase implements NetworkUser {
@@ -45,12 +45,12 @@ public class GroundPivot extends SubsystemBase implements NetworkUser {
   
   // Networktables Variables 
   private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
-  private final NetworkTable sharkPivotTable = inst.getTable("Ground Pivot");
+  private final NetworkTable groundPivotTable = inst.getTable("Ground Pivot");
 
-  private final DoublePublisher sharkPivotSetpointNT = sharkPivotTable.getDoubleTopic("Setpoint (Degrees)").publish();
-  private final DoublePublisher sharkPivotAngleNT = sharkPivotTable.getDoubleTopic("Current Angle (Degrees)").publish();
-  private final BooleanPublisher sharkPivotAtSetpointNT = sharkPivotTable.getBooleanTopic("At Setpoint").publish();
-  private final BooleanPublisher sharkPivotisZeroingNT = sharkPivotTable.getBooleanTopic("Is Zeroing").publish();
+  private final DoublePublisher groundPivotSetpointNT = groundPivotTable.getDoubleTopic("Setpoint (Degrees)").publish();
+  private final DoublePublisher groundPivotAngleNT = groundPivotTable.getDoubleTopic("Current Angle (Degrees)").publish();
+  private final BooleanPublisher groundPivotAtSetpointNT = groundPivotTable.getBooleanTopic("At Setpoint").publish();
+  private final BooleanPublisher groundPivotisZeroingNT = groundPivotTable.getBooleanTopic("Is Zeroing").publish();
 
   // -------------------- Tuning Code --------------------
   // private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
@@ -157,7 +157,7 @@ public class GroundPivot extends SubsystemBase implements NetworkUser {
     pivotMotor.setControl(motionMagicRequest.withPosition(targetRotations).withSlot(0));
     
     // Update network tables
-    sharkPivotAtSetpointNT.set(isPivotAtSetpoint());
+    groundPivotAtSetpointNT.set(isPivotAtSetpoint());
   }
 
   /**
@@ -171,9 +171,9 @@ public class GroundPivot extends SubsystemBase implements NetworkUser {
   }
 
   /**
-   * Sets the ground pivot position using a predefined SharkPivot enum
+   * Sets the ground pivot position using a predefined GroundPivot enum
    * 
-   * @param position The SharkPivotPosition enum value
+   * @param position The GroundPivotPosition enum value
    */
   public void setPivotPosition(GroundPivotPosition position) {
     setPivotSetpoint(position.getDegrees());
@@ -202,7 +202,7 @@ public class GroundPivot extends SubsystemBase implements NetworkUser {
    * Gets the current ground pivot setpoint
    * @return Current setpoint angle in degrees
    */
-  public double getSharkSetpoint() {
+  public double getGroundPivotSetpoint() {
     return angleSetpoint;
   }
 
@@ -254,9 +254,9 @@ public class GroundPivot extends SubsystemBase implements NetworkUser {
    */
   @Override
   public void updateNetwork() {
-    sharkPivotSetpointNT.set(angleSetpoint);
-    sharkPivotAngleNT.set(getPivotDegrees());
-    sharkPivotisZeroingNT.set(isZeroingPivot);
+    groundPivotAngleNT.set(getPivotDegrees());
+    groundPivotisZeroingNT.set(isZeroingPivot);
+    groundPivotSetpointNT.set(angleSetpoint);
   }
 
   public void initializeNetwork() {
