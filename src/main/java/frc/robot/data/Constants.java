@@ -58,6 +58,9 @@ public final class Constants {
     
     public static final int intakeLaserCan = 29;
     public static final int funnelLaserCan = 30;
+    public static final int groundIntakeLaserCanRight = 36;
+    public static final int groundIntakeLaserCanMid = 37;
+    public static final int groundIntakeLaserCanLeft = 38;
     public static final int groundIntakeCanRange = 35;
     public static final int CANdle = 26;
 
@@ -432,5 +435,8 @@ public final class Constants {
     public static final double kS = 0.0;
     public static final double STATOR_CURRENT_LIMIT = 60;
     public static final double CANRANGE_PROXIMITY_THRESHOLD = 60;//TODO remember to tune number
+    public static final double CORAL_LEFT_DISTANCE_THRESHOLD=60;
+    public static final double CORAL_MID_DISTANCE_THRESHOLD=60;
+    public static final double CORAL_RIGHT_DISTANCE_THRESHOLD=60;
   }
 }

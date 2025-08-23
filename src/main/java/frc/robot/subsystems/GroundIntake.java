@@ -25,6 +25,7 @@ import frc.robot.data.Constants.GroundIntakeConstants;
 import frc.robot.utils.NetworkUser;
 import frc.robot.utils.PhoenixHelpers;
 import frc.robot.utils.SubsystemNetworkManager;
+import frc.robot.utils.IO.DeferredRefresher;
 import frc.robot.utils.IO.TalonFXIO;
 
 /**
@@ -37,10 +38,63 @@ public class GroundIntake extends SubsystemBase implements NetworkUser{
     private final TalonFXIO intakeLeft;
     private final TalonFXIO intakeRight;
     private final TalonFXIO intakeMid;
+    private CANrange CANrange = new CANrange(Constants.CANIds.groundIntakeCanRange);
     private LaserCan leftLaserCan;
     private LaserCan midLaserCan;
     private LaserCan rightLaserCan;
-    private CANrange CANrange = new CANrange(Constants.CANIds.groundIntakeCanRange);
+    private double leftLaserDistance = 0;
+    private double midLaserDistance = 0;
+    private double rightLaserDistance = 0;
+    // Deferred Refreshers
+    private DeferredRefresher<Double> leftLaserCanRefresher = new DeferredRefresher<Double>(
+        "Left Ground Intake LaserCAN", 
+        0.01, // 100hz
+        () -> {
+            if (leftLaserCan != null) {
+                var measurement = leftLaserCan.getMeasurement();
+                if (measurement != null) {
+                    if (measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
+                        return (double)measurement.distance_mm;
+                    }
+                }
+            }
+            return null;
+        }
+    );
+
+    private DeferredRefresher<Double> midLaserCanRefresher = new DeferredRefresher<Double>(
+        "Mid Ground Intake LaserCAN", 
+        0.01, 
+        () -> {
+            if (midLaserCan != null) {
+                var measurement = midLaserCan.getMeasurement();
+                if (measurement != null) {
+                    if (measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
+                        return (double)measurement.distance_mm;
+                    }
+                }
+            } 
+            return null;
+        }
+    );
+    private DeferredRefresher<Double> rightLaserCanRefresher = new DeferredRefresher<Double>(
+        "Right Ground Intake LaserCAN", 
+        0.01, 
+        () -> {
+            if (rightLaserCan != null) {
+                var measurement = rightLaserCan.getMeasurement();
+                if (measurement != null) {
+                    if (measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
+                        return (double)measurement.distance_mm;
+                    }
+                }
+            } 
+            return null;
+        }
+    );
+
+
+    
     // Control Objects
     private final MotionMagicVelocityVoltage intakeRightControlRequest = new MotionMagicVelocityVoltage(0);
     private final MotionMagicVelocityVoltage intakeLeftControlRequest = new MotionMagicVelocityVoltage(0);
@@ -96,9 +150,36 @@ public class GroundIntake extends SubsystemBase implements NetworkUser{
         CANrangeConfiguration canRangeConfigs = new CANrangeConfiguration();
         canRangeConfigs.ProximityParams.ProximityThreshold = Constants.GroundIntakeConstants.CANRANGE_PROXIMITY_THRESHOLD;
         CANrange.getConfigurator().apply(canRangeConfigs);
+        configureLaserCAN();
         configureIntakeMotors();
     }
 
+    /**
+     * Configures the laserCAN
+     */
+    private void configureLaserCAN() {
+        // Initialize LaserCan with error handling
+        try {
+            leftLaserCan = new LaserCan(Constants.CANIds.groundIntakeLaserCanLeft);
+            leftLaserCan.setRangingMode(LaserCan.RangingMode.SHORT);
+            leftLaserCan.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_20MS);
+            
+            midLaserCan = new LaserCan(Constants.CANIds.groundIntakeLaserCanMid);
+            midLaserCan.setRangingMode(LaserCan.RangingMode.SHORT);
+            midLaserCan.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_20MS);
+
+            rightLaserCan = new LaserCan(Constants.CANIds.groundIntakeLaserCanRight);
+            rightLaserCan.setRangingMode(LaserCan.RangingMode.SHORT);
+            rightLaserCan.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_20MS);
+            
+        } catch (Exception e) {
+            // throw new RuntimeException("Failed to initialize LaserCan: " + e.getMessage());
+            System.out.println("Failed to initialize LaserCan: " + e.getMessage());
+            leftLaserCan = null;
+            midLaserCan = null;
+            rightLaserCan = null;
+        }
+    }
     /**
      * Configures the intake motor with current limits
      */
@@ -141,7 +222,40 @@ public class GroundIntake extends SubsystemBase implements NetworkUser{
         intakeRight.setControl(intakeRightControlRequest.withVelocity(currentState.getRightSpeed()).withSlot(0));
         intakeLeft.setControl(intakeLeftControlRequest.withVelocity(currentState.getLeftSpeed()).withSlot(0));//not sure if they will be following same speed 
         intakeMid.setControl(intakeMidControlRequest.withVelocity(currentState.getMidSpeed()).withSlot(0));
+        updateCoralSensors();
         isCoralLoaded();
+        
+    }
+
+    /**
+     * Updates the coral sensor's internal state
+     */
+    private void updateCoralSensors() {
+        var leftSensorResult = leftLaserCanRefresher.getLatestValue();
+        if (leftSensorResult.isPresent()) {
+            leftLaserDistance = leftSensorResult.get();
+        }
+        
+        var midSensorResult = midLaserCanRefresher.getLatestValue();
+        if (midSensorResult.isPresent()) {
+            midLaserDistance = midSensorResult.get();
+        }
+        var rightSensorResult = rightLaserCanRefresher.getLatestValue();
+        if (rightSensorResult.isPresent()) {
+            rightLaserDistance = rightSensorResult.get();
+        }
+    }
+
+    public boolean isCoralLeft() {
+        return leftLaserDistance <= Constants.GroundIntakeConstants.CORAL_LEFT_DISTANCE_THRESHOLD;
+    }
+
+    public boolean isCoralMid() {
+        return midLaserDistance <= Constants.GroundIntakeConstants.CORAL_MID_DISTANCE_THRESHOLD;
+    }
+
+    public boolean isCoralRight() {
+        return rightLaserDistance <= Constants.GroundIntakeConstants.CORAL_RIGHT_DISTANCE_THRESHOLD;
     }
 
     /**
