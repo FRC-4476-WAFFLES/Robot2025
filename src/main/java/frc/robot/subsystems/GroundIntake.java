@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.CodeConstants;
+import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.Constants.GroundIntakeConstants;
 import frc.robot.utils.NetworkUser;
@@ -27,13 +28,14 @@ import frc.robot.utils.PhoenixHelpers;
 import frc.robot.utils.SubsystemNetworkManager;
 import frc.robot.utils.IO.DeferredRefresher;
 import frc.robot.utils.IO.TalonFXIO;
+import frc.robot.utils.lib.WafflesMechanism;
 
 /**
  * The GroundIntake subsystem handles the robot's L1 intake mechanism.
  * It controls:
  * - An intake motor for collecting game pieces
  */
-public class GroundIntake extends SubsystemBase implements NetworkUser{
+public class GroundIntake extends WafflesMechanism implements NetworkUser{
     // Hardware Components
     private final TalonFXIO intakeLeft;
     private final TalonFXIO intakeRight;
@@ -102,8 +104,13 @@ public class GroundIntake extends SubsystemBase implements NetworkUser{
     // State Variables
     public enum GroundIntakeState {
         //TODO make actual states depending on what we want to do
-        INTAKE(0, 0,20),
-        OUTTAKE(150,0.33,0);
+        SHIFT_LEFT(0, 0,20),
+        INTAKE_MID(0, 0,20),
+        SHIFT_RIGHT(0, 0,20),
+        STASH(0, 0,20),
+        FEED(0, 0,20),
+        REST(0, 0,0),
+        OUTAKE(150,0.33,0);
         
         private final double rightSpeed;
         private final double leftSpeed;
@@ -126,7 +133,7 @@ public class GroundIntake extends SubsystemBase implements NetworkUser{
             return midSpeed;
         }
     }
-    private GroundIntakeState currentState = GroundIntakeState.INTAKE;
+    private GroundIntakeState currentState = GroundIntakeState.INTAKE_MID;
     private boolean coralInRange=false;
 
     // Network Tables
@@ -218,7 +225,7 @@ public class GroundIntake extends SubsystemBase implements NetworkUser{
     }
     
     @Override
-    public void periodic() {
+    public void periodicImpl() {
         intakeRight.setControl(intakeRightControlRequest.withVelocity(currentState.getRightSpeed()).withSlot(0));
         intakeLeft.setControl(intakeLeftControlRequest.withVelocity(currentState.getLeftSpeed()).withSlot(0));//not sure if they will be following same speed 
         intakeMid.setControl(intakeMidControlRequest.withVelocity(currentState.getMidSpeed()).withSlot(0));
@@ -226,7 +233,20 @@ public class GroundIntake extends SubsystemBase implements NetworkUser{
         isCoralLoaded();
         
     }
-
+      /**
+   * Sets the target rotation of the ground intake.
+   * @param setpoint Target rotation speed (GroundIntakeState enum)
+   */
+  public void setGroundIntakeSetpoint(GroundIntakeState state) {
+    currentState = state;    
+  }
+      /**
+   * Get the last defined rotation setpoint the ground intake was set to
+   * @return
+   */
+    public GroundIntakeState getGroundIntakeSetpointEnum(){
+        return currentState;
+    }
     /**
      * Updates the coral sensor's internal state
      */
