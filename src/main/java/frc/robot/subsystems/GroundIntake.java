@@ -114,12 +114,12 @@ public class GroundIntake extends WafflesMechanism implements NetworkUser{
         
         private final double rightSpeed;
         private final double leftSpeed;
-        private final double midSpeed;
+        private final double topSpeed;
     
-        GroundIntakeState(double rightSpeed, double leftSpeed, double midSpeed) {
+        GroundIntakeState(double rightSpeed, double leftSpeed, double topSpeed) {
           this.rightSpeed = rightSpeed;
           this.leftSpeed = leftSpeed;
-          this.midSpeed = midSpeed;
+          this.topSpeed = topSpeed;
         }
 
         public double getRightSpeed() {
@@ -129,8 +129,8 @@ public class GroundIntake extends WafflesMechanism implements NetworkUser{
         public double getLeftSpeed() {
           return leftSpeed;
         }
-        public double getMidSpeed() {
-            return midSpeed;
+        public double getTopSpeed() {
+            return topSpeed;
         }
     }
     private GroundIntakeState currentState = GroundIntakeState.INTAKE_MID;
@@ -228,10 +228,8 @@ public class GroundIntake extends WafflesMechanism implements NetworkUser{
     public void periodicImpl() {
         intakeRight.setControl(intakeRightControlRequest.withVelocity(currentState.getRightSpeed()).withSlot(0));
         intakeLeft.setControl(intakeLeftControlRequest.withVelocity(currentState.getLeftSpeed()).withSlot(0));//not sure if they will be following same speed 
-        intakeMid.setControl(intakeMidControlRequest.withVelocity(currentState.getMidSpeed()).withSlot(0));
+        intakeMid.setControl(intakeMidControlRequest.withVelocity(currentState.getTopSpeed()).withSlot(0));
         updateCoralSensors();
-        isCoralLoaded();
-        
     }
       /**
    * Sets the target rotation of the ground intake.
@@ -264,6 +262,8 @@ public class GroundIntake extends WafflesMechanism implements NetworkUser{
         if (rightSensorResult.isPresent()) {
             rightLaserDistance = rightSensorResult.get();
         }
+
+        coralInRange = CANrange.getIsDetected().getValue();
     }
 
     public boolean isCoralLeft() {
@@ -283,12 +283,7 @@ public class GroundIntake extends WafflesMechanism implements NetworkUser{
      * @return true if coral is detected
      */
     public boolean isCoralLoaded() {
-        coralInRange = CANrange.getIsDetected().getValue();
-        if (coralInRange) {
-            return true;
-        } else {
-            return false;
-        }
+        return coralInRange;
     }
 
     /**
@@ -299,7 +294,7 @@ public class GroundIntake extends WafflesMechanism implements NetworkUser{
         coralLoadedNT.set(isCoralLoaded());
         rightIntakeSetpointNT.set(currentState.getRightSpeed());
         leftIntakeSetpointNT.set(currentState.getLeftSpeed());
-        midIntakeSetpointNT.set(currentState.getMidSpeed());
+        midIntakeSetpointNT.set(currentState.getTopSpeed());
         rightIntakeVelocityNT.set(intakeRight.signals().velocity().getValueAsDouble());
         leftIntakeVelocityNT.set(intakeLeft.signals().velocity().getValueAsDouble());
         midIntakeVelocityNT.set(intakeMid.signals().velocity().getValueAsDouble());

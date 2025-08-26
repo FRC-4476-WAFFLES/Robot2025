@@ -27,13 +27,9 @@ public class L1Intake extends Command {
   @Override
   public void execute() {
     if(RobotContainer.groundIntake.isCoralLeft()){
-      while(!RobotContainer.groundIntake.isCoralRight()){
-        RobotContainer.groundIntake.setGroundIntakeSetpoint(GroundIntakeState.SHIFT_RIGHT);
-      }
+      RobotContainer.groundIntake.setGroundIntakeSetpoint(GroundIntakeState.SHIFT_RIGHT);
     }else if(RobotContainer.groundIntake.isCoralRight()){
-      while(!RobotContainer.groundIntake.isCoralLeft()){
         RobotContainer.groundIntake.setGroundIntakeSetpoint(GroundIntakeState.SHIFT_LEFT);
-      }
     }else if(RobotContainer.groundIntake.isCoralMid()){
         RobotContainer.groundIntake.setGroundIntakeSetpoint(GroundIntakeState.INTAKE_MID);
     }
