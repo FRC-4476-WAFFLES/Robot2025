@@ -83,7 +83,7 @@ public final class Constants {
 
     public static final int SUBSYSTEM_NT_UPDATE_RATE = 20; // How many times a second subsystems will publish to NT. Reduce if performance is suffering.
 
-    public static final boolean FORCE_LOAD_SIM_CORAL = false;
+    public static final boolean FORCE_LOAD_SIM_CORAL = true;
     public static final boolean FORCE_LOAD_SIM_ALGAE = false;
 
     // Disable all nonessential CAN status signals, potentially reducing CAN pressure

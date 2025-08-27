@@ -30,8 +30,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
-import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
-import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.data.Constants.GroundPivotConstants.GroundPivotPosition;
 import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;

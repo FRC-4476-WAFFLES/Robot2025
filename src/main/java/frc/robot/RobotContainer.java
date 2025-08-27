@@ -25,16 +25,13 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.ResetGyroHeading;
-import frc.robot.commands.GroundIntake.GroundIntakeCommands;
 import frc.robot.commands.intake.AlgaeOutake;
 import frc.robot.commands.intake.AutoIntake;
 import frc.robot.commands.intake.AxisIntakeControl;
 import frc.robot.commands.intake.CoralIntake;
 import frc.robot.commands.scoring.ScoreCoral;
 import frc.robot.commands.scoring.ScoreNet;
-import frc.robot.commands.superstructure.ApplyScoringSetpoint;
-import frc.robot.commands.superstructure.SetElevatorPos;
-import frc.robot.commands.superstructure.SetPivotPos;
+import frc.robot.commands.superstructure.ApplySuperstructureState;
 import frc.robot.commands.superstructure.SuperstructureControl;
 import frc.robot.commands.superstructure.ZeroMechanisms;
 import frc.robot.commands.test.TestDriveAuto;
@@ -262,16 +259,16 @@ public class RobotContainer {
     Controls.operatorController.povDown().whileTrue(Commands.defer(() -> ScoreNet.getScoreNetCommand(0, () -> Rotation2d.kZero, false), DynamicPathing.actionCommandRequirements).onlyIf(() -> RobotContainer.intakeSubsystem.isAlgaeLoaded()));
   
     // L1 Intake / Outtake
-    Controls.rightJoystick.button(4).onTrue(
-      Commands.either(
-        Commands.runOnce(() -> RobotContainer.isRunningL1Intake = !RobotContainer.isRunningL1Intake), 
-        GroundIntakeCommands.getOutakeCommand().asProxy(), 
-        () -> !groundIntake.isCoralLoaded()
-      )
-    );
+    // Controls.rightJoystick.button(4).onTrue(
+    //   Commands.either(
+    //     Commands.runOnce(() -> RobotContainer.isRunningL1Intake = !RobotContainer.isRunningL1Intake), 
+    //     GroundIntakeCommands.getOutakeCommand().asProxy(), 
+    //     () -> !groundIntake.isCoralLoaded()
+    //   )
+    // );
 
     // Run intake while intake should be running lmao
-    runningL1Intake.whileTrue(GroundIntakeCommands.getIntakeCommand());
+    // runningL1Intake.whileTrue(GroundIntakeCommands.getIntakeCommand());
     
     // Heading lock for L1
     isHeadingLockedToL1 = groundIntakeCoralLoaded.and(() -> 
