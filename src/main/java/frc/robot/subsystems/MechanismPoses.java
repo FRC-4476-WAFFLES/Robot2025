@@ -45,7 +45,7 @@ public class MechanismPoses extends SubsystemBase {
     }
 
     private void updateElevatorPoses() {
-        double elevatorHeight = RobotContainer.elevatorSubsystem.getElevatorPositionMeters();
+        double elevatorHeight = RobotContainer.superstructure.elevator.getElevatorPositionMeters();
         
         // Calculate stage positions
         double carriageHeight;
@@ -80,8 +80,8 @@ public class MechanismPoses extends SubsystemBase {
     }
 
     private void updatePivotPose() {
-        double pivotAngle = Math.toRadians(RobotContainer.pivotSubsystem.getPivotPosition());
-        double elevatorHeight = RobotContainer.elevatorSubsystem.getElevatorPositionMeters();
+        double pivotAngle = Math.toRadians(RobotContainer.superstructure.pivot.getPivotPosition());
+        double elevatorHeight = RobotContainer.superstructure.elevator.getElevatorPositionMeters();
         
         // Create pivot pose - rotates around Y axis, moves up with elevator carriage
         Pose3d pivotPose = new Pose3d(

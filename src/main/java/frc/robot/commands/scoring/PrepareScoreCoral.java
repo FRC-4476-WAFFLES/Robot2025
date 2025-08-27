@@ -7,18 +7,18 @@ package frc.robot.commands.scoring;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.ElevatorConstants;
-import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
-import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
+import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.subsystems.DynamicPathing;
 import frc.robot.subsystems.superstructure.Elevator;
+import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 
 /* Continuously adjusts position of elevator and pivot to desired scoring level */
 public class PrepareScoreCoral extends Command {
-  private final Elevator elevatorSubsystem = RobotContainer.elevatorSubsystem;
+  private final Elevator elevatorSubsystem = RobotContainer.superstructure.elevator;
 
   /** Creates a new PrepareCoralScore. */
   public PrepareScoreCoral() {
-    addRequirements(RobotContainer.pivotSubsystem, RobotContainer.elevatorSubsystem);
+    addRequirements(RobotContainer.superstructure.requirements);
   }
 
   // Called when the command is initially scheduled.
@@ -29,28 +29,27 @@ public class PrepareScoreCoral extends Command {
   @Override
   public void execute() {
     var scoringLevel = RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel();
-    if (scoringLevel == ScoringLevel.L1) {
+    if (scoringLevel == SuperstructureState.L1) {
       if (DynamicPathing.getDistanceToReef() < DynamicPathing.REEF_MIN_SCORING_DISTANCE_L1) {
         return;
       }
     }
 
-    if (scoringLevel == ScoringLevel.L4) {
+    if (scoringLevel == SuperstructureState.L4) {
       if (DynamicPathing.isElevatorL4Ready()) {
-        RobotContainer.elevatorSubsystem.setElevatorSetpoint(scoringLevel.getElevatorLevel());
+        RobotContainer.superstructure.elevator.applySetpoint(scoringLevel);
         if (elevatorSubsystem.getElevatorPositionMeters() > ElevatorConstants.PIVOT_L4_CLEAR_HEIGHT_MAX) {
-          RobotContainer.pivotSubsystem.setPivotPosition(scoringLevel.getPivotPosition());
+          RobotContainer.superstructure.pivot.applySetpoint(scoringLevel.getPivotAngle());
         } else {
-          RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
+          RobotContainer.superstructure.pivot.applySetpoint(ManipulatorConstants.PIVOT_CLEARANCE_POSITION);
         }
       } else {
-        RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.ZERO);
+        RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.ZERO);
       }
       return;
     }
 
-    RobotContainer.elevatorSubsystem.setElevatorSetpoint(scoringLevel.getElevatorLevel());
-    RobotContainer.pivotSubsystem.setPivotPosition(scoringLevel.getPivotPosition());
+    RobotContainer.superstructure.applySuperstructureState(scoringLevel);
   }
 
   // Called once the command ends or is interrupted.

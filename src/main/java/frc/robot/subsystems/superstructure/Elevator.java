@@ -21,8 +21,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -30,18 +28,14 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.CANIds;
-import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.ElevatorConstants;
-import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
+import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 import frc.robot.data.Constants.PhysicalConstants;
-import frc.robot.utils.NetworkUser;
 import frc.robot.utils.PhoenixHelpers;
-import frc.robot.utils.SubsystemNetworkManager;
 import frc.robot.utils.IO.TalonFXIO;
 import frc.robot.utils.lib.WafflesMechanism;
 
@@ -70,7 +64,7 @@ public class Elevator extends WafflesMechanism {
   private Trigger zeroingDebounceTrigger;
   private boolean isZeroingElevator = false;
   
-  private ElevatorLevel currentSetpointEnum = ElevatorLevel.REST_POSITION; 
+  private SuperstructureState currentSetpointEnum = SuperstructureState.ZERO; 
   private CollisionType currentCollisionPrediction = CollisionType.NONE;
   private CollisionType potentialCollisionPrediction = CollisionType.NONE; // If the movement could induce collision
 
@@ -240,10 +234,10 @@ public class Elevator extends WafflesMechanism {
 
   /**
    * Sets the target position of the elevator.
-   * @param setpoint Target position (either ElevatorLevel enum or height in meters)
+   * @param setpoint Target position (either SuperStructureState enum or height in meters)
    */
-  public void setElevatorSetpoint(ElevatorLevel setpoint) {
-    applySetpoint(setpoint.getHeight());
+  public void applySetpoint(SuperstructureState setpoint) {
+    applySetpoint(setpoint.getElevatorHeight());
     currentSetpointEnum = setpoint;    
   }
 
@@ -251,7 +245,7 @@ public class Elevator extends WafflesMechanism {
    * Get the last defined setpoint the elevator was set to
    * @return
    */
-  public ElevatorLevel getElevatorSetpointEnum(){
+  public SuperstructureState getElevatorSetpointEnum(){
     return currentSetpointEnum;
   }
 
@@ -352,7 +346,7 @@ public class Elevator extends WafflesMechanism {
     potentialCollisionPrediction = predictedPotentialCollision(setpoint);
     
     // Check if pivot is in safe position
-    boolean pivotSafe = RobotContainer.pivotSubsystem.getPivotPosition() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE;
+    boolean pivotSafe = RobotContainer.superstructure.pivot.getPivotPosition() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE;
                         // RobotContainer.manipulatorSubsystem.getPivotSetpoint() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE;
 
     // If pivot is safe, no collision possible

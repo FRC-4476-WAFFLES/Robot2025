@@ -16,7 +16,7 @@ public class ManualElevatorControl extends Command {
   /** Creates a new ManualElevatorControl. */
   public ManualElevatorControl() {
     // Use addRequirements() here to declare subsystem dependencies.
-    elevatorSubsystem = RobotContainer.elevatorSubsystem;
+    elevatorSubsystem = RobotContainer.superstructure.elevator;
     addRequirements(elevatorSubsystem);
   }
 

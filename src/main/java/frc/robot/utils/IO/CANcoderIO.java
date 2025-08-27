@@ -11,7 +11,6 @@ import com.ctre.phoenix6.hardware.CANcoder;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import frc.robot.data.Constants.CodeConstants;
 import frc.robot.utils.PhoenixHelpers;
 
 /** A shim on top of CANcoders which optimizes their CAN usage automatically */

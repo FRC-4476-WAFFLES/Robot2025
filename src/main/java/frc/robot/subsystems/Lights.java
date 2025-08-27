@@ -34,6 +34,7 @@ import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.data.Constants.GroundPivotConstants.GroundPivotPosition;
 import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
+import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 
 public class Lights extends SubsystemBase {
   /*Constants */
@@ -492,7 +493,7 @@ public class Lights extends SubsystemBase {
     }
 
     // Add pivot position indicator
-    double pivotPosition = RobotContainer.pivotSubsystem.getPivotPosition();
+    double pivotPosition = RobotContainer.superstructure.pivot.getPivotPosition();
     if (Math.abs(pivotPosition) <= 2.0) { // Within 2 degrees of zero
       setLEDRange(2, 3, LightColours.BLUE);
     } else {
@@ -500,7 +501,7 @@ public class Lights extends SubsystemBase {
     }
 
     // Add elevator position indicator 
-    double elevatorPosition = RobotContainer.elevatorSubsystem.getElevatorPositionMeters();
+    double elevatorPosition = RobotContainer.superstructure.elevator.getElevatorPositionMeters();
     if (Math.abs(elevatorPosition) <= 0.02) { // Within 2cm of zero
       setLEDRange(3, 4, LightColours.CYAN);
     } else {
@@ -555,7 +556,7 @@ public class Lights extends SubsystemBase {
       return;
     }
 
-    ScoringLevel scoringLevel = RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel();
+    SuperstructureState scoringLevel = RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel();
     boolean isRightSide = RobotContainer.dynamicPathingSubsystem.getCoralScoringSide();
     
     switch (scoringLevel) {
@@ -592,7 +593,7 @@ public class Lights extends SubsystemBase {
    * Updates elevator side lights based on current elevator height setpoint in manual mode
    */
   private void handleManualElevatorLights() {
-    ElevatorLevel elevatorLevel =  RobotContainer.elevatorSubsystem.getElevatorSetpointEnum();
+    SuperstructureState elevatorLevel =  RobotContainer.superstructure.elevator.getElevatorSetpointEnum();
     boolean hasCoralLoaded = RobotContainer.intakeSubsystem.isCoralLoaded();
     setElevatorLevelPattern(elevatorLevel, hasCoralLoaded);
   }
@@ -600,7 +601,7 @@ public class Lights extends SubsystemBase {
   /*
    * Helper methods for elevator LEDs 
    */
-  private void setElevatorLevelPattern(ElevatorLevel level, boolean isCoralLoaded) {
+  private void setElevatorLevelPattern(SuperstructureState level, boolean isCoralLoaded) {
     LedRange leftRange = null;
     LedRange rightRange = null;
     LightColours color = isCoralLoaded ? LightColours.WHITE : LightColours.DARKGREEN;

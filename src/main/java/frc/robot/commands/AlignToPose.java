@@ -207,7 +207,7 @@ public class AlignToPose extends Command {
     goalPose = goalPoseSupplier.get();
 
     // Update max acceleration based on elevator height
-    double maxAcceleration = MathUtil.interpolate(maxAccelerationElevatorDown, maxAccelerationElevatorUp, RobotContainer.elevatorSubsystem.getElevatorExtendedPercent());
+    double maxAcceleration = MathUtil.interpolate(maxAccelerationElevatorDown, maxAccelerationElevatorUp, RobotContainer.superstructure.elevator.getElevatorExtendedPercent());
     approachPidController.setConstraints(new Constraints(maxVelocity, maxAcceleration)); // Inefficient reallocation :/
     maxAccelerationPublisher.set(maxAcceleration);
 

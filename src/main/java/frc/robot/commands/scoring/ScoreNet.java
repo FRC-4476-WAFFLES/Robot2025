@@ -13,11 +13,9 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.commands.DriveTeleop;
-import frc.robot.commands.superstructure.ApplyScoringSetpoint;
-import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
-import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
+import frc.robot.commands.superstructure.ApplySuperstructureState;
 import frc.robot.data.Constants.ScoringConstants;
-import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
+import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 
 /** Factory for algae toss command */
 public class ScoreNet {
@@ -38,19 +36,18 @@ public class ScoreNet {
             Commands.sequence(
                 // Run intake in during NET_PREP position
                 Commands.parallel(
-                    new ApplyScoringSetpoint(ScoringLevel.NET_PREP)
+                    new ApplySuperstructureState(SuperstructureState.NET_PREP)
                 ),
-                Commands.runOnce(() -> RobotContainer.pivotSubsystem.setIsThrowingAlgae(true)),
+                Commands.runOnce(() -> RobotContainer.superstructure.pivot.setIsThrowingAlgae(true)),
                 Commands.waitSeconds(0.2),
                 algaeToss()
             ),
             // Alignment
             alignCommand
         ).finallyDo(() -> {
-            RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
-            RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
+            RobotContainer.superstructure.applySuperstructureState(SuperstructureState.ZERO);
 
-            RobotContainer.pivotSubsystem.setIsThrowingAlgae(false);
+            RobotContainer.superstructure.pivot.setIsThrowingAlgae(false);
             RobotContainer.intakeSubsystem.setIntakeSpeed(0); // Ensure intake is stopped
             RobotContainer.intakeSubsystem.setDutyCycle(0);
         });
@@ -65,11 +62,11 @@ public class ScoreNet {
             Commands.waitUntil(Controls.doNotScore.negate()),
             Commands.runOnce(() -> RobotContainer.intakeSubsystem.setIntakeSpeed(0)),
             Commands.parallel(
-                new ApplyScoringSetpoint(ScoringLevel.NET),
+                new ApplySuperstructureState(SuperstructureState.NET),
                 // Release at the same point
                 Commands.sequence(
                     Commands.waitUntil(() ->   
-                        RobotContainer.pivotSubsystem.getPivotPosition() <= ScoringConstants.ALGAE_TOSS_PIVOT_ANGLE
+                        RobotContainer.superstructure.pivot.getPivotPosition() <= ScoringConstants.ALGAE_TOSS_PIVOT_ANGLE
                     ),
                     Commands.runOnce(() -> {RobotContainer.intakeSubsystem.setDutyCycle(-1);}),
                     Commands.waitSeconds(0.4)

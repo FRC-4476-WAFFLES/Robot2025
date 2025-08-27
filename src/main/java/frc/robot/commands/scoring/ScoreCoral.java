@@ -22,11 +22,11 @@ import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.commands.AlignToPose;
 import frc.robot.commands.intake.CoralOutake;
+import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.ScoringConstants;
-import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.data.Constants.ScoringConstants.CoralScoringParameters;
-import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
 import frc.robot.subsystems.DynamicPathing;
+import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 
 public class ScoreCoral extends SequentialCommandGroup {
   public static final double PIVOT_MIN_ANGLE_L4 = 24; // Avoids super early releases
@@ -58,9 +58,9 @@ public class ScoreCoral extends SequentialCommandGroup {
 
     // Pick the parameter set for the current level
     CoralScoringParameters chosenParameters;
-    if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4) {
+    if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == SuperstructureState.L4) {
       chosenParameters = ScoringConstants.L4Params;
-    } else if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L3) {
+    } else if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == SuperstructureState.L3) {
       chosenParameters = ScoringConstants.L3Params;
     } else {
       chosenParameters = ScoringConstants.L2Params;
@@ -83,8 +83,8 @@ public class ScoreCoral extends SequentialCommandGroup {
 
       // Only for L4
       boolean pivotValidL4 = true;
-      if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4) {
-        pivotValidL4 = Math.abs(RobotContainer.pivotSubsystem.getPivotPosition() - PivotPosition.L4.getDegrees()) < PIVOT_MIN_ANGLE_L4; 
+      if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == SuperstructureState.L4) {
+        pivotValidL4 = Math.abs(RobotContainer.superstructure.pivot.getPivotPosition() - SuperstructureState.L4.getPivotAngle()) < PIVOT_MIN_ANGLE_L4; 
       }
 
       return poseValid && velocityValid && pivotValidL4;
@@ -129,12 +129,12 @@ public class ScoreCoral extends SequentialCommandGroup {
    */
   public static Command scoreCoralWithPath(Command driveCommand, Pose2d finalAlignPose, double maxSpeed) {
     return new ScoreCoral(driveCommand, finalAlignPose, maxSpeed).finallyDo(() -> {
-      if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == ScoringLevel.L4) {
-        RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.ZERO);
+      if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == SuperstructureState.L4) {
+        RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.ZERO);
         // Do not lower elevator after L4 score
       } else {
-        RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
-        // RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
+        RobotContainer.superstructure.pivot.applySetpoint(ManipulatorConstants.PIVOT_CLEARANCE_POSITION);
+        // RobotContainer.superstructureSubsystem.elevator.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
       }
     });
   }
@@ -193,7 +193,7 @@ public class ScoreCoral extends SequentialCommandGroup {
    * @param rightSide scoring on the right or left side of the reef
    * @return The command to score coral
    */
-  public static Command scoreCoralWithSettings(ScoringLevel level, boolean rightSide) {
+  public static Command scoreCoralWithSettings(SuperstructureState level, boolean rightSide) {
     if (!RobotContainer.intakeSubsystem.isCoralLoaded()) {
       return new InstantCommand();
     }

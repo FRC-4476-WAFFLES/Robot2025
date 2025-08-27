@@ -25,8 +25,8 @@ import frc.robot.data.Constants.CANIds;
 import frc.robot.data.Constants.ElevatorConstants;
 import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.PhysicalConstants;
-import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
 import frc.robot.subsystems.superstructure.Elevator.CollisionType;
+import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 import frc.robot.utils.PhoenixHelpers;
 import frc.robot.utils.IO.CANcoderIO;
 import frc.robot.utils.IO.TalonFXIO;
@@ -95,7 +95,7 @@ public class Pivot extends WafflesMechanism {
         configurePivotMotor();
 
         // Initialize position
-        setPivotPosition(PivotPosition.ZERO);
+        applySetpoint(SuperstructureState.ZERO);
 
         zeroingDebounceTrigger = new Trigger(() -> {
             return pivot.signals().torqueCurrent().getValueAsDouble() < -ManipulatorConstants.PIVOT_CURRENT_THRESHOLD;     
@@ -222,8 +222,8 @@ public class Pivot extends WafflesMechanism {
      * Sets the target angle of the pivot mechanism
      * @param setpoint A PivotPosition enum
      */
-    public void setPivotPosition(PivotPosition setpoint) {
-        applySetpoint(setpoint.getDegrees());
+    public void applySetpoint(SuperstructureState setpoint) {
+        applySetpoint(setpoint.getPivotAngle());
     }
 
     /**
@@ -256,7 +256,7 @@ public class Pivot extends WafflesMechanism {
     /*             */
 
     private double elevatorZeroingConstraint() {
-        return RobotContainer.elevatorSubsystem.isZeroing() ? PivotPosition.CLEARANCE_POSITION.getDegrees() : setpoint;
+        return RobotContainer.superstructure.elevator.isZeroing() ? ManipulatorConstants.PIVOT_CLEARANCE_POSITION : setpoint;
     }
 
     private double mechanismLimitsConstraint() {
@@ -266,17 +266,17 @@ public class Pivot extends WafflesMechanism {
     private double algaeConstraint() {
         if (isInAlgaeDangerZone() &&
             RobotContainer.intakeSubsystem.isAlgaeLoaded() && 
-            setpoint < PivotPosition.CLEARANCE_POSITION_ALGAE.getDegrees()
+            setpoint < ManipulatorConstants.PIVOT_CLEARANCE_POSITION_ALGAE
         ) {
             // if we have an algae, we can't fully retract when we are below the crossbar of the elevator
-            return PivotPosition.CLEARANCE_POSITION_ALGAE.getDegrees();
+            return ManipulatorConstants.PIVOT_CLEARANCE_POSITION_ALGAE;
         }
 
         return setpoint;
     }
 
     private double collisionConstraint() {
-        CollisionType collisionPrediction = RobotContainer.elevatorSubsystem.getCurrentCollisionPotential();
+        CollisionType collisionPrediction = RobotContainer.superstructure.elevator.getCurrentCollisionPotential();
         
         if (collisionPrediction == CollisionType.NONE || setpoint > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE) {
             // Check for bumper collision, and limit angle if so
@@ -290,17 +290,17 @@ public class Pivot extends WafflesMechanism {
         }
 
         // Not safe in some way, move pivot out of the way
-        return PivotPosition.CLEARANCE_POSITION.getDegrees();
+        return ManipulatorConstants.PIVOT_CLEARANCE_POSITION;
     }
 
     public boolean isInBumperDangerZone() {
-        return RobotContainer.elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT ||
-            RobotContainer.elevatorSubsystem.getSetpoint() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT;
+        return RobotContainer.superstructure.elevator.getElevatorPositionMeters() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT ||
+            RobotContainer.superstructure.elevator.getSetpoint() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT;
     }
 
     public boolean isInAlgaeDangerZone() {
-        return RobotContainer.elevatorSubsystem.getElevatorPositionMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER ||
-            RobotContainer.elevatorSubsystem.getSetpoint() <= ElevatorConstants.COLLISION_ZONE_UPPER;
+        return RobotContainer.superstructure.elevator.getElevatorPositionMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER ||
+            RobotContainer.superstructure.elevator.getSetpoint() <= ElevatorConstants.COLLISION_ZONE_UPPER;
     }
 
     /*             */

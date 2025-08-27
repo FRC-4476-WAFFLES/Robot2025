@@ -5,14 +5,11 @@
 package frc.robot.utils.lib;
 
 import java.util.HashMap;
-import java.util.function.Supplier;
 
-import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
-import edu.wpi.first.units.Unit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.data.Constants.CodeConstants;
 import frc.robot.utils.NetworkUser;

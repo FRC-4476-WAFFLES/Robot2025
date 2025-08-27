@@ -36,12 +36,10 @@ import frc.robot.commands.intake.CoralIntake;
 import frc.robot.commands.scoring.PickupAlgae;
 import frc.robot.commands.scoring.ScoreCoral;
 import frc.robot.commands.scoring.ScoreNet;
-import frc.robot.commands.superstructure.ApplyScoringSetpoint;
-import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
-import frc.robot.data.Constants.ManipulatorConstants.PivotPosition;
+import frc.robot.commands.superstructure.ApplySuperstructureState;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.Constants.ScoringConstants;
-import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
+import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 import frc.robot.utils.WafflesUtilities;
 
 /**
@@ -113,8 +111,8 @@ public class DynamicPathing extends SubsystemBase {
     // All scoring commands require these subsystems
     public static final HashSet<Subsystem> actionCommandRequirements = new HashSet<>(Arrays.asList(
         RobotContainer.driveSubsystem, 
-        RobotContainer.pivotSubsystem, 
-        RobotContainer.elevatorSubsystem, 
+        RobotContainer.superstructure.pivot, 
+        RobotContainer.superstructure.elevator, 
         RobotContainer.intakeSubsystem
     ));
 
@@ -124,7 +122,7 @@ public class DynamicPathing extends SubsystemBase {
     private Rotation2d currentClosestReefAngle = Rotation2d.kZero;
 
     // Only used for coral scoring, level can be determined automatically in every other situation
-    private ScoringLevel coralScoringLevel = ScoringLevel.L3;
+    private SuperstructureState coralScoringLevel = SuperstructureState.L3;
     private DynamicPathingSituation currentPathingSituation = DynamicPathingSituation.NONE;
     
     private boolean isRunningAction = false;
@@ -292,11 +290,11 @@ public class DynamicPathing extends SubsystemBase {
 
                     cmd = new ParallelCommandGroup(
                         new AlignToPose(processorScoringPose),
-                        new ApplyScoringSetpoint(ScoringLevel.PROCESSOR),
+                        new ApplySuperstructureState(SuperstructureState.PROCESSOR),
                         new AlgaeOutake()
                     ).finallyDo(() -> {
-                        RobotContainer.elevatorSubsystem.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
-                        // RobotContainer.pivotSubsystem.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
+                        RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.ZERO);
+                        // RobotContainer.superstructureSubsystem.pivot.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
                     });
                     
                 }
@@ -312,7 +310,7 @@ public class DynamicPathing extends SubsystemBase {
                             Controls::getDriveX, false,
                             () -> humanPickupRotation, true
                         ),
-                        new ApplyScoringSetpoint(ScoringLevel.CORAL_INTAKE)
+                        new ApplySuperstructureState(SuperstructureState.CORAL_INTAKE)
                     ).finallyDo(() -> {
                         if (!RobotContainer.intakeSubsystem.isCoralLoaded()) {
                             // Keep running intake for 5 seconds after ending if no coral detected
@@ -375,13 +373,13 @@ public class DynamicPathing extends SubsystemBase {
      * Sets the desired coral scoring level
      * @param level the desired scoring level
      */
-    public void setCoralScoringLevel(ScoringLevel level) {
+    public void setCoralScoringLevel(SuperstructureState level) {
         if (level == coralScoringLevel) {
             return;
         }
 
         // If switching to L1 from something else, or from L1 to something else while pathing, regenerate
-        if (isPathing && currentPathingSituation == DynamicPathingSituation.REEF_CORAL && (level == ScoringLevel.L1 || coralScoringLevel == ScoringLevel.L1)) {
+        if (isPathing && currentPathingSituation == DynamicPathingSituation.REEF_CORAL && (level == SuperstructureState.L1 || coralScoringLevel == SuperstructureState.L1)) {
             regenerateCurrentCoralPath();
             //System.out.println("Regenerating path to go to L1");
         }
@@ -394,7 +392,7 @@ public class DynamicPathing extends SubsystemBase {
      * Gets the coral scoring level set by the operator
      * @return a ScoringLevel enum
      */
-    public ScoringLevel getCoralScoringLevel() {
+    public SuperstructureState getCoralScoringLevel() {
         return coralScoringLevel;
     }
 
@@ -439,11 +437,11 @@ public class DynamicPathing extends SubsystemBase {
      * @return The coordinates the robot can score from
      */
     public Pose2d getNearestCoralScoringLocation() {
-        if (coralScoringLevel == ScoringLevel.L1) {
+        if (coralScoringLevel == SuperstructureState.L1) {
             return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), coralScoringRightSide, true, REEF_SCORING_POSITION_OFFSET_L1);
         }
 
-        if (coralScoringLevel == ScoringLevel.L4) {
+        if (coralScoringLevel == SuperstructureState.L4) {
             return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), coralScoringRightSide, false, REEF_SCORING_POSITION_OFFSET_L4);
         }
         return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), coralScoringRightSide, false, REEF_SCORING_POSITION_OFFSET);
@@ -542,9 +540,9 @@ public class DynamicPathing extends SubsystemBase {
     /**
      * Gets the height of the algea on a given side of the reef, based on robot pose 
      * @param robotPose the field centric pose of the robot
-     * @return A ScoringLevel for the height of the algea target
+     * @return A SuperStructureState for the height of the algea target
      */
-    public static ScoringLevel getAlgeaScoringLevel(Pose2d robotPose) {
+    public static SuperstructureState getAlgeaScoringLevel(Pose2d robotPose) {
         Pose2d pose = WafflesUtilities.FlipIfRedAlliance(robotPose);
 
 
@@ -557,9 +555,9 @@ public class DynamicPathing extends SubsystemBase {
         int hexagonFace = (int)(angle / 60.0f);
         
         if (hexagonFace % 2 == 0) {
-            return ScoringLevel.ALGAE_L1;
+            return SuperstructureState.ALGAE_L1;
         } else {
-            return ScoringLevel.ALGAE_L2;
+            return SuperstructureState.ALGAE_L2;
         }
     }
 
