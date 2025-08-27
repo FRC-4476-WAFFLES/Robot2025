@@ -25,14 +25,16 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.ResetGyroHeading;
+import frc.robot.commands.GroundIntake.GroundIntakeCommands;
 import frc.robot.commands.intake.AlgaeOutake;
 import frc.robot.commands.intake.AutoIntake;
 import frc.robot.commands.intake.AxisIntakeControl;
 import frc.robot.commands.intake.CoralIntake;
 import frc.robot.commands.scoring.ScoreCoral;
 import frc.robot.commands.scoring.ScoreNet;
-import frc.robot.commands.shark.SharkCommands;
-import frc.robot.commands.superstructure.ApplySuperstructureState;
+import frc.robot.commands.superstructure.ApplyScoringSetpoint;
+import frc.robot.commands.superstructure.SetElevatorPos;
+import frc.robot.commands.superstructure.SetPivotPos;
 import frc.robot.commands.superstructure.SuperstructureControl;
 import frc.robot.commands.superstructure.ZeroMechanisms;
 import frc.robot.commands.test.TestDriveAuto;
@@ -45,8 +47,8 @@ import frc.robot.subsystems.DynamicPathing;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Lights;
 import frc.robot.subsystems.MechanismPoses;
-import frc.robot.subsystems.SharkIntake;
-import frc.robot.subsystems.SharkPivot;
+import frc.robot.subsystems.GroundIntake;
+import frc.robot.subsystems.GroundPivot;
 import frc.robot.subsystems.Telemetry;
 import frc.robot.subsystems.superstructure.Elevator;
 import frc.robot.subsystems.superstructure.Pivot;
@@ -75,8 +77,8 @@ public class RobotContainer {
   public static final Superstructure superstructure = new Superstructure(); // Contains two other subsystems
   public static final Intake intakeSubsystem = new Intake();
   public static final Lights lightsSubsystem = new Lights();
-  public static final SharkIntake sharkIntake = new SharkIntake();
-  public static final SharkPivot sharkPivot = new SharkPivot();
+  public static final GroundIntake groundIntake = new GroundIntake();
+  public static final GroundPivot groundPivot = new GroundPivot();
 
   /* Software Subsystems */
   /* Do not control harware, but have state and or periodic methods */
@@ -136,7 +138,7 @@ public class RobotContainer {
     Trigger inOverrideMode = new Trigger(() -> isOperatorOverride);
 
     Trigger runningL1Intake = new Trigger(() -> isRunningL1Intake);
-    Trigger sharkCoralLoaded = new Trigger(() -> sharkIntake.isCoralLoaded());
+    Trigger groundIntakeCoralLoaded = new Trigger(() -> groundIntake.isCoralLoaded());
 
     // Toggle operator override
     Controls.operatorController.start().onTrue(
@@ -263,16 +265,16 @@ public class RobotContainer {
     Controls.rightJoystick.button(4).onTrue(
       Commands.either(
         Commands.runOnce(() -> RobotContainer.isRunningL1Intake = !RobotContainer.isRunningL1Intake), 
-        SharkCommands.getOutakeCommand().asProxy(), 
-        () -> !sharkIntake.isCoralLoaded()
+        GroundIntakeCommands.getOutakeCommand().asProxy(), 
+        () -> !groundIntake.isCoralLoaded()
       )
     );
 
     // Run intake while intake should be running lmao
-    runningL1Intake.whileTrue(SharkCommands.getIntakeCommand());
+    runningL1Intake.whileTrue(GroundIntakeCommands.getIntakeCommand());
     
     // Heading lock for L1
-    isHeadingLockedToL1 = sharkCoralLoaded.and(() -> 
+    isHeadingLockedToL1 = groundIntakeCoralLoaded.and(() -> 
       DynamicPathing.isRobotInRangeOfReefL1() && 
       dynamicPathingSubsystem.notRunningAction.getAsBoolean() && 
       Controls.getDriveRotationRaw() < ScoringConstants.L1_HEADING_LOCK_RIPOFF_VALUE &&

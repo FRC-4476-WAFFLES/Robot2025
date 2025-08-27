@@ -30,7 +30,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
-import frc.robot.data.Constants.SharkPivotConstants.SharkPivotPosition;
+import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
+import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
+import frc.robot.data.Constants.GroundPivotConstants.GroundPivotPosition;
 import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 
@@ -542,12 +544,12 @@ public class Lights extends SubsystemBase {
       setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.ORANGE, LightColours.BLACK, true);
       return; 
     }
-    if (RobotContainer.sharkIntake.isCoralLoaded()) {
+    if (RobotContainer.groundIntake.isCoralLoaded()) {
       setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.GREEN, LightColours.BLACK, false);
       setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.GREEN, LightColours.BLACK, false);
       return;
     } 
-    if (RobotContainer.sharkPivot.getSharkSetpoint() > SharkPivotPosition.L1.getDegrees()) {
+    if (RobotContainer.groundPivot.getGroundPivotSetpoint() > GroundPivotPosition.L1.getDegrees()) {
       // Flash green if intaking
       setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.GREEN, LightColours.BLACK, true);
       setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.GREEN, LightColours.BLACK, true);
