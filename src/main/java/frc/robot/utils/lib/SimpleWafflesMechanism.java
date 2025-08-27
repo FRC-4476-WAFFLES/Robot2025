@@ -4,8 +4,6 @@
 
 package frc.robot.utils.lib;
 
-import java.util.HashMap;
-
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -17,14 +15,12 @@ import frc.robot.utils.SubsystemNetworkManager;
  * Provides shared subsystem boilerplate.
  * Just offers a networktables implementation
  */
-public class BasicWafflesMechanism extends SubsystemBase implements NetworkUser {
-  private final HashMap<String, Boolean> appliedConstraints = new HashMap<String, Boolean>();
-
+public class SimpleWafflesMechanism extends SubsystemBase implements NetworkUser {
   protected final NetworkTableInstance inst = NetworkTableInstance.getDefault();
   protected final NetworkTable networkTable = inst.getTable(this.getClass().getSimpleName());
 
   /** Creates a new BasicWafflesMechanism. */
-  public BasicWafflesMechanism() {
+  public SimpleWafflesMechanism() {
     SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
   }
 
