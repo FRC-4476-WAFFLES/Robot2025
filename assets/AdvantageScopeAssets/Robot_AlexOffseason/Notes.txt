@@ -1,0 +1,4 @@
+0 is Manipulator
+1 is Ground Intake
+2 is First Stage
+3 is Carriage

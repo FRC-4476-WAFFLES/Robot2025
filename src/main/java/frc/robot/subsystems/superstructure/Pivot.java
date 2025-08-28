@@ -106,7 +106,7 @@ public class Pivot extends WafflesMechanism {
         }).debounce(ManipulatorConstants.ZERO_DEBOUNCE_TIME);
 
         if (RobotBase.isSimulation()) {
-            pivotSim = new SecondOrderSim(1.5, 1, 0, 0);
+            pivotSim = new SecondOrderSim(2.5, 1, 0, 0);
         }
     }
 
