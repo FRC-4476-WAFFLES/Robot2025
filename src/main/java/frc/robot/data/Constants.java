@@ -344,7 +344,7 @@ public final class Constants {
     // Predefined positions for the ground pivot (in degrees)
     public enum GroundPivotPosition {
       STOWED(0.0),
-      STASH(0.0),
+      HANDOFF(0.0),
       DEPLOYED(138.0),
       L1(27);
 

@@ -58,17 +58,18 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
                 groundIntake.setGroundIntakeSetpoint(GroundIntakeState.OUTAKE);
                 groundPivot.applySetpoint(GroundPivotPosition.L1);
             case INTAKE_HANDOFF_STATE:
-            if (groundIntake.isCoralLeft() || groundIntake.isCoralRight() || groundIntake.isCoralMid()) {
-                groundPivot.applySetpoint(GroundPivotPosition.HANDOFF);
-                if(!groundIntake.isCoralLoaded()){
-                    groundIntake.setGroundIntakeSetpoint(GroundIntakeState.PREPARE_HANDOFF);
-                }else{
-                    currentState = GroundIntakeSuperstructureState.READY_HANDOFF_STATE;
+                if (groundIntake.isCoralLeft() || groundIntake.isCoralRight() || groundIntake.isCoralMid()) {
+                    groundPivot.applySetpoint(GroundPivotPosition.HANDOFF);
+                    if(groundIntake.isCoralLoaded()){
+                        
+                    }else{
+                        currentState = GroundIntakeSuperstructureState.READY_HANDOFF_STATE;
+                        groundIntake.setGroundIntakeSetpoint(GroundIntakeState.PREPARE_HANDOFF);
+                    }
+                } else {
+                    groundIntake.setGroundIntakeSetpoint(GroundIntakeState.INTAKE_TOP);
+                    groundPivot.applySetpoint(GroundPivotPosition.DEPLOYED);
                 }
-            } else {
-                groundIntake.setGroundIntakeSetpoint(GroundIntakeState.INTAKE_TOP);
-                groundPivot.applySetpoint(GroundPivotPosition.DEPLOYED);
-            }
             break;
             case READY_HANDOFF_STATE:
                 groundPivot.applySetpoint(GroundPivotPosition.HANDOFF);
