@@ -7,8 +7,10 @@ package frc.robot.subsystems;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.ctre.phoenix.led.Animation;
 import com.ctre.phoenix.led.CANdle;
@@ -35,55 +37,31 @@ import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 
 public class Lights extends SubsystemBase {
-  /*Constants */
   private static final int LED_COUNT = 186;
   private static final double DEFAULT_BLINK_RATE = 0.1;
-  private static final int FLOW_LENGTH = 32; // Length of the flowing section
+  private static final int FLOW_LENGTH = 32;
+  private static final double LED_UPDATE_RATE = 0.05; 
   
-  /* Hardware */
   private static final CANdle candle = new CANdle(Constants.CANIds.CANdle);
   
-  /* State */ 
   private Map<LedRange, LightColours> ledRangeColours = new EnumMap<>(LedRange.class);
-  private List<Map.Entry<LedRange, LightColours>> entriesList = new ArrayList<>(); // Allocated once here to avoid allocating in periodic
-  private int[][] ledColors;
-
+  private Map<LedRange, LightColours> lastAppliedColors = new EnumMap<>(LedRange.class);
+  private List<Map.Entry<LedRange, LightColours>> entriesList = new ArrayList<>();
+  
   private static final Timer blinkTimer = new Timer();
+  private static final Timer animationTimer = new Timer();
   private boolean isBlinkColour = true;
   private double blinkRate = DEFAULT_BLINK_RATE;
   
-  private int flowPosition = 8; // Start flow at LED 8
-  private boolean isCoralIntakeRunning = false; // Track when coral intake is running
+  private int flowPosition = 8;
+  private boolean isCoralIntakeRunning = false;
   
-  // Animation control variables
-  private boolean useRainbowAnimation = false; // When false, use the default yellow flow animation
-  // private int[] rainbowOffsets = new int[LED_COUNT]; // Stores color offset for each LED
-  private static final int[] RAINBOW_COLORS = {
-    255, 0, 0,     // Red
-    255, 127, 0,   // Orange
-    255, 255, 0,   // Yellow
-    127, 255, 0,   // Chartreuse
-    0, 255, 0,     // Green
-    0, 255, 127,   // Spring green
-    0, 255, 255,   // Cyan
-    0, 127, 255,   // Azure 
-    0, 0, 255,     // Blue
-    75, 0, 130,    // Indigo
-    143, 0, 255,   // Violet
-    255, 0, 127,   // Pink
-    255, 0, 0      // Red (repeated to make the cycle smooth)
-  };
-  private static final int RAINBOW_COLOR_COUNT = 12; // Number of distinct colors (excluding the repeated one)
-  private static final int RAINBOW_SEGMENTS = 200; // More segments = smoother gradient
-  private int rainbowPosition = 0; // Starting position for rainbow animation
-  private double wavePosition = 0.0; // Position for brightness wave effect
+  private int rainbowOffset = 0;
+  private boolean rainbowActive = false;
+  private Set<LedRange> rainbowRanges = new HashSet<>();
   
-  // Animation switching control
-  private static final Timer animationSwitchTimer = new Timer();
-  // private static final double ANIMATION_SWITCH_INTERVAL = 60.0; // Switch animations every 60 seconds
-  
-  // Pre-calculated smooth rainbow colors for performance
-  private int[][] smoothRainbowColors = new int[RAINBOW_SEGMENTS][3]; // [position][r,g,b]
+  private enum UpdateMode { STATIC, ANIMATED }
+  private Map<LedRange, UpdateMode> rangeUpdateModes = new EnumMap<>(LedRange.class);
 
   /**
    * Enum containing start and and indicies for various defined LED groups
@@ -215,69 +193,20 @@ public class Lights extends SubsystemBase {
 
     candle.configAllSettings(configAll, 1000);
 
-    // Explicitly disable all animations
     for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
       candle.clearAnimation(i);
     }
     candle.animate(null);
-
-    ledColors = new int[LED_COUNT][3];
     
-    // Pre-calculate smooth rainbow colors
-    precalculateRainbowColors();
+    animationTimer.reset();
+    animationTimer.start();
     
-    // Randomly select initial animation
-    useRainbowAnimation = Math.random() > 0.5;
-  }
-
-  /**
-   * Pre-calculate all the interpolated rainbow colors for performance
-   */
-  private void precalculateRainbowColors() {
-    for (int i = 0; i < RAINBOW_SEGMENTS; i++) {
-      float position = (float)i / RAINBOW_SEGMENTS * RAINBOW_COLOR_COUNT;
-      int colorIndex = (int)position;
-      float colorBlend = position - colorIndex;
-      
-      // Get the base and next colors from the RAINBOW_COLORS array
-      int r1 = RAINBOW_COLORS[colorIndex * 3];
-      int g1 = RAINBOW_COLORS[colorIndex * 3 + 1];
-      int b1 = RAINBOW_COLORS[colorIndex * 3 + 2];
-      
-      int nextColorIndex = (colorIndex + 1) % RAINBOW_COLOR_COUNT;
-      int r2 = RAINBOW_COLORS[nextColorIndex * 3];
-      int g2 = RAINBOW_COLORS[nextColorIndex * 3 + 1];
-      int b2 = RAINBOW_COLORS[nextColorIndex * 3 + 2];
-      
-      // Apply cubic interpolation for smoother transitions between colors
-      // This creates more natural-looking gradients than linear interpolation
-      float blend = smoothstep(colorBlend);
-      
-      // Linear interpolation between colors
-      int r = Math.round(r1 * (1 - blend) + r2 * blend);
-      int g = Math.round(g1 * (1 - blend) + g2 * blend);
-      int b = Math.round(b1 * (1 - blend) + b2 * blend);
-      
-      smoothRainbowColors[i][0] = r;
-      smoothRainbowColors[i][1] = g;
-      smoothRainbowColors[i][2] = b;
+    for (LedRange range : LedRange.values()) {
+      rangeUpdateModes.put(range, UpdateMode.STATIC);
     }
   }
-  
-  /**
-   * Helper method for smoother transitions between colors
-   * Implements a smoother interpolation curve than linear
-   */
-  private float smoothstep(float x) {
-    // Smoothstep formula: 3x^2 - 2x^3
-    // This creates a smooth S-curve transition that looks more natural
-    return x * x * (3 - 2 * x);
-  }
 
-  /**
-   * This method is called periodically by the CommandScheduler.
-   * It updates the LED animations based on the robot's state.
-   */
+
   @Override
   public void periodic() {
     if (RobotBase.isSimulation()) {
@@ -285,40 +214,33 @@ public class Lights extends SubsystemBase {
     }
 
     ledRangeColours.clear();
-    // setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
-    // setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
 
-    // Mutate LED colors based on robot state
     if (DriverStation.isEnabled()) {
       handleEnabledState();
     } else {
       handleDisabledState();
     }
 
-    // Update blink state for ranges that require blinking
     updateBlinkTimer();
-    // Apply the current desired LED colors
     applyLEDRanges();
   }
 
-  /**
-   * Updates all lights in the robot's enabled state.
-   * Mutates LED colors.
-   */
   private void handleEnabledState() {
-    // Make sure no animations are running
-    // clearHardwareAnimations();
-    
-    // Update elevator side lights
     if (!RobotContainer.isOperatorOverride) {
       handleAutomaticElevatorLights();
+      clearAllRainbow();
     } else {
       handleManualElevatorLights();
+      enableManualModeRainbow();
     }
     
-    // Update top bar of lights
     updatePathingIndicators();
     updateOverrideIndicators();
+    
+    if (rainbowActive && animationTimer.get() > LED_UPDATE_RATE) {
+      updateRainbow();
+      animationTimer.reset();
+    }
   }
 
   /**
@@ -341,136 +263,46 @@ public class Lights extends SubsystemBase {
     }
   }
 
-  /**
-   * Updates all lights in the robot's disabled state.
-   * Mutates LED colors.
-   */
   private void handleDisabledState() {
-    // Make sure no animations are running
     clearHardwareAnimations();
 
-    // First update status indicators
     updateDiagnosticIndicators();
     
-    // Update flow position
-    if (blinkTimer.get() > 0.05) { // Control flow speed
-      // Calculate and clear previous tail LED
-      int tailPos = flowPosition - FLOW_LENGTH;
-      if (tailPos < 8) {
-        tailPos = LED_COUNT - (8 - tailPos);
+    if (animationTimer.get() > LED_UPDATE_RATE) {
+      if (rainbowActive) {
+        updateRainbow();
+      } else {
+        updateFlowAnimation();
       }
-      if (tailPos >= 8 && tailPos < LED_COUNT) {
-        candle.setLEDs(0, 0, 0, 0, tailPos, 1);
-      }
-      
-      // Update position
-      flowPosition = (flowPosition + 1) % LED_COUNT;
-      if (flowPosition < 8) {
-        flowPosition = 8;
-      }
-      
-      // Set new head LED to full brightness
-      candle.setLEDs(LightColours.FLOW_COLOR.red, LightColours.FLOW_COLOR.green, LightColours.FLOW_COLOR.blue, 0, flowPosition, 1);
-      
-      blinkTimer.reset();
+      animationTimer.reset();
+    }
+  }
+  
+  private void updateFlowAnimation() {
+    int clearStart = flowPosition - FLOW_LENGTH;
+    if (clearStart < 8) {
+      clearStart = LED_COUNT - (8 - clearStart);
+    }
+    
+    flowPosition = (flowPosition + 2) % LED_COUNT;
+    if (flowPosition < 8) {
+      flowPosition = 8;
+    }
+    
+    int segmentLength = Math.min(FLOW_LENGTH, LED_COUNT - flowPosition);
+    if (segmentLength > 0) {
+      candle.setLEDs(LightColours.FLOW_COLOR.red, 
+                     LightColours.FLOW_COLOR.green, 
+                     LightColours.FLOW_COLOR.blue, 
+                     0, flowPosition, segmentLength);
+    }
+    
+    if (clearStart >= 8 && clearStart < LED_COUNT) {
+      int clearLength = Math.min(FLOW_LENGTH, LED_COUNT - clearStart);
+      candle.setLEDs(0, 0, 0, 0, clearStart, clearLength);
     }
   }
 
-  /**
-   * Handles the rainbow linear animation in disabled state
-   */
-  @SuppressWarnings("unused")
-  private void handleRainbowAnimation() {
-    if (blinkTimer.get() > 0.01) { // Slightly faster for smoother animation
-      // Update rainbow position (move colors down the strip)
-      rainbowPosition = (rainbowPosition + 1) % RAINBOW_SEGMENTS;
-      
-      // Update wave position for brightness effect
-      wavePosition += 0.07; // Slightly slower wave for a more subtle effect
-      if (wavePosition > 2 * Math.PI) {
-        wavePosition -= 2 * Math.PI;
-      }
-      
-      // Pre-calculate sine values for brightness wave at different phases
-      double[] brightnessValues = new double[16]; // Use a small lookup table to avoid calculating sine repeatedly
-      for (int i = 0; i < brightnessValues.length; i++) {
-        double phase = wavePosition + i * (2 * Math.PI / brightnessValues.length);
-        brightnessValues[i] = 0.6 + 0.4 * Math.sin(phase);
-      }
-      
-      // Apply rainbow colors with the shift - use smoothed colors
-      for (int i = 8; i < LED_COUNT; i++) {
-        int ledPosition = (i - 8) * 3; // Space out the colors more for a smoother gradient
-        int colorIndex = (rainbowPosition + ledPosition) % RAINBOW_SEGMENTS;
-        
-        // Get the color from our pre-calculated smooth rainbow array
-        int r = smoothRainbowColors[colorIndex][0];
-        int g = smoothRainbowColors[colorIndex][1];
-        int b = smoothRainbowColors[colorIndex][2];
-        
-        // Apply brightness wave effect from lookup table
-        int brightnessIndex = ((i - 8) * 2) % brightnessValues.length;
-        double brightness = brightnessValues[brightnessIndex];
-        
-        // Store values in our color array
-        ledColors[i][0] = (int)(r * brightness);
-        ledColors[i][1] = (int)(g * brightness);
-        ledColors[i][2] = (int)(b * brightness);
-      }
-      
-      // Now batch update LEDs by finding contiguous segments with similar colors
-      int startIdx = 8;
-      while (startIdx < LED_COUNT) {
-        int[] currentColor = ledColors[startIdx];
-        int count = 1;
-        int endIdx = startIdx + 1;
-        
-        // Find consecutive LEDs with identical colors for batching
-        // This reduces the number of CANdle API calls significantly
-        while (endIdx < LED_COUNT && 
-               ledColors[endIdx][0] == currentColor[0] &&
-               ledColors[endIdx][1] == currentColor[1] &&
-               ledColors[endIdx][2] == currentColor[2]) {
-          count++;
-          endIdx++;
-        }
-        
-        // If colors are not identical but very similar, still batch them
-        // This further reduces API calls while maintaining visual quality
-        if (count == 1) {
-          while (endIdx < LED_COUNT && 
-                 Math.abs(ledColors[endIdx][0] - currentColor[0]) <= 3 &&
-                 Math.abs(ledColors[endIdx][1] - currentColor[1]) <= 3 &&
-                 Math.abs(ledColors[endIdx][2] - currentColor[2]) <= 3) {
-            count++;
-            endIdx++;
-          }
-        }
-        
-        // Update this batch of LEDs with a single call
-        candle.setLEDs(currentColor[0], currentColor[1], currentColor[2], 0, startIdx, count);
-        startIdx = endIdx;
-      }
-      
-      blinkTimer.reset();
-    }
-  }
-
-  /**
-   * Switches to the other animation and resets the timer
-   */
-  @SuppressWarnings("unused")
-  private void switchAnimation() {
-    useRainbowAnimation = !useRainbowAnimation;
-    
-    // Reset positions when switching animations
-    rainbowPosition = 0;
-    flowPosition = 8;
-    wavePosition = 0.0;
-    
-    // Reset the timer for the next switch
-    animationSwitchTimer.reset();
-  }
 
   /**
    * Indicators used to perform systems check
@@ -602,7 +434,7 @@ public class Lights extends SubsystemBase {
   private void setElevatorLevelPattern(SuperstructureState level, boolean isCoralLoaded) {
     LedRange leftRange = null;
     LedRange rightRange = null;
-    LightColours color = isCoralLoaded ? LightColours.WHITE : LightColours.DARKGREEN;
+    LightColours color = isCoralLoaded ? LightColours.WHITE : LightColours.BLACK;
 
     switch (level) {
       case L1:
@@ -724,6 +556,8 @@ public class Lights extends SubsystemBase {
    * @param shouldBlink Whether the LED range should blink
    */
   public void setLEDRangeGroup(LedRange range, LightColours colour, LightColours blinkColour, boolean shouldBlink) {
+    rangeUpdateModes.put(range, shouldBlink ? UpdateMode.ANIMATED : UpdateMode.STATIC);
+    
     if(shouldBlink){
       if(isBlinkColour) {
         ledRangeColours.put(range, colour);
@@ -746,74 +580,34 @@ public class Lights extends SubsystemBase {
     }
   }
 
-  /**
-   * Applies chosen colors from ledRangeColours to the physical light hardware
-   */
   private void applyLEDRanges() {
     if (ledRangeColours.isEmpty()) {
-      return; // Don't update if there are no colors to set
+      return;
     }
 
-    // Initialize ledColors[] to default color
-    int[] defaultRGB = LightColours.BLACK.getRGBValues();
-    for (int i = 0; i < LED_COUNT; i++) {
-      ledColors[i][0] = defaultRGB[0];
-      ledColors[i][1] = defaultRGB[1];
-      ledColors[i][2] = defaultRGB[2];
-    }
-
-    // Convert ledRangeColours entries to a list for sorting
-    entriesList.clear();
-    entriesList.addAll(ledRangeColours.entrySet());
-
-    // Sort ranges from largest to smallest to give precedence to smaller ranges
-    entriesList.sort((entry1, entry2) -> {
-      int size1 = entry1.getKey().getEnd() - entry1.getKey().getStart();
-      int size2 = entry2.getKey().getEnd() - entry2.getKey().getStart();
-      return Integer.compare(size2, size1); // Largest size first
-    });
-
-    // Apply colors to ledColors[] array
-    for (Map.Entry<LedRange, LightColours> entry : entriesList) {
+    for (Map.Entry<LedRange, LightColours> entry : ledRangeColours.entrySet()) {
       LedRange range = entry.getKey();
-      LightColours colour = entry.getValue();
-      int[] rgb = colour.getRGBValues();
-      for (int i = range.getStart(); i < range.getEnd(); i++) {
-        if (i < LED_COUNT) { // Ensure we don't go out of bounds
-          ledColors[i][0] = rgb[0];
-          ledColors[i][1] = rgb[1];
-          ledColors[i][2] = rgb[2];
-        }
-      }
-    }
-
-    // Optimize LED updates by grouping contiguous colors
-    int idx = 0;
-    while (idx < LED_COUNT) {
-      int[] currentColor = ledColors[idx];
-      int startIdx = idx;
-      int count = 1;
-      idx++;
+      LightColours newColour = entry.getValue();
       
-      while (idx < LED_COUNT && Arrays.equals(ledColors[idx], currentColor)) {
-        count++;
-        idx++;
+      LightColours lastColour = lastAppliedColors.get(range);
+      UpdateMode updateMode = rangeUpdateModes.getOrDefault(range, UpdateMode.STATIC);
+      
+      if (updateMode == UpdateMode.STATIC && newColour.equals(lastColour)) {
+        continue;
       }
       
-      // Update the LEDs for this contiguous range
-      candle.setLEDs(currentColor[0], currentColor[1], currentColor[2], 0, startIdx, count);
+      candle.setLEDs(newColour.red, newColour.green, newColour.blue, 0, 
+                     range.getStart(), range.getEnd() - range.getStart());
+      
+      lastAppliedColors.put(range, newColour);
     }
   }
 
-  /**
-   * Clears all LEDs by setting them to black.
-   */
   public void clearAllLEDs() {
-    for (int i = 0; i < LED_COUNT; i++) {
-      ledColors[i] = LightColours.BLACK.getRGBValues();
-    }
+    candle.setLEDs(0, 0, 0, 0, 0, LED_COUNT);
     ledRangeColours.clear();
-    applyLEDRanges();
+    lastAppliedColors.clear();
+    clearAllRainbow();
   }
 
   /**
@@ -832,5 +626,82 @@ public class Lights extends SubsystemBase {
    */
   public void setCoralIntakeRunning(boolean running) {
     isCoralIntakeRunning = running;
+  }
+  
+  public void setRainbowMode(LedRange range, boolean enabled) {
+    if (enabled && range != null) {
+      rainbowRanges.add(range);
+      rangeUpdateModes.put(range, UpdateMode.ANIMATED);
+      rainbowActive = true;
+    } else if (range != null) {
+      rainbowRanges.remove(range);
+      rangeUpdateModes.put(range, UpdateMode.STATIC);
+    }
+    
+    if (rainbowRanges.isEmpty()) {
+      rainbowActive = false;
+    }
+  }
+  
+  public void celebrationMode() {
+    setRainbowMode(LedRange.MIDDLE_FULL, true);
+  }
+  
+  public void clearCelebrationMode() {
+    setRainbowMode(LedRange.MIDDLE_FULL, false);
+  }
+  
+  public void clearAllRainbow() {
+    for (LedRange range : new HashSet<>(rainbowRanges)) {
+      setRainbowMode(range, false);
+    }
+  }
+  
+  private void enableManualModeRainbow() {
+    SuperstructureState elevatorLevel = RobotContainer.superstructure.elevator.getElevatorSetpointEnum();
+    boolean hasCoralLoaded = RobotContainer.intakeSubsystem.isCoralLoaded();
+    
+    if (!hasCoralLoaded) {
+      switch (elevatorLevel) {
+        case L1:
+        case PROCESSOR:
+          setRainbowMode(LedRange.L1, true);
+          setRainbowMode(LedRange.R1, true);
+          break;
+        case L2:
+        case ALGAE_L1:
+          setRainbowMode(LedRange.L2, true);
+          setRainbowMode(LedRange.R2, true);
+          break;
+        case L3:
+        case ALGAE_L2:
+          setRainbowMode(LedRange.L3, true);
+          setRainbowMode(LedRange.R3, true);
+          break;
+        case L4:
+        case NET:
+          setRainbowMode(LedRange.LEFT_SIDE_FULL, true);
+          setRainbowMode(LedRange.RIGHT_SIDE_FULL, true);
+          break;
+        default:
+          setRainbowMode(null, false);
+          break;
+      }
+    }
+  }
+  
+  private void updateRainbow() {
+    if (!rainbowActive || rainbowRanges.isEmpty()) return;
+    
+    rainbowOffset = (rainbowOffset + 15) % 255;
+    
+    int r = (int)(127 + 127 * Math.sin(rainbowOffset * 0.024));
+    int g = (int)(127 + 127 * Math.sin(rainbowOffset * 0.024 + 2.094));
+    int b = (int)(127 + 127 * Math.sin(rainbowOffset * 0.024 + 4.188));
+    
+    for (LedRange range : rainbowRanges) {
+      candle.setLEDs(r, g, b, 0, range.getStart(), 
+                    range.getEnd() - range.getStart());
+    }
   }
 } 
