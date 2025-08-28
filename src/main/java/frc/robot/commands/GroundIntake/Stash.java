@@ -7,7 +7,7 @@ package frc.robot.commands.GroundIntake;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.GroundPivotConstants.GroundPivotPosition;
-import frc.robot.subsystems.GroundIntake.GroundIntakeState;
+import frc.robot.subsystems.GroundSuperstructure.GroundIntake.GroundIntakeState;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class Stash extends Command {

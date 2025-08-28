@@ -7,7 +7,7 @@ package frc.robot.commands.GroundIntake;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.GroundPivotConstants.GroundPivotPosition;
-import frc.robot.subsystems.GroundIntake.GroundIntakeState;
+import frc.robot.subsystems.GroundSuperstructure.GroundIntake.GroundIntakeState;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class L1Intake extends Command {
   /** Creates a new GroundIntakeLeft. */
@@ -26,13 +26,7 @@ public class L1Intake extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if(RobotContainer.groundIntake.isCoralLeft()){
-      RobotContainer.groundIntake.setGroundIntakeSetpoint(GroundIntakeState.SHIFT_RIGHT);
-    }else if(RobotContainer.groundIntake.isCoralRight()){
-        RobotContainer.groundIntake.setGroundIntakeSetpoint(GroundIntakeState.SHIFT_LEFT);
-    }else if(RobotContainer.groundIntake.isCoralMid()){
-        RobotContainer.groundIntake.setGroundIntakeSetpoint(GroundIntakeState.INTAKE_MID);
-    }
+    
   }
 
   // Called once the command ends or is interrupted.

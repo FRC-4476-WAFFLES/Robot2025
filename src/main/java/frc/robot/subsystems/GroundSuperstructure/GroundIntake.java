@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.GroundSuperstructure;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANrangeConfiguration;
@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.CodeConstants;
-import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.Constants.GroundIntakeConstants;
 import frc.robot.utils.NetworkUser;
@@ -28,6 +27,7 @@ import frc.robot.utils.PhoenixHelpers;
 import frc.robot.utils.SubsystemNetworkManager;
 import frc.robot.utils.IO.DeferredRefresher;
 import frc.robot.utils.IO.TalonFXIO;
+import frc.robot.utils.lib.SimpleWafflesMechanism;
 import frc.robot.utils.lib.WafflesMechanism;
 
 /**
@@ -35,7 +35,7 @@ import frc.robot.utils.lib.WafflesMechanism;
  * It controls:
  * - An intake motor for collecting game pieces
  */
-public class GroundIntake extends WafflesMechanism implements NetworkUser{
+public class GroundIntake extends SimpleWafflesMechanism {
     // Hardware Components
     private final TalonFXIO intakeLeft;
     private final TalonFXIO intakeRight;
@@ -47,6 +47,9 @@ public class GroundIntake extends WafflesMechanism implements NetworkUser{
     private double leftLaserDistance = 0;
     private double midLaserDistance = 0;
     private double rightLaserDistance = 0;
+
+
+
     // Deferred Refreshers
     private DeferredRefresher<Double> leftLaserCanRefresher = new DeferredRefresher<Double>(
         "Left Ground Intake LaserCAN", 
@@ -103,14 +106,12 @@ public class GroundIntake extends WafflesMechanism implements NetworkUser{
     private final MotionMagicVelocityVoltage intakeMidControlRequest = new MotionMagicVelocityVoltage(0);
     // State Variables
     public enum GroundIntakeState {
-        //TODO make actual states depending on what we want to do
         SHIFT_LEFT(0, 0,20),
-        INTAKE_MID(0, 0,20),
+        INTAKE_TOP(0, 0,20),
         SHIFT_RIGHT(0, 0,20),
-        STASH(0, 0,20),
-        FEED(0, 0,20),
+        PREPARE_HANDOFF(0,0,0),
         REST(0, 0,0),
-        OUTAKE(150,0.33,0);
+        OUTAKE(10,-10,0);
         
         private final double rightSpeed;
         private final double leftSpeed;
@@ -133,23 +134,19 @@ public class GroundIntake extends WafflesMechanism implements NetworkUser{
             return topSpeed;
         }
     }
-    private GroundIntakeState currentState = GroundIntakeState.INTAKE_MID;
+    private GroundIntakeState currentState = GroundIntakeState.REST;
     private boolean coralInRange=false;
 
     // Network Tables
-    private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    private final NetworkTable intakeTable = inst.getTable("GroundIntake");
-    private final BooleanPublisher coralLoadedNT = intakeTable.getBooleanTopic("Coral Loaded").publish();
-    private final DoublePublisher rightIntakeSetpointNT = intakeTable.getDoubleTopic("Right Intake Setpoint").publish();
-    private final DoublePublisher leftIntakeSetpointNT = intakeTable.getDoubleTopic("Left Intake Setpoint").publish();
-    private final DoublePublisher midIntakeSetpointNT = intakeTable.getDoubleTopic("Middle Intake Setpoint").publish();
-    private final DoublePublisher rightIntakeVelocityNT = intakeTable.getDoubleTopic("Right Intake Velocity").publish();
-    private final DoublePublisher leftIntakeVelocityNT = intakeTable.getDoubleTopic("Left Intake Velocity").publish();
-    private final DoublePublisher midIntakeVelocityNT = intakeTable.getDoubleTopic("Middle Intake Velocity").publish();
+    private final BooleanPublisher coralLoadedNT = networkTable.getBooleanTopic("Coral Loaded").publish();
+    private final DoublePublisher rightIntakeSetpointNT = networkTable.getDoubleTopic("Right Intake Setpoint").publish();
+    private final DoublePublisher leftIntakeSetpointNT = networkTable.getDoubleTopic("Left Intake Setpoint").publish();
+    private final DoublePublisher midIntakeSetpointNT = networkTable.getDoubleTopic("Middle Intake Setpoint").publish();
+    private final DoublePublisher rightIntakeVelocityNT = networkTable.getDoubleTopic("Right Intake Velocity").publish();
+    private final DoublePublisher leftIntakeVelocityNT = networkTable.getDoubleTopic("Left Intake Velocity").publish();
+    private final DoublePublisher midIntakeVelocityNT = networkTable.getDoubleTopic("Middle Intake Velocity").publish();
     
     public GroundIntake() {
-        SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
-
         intakeRight = new TalonFXIO(Constants.CANIds.groundIntakeMotorRight);
         intakeLeft = new TalonFXIO(Constants.CANIds.groundIntakeMotorLeft);
         intakeMid = new TalonFXIO(Constants.CANIds.groundIntakeMotorMid);
@@ -235,9 +232,9 @@ public class GroundIntake extends WafflesMechanism implements NetworkUser{
    * Sets the target rotation of the ground intake.
    * @param setpoint Target rotation speed (GroundIntakeState enum)
    */
-  public void setGroundIntakeSetpoint(GroundIntakeState state) {
-    currentState = state;    
-  }
+    public void setGroundIntakeSetpoint(GroundIntakeState state) {
+        currentState = state;    
+    }
       /**
    * Get the last defined rotation setpoint the ground intake was set to
    * @return
@@ -299,10 +296,5 @@ public class GroundIntake extends WafflesMechanism implements NetworkUser{
         leftIntakeVelocityNT.set(intakeLeft.signals().velocity().getValueAsDouble());
         midIntakeVelocityNT.set(intakeMid.signals().velocity().getValueAsDouble());
         coralLoadedNT.set(isCoralLoaded());
-    }
-
-    @Override
-    public void initializeNetwork() {
-        // Network initialization if needed
     }
 }
