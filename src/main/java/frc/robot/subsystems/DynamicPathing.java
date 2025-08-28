@@ -808,7 +808,7 @@ public class DynamicPathing extends SubsystemBase {
             }
         }
         
-        var backOffPath = DynamicPathing.generateComplexPath(targetAlgaePose, null, safetyPose, 0.4);
+        var backOffPath = DynamicPathing.generateComplexPath(targetAlgaePose, null, safetyPose, 1.0);
         
         if (backOffPath.isPresent()) {
             // Generate final back off path
