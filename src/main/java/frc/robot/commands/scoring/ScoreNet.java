@@ -13,14 +13,14 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.commands.DriveTeleop;
+import frc.robot.commands.intake.AlgaeOutake;
 import frc.robot.commands.superstructure.ApplySuperstructureState;
-import frc.robot.data.Constants.ScoringConstants;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 
-/** Factory for algae toss command */
+/** Factory for algae placement command */
 public class ScoreNet {
 
-    public static Command getScoreNetCommand(double targetNetX, Supplier<Rotation2d> targetNetRotation, boolean doAlign) {
+    public static Command getScoreNetCommand(double targetNetX, Supplier<Rotation2d> targetNetRotation, boolean doAlign, boolean isFrontScoring) {
         Command alignCommand = new DriveTeleop(
             () -> targetNetX, true, // Just pid to setpoint should be () -> targetNetX
             Controls::getDriveX, false,
@@ -32,48 +32,17 @@ public class ScoreNet {
         }
 
         return Commands.deadline(
-            // Score sequence (Operator controlled)
             Commands.sequence(
-                // Run intake in during NET_PREP position
-                Commands.parallel(
-                    new ApplySuperstructureState(SuperstructureState.NET_PREP)
-                ),
-                Commands.runOnce(() -> RobotContainer.superstructure.pivot.setIsThrowingAlgae(true)),
-                Commands.waitSeconds(0.2),
-                algaeToss()
+                new ApplySuperstructureState(isFrontScoring ? SuperstructureState.NET_FRONT : SuperstructureState.NET_BACK),
+                Commands.waitUntil(Controls.doNotScore.negate()),
+                new AlgaeOutake()
             ),
-            // Alignment
             alignCommand
         ).finallyDo(() -> {
             RobotContainer.superstructure.applySuperstructureState(SuperstructureState.ZERO);
-
-            RobotContainer.superstructure.pivot.setIsThrowingAlgae(false);
-            RobotContainer.intakeSubsystem.setIntakeSpeed(0); // Ensure intake is stopped
+            RobotContainer.intakeSubsystem.setIntakeSpeed(0); 
             RobotContainer.intakeSubsystem.setDutyCycle(0);
         });
     }
 
-    /**
-     * The algae toss sequence
-     * @return A command
-     */
-    private static Command algaeToss() {
-        return Commands.sequence(
-            Commands.waitUntil(Controls.doNotScore.negate()),
-            Commands.runOnce(() -> RobotContainer.intakeSubsystem.setIntakeSpeed(0)),
-            Commands.parallel(
-                new ApplySuperstructureState(SuperstructureState.NET),
-                // Release at the same point
-                Commands.sequence(
-                    Commands.waitUntil(() ->   
-                        RobotContainer.superstructure.pivot.getPivotPosition() <= ScoringConstants.ALGAE_TOSS_PIVOT_ANGLE
-                    ),
-                    Commands.runOnce(() -> {RobotContainer.intakeSubsystem.setDutyCycle(-1);}),
-                    Commands.waitSeconds(0.4)
-                ).finallyDo(() -> {
-                    RobotContainer.intakeSubsystem.setIntakeSpeed(0);
-                })
-            )
-        );
-    }
 }

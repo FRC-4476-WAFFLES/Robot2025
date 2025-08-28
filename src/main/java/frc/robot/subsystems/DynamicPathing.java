@@ -98,7 +98,6 @@ public class DynamicPathing extends SubsystemBase {
 
     /* Net physical parameters */
     public static final double NET_LINE_X_BLUE = 7.815; // Meters
-    public static final Rotation2d NET_SCORING_ANGLE = Rotation2d.k180deg;
 
     /* Path following parameters */
     public static final double MAX_SPEED = 2.5f;
@@ -834,29 +833,19 @@ public class DynamicPathing extends SubsystemBase {
             return new InstantCommand();
         }
 
-        Rotation2d targetNetRotation = WafflesUtilities.FlipAngleIfRedAlliance(NET_SCORING_ANGLE);
-        Rotation2d netRotationLeft = targetNetRotation.plus(NET_TURN_AMOUNT);
-        Rotation2d netRotationRight = targetNetRotation.minus(NET_TURN_AMOUNT);
-        double targetNetX = WafflesUtilities.FlipXIfRedAlliance(NET_LINE_X_BLUE); 
-
-        return ScoreNet.getScoreNetCommand(targetNetX, () -> {   
-                Pose2d currentPose = RobotContainer.driveSubsystem.getRobotPose();
-                double Y = WafflesUtilities.FlipYIfRedAlliance(currentPose.getY());
-                if (Y < NET_TURN_LEFT_Y) {
-                    return netRotationLeft;
-                } else if (Y > NET_TURN_RIGHT_Y) {
-                    return netRotationRight;
-                }
-
-                double diffL = Math.abs(currentPose.getRotation().minus(netRotationLeft).getDegrees());
-                double diffR = Math.abs(currentPose.getRotation().minus(netRotationRight).getDegrees());
-                if (diffL < diffR) {
-                    return netRotationLeft;
-                }
-                return netRotationRight; 
-            },
-            true
+        Pose2d currentPose = RobotContainer.driveSubsystem.getRobotPose();
+        Rotation2d currentHeading = currentPose.getRotation();
+        
+        // Choose 0° or 180° based on which is closer
+        boolean isFrontScoring = Math.abs(currentHeading.getDegrees()) < 90;
+        
+        Rotation2d targetRotation = WafflesUtilities.FlipAngleIfRedAlliance(
+            isFrontScoring ? Rotation2d.kZero : Rotation2d.k180deg
         );
+        
+        double targetNetX = WafflesUtilities.FlipXIfRedAlliance(NET_LINE_X_BLUE);
+        
+        return ScoreNet.getScoreNetCommand(targetNetX, () -> targetRotation, true, isFrontScoring);
     }
 
     /**

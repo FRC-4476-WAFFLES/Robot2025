@@ -256,7 +256,7 @@ public class RobotContainer {
     );
 
     // Manual net toss
-    Controls.operatorController.povDown().whileTrue(Commands.defer(() -> ScoreNet.getScoreNetCommand(0, () -> Rotation2d.kZero, false), DynamicPathing.actionCommandRequirements).onlyIf(() -> RobotContainer.intakeSubsystem.isAlgaeLoaded()));
+    Controls.operatorController.povDown().whileTrue(Commands.defer(() -> ScoreNet.getScoreNetCommand(0, () -> Rotation2d.kZero, false, true), DynamicPathing.actionCommandRequirements).onlyIf(() -> RobotContainer.intakeSubsystem.isAlgaeLoaded()));
   
     // L1 Intake / Outtake
     // Controls.rightJoystick.button(4).onTrue(
@@ -425,7 +425,7 @@ public class RobotContainer {
       Commands.sequence(
         Commands.runOnce(() -> superstructure.elevator.applySetpoint(SuperstructureState.ALGAE_L2)),
         Commands.waitSeconds(0.6), // Goofy wait
-        Commands.runOnce(() -> superstructure.elevator.applySetpoint(SuperstructureState.NET_PREP))
+        Commands.runOnce(() -> superstructure.elevator.applySetpoint(SuperstructureState.NET_FRONT))
           .onlyIf(() -> ScoringConstants.USE_RISKY_NET_AUTO)
       ),
       Commands.runOnce(() -> superstructure.elevator.applySetpoint(SuperstructureState.ALGAE_L2))
