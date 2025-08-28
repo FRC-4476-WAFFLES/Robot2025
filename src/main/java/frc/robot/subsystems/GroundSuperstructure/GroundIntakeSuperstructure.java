@@ -24,7 +24,7 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
         INTAKE_HANDOFF_STATE,
         READY_HANDOFF_STATE,
         EXECUTE_HANDOFF_STATE,
-        READY_STATE,
+        STOWED,
         SPIT_OUT_STATE;
     }
     private GroundIntakeSuperstructureState currentState;
@@ -34,7 +34,6 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
             case INTAKE_L1_STATE:
                 if (groundIntake.isCoralLeft() || groundIntake.isCoralRight() || groundIntake.isCoralMid()) {
                     groundPivot.applySetpoint(GroundPivotPosition.L1);
-
                     if(!groundIntake.isCoralRight()){
                         groundIntake.setGroundIntakeSetpoint(GroundIntakeState.SHIFT_RIGHT);
                     }else if(!groundIntake.isCoralLeft()){
@@ -47,23 +46,29 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
                     groundIntake.setGroundIntakeSetpoint(GroundIntakeState.INTAKE_TOP);
                     groundPivot.applySetpoint(GroundPivotPosition.DEPLOYED);
                 }
-                
                 break;
+                
             case L1_READY:
                 groundPivot.applySetpoint(GroundPivotPosition.L1);
                 groundIntake.setGroundIntakeSetpoint(GroundIntakeState.INTAKE_TOP);
                 currentState = GroundIntakeSuperstructureState.L1_SCORE_STATE;
                 break;
+
             case L1_SCORE_STATE:
-                groundIntake.setGroundIntakeSetpoint(GroundIntakeState.OUTAKE);
                 groundPivot.applySetpoint(GroundPivotPosition.L1);
+                if(groundIntake.isCoralLeft() || groundIntake.isCoralRight() || groundIntake.isCoralMid()){
+                    groundIntake.setGroundIntakeSetpoint(GroundIntakeState.OUTAKE);
+                }else{
+                    currentState = GroundIntakeSuperstructureState.STOWED;
+                }
+                break;
+
             case INTAKE_HANDOFF_STATE:
                 if (groundIntake.isCoralLeft() || groundIntake.isCoralRight() || groundIntake.isCoralMid()) {
                     groundPivot.applySetpoint(GroundPivotPosition.HANDOFF);
                     if(groundIntake.isCoralLoaded()){
-                        
-                    }else{
                         currentState = GroundIntakeSuperstructureState.READY_HANDOFF_STATE;
+                    }else{
                         groundIntake.setGroundIntakeSetpoint(GroundIntakeState.PREPARE_HANDOFF);
                     }
                 } else {
@@ -71,27 +76,43 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
                     groundPivot.applySetpoint(GroundPivotPosition.DEPLOYED);
                 }
             break;
+
             case READY_HANDOFF_STATE:
                 groundPivot.applySetpoint(GroundPivotPosition.HANDOFF);
-                if(!groundIntake.isCoralLoaded()){
-                    groundIntake.setGroundIntakeSetpoint(GroundIntakeState.PREPARE_HANDOFF);
-                }else{
-                    currentState = GroundIntakeSuperstructureState.READY_HANDOFF_STATE;
-                }
                 groundIntake.setGroundIntakeSetpoint(GroundIntakeState.INTAKE_TOP);
+                break; 
+
+            case EXECUTE_HANDOFF_STATE:
                 groundPivot.applySetpoint(GroundPivotPosition.HANDOFF);
+                if(groundIntake.isCoralLoaded()){
+                groundIntake.setGroundIntakeSetpoint(GroundIntakeState.HANDOFF);
+                }
             break;
 
+            case STOWED:
+                groundPivot.applySetpoint(GroundPivotPosition.STOWED);
+                groundIntake.setGroundIntakeSetpoint(GroundIntakeState.REST);
+            break;
 
+            case SPIT_OUT_STATE:
+                groundPivot.applySetpoint(GroundPivotPosition.DEPLOYED);
+                if (groundIntake.isCoralLeft() || groundIntake.isCoralRight() || groundIntake.isCoralMid()) {
+                    groundIntake.setGroundIntakeSetpoint(GroundIntakeState.OUTAKE);
+                }
         }
 
     }
 
+    public void triggerHandoff(){
+        if (isHandoffReady()){
+            currentState = GroundIntakeSuperstructureState.READY_HANDOFF_STATE;
+        }
+    }
     public void setGroundIntakeSuperstructureSetpoint(GroundIntakeSuperstructureState setpoint) {
         currentState = setpoint;    
     }
 
     public boolean isHandoffReady(){
-        return true;
+        return currentState == GroundIntakeSuperstructureState.READY_HANDOFF_STATE;
     }
 }
