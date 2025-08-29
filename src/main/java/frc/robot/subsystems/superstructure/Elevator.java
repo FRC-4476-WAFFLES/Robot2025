@@ -217,7 +217,7 @@ public class Elevator extends WafflesMechanism {
     // Updated always so pivot always gets accurate information
     currentCollisionPrediction = isCollisionPredicted(setpoint);
 
-    runConstraint(collisionConstraint(), "Collision Constraint");
+    // runConstraint(collisionConstraint(), "Collision Constraint");
     runConstraint(mechanismLimitsConstraint(), "Mechanism Limits");
   }
 

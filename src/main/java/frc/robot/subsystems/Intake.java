@@ -45,7 +45,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
     // Deferred Refreshers
     private DeferredRefresher<Double> intakeLaserCanRefresher = new DeferredRefresher<Double>(
         "Intake LaserCAN", 
-        0.02, // 100hz
+        0.02, // 50hz
         () -> {
             if (intakeLaserCan != null) {
                 var measurement = intakeLaserCan.getMeasurement();
@@ -62,13 +62,12 @@ public class Intake extends SubsystemBase implements NetworkUser{
     // Control Objects
     private final MotionMagicVelocityVoltage intakeControlRequest = new MotionMagicVelocityVoltage(0);
     private final VoltageOut intakePositionRequest = new VoltageOut(0).withEnableFOC(true);
-    private final PositionVoltage intakePositionControlRequest = new PositionVoltage(0).withSlot(1);
+    // private final PositionVoltage intakePositionControlRequest = new PositionVoltage(0).withSlot(1);
 
     // State Variables
     private double intakeLaserDistance = 0;
     private double intakeSpeed = 0;
-    private double targetPosition = 0;
-    private boolean usePositionControl = false;
+
     private boolean noAlgaeFlag = false;
     private boolean algaeLoaded = false;
     private double dutyCycle = 0;
@@ -84,13 +83,13 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private final DoublePublisher intakeSetpointNT = intakeTable.getDoubleTopic("Intake Setpoint").publish();
     private final DoublePublisher intakeCurrentDrawNT = intakeTable.getDoubleTopic("Intake Current Draw").publish();
     private final DoublePublisher intakeVelocityNT = intakeTable.getDoubleTopic("Intake Velocity").publish();
-    private final DoublePublisher intakePositionNT = intakeTable.getDoubleTopic("Intake Position").publish();
-    private final DoublePublisher intakeTargetPositionNT = intakeTable.getDoubleTopic("Intake Target Position").publish();
+    // private final DoublePublisher intakePositionNT = intakeTable.getDoubleTopic("Intake Position").publish();
+    // private final DoublePublisher intakeTargetPositionNT = intakeTable.getDoubleTopic("Intake Target Position").publish();
     private final BooleanPublisher coralSensorRawNT = intakeTable.getBooleanTopic("Coral Sensor Raw").publish();
 
     private final BooleanPublisher isIntakingAlgaeNT = intakeTable.getBooleanTopic("IsIntaking").publish();
     private final BooleanPublisher isOutakingAlgaeNT = intakeTable.getBooleanTopic("IsOutaking").publish();
-    private final BooleanPublisher isPositionControlNT = intakeTable.getBooleanTopic("IsPositionControl").publish();
+    // private final BooleanPublisher isPositionControlNT = intakeTable.getBooleanTopic("IsPositionControl").publish();
 
     public Intake() {
         SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
@@ -175,27 +174,17 @@ public class Intake extends SubsystemBase implements NetworkUser{
             intake.set(dutyCycle);
             
         } else {
-            if (!usePositionControl) {
-                if (Math.abs(intakeSpeed) < 0.01 && isAlgaeLoaded()) {
-                    // When algae is loaded, run intake slowly inward
-                    intake.setControl(intakeControlRequest.withVelocity(Constants.ManipulatorConstants.ALGAE_HOLD_SPEED).withSlot(0));
+            if (Math.abs(intakeSpeed) < 0.01 && isAlgaeLoaded()) {
+                // When algae is loaded, run intake slowly inward
+                intake.setControl(intakeControlRequest.withVelocity(Constants.ManipulatorConstants.ALGAE_HOLD_SPEED).withSlot(0));
 
-                    if (intake.signals().statorCurrent().getValueAsDouble() < 4) {
-                        intake.setControl(intakeControlRequest.withVelocity(-120).withSlot(0));
-                    }
-                } else if (Math.abs(intakeSpeed) < 0.01 && isCoralLoaded()) {
-                    intake.setControl(intakePositionRequest.withOutput(0));
-                } else {
-                    intake.setControl(intakeControlRequest.withVelocity(intakeSpeed).withSlot(0));
+                if (intake.signals().statorCurrent().getValueAsDouble() < 4) {
+                    intake.setControl(intakeControlRequest.withVelocity(-120).withSlot(0));
                 }
+            } else if (Math.abs(intakeSpeed) < 0.01 && isCoralLoaded()) {
+                intake.setControl(intakePositionRequest.withOutput(0)); // scuffed
             } else {
-                // Use position control
-                intake.setControl(intakePositionControlRequest.withPosition(targetPosition));
-
-                // Auto disable position control once at setpoint & not moving
-                if (isAtTargetPosition() && isIntakeStopped()) {
-                    usePositionControl = false;
-                }
+                intake.setControl(intakeControlRequest.withVelocity(intakeSpeed).withSlot(0));
             }
         }
 
@@ -279,10 +268,6 @@ public class Intake extends SubsystemBase implements NetworkUser{
         return isAlgaeLoaded() && intake.signals().velocity().getValueAsDouble() < -12;
     }
 
-    public boolean isAtTargetPosition() {
-        return Math.abs(intake.signals().position().getValueAsDouble() - targetPosition) < 0.1;
-    }
-
     public boolean isIntakeStopped() {
         return Math.abs(intake.signals().velocity().getValueAsDouble()) < 0.1;
     }
@@ -298,13 +283,10 @@ public class Intake extends SubsystemBase implements NetworkUser{
         intakeSetpointNT.set(intakeSpeed);
         intakeCurrentDrawNT.set(intake.signals().statorCurrent().getValueAsDouble());
         intakeVelocityNT.set(intake.signals().velocity().getValueAsDouble());
-        intakePositionNT.set(intake.signals().position().getValueAsDouble());
-        intakeTargetPositionNT.set(targetPosition);
         coralSensorRawNT.set(coralSensor.get());
 
         isIntakingAlgaeNT.set(isIntakingAlgae());
         isOutakingAlgaeNT.set(isOuttakingAlgae());
-        isPositionControlNT.set(usePositionControl);
     }
 
     @Override
@@ -313,27 +295,11 @@ public class Intake extends SubsystemBase implements NetworkUser{
     }
 
     /**
-     * Sets the target position for the intake motor and enables position control
-     * @param position The target position in motor rotations
-     */
-    public void setTargetPosition(double position) {
-        targetPosition = position;
-        setPositionControlFlag(true);
-    }
-
-    /**
      * Gets the current position of the intake motor
      * @return The current position in motor rotations
      */
     public double getCurrentPosition() {
         return intake.signals().position().getValueAsDouble();
-    }
-
-    /**
-     * Sets the position control flag for the intake
-     */
-    public void setPositionControlFlag(boolean positionControl) {
-        usePositionControl = positionControl;
     }
 
     /*

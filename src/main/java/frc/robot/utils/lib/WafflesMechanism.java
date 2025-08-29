@@ -96,7 +96,7 @@ public class WafflesMechanism extends SubsystemBase implements NetworkUser {
    */
   protected void runConstraint(Double constraintResult, String name) {
     // A constraint function returns either the setpoint, or some constrained setpoint if needed
-    appliedConstraints.put(name, !constraintResult.equals(setpoint));
+    appliedConstraints.put(name, !constraintResult.equals(constrainedSetpoint));
     constrainedSetpoint = constraintResult;
   }
   
@@ -107,6 +107,10 @@ public class WafflesMechanism extends SubsystemBase implements NetworkUser {
       if (constraint.getValue()) {
         output += constraint.getKey() + " Active\n";
       }
+    }
+
+    if (output.equals("")) {
+      output = "No constraints active";
     }
     constraintsNT.set(output);
   }

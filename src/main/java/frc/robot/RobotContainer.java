@@ -27,12 +27,11 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.ResetGyroHeading;
 import frc.robot.commands.intake.AlgaeOutake;
-import frc.robot.commands.intake.AutoIntake;
 import frc.robot.commands.intake.AxisIntakeControl;
-import frc.robot.commands.intake.CoralIntake;
 import frc.robot.commands.scoring.ScoreCoral;
 import frc.robot.commands.scoring.ScoreNet;
 import frc.robot.commands.superstructure.ApplySuperstructureState;
+import frc.robot.commands.superstructure.ExecuteHandoff;
 import frc.robot.commands.superstructure.SuperstructureControl;
 import frc.robot.commands.superstructure.ZeroMechanisms;
 import frc.robot.commands.test.TestDriveAuto;
@@ -47,9 +46,6 @@ import frc.robot.subsystems.Lights;
 import frc.robot.subsystems.MechanismPoses;
 import frc.robot.subsystems.Telemetry;
 import frc.robot.subsystems.GroundSuperstructure.GroundIntakeSuperstructure;
-import frc.robot.subsystems.GroundSuperstructure.GroundIntakeSuperstructure.GroundIntakeSuperstructureState;
-import frc.robot.subsystems.superstructure.Elevator;
-import frc.robot.subsystems.superstructure.Pivot;
 import frc.robot.subsystems.superstructure.Superstructure;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 
@@ -136,6 +132,7 @@ public class RobotContainer {
     Trigger inOverrideMode = new Trigger(() -> isOperatorOverride);
 
     Trigger L1Loaded = new Trigger(() -> groundSuperstructure.isL1Ready());
+    Trigger triggerHandoff = new Trigger(() -> groundSuperstructure.isHandoffReady() && !intakeSubsystem.isAlgaeLoaded() && !intakeSubsystem.isCoralLoaded());
 
     // Toggle operator override
     Controls.operatorController.start().onTrue(
@@ -275,6 +272,8 @@ public class RobotContainer {
       )
     );
 
+    triggerHandoff.onTrue(new ExecuteHandoff());
+
 
     // Simulation
 
@@ -394,10 +393,10 @@ public class RobotContainer {
     );
 
     // Coral Intake
-    NamedCommands.registerCommand("Coral Intake", Commands.parallel(
-      new CoralIntake(),
-      new ApplySuperstructureState(SuperstructureState.CORAL_INTAKE)
-    ));
+    // NamedCommands.registerCommand("Coral Intake", Commands.parallel(
+    //   new CoralIntake(),
+    //   new ApplySuperstructureState(SuperstructureState.CORAL_INTAKE)
+    // ));
 
     NamedCommands.registerCommand("Set Position Intake", 
       Commands.sequence(
@@ -426,7 +425,7 @@ public class RobotContainer {
     ));
 
     // Auto Coral Intake
-    NamedCommands.registerCommand("Auto Coral Intake", AutoIntake.GetAutoIntakeCommand());
+    // NamedCommands.registerCommand("Auto Coral Intake", AutoIntake.GetAutoIntakeCommand());
 
     // Seconds REMAINING in auto [THIS HAS CONSEQUENCES DON'T MESS IT UP]
     double WAIT_ONE_MATCH_TIME = 9;

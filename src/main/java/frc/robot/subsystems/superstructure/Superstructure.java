@@ -5,6 +5,7 @@
 package frc.robot.subsystems.superstructure;
 
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import frc.robot.RobotContainer;
 
 public class Superstructure {
   public final Pivot pivot = new Pivot();
@@ -31,7 +32,11 @@ public class Superstructure {
     MANUAL_L4(71.0,1.440),
     MANUAL_L3(24.0,0.6772),
     MANUAL_L2(24.0,0.280),
-    MANUAL_L1(150,0.33);
+    MANUAL_L1(150,0.33),
+    
+    HANDOFF_READY(15, 0.4),
+    HANDOFF_EXECUTE(15, 0.2),
+    HANDOFF_CLEAR(30, 0.3);
 
     private final double pivotAngle;
     private final double elevatorHeight;
@@ -53,5 +58,10 @@ public class Superstructure {
   public void applySuperstructureState(SuperstructureState state) {
     pivot.applySetpoint(state.pivotAngle);
     elevator.applySetpoint(state.elevatorHeight);
+  }
+
+  public boolean atSetpoint() {
+    return pivot.atSetpoint() &&
+      elevator.atSetpoint();
   }
 }

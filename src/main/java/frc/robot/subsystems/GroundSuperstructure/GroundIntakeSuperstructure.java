@@ -78,15 +78,19 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
 
             case INTAKE_HANDOFF_STATE:
                 if (intake.isCoralLeft() || intake.isCoralRight() || intake.isCoralMid()) {
-                    pivot.applySetpoint(GroundPivotPosition.DEPLOYED);
-
                     if(intake.isCoralHandoffLoaded()){
-                        currentState = GroundIntakeSuperstructureState.READY_HANDOFF_STATE;
-                    }else{
-                        intake.setGroundIntakeSetpoint(GroundIntakeState.PREPARE_HANDOFF);
+                        pivot.applySetpoint(GroundPivotPosition.HANDOFF);
+                        intake.setGroundIntakeSetpoint(GroundIntakeState.REST);
+
+                        // Only mark handoff as ready once pivot in position
+                        if (pivot.atSetpoint()) {
+                            currentState = GroundIntakeSuperstructureState.READY_HANDOFF_STATE;
+                        }
+                    } else {
+                        pivot.applySetpoint(GroundPivotPosition.DEPLOYED);
                     }
                 } else {
-                    intake.setGroundIntakeSetpoint(GroundIntakeState.INTAKE_TOP);
+                    intake.setGroundIntakeSetpoint(GroundIntakeState.PREPARE_HANDOFF);
                     pivot.applySetpoint(GroundPivotPosition.DEPLOYED);
                 }
             break;
@@ -123,7 +127,7 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
 
     public void triggerHandoff(){
         if (isHandoffReady()){
-            currentState = GroundIntakeSuperstructureState.READY_HANDOFF_STATE;
+            currentState = GroundIntakeSuperstructureState.EXECUTE_HANDOFF_STATE;
         }
     }
 
@@ -143,6 +147,10 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
 
     public boolean isL1Ready(){
         return currentState == GroundIntakeSuperstructureState.L1_READY;
+    }
+
+    public boolean isStowed() {
+        return currentState == GroundIntakeSuperstructureState.STOWED;
     }
 
     public GroundIntakeSuperstructureState getState() {

@@ -39,7 +39,7 @@ public class SuperstructureControl {
                 if (RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.REEF_CORAL) {
                     RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.L2);
                 } else {
-                    RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.ZERO);
+                    RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.HANDOFF_READY);
                 }
             }, 
             (interrupted) -> {},
@@ -64,7 +64,7 @@ public class SuperstructureControl {
                 if (RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.REEF_CORAL) {
                     RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.L2);
                 } else {
-                    RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.ZERO);
+                    RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.HANDOFF_READY);
                 }
             }, 
             (interrupted) -> {},

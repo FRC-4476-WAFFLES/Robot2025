@@ -220,8 +220,8 @@ public class Pivot extends WafflesMechanism {
     @Override
     protected void applyConstraints() {
         // Highest priority constraints should be run last
-        runConstraint(collisionConstraint(), "Physical Collision");
-        runConstraint(algaeConstraint(), "Algae Constraint");
+        // runConstraint(collisionConstraint(), "Physical Collision");
+        // runConstraint(algaeConstraint(), "Algae Constraint");
         runConstraint(elevatorZeroingConstraint(),  "Elevator Zeroing Constraint");
         runConstraint(mechanismLimitsConstraint(), "Mechanism Limits");
     }

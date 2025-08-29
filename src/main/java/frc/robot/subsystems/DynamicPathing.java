@@ -32,7 +32,6 @@ import frc.robot.RobotContainer;
 import frc.robot.commands.AlignToPose;
 import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.intake.AlgaeOutake;
-import frc.robot.commands.intake.CoralIntake;
 import frc.robot.commands.scoring.PickupAlgae;
 import frc.robot.commands.scoring.ScoreCoral;
 import frc.robot.commands.scoring.ScoreNet;
@@ -300,26 +299,26 @@ public class DynamicPathing extends SubsystemBase {
                 break;
 
             case HUMAN_PICKUP: {
-                    Rotation2d humanPickupRotation = WafflesUtilities.FlipAngleIfRedAlliance(getHumanPlayerPickupAngle());
+                    // Rotation2d humanPickupRotation = WafflesUtilities.FlipAngleIfRedAlliance(getHumanPlayerPickupAngle());
 
-                    cmd = new ParallelDeadlineGroup(
-                        new CoralIntake(),
-                        new DriveTeleop(
-                            Controls::getDriveY, false,
-                            Controls::getDriveX, false,
-                            () -> humanPickupRotation, true
-                        ),
-                        new ApplySuperstructureState(SuperstructureState.CORAL_INTAKE)
-                    ).finallyDo(() -> {
-                        if (!RobotContainer.intakeSubsystem.isCoralLoaded()) {
-                            // Keep running intake for 5 seconds after ending if no coral detected
-                            Command runAfterCommand = new CoralIntake().withTimeout(4);
+                    // cmd = new ParallelDeadlineGroup(
+                    //     new CoralIntake(),
+                    //     new DriveTeleop(
+                    //         Controls::getDriveY, false,
+                    //         Controls::getDriveX, false,
+                    //         () -> humanPickupRotation, true
+                    //     ),
+                    //     new ApplySuperstructureState(SuperstructureState.CORAL_INTAKE)
+                    // ).finallyDo(() -> {
+                    //     if (!RobotContainer.intakeSubsystem.isCoralLoaded()) {
+                    //         // Keep running intake for 5 seconds after ending if no coral detected
+                    //         Command runAfterCommand = new CoralIntake().withTimeout(4);
 
-                            // This is one of the few cases where directly scheduling a command is okay, 
-                            // since we don't want it to be canceled by releasing the driver assist button
-                            runAfterCommand.schedule();
-                        }
-                    });
+                    //         // This is one of the few cases where directly scheduling a command is okay, 
+                    //         // since we don't want it to be canceled by releasing the driver assist button
+                    //         runAfterCommand.schedule();
+                    //     }
+                    // });
 
                 }
                 break;
