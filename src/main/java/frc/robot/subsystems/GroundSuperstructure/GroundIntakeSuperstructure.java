@@ -28,7 +28,7 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
         SPIT_OUT_STATE;
     }
 
-    private GroundIntakeSuperstructureState currentState;
+    private GroundIntakeSuperstructureState currentState = GroundIntakeSuperstructureState.STOWED;
     private StringPublisher statePublisher = networkTable.getStringTopic("Current State").publish();
     
 

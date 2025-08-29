@@ -40,9 +40,9 @@ public class GroundIntake extends SimpleWafflesMechanism {
     private LaserCan rightLaserCan;
     
     // Sensor boilerplate
-    private double leftLaserDistance = 0;
-    private double midLaserDistance = 0;
-    private double rightLaserDistance = 0;
+    private double leftLaserDistance = 600;
+    private double midLaserDistance = 600;
+    private double rightLaserDistance = 600;
     private boolean handoffCoralPresent = false;
     
     private Trigger leftCoralSensor;
@@ -137,7 +137,11 @@ public class GroundIntake extends SimpleWafflesMechanism {
     private GroundIntakeState currentState = GroundIntakeState.REST;
 
     // Network Tables
-    private final BooleanPublisher coralLoadedNT = networkTable.getBooleanTopic("Coral Loaded").publish();
+    private final BooleanPublisher handoffSensorNT = networkTable.getBooleanTopic("Handoff Sensor").publish();
+    private final BooleanPublisher leftSensorNT = networkTable.getBooleanTopic("Left Sensor").publish();
+    private final BooleanPublisher rightSensorNT = networkTable.getBooleanTopic("Right Sensor").publish();
+    private final BooleanPublisher midSensorNT = networkTable.getBooleanTopic("Middle Sensor").publish();
+
     private final DoublePublisher rightIntakeSetpointNT = networkTable.getDoubleTopic("Right Intake Setpoint").publish();
     private final DoublePublisher leftIntakeSetpointNT = networkTable.getDoubleTopic("Left Intake Setpoint").publish();
     private final DoublePublisher midIntakeSetpointNT = networkTable.getDoubleTopic("Middle Intake Setpoint").publish();
@@ -299,13 +303,16 @@ public class GroundIntake extends SimpleWafflesMechanism {
      */
     @Override
     public void updateNetwork() {
-        coralLoadedNT.set(isCoralHandoffLoaded());
         rightIntakeSetpointNT.set(currentState.getRightSpeed());
         leftIntakeSetpointNT.set(currentState.getLeftSpeed());
         midIntakeSetpointNT.set(currentState.getTopSpeed());
         rightIntakeVelocityNT.set(intakeRight.signals().velocity().getValueAsDouble());
         leftIntakeVelocityNT.set(intakeLeft.signals().velocity().getValueAsDouble());
         midIntakeVelocityNT.set(intakeMid.signals().velocity().getValueAsDouble());
-        coralLoadedNT.set(isCoralHandoffLoaded());
+
+        leftSensorNT.set(isCoralLeft());
+        rightSensorNT.set(isCoralRight());
+        midSensorNT.set(isCoralMid());
+        handoffSensorNT.set(isCoralHandoffLoaded());
     }
 }

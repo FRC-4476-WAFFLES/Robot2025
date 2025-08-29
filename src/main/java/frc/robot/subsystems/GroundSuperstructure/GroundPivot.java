@@ -16,11 +16,14 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.GroundPivotConstants;
 import frc.robot.data.Constants.GroundPivotConstants.GroundPivotPosition;
+import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.utils.PhoenixHelpers;
+import frc.robot.utils.SecondOrderSim;
 import frc.robot.utils.IO.TalonFXIO;
 import frc.robot.utils.lib.WafflesMechanism;
 
@@ -31,6 +34,8 @@ import frc.robot.utils.lib.WafflesMechanism;
 public class GroundPivot extends WafflesMechanism {
   // Hardware Components
   public final TalonFXIO pivotMotor;
+
+  private SecondOrderSim pivotSim;
 
   // Instance Variables
   private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
@@ -76,6 +81,10 @@ public class GroundPivot extends WafflesMechanism {
     zeroingDebounceTrigger = new Trigger(() -> {
       return pivotMotor.signals().torqueCurrent().getValueAsDouble() < -GroundPivotConstants.PIVOT_CURRENT_THRESHOLD;     
     }).debounce(GroundPivotConstants.ZERO_DEBOUNCE_TIME);
+
+    if (RobotBase.isSimulation()) {
+      pivotSim = new SecondOrderSim(2.5, 1, 0, 0);
+    }
   }
 
   private void configurePivotMotor() {
@@ -234,6 +243,23 @@ public class GroundPivot extends WafflesMechanism {
     groundPivotAngleNT.set(getPivotDegrees());
     groundPivotisZeroingNT.set(isZeroingPivot);
     groundPivotAtSetpointNT.set(atSetpoint());
+  }
+
+  /*              */
+  /*  Simulation  */
+  /*              */
+
+  @Override 
+  public void simulationPeriodic() {
+    var talonFXSim = pivotMotor.getSimState();
+
+    var simResult = pivotSim.Evaluate(constrainedSetpoint / 360, 0.02);
+
+    // apply the new rotor position and velocity to the TalonFX;
+    // note that this is rotor position/velocity (before gear ratio), but
+    // WPILIB sim objects return mechanism position/velocity (after gear ratio)
+    talonFXSim.setRawRotorPosition(simResult.get(0) * PhysicalConstants.groundPivotReduction);
+    talonFXSim.setRotorVelocity(simResult.get(1) * PhysicalConstants.groundPivotReduction);
   }
 }
 

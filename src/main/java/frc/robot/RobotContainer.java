@@ -141,7 +141,7 @@ public class RobotContainer {
       new InstantCommand(RobotContainer::toggleOperatorOverride)
     );
 
-    Controls.rightJoystick.button(9).whileTrue(resetGyroHeading);
+    Controls.driverController.povUp().onTrue(resetGyroHeading);
     // Use the back button to zero both elevator and pivot in sequence
     Controls.operatorController.back().onTrue(new ZeroMechanisms());
     
@@ -163,20 +163,12 @@ public class RobotContainer {
     // SysID routines
     // sysIDBindings();
 
-    // Manual auto intake
-    // Controls.operatorController.leftBumper().whileTrue(
-    //   Commands.parallel(
-    //     new CoralIntake(),
-    //     new ApplySuperstructureState(SuperstructureState.CORAL_INTAKE)
-    //   )    
-    // );
-
     // Intake
-    inNormalMode.and(Controls.operatorController.leftBumper()).onTrue(
+    inNormalMode.and(Controls.driverController.leftBumper()).onTrue(
       Commands.runOnce(() -> groundSuperstructure.L1IntakeToggle())
     );
 
-    inNormalMode.and(Controls.operatorController.rightBumper()).onTrue(
+    inNormalMode.and(Controls.driverController.rightBumper()).onTrue(
       Commands.runOnce(() -> groundSuperstructure.handoffIntakeToggle())
     );
 
@@ -265,18 +257,6 @@ public class RobotContainer {
 
     // Manual net toss
     Controls.operatorController.povDown().whileTrue(Commands.defer(() -> ScoreNet.getScoreNetCommand(0, () -> Rotation2d.kZero, false, true), DynamicPathing.actionCommandRequirements).onlyIf(() -> RobotContainer.intakeSubsystem.isAlgaeLoaded()));
-  
-    // L1 Intake / Outtake
-    // Controls.rightJoystick.button(4).onTrue(
-    //   Commands.either(
-    //     Commands.runOnce(() -> RobotContainer.isRunningL1Intake = !RobotContainer.isRunningL1Intake), 
-    //     GroundIntakeCommands.getOutakeCommand().asProxy(), 
-    //     () -> !groundIntake.isCoralLoaded()
-    //   )
-    // );
-
-    // Run intake while intake should be running lmao
-    // runningL1Intake.whileTrue(GroundIntakeCommands.getIntakeCommand());
     
     // Heading lock for L1
     isHeadingLockedToL1 = L1Loaded.and(() -> 
@@ -293,18 +273,6 @@ public class RobotContainer {
         () -> dynamicPathingSubsystem.getClosestFaceAngle(), true        
       )
     );
-    
-    // Manual intake backup
-    Controls.leftJoystick.button(2).onTrue(
-      new InstantCommand(() -> {
-        intakeSubsystem.setTargetPosition(intakeSubsystem.getCurrentPosition() + 1);
-      })
-    );
-    // Controls.operatorController.rightBumper().whileTrue(
-    //   AutoIntake.GetAutoIntakeCommand()  
-    // );
-
-
   }
 
   /**

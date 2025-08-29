@@ -283,37 +283,6 @@ public final class Constants {
     public static final double kD = 0.01;
     public static final double kS = 0.0;
     public static final double kG = 0.36; 
-
-    // Predefined heights for the elevator (in meters)
-    // public enum ElevatorLevel {
-    //   REST_POSITION(0.0),
-    //   NET(1.50),
-    //   ALGAE_L2(0.88),
-    //   ALGAE_L1(0.54),
-    //   PROCESSOR(0.135),
-    //   L4(1.50),
-    //   L3(0.865),
-    //   L2(0.44),
-    //   L1(0.33),
-
-    //   MANUAL_L4(1.440),
-    //   MANUAL_L3(0.6772),
-    //   MANUAL_L2(0.280),
-    //   MANUAL_L1(0.33),
-
-    //   NET_PREP(1.3);
-
-
-    //   private final double height;
-
-    //   ElevatorLevel(double height) {
-    //     this.height = height;
-    //   }
-
-    //   public double getHeight() {
-    //     return height;
-    //   }
-    // }
   }
   
   /* Ground Pivot Constants */
