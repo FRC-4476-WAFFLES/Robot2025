@@ -46,6 +46,7 @@ import frc.robot.subsystems.Lights;
 import frc.robot.subsystems.MechanismPoses;
 import frc.robot.subsystems.Telemetry;
 import frc.robot.subsystems.GroundSuperstructure.GroundIntakeSuperstructure;
+import frc.robot.subsystems.GroundSuperstructure.GroundIntakeSuperstructure.GroundIntakeSuperstructureState;
 import frc.robot.subsystems.superstructure.Elevator;
 import frc.robot.subsystems.superstructure.Pivot;
 import frc.robot.subsystems.superstructure.Superstructure;
@@ -71,7 +72,7 @@ public class RobotContainer {
   /* Hardware Subsystems */
   public static final DriveSubsystem driveSubsystem = TunerConstants.createDrivetrain();
   public static final Superstructure superstructure = new Superstructure(); // Contains two other subsystems
-  public static final GroundIntakeSuperstructure groundIntakeSuperstructure = new GroundIntakeSuperstructure();// Contains two other subsystems
+  public static final GroundIntakeSuperstructure groundSuperstructure = new GroundIntakeSuperstructure(); // Contains two other subsystems
   public static final Intake intakeSubsystem = new Intake();
   public static final Lights lightsSubsystem = new Lights();
 
@@ -133,8 +134,7 @@ public class RobotContainer {
     Trigger inNormalMode = new Trigger(() -> !isOperatorOverride);
     Trigger inOverrideMode = new Trigger(() -> isOperatorOverride);
 
-    Trigger runningL1Intake = new Trigger(() -> isRunningL1Intake);
-    Trigger groundIntakeCoralLoaded = new Trigger(() -> groundIntake.isCoralLoaded());
+    Trigger L1Loaded = new Trigger(() -> groundSuperstructure.isL1Ready());
 
     // Toggle operator override
     Controls.operatorController.start().onTrue(
@@ -147,9 +147,9 @@ public class RobotContainer {
     
 
     // Normal mode button bindings
-    inNormalMode.and(Controls.operatorController.a()).onTrue(
-      new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(SuperstructureState.L1); })
-    );
+    // inNormalMode.and(Controls.operatorController.a()).onTrue(
+    //   new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(SuperstructureState.L1); })
+    // );
     inNormalMode.and(Controls.operatorController.x()).onTrue(
       new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(SuperstructureState.L2); })
     );
@@ -164,11 +164,20 @@ public class RobotContainer {
     // sysIDBindings();
 
     // Manual auto intake
-    Controls.operatorController.leftBumper().whileTrue(
-      Commands.parallel(
-        new CoralIntake(),
-        new ApplySuperstructureState(SuperstructureState.CORAL_INTAKE)
-      )    
+    // Controls.operatorController.leftBumper().whileTrue(
+    //   Commands.parallel(
+    //     new CoralIntake(),
+    //     new ApplySuperstructureState(SuperstructureState.CORAL_INTAKE)
+    //   )    
+    // );
+
+    // Intake
+    inNormalMode.and(Controls.operatorController.leftBumper()).onTrue(
+      Commands.runOnce(() -> groundSuperstructure.L1IntakeToggle())
+    );
+
+    inNormalMode.and(Controls.operatorController.rightBumper()).onTrue(
+      Commands.runOnce(() -> groundSuperstructure.handoffIntakeToggle())
     );
 
     // Operator Algea out
@@ -258,18 +267,18 @@ public class RobotContainer {
     Controls.operatorController.povDown().whileTrue(Commands.defer(() -> ScoreNet.getScoreNetCommand(0, () -> Rotation2d.kZero, false), DynamicPathing.actionCommandRequirements).onlyIf(() -> RobotContainer.intakeSubsystem.isAlgaeLoaded()));
   
     // L1 Intake / Outtake
-    Controls.rightJoystick.button(4).onTrue(
-      Commands.either(
-        Commands.runOnce(() -> RobotContainer.isRunningL1Intake = !RobotContainer.isRunningL1Intake), 
-        GroundIntakeCommands.getOutakeCommand().asProxy(), 
-        () -> !groundIntake.isCoralLoaded()
-      )
-    );
+    // Controls.rightJoystick.button(4).onTrue(
+    //   Commands.either(
+    //     Commands.runOnce(() -> RobotContainer.isRunningL1Intake = !RobotContainer.isRunningL1Intake), 
+    //     GroundIntakeCommands.getOutakeCommand().asProxy(), 
+    //     () -> !groundIntake.isCoralHandoffLoaded()
+    //   )
+    // );
 
    
     
     // Heading lock for L1
-    isHeadingLockedToL1 = groundIntakeCoralLoaded.and(() -> 
+    isHeadingLockedToL1 = L1Loaded.and(() -> 
       DynamicPathing.isRobotInRangeOfReefL1() && 
       dynamicPathingSubsystem.notRunningAction.getAsBoolean() && 
       Controls.getDriveRotationRaw() < ScoringConstants.L1_HEADING_LOCK_RIPOFF_VALUE &&

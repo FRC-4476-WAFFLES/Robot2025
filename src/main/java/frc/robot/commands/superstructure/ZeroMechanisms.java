@@ -24,7 +24,7 @@ public class ZeroMechanisms extends Command {
 
         RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.ZERO);
 
-        RobotContainer.groundPivot.zeroPivot();
+        RobotContainer.groundSuperstructure.pivot.zeroPivot();
 
         // elevatorTimer.reset();
         // elevatorTimer.start();
@@ -49,8 +49,8 @@ public class ZeroMechanisms extends Command {
             if (RobotContainer.superstructure.pivot.isZeroing()) {
                 RobotContainer.superstructure.pivot.zeroPivot(); // Calling again cancels zeroing
             }
-            if (RobotContainer.groundPivot.isZeroing()) {
-                RobotContainer.groundPivot.zeroPivot(); // Calling again cancels zeroing
+            if (RobotContainer.groundSuperstructure.pivot.isZeroing()) {
+                RobotContainer.groundSuperstructure.pivot.zeroPivot(); // Calling again cancels zeroing
             }
         }
 

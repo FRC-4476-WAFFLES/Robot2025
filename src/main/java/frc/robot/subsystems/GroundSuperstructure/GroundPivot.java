@@ -15,18 +15,12 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.data.Constants;
-import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.GroundPivotConstants;
 import frc.robot.data.Constants.GroundPivotConstants.GroundPivotPosition;
-import frc.robot.utils.NetworkUser;
 import frc.robot.utils.PhoenixHelpers;
-import frc.robot.utils.SubsystemNetworkManager;
 import frc.robot.utils.IO.TalonFXIO;
 import frc.robot.utils.lib.WafflesMechanism;
 

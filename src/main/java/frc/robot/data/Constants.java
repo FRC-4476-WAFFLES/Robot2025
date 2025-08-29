@@ -216,7 +216,6 @@ public final class Constants {
     public static final double CORAL_INTAKE_SPEED = -5; // Rps
     public static final double ALGAE_HOLD_SPEED = 30; // Speed to hold algae in place
     public static final double ALGAE_INTAKE_SPEED = 120;
-    public static final double FAST_CORAL_INTAKE_SPEED = -10;
 
     // Pivot constants
     public static final double PIVOT_ANGLE_DEADBAND = 1.4;
@@ -368,9 +367,12 @@ public final class Constants {
     public static final double kD = 0.01;
     public static final double kS = 0.0;
     public static final double STATOR_CURRENT_LIMIT = 60;
+
     public static final double CANRANGE_PROXIMITY_THRESHOLD = 60;//TODO remember to tune number
-    public static final double CORAL_LEFT_DISTANCE_THRESHOLD=60;
-    public static final double CORAL_MID_DISTANCE_THRESHOLD=60;
-    public static final double CORAL_RIGHT_DISTANCE_THRESHOLD=60;
+    public static final double CORAL_LEFT_DISTANCE_THRESHOLD = 60;
+    public static final double CORAL_MID_DISTANCE_THRESHOLD = 60;
+    public static final double CORAL_RIGHT_DISTANCE_THRESHOLD = 60;
+    
+    public static final double SENSOR_DEBOUNCE_TIME = 0.1;
   }
 }

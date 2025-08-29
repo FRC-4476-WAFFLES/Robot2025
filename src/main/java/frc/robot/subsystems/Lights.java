@@ -30,10 +30,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
-import frc.robot.data.Constants.ElevatorConstants.ElevatorLevel;
-import frc.robot.data.Constants.ScoringConstants.ScoringLevel;
-import frc.robot.data.Constants.GroundPivotConstants.GroundPivotPosition;
 import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
+import frc.robot.subsystems.GroundSuperstructure.GroundIntakeSuperstructure.GroundIntakeSuperstructureState;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 
 public class Lights extends SubsystemBase {
@@ -515,13 +513,6 @@ public class Lights extends SubsystemBase {
       setLEDRange(4, 5, LightColours.BLACK);
     }
 
-    // Funnel sees coral indicator
-    if (RobotContainer.intakeSubsystem.funnelSeesCoral()) {
-      setLEDRange(5, 6, LightColours.ORANGE);
-    } else {
-      setLEDRange(5, 6, LightColours.BLACK);
-    }
-
     // Alliance Indicator Light
     var alliance = DriverStation.getAlliance();
     if (alliance.isPresent()) {
@@ -544,12 +535,12 @@ public class Lights extends SubsystemBase {
       setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.ORANGE, LightColours.BLACK, true);
       return; 
     }
-    if (RobotContainer.groundIntake.isCoralLoaded()) {
+    if (RobotContainer.groundSuperstructure.isL1Ready()) {
       setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.GREEN, LightColours.BLACK, false);
       setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.GREEN, LightColours.BLACK, false);
       return;
     } 
-    if (RobotContainer.groundPivot.getGroundPivotSetpoint() > GroundPivotPosition.L1.getDegrees()) {
+    if (RobotContainer.groundSuperstructure.getState() == GroundIntakeSuperstructureState.INTAKE_L1_STATE) {
       // Flash green if intaking
       setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.GREEN, LightColours.BLACK, true);
       setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.GREEN, LightColours.BLACK, true);
