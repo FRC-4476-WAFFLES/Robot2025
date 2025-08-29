@@ -2,6 +2,7 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -13,9 +14,10 @@ import frc.robot.utils.WafflesUtilities;
  */
 public class Controls {
     // Replace with CommandPS4Controller or CommandJoystick if needed
-    public static final CommandJoystick leftJoystick = new CommandJoystick(DriverConstants.leftJoystick);
-    public static final CommandJoystick rightJoystick = new CommandJoystick(DriverConstants.rightJoystick);
+    public static final CommandXboxController driverController = new CommandXboxController(DriverConstants.kDriverControllerPort);
     public static final CommandXboxController operatorController = new CommandXboxController(OperatorConstants.kOperatorControllerPort);
+
+    public static final CommandGenericHID simController = new CommandGenericHID(3);
 
     // Constants
     private static final double JOYSTICK_DEADZONE_INNER = 0.025; // Below the inner value the input is zero
@@ -25,41 +27,40 @@ public class Controls {
 
     /* Triggers */
     /* When triggers are referenced in multiple places, they are defined here to have a single source of truth */
-    public static final Trigger dynamicPathingButton = rightJoystick.button(1);
-    public static final Trigger algaeAfterScoreButton = leftJoystick.button(1);
+    public static final Trigger dynamicPathingButton = driverController.rightTrigger();
+    public static final Trigger algaeAfterScoreButton = driverController.leftTrigger();
     public static final Trigger doNotScore = Controls.operatorController.leftTrigger(Controls.AXIS_DEADBAND);
     public static final Trigger algaeOut = operatorController.rightBumper();
 
     public static class DriverConstants {
-        public static final int leftJoystick = 0;
-        public static final int rightJoystick = 1;
+        public static final int kDriverControllerPort = 0;
     }
 
     public static class OperatorConstants {
-        public static final int kOperatorControllerPort = 2;
+        public static final int kOperatorControllerPort = 1;
     }
 
     // Methods to get driver input
     public static double getDriveX() {
-        double driveX = applyDeadzone(leftJoystick.getX());
+        double driveX = applyDeadzone(driverController.getLeftX());
         RobotContainer.telemetry.publishControlInfoX(driveX);
         return -driveX * PhysicalConstants.maxSpeed;
     }
 
     public static double getDriveY() {
-        double driveY = applyDeadzone(leftJoystick.getY());
+        double driveY = applyDeadzone(driverController.getLeftY());
         RobotContainer.telemetry.publishControlInfoY(driveY);
         return -driveY * PhysicalConstants.maxSpeed;
     }
 
     public static Rotation2d getDriveRotation() {
-        double driveRot = applyDeadzone(rightJoystick.getX());
+        double driveRot = applyDeadzone(driverController.getRightX());
         RobotContainer.telemetry.publishControlInfoRot(driveRot);
         return Rotation2d.fromRadians(-driveRot * PhysicalConstants.maxAngularSpeed);
     }
 
     public static double getDriveRotationRaw() { 
-        return applyDeadzone(rightJoystick.getX());
+        return applyDeadzone(driverController.getRightX());
     }
 
     // Smooths deadzone over range

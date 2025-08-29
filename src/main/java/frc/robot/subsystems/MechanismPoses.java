@@ -102,12 +102,12 @@ public class MechanismPoses extends SubsystemBase {
         // Publish pose directly
         // pivotPosePub.set(pivotPose);
 
-        double groundIntakeAngle = Math.toRadians(RobotContainer.groundPivot.getPivotDegrees());
+        double groundIntakeAngle = Math.toRadians(RobotContainer.groundSuperstructure.pivot.getPivotDegrees());
 
         // Create ground intake pose - rotates around Y axis
         Pose3d groundIntakePose = new Pose3d(
             GROUND_INTAKE_BASE.getTranslation(),
-            new Rotation3d(0, groundIntakeAngle, 0).plus(GROUND_INTAKE_BASE.getRotation())
+            new Rotation3d(0, -groundIntakeAngle, 0).plus(GROUND_INTAKE_BASE.getRotation())
         );
 
         // groundIntakePosePub.set(groundIntakePose);

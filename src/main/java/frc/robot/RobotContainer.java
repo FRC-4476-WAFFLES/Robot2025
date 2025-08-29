@@ -11,6 +11,7 @@ import com.pathplanner.lib.commands.FollowPathCommand;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -44,9 +45,9 @@ import frc.robot.subsystems.DynamicPathing;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Lights;
 import frc.robot.subsystems.MechanismPoses;
-import frc.robot.subsystems.GroundIntake;
-import frc.robot.subsystems.GroundPivot;
 import frc.robot.subsystems.Telemetry;
+import frc.robot.subsystems.GroundSuperstructure.GroundIntakeSuperstructure;
+import frc.robot.subsystems.GroundSuperstructure.GroundIntakeSuperstructure.GroundIntakeSuperstructureState;
 import frc.robot.subsystems.superstructure.Elevator;
 import frc.robot.subsystems.superstructure.Pivot;
 import frc.robot.subsystems.superstructure.Superstructure;
@@ -72,10 +73,10 @@ public class RobotContainer {
   /* Hardware Subsystems */
   public static final DriveSubsystem driveSubsystem = TunerConstants.createDrivetrain();
   public static final Superstructure superstructure = new Superstructure(); // Contains two other subsystems
+  public static final GroundIntakeSuperstructure groundSuperstructure = new GroundIntakeSuperstructure(); // Contains two other subsystems
   public static final Intake intakeSubsystem = new Intake();
   public static final Lights lightsSubsystem = new Lights();
-  public static final GroundIntake groundIntake = new GroundIntake();
-  public static final GroundPivot groundPivot = new GroundPivot();
+
 
   /* Software Subsystems */
   /* Do not control harware, but have state and or periodic methods */
@@ -134,23 +135,22 @@ public class RobotContainer {
     Trigger inNormalMode = new Trigger(() -> !isOperatorOverride);
     Trigger inOverrideMode = new Trigger(() -> isOperatorOverride);
 
-    Trigger runningL1Intake = new Trigger(() -> isRunningL1Intake);
-    Trigger groundIntakeCoralLoaded = new Trigger(() -> groundIntake.isCoralLoaded());
+    Trigger L1Loaded = new Trigger(() -> groundSuperstructure.isL1Ready());
 
     // Toggle operator override
     Controls.operatorController.start().onTrue(
       new InstantCommand(RobotContainer::toggleOperatorOverride)
     );
 
-    Controls.rightJoystick.button(9).whileTrue(resetGyroHeading);
+    Controls.driverController.povUp().onTrue(resetGyroHeading);
     // Use the back button to zero both elevator and pivot in sequence
     Controls.operatorController.back().onTrue(new ZeroMechanisms());
     
 
     // Normal mode button bindings
-    inNormalMode.and(Controls.operatorController.a()).onTrue(
-      new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(SuperstructureState.L1); })
-    );
+    // inNormalMode.and(Controls.operatorController.a()).onTrue(
+    //   new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(SuperstructureState.L1); })
+    // );
     inNormalMode.and(Controls.operatorController.x()).onTrue(
       new InstantCommand(() -> { dynamicPathingSubsystem.setCoralScoringLevel(SuperstructureState.L2); })
     );
@@ -164,12 +164,13 @@ public class RobotContainer {
     // SysID routines
     // sysIDBindings();
 
-    // Manual auto intake
-    Controls.operatorController.leftBumper().whileTrue(
-      Commands.parallel(
-        new CoralIntake(),
-        new ApplySuperstructureState(SuperstructureState.CORAL_INTAKE)
-      )    
+    // Intake
+    inNormalMode.and(Controls.driverController.leftBumper()).onTrue(
+      Commands.runOnce(() -> groundSuperstructure.L1IntakeToggle())
+    );
+
+    inNormalMode.and(Controls.driverController.rightBumper()).onTrue(
+      Commands.runOnce(() -> groundSuperstructure.handoffIntakeToggle())
     );
 
     // Operator Algea out
@@ -257,21 +258,9 @@ public class RobotContainer {
 
     // Manual net toss
     Controls.operatorController.povDown().whileTrue(Commands.defer(() -> ScoreNet.getScoreNetCommand(0, () -> Rotation2d.kZero, false, true), DynamicPathing.actionCommandRequirements).onlyIf(() -> RobotContainer.intakeSubsystem.isAlgaeLoaded()));
-  
-    // L1 Intake / Outtake
-    // Controls.rightJoystick.button(4).onTrue(
-    //   Commands.either(
-    //     Commands.runOnce(() -> RobotContainer.isRunningL1Intake = !RobotContainer.isRunningL1Intake), 
-    //     GroundIntakeCommands.getOutakeCommand().asProxy(), 
-    //     () -> !groundIntake.isCoralLoaded()
-    //   )
-    // );
-
-    // Run intake while intake should be running lmao
-    // runningL1Intake.whileTrue(GroundIntakeCommands.getIntakeCommand());
     
     // Heading lock for L1
-    isHeadingLockedToL1 = groundIntakeCoralLoaded.and(() -> 
+    isHeadingLockedToL1 = L1Loaded.and(() -> 
       DynamicPathing.isRobotInRangeOfReefL1() && 
       dynamicPathingSubsystem.notRunningAction.getAsBoolean() && 
       Controls.getDriveRotationRaw() < ScoringConstants.L1_HEADING_LOCK_RIPOFF_VALUE &&
@@ -285,18 +274,23 @@ public class RobotContainer {
         () -> dynamicPathingSubsystem.getClosestFaceAngle(), true        
       )
     );
-    
-    // Manual intake backup
-    Controls.leftJoystick.button(2).onTrue(
-      new InstantCommand(() -> {
-        intakeSubsystem.setTargetPosition(intakeSubsystem.getCurrentPosition() + 1);
-      })
-    );
-    // Controls.operatorController.rightBumper().whileTrue(
-    //   AutoIntake.GetAutoIntakeCommand()  
-    // );
 
 
+    // Simulation
+
+    if (RobotBase.isSimulation()) { 
+      Controls.simController.button(1).onTrue(
+        Commands.runOnce(() -> telemetry.toggleIntakeSimLoaded())
+      );
+        
+      Controls.simController.button(2).onTrue(
+        Commands.runOnce(() -> telemetry.toggleIntakeHandoffSimLoaded())
+      );
+        
+      Controls.simController.button(3).onTrue(
+        Commands.runOnce(() -> telemetry.toggleManipulatorSimLoaded())
+      );
+    }
   }
 
   /**

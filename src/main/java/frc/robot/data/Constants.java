@@ -83,7 +83,6 @@ public final class Constants {
 
     public static final int SUBSYSTEM_NT_UPDATE_RATE = 20; // How many times a second subsystems will publish to NT. Reduce if performance is suffering.
 
-    public static final boolean FORCE_LOAD_SIM_CORAL = true;
     public static final boolean FORCE_LOAD_SIM_ALGAE = false;
 
     // Disable all nonessential CAN status signals, potentially reducing CAN pressure
@@ -216,7 +215,6 @@ public final class Constants {
     public static final double CORAL_INTAKE_SPEED = -5; // Rps
     public static final double ALGAE_HOLD_SPEED = 30; // Speed to hold algae in place
     public static final double ALGAE_INTAKE_SPEED = 120;
-    public static final double FAST_CORAL_INTAKE_SPEED = -10;
 
     // Pivot constants
     public static final double PIVOT_ANGLE_DEADBAND = 1.4;
@@ -284,37 +282,6 @@ public final class Constants {
     public static final double kD = 0.01;
     public static final double kS = 0.0;
     public static final double kG = 0.36; 
-
-    // Predefined heights for the elevator (in meters)
-    // public enum ElevatorLevel {
-    //   REST_POSITION(0.0),
-    //   NET(1.50),
-    //   ALGAE_L2(0.88),
-    //   ALGAE_L1(0.54),
-    //   PROCESSOR(0.135),
-    //   L4(1.50),
-    //   L3(0.865),
-    //   L2(0.44),
-    //   L1(0.33),
-
-    //   MANUAL_L4(1.440),
-    //   MANUAL_L3(0.6772),
-    //   MANUAL_L2(0.280),
-    //   MANUAL_L1(0.33),
-
-    //   NET_PREP(1.3);
-
-
-    //   private final double height;
-
-    //   ElevatorLevel(double height) {
-    //     this.height = height;
-    //   }
-
-    //   public double getHeight() {
-    //     return height;
-    //   }
-    // }
   }
   
   /* Ground Pivot Constants */
@@ -344,9 +311,9 @@ public final class Constants {
     // Predefined positions for the ground pivot (in degrees)
     public enum GroundPivotPosition {
       STOWED(0.0),
-      STASH(0.0),
-      DEPLOYED(138.0),
-      L1(27);
+      HANDOFF(0.0),
+      DEPLOYED(190.0),
+      L1(110);
 
       private final double degrees;
 
@@ -368,9 +335,12 @@ public final class Constants {
     public static final double kD = 0.01;
     public static final double kS = 0.0;
     public static final double STATOR_CURRENT_LIMIT = 60;
+
     public static final double CANRANGE_PROXIMITY_THRESHOLD = 60;//TODO remember to tune number
-    public static final double CORAL_LEFT_DISTANCE_THRESHOLD=60;
-    public static final double CORAL_MID_DISTANCE_THRESHOLD=60;
-    public static final double CORAL_RIGHT_DISTANCE_THRESHOLD=60;
+    public static final double CORAL_LEFT_DISTANCE_THRESHOLD = 60;
+    public static final double CORAL_MID_DISTANCE_THRESHOLD = 60;
+    public static final double CORAL_RIGHT_DISTANCE_THRESHOLD = 60;
+    
+    public static final double SENSOR_DEBOUNCE_TIME = 0.1;
   }
 }

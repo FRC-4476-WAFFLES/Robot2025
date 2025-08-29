@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems;
+package frc.robot.subsystems.GroundSuperstructure;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
@@ -15,42 +15,37 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.data.Constants;
-import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.GroundPivotConstants;
 import frc.robot.data.Constants.GroundPivotConstants.GroundPivotPosition;
-import frc.robot.utils.NetworkUser;
+import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.utils.PhoenixHelpers;
-import frc.robot.utils.SubsystemNetworkManager;
+import frc.robot.utils.SecondOrderSim;
 import frc.robot.utils.IO.TalonFXIO;
+import frc.robot.utils.lib.WafflesMechanism;
 
 /**
  * The GroundPivot subsystem is responsible for pivoting the L1 Intake 
  * It controls a single pivot motor. 
  */
-public class GroundPivot extends SubsystemBase implements NetworkUser {
+public class GroundPivot extends WafflesMechanism {
   // Hardware Components
   public final TalonFXIO pivotMotor;
 
+  private SecondOrderSim pivotSim;
+
   // Instance Variables
-  private double angleSetpoint = 0;
   private MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
   private boolean isZeroingPivot = false;
   private Trigger zeroingDebounceTrigger;
   
   // Networktables Variables 
-  private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
-  private final NetworkTable groundPivotTable = inst.getTable("Ground Pivot");
-
-  private final DoublePublisher groundPivotSetpointNT = groundPivotTable.getDoubleTopic("Setpoint (Degrees)").publish();
-  private final DoublePublisher groundPivotAngleNT = groundPivotTable.getDoubleTopic("Current Angle (Degrees)").publish();
-  private final BooleanPublisher groundPivotAtSetpointNT = groundPivotTable.getBooleanTopic("At Setpoint").publish();
-  private final BooleanPublisher groundPivotisZeroingNT = groundPivotTable.getBooleanTopic("Is Zeroing").publish();
+  private final DoublePublisher groundPivotAngleNT = networkTable.getDoubleTopic("Current Angle (Degrees)").publish();
+  private final BooleanPublisher groundPivotAtSetpointNT = networkTable.getBooleanTopic("At Setpoint").publish();
+  private final BooleanPublisher groundPivotisZeroingNT = networkTable.getBooleanTopic("Is Zeroing").publish();
 
   // -------------------- Tuning Code --------------------
   // private NetworkConfiguredPID networkPIDConfiguration = new NetworkConfiguredPID(getName(), this::updatePID);
@@ -77,8 +72,6 @@ public class GroundPivot extends SubsystemBase implements NetworkUser {
 
   /** Creates a new L1 Pivot Subsystem. */
   public GroundPivot() {
-    SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
-
     // Initialize hardware
     pivotMotor = new TalonFXIO(Constants.CANIds.groundPivotMotor);
 
@@ -88,6 +81,10 @@ public class GroundPivot extends SubsystemBase implements NetworkUser {
     zeroingDebounceTrigger = new Trigger(() -> {
       return pivotMotor.signals().torqueCurrent().getValueAsDouble() < -GroundPivotConstants.PIVOT_CURRENT_THRESHOLD;     
     }).debounce(GroundPivotConstants.ZERO_DEBOUNCE_TIME);
+
+    if (RobotBase.isSimulation()) {
+      pivotSim = new SecondOrderSim(2.5, 1, 0, 0);
+    }
   }
 
   private void configurePivotMotor() {
@@ -142,7 +139,7 @@ public class GroundPivot extends SubsystemBase implements NetworkUser {
   }
 
   @Override
-  public void periodic() {
+  protected void periodicImpl() {
     // Handle zeroing first
     if (isZeroingPivot) {
       handlePivotZeroPeriodic();
@@ -152,22 +149,18 @@ public class GroundPivot extends SubsystemBase implements NetworkUser {
     // Convert degrees to rotations for motion magic
     // Since we've set the SensorToMechanismRatio, we need to convert our
     // desired angle in degrees to rotations of the mechanism
-    double targetRotations = angleSetpoint / 360.0;
+    double targetRotations = constrainedSetpoint / 360.0;
     
     pivotMotor.setControl(motionMagicRequest.withPosition(targetRotations).withSlot(0));
-    
-    // Update network tables
-    groundPivotAtSetpointNT.set(isPivotAtSetpoint());
   }
 
-  /**
-   * Sets the angle setpoint for the ground pivot
-   * 
-   * @param setpoint the setpoint in degrees
-   */
-  public void setPivotSetpoint(double setpoint) {
-    // Clamp the setpoint to valid range
-    angleSetpoint = MathUtil.clamp(setpoint, GroundPivotConstants.MIN_ANGLE, GroundPivotConstants.MAX_ANGLE);
+  @Override
+  protected void applyConstraints() {
+    runConstraint(MechanismLimitsConstraint(), "Mechanism Limits");
+  }
+
+  public double MechanismLimitsConstraint() {
+    return MathUtil.clamp(setpoint, GroundPivotConstants.MIN_ANGLE, GroundPivotConstants.MAX_ANGLE);
   }
 
   /**
@@ -175,8 +168,8 @@ public class GroundPivot extends SubsystemBase implements NetworkUser {
    * 
    * @param position The GroundPivotPosition enum value
    */
-  public void setPivotPosition(GroundPivotPosition position) {
-    setPivotSetpoint(position.getDegrees());
+  public void applySetpoint(GroundPivotPosition position) {
+    applySetpoint(position.getDegrees());
   }
 
   /**
@@ -194,16 +187,9 @@ public class GroundPivot extends SubsystemBase implements NetworkUser {
    * Checks if the ground pivot is within a deadband of the desired setpoint
    * @return true if ground pivot is at setpoint
    */
-  public boolean isPivotAtSetpoint() {
-    return Math.abs(angleSetpoint - getPivotDegrees()) < GroundPivotConstants.DEAD_ZONE;
-  }
-
-  /**
-   * Gets the current ground pivot setpoint
-   * @return Current setpoint angle in degrees
-   */
-  public double getGroundPivotSetpoint() {
-    return angleSetpoint;
+  @Override
+  public boolean atSetpoint() {
+    return Math.abs(setpoint - getPivotDegrees()) < GroundPivotConstants.DEAD_ZONE;
   }
 
   /**
@@ -213,7 +199,7 @@ public class GroundPivot extends SubsystemBase implements NetworkUser {
     if (zeroingDebounceTrigger.getAsBoolean()) {
       pivotMotor.set(0);
       pivotMotor.setPosition(0.0);
-      setPivotSetpoint(0);
+      applySetpoint(0);
       
       isZeroingPivot = false;
       DriverStation.reportWarning("Ground Pivot zeroed successfully", false);
@@ -256,12 +242,24 @@ public class GroundPivot extends SubsystemBase implements NetworkUser {
   public void updateNetwork() {
     groundPivotAngleNT.set(getPivotDegrees());
     groundPivotisZeroingNT.set(isZeroingPivot);
-    groundPivotSetpointNT.set(angleSetpoint);
+    groundPivotAtSetpointNT.set(atSetpoint());
   }
 
-  public void initializeNetwork() {
-    // Could be used to make shuffleboard layouts programatically
-    // Currently unused
+  /*              */
+  /*  Simulation  */
+  /*              */
+
+  @Override 
+  public void simulationPeriodic() {
+    var talonFXSim = pivotMotor.getSimState();
+
+    var simResult = pivotSim.Evaluate(constrainedSetpoint / 360, 0.02);
+
+    // apply the new rotor position and velocity to the TalonFX;
+    // note that this is rotor position/velocity (before gear ratio), but
+    // WPILIB sim objects return mechanism position/velocity (after gear ratio)
+    talonFXSim.setRawRotorPosition(simResult.get(0) * PhysicalConstants.groundPivotReduction);
+    talonFXSim.setRotorVelocity(simResult.get(1) * PhysicalConstants.groundPivotReduction);
   }
 }
 

@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.ManipulatorConstants;
@@ -39,13 +40,12 @@ public class Intake extends SubsystemBase implements NetworkUser{
     // Hardware Components
     private final TalonFXIO intake;
     private LaserCan intakeLaserCan;
-    private LaserCan funnelLaserCan;
     private final DigitalInput coralSensor;
 
     // Deferred Refreshers
     private DeferredRefresher<Double> intakeLaserCanRefresher = new DeferredRefresher<Double>(
         "Intake LaserCAN", 
-        0.01, // 100hz
+        0.02, // 100hz
         () -> {
             if (intakeLaserCan != null) {
                 var measurement = intakeLaserCan.getMeasurement();
@@ -59,22 +59,6 @@ public class Intake extends SubsystemBase implements NetworkUser{
         }
     );
 
-    private DeferredRefresher<Double> funnelLaserCanRefresher = new DeferredRefresher<Double>(
-        "Funnel LaserCAN", 
-        0.01, 
-        () -> {
-            if (funnelLaserCan != null) {
-                var measurement = funnelLaserCan.getMeasurement();
-                if (measurement != null) {
-                    if (measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
-                        return (double)measurement.distance_mm;
-                    }
-                }
-            } 
-            return null;
-        }
-    );
-
     // Control Objects
     private final MotionMagicVelocityVoltage intakeControlRequest = new MotionMagicVelocityVoltage(0);
     private final VoltageOut intakePositionRequest = new VoltageOut(0).withEnableFOC(true);
@@ -82,7 +66,6 @@ public class Intake extends SubsystemBase implements NetworkUser{
 
     // State Variables
     private double intakeLaserDistance = 0;
-    private double funnelLaserDistance = 0;
     private double intakeSpeed = 0;
     private double targetPosition = 0;
     private boolean usePositionControl = false;
@@ -96,7 +79,6 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
     private final NetworkTable intakeTable = inst.getTable("Intake");
     private final DoublePublisher intakeLaserCanDistanceNT = intakeTable.getDoubleTopic("Intake Laser Distance (mm)").publish();
-    private final DoublePublisher funnelLaserCanDistanceNT = intakeTable.getDoubleTopic("Funnel Laser Distance (mm)").publish();
     private final BooleanPublisher coralLoadedNT = intakeTable.getBooleanTopic("Coral Loaded").publish();
     private final BooleanPublisher algaeLoadedNT = intakeTable.getBooleanTopic("Algae Loaded").publish();
     private final DoublePublisher intakeSetpointNT = intakeTable.getDoubleTopic("Intake Setpoint").publish();
@@ -136,15 +118,10 @@ public class Intake extends SubsystemBase implements NetworkUser{
             intakeLaserCan = new LaserCan(Constants.CANIds.intakeLaserCan);
             intakeLaserCan.setRangingMode(LaserCan.RangingMode.SHORT);
             intakeLaserCan.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_20MS);
-
-            funnelLaserCan = new LaserCan(Constants.CANIds.funnelLaserCan);
-            funnelLaserCan.setRangingMode(LaserCan.RangingMode.SHORT);
-            funnelLaserCan.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_20MS);
         } catch (Exception e) {
             // throw new RuntimeException("Failed to initialize LaserCan: " + e.getMessage());
             System.out.println("Failed to initialize LaserCan: " + e.getMessage());
             intakeLaserCan = null;
-            funnelLaserCan = null;
         }
     }
 
@@ -259,14 +236,14 @@ public class Intake extends SubsystemBase implements NetworkUser{
      * Updates the coral sensor's internal state
      */
     private void updateCoralSensors() {
+        if (RobotBase.isSimulation()) {
+            intakeLaserDistance = RobotContainer.telemetry.manipulatorSimLoaded ? 0 : 1000;
+            return;
+        }
+
         var intakeSensorResult = intakeLaserCanRefresher.getLatestValue();
         if (intakeSensorResult.isPresent()) {
             intakeLaserDistance = intakeSensorResult.get();
-        }
-        
-        var funnelSensorResult = funnelLaserCanRefresher.getLatestValue();
-        if (funnelSensorResult.isPresent()) {
-            funnelLaserDistance = funnelSensorResult.get();
         }
     }
 
@@ -288,20 +265,8 @@ public class Intake extends SubsystemBase implements NetworkUser{
      * @return true if coral is detected
      */
     public boolean isCoralLoaded() {
-        if (RobotBase.isSimulation()) {
-            // Coral override for sim
-            return CodeConstants.FORCE_LOAD_SIM_CORAL;
-        }
         // return !coralSensor.get(); // Digital input is inverted (true when not pressed, false when pressed)
         return intakeLaserDistance <= Constants.ManipulatorConstants.CORAL_LOADED_DISTANCE_THRESHOLD;
-    }
-
-    /**
-     * Checks if coral is in the funnel using the funne; laser distance sensor
-     * @return true if coral is detected within threshold distance
-     */
-    public boolean funnelSeesCoral() {
-        return funnelLaserDistance <= Constants.ManipulatorConstants.CORAL_LOADED_DISTANCE_THRESHOLD;
     }
 
     /* Helper methods for determining the intake's basic state */
@@ -328,7 +293,6 @@ public class Intake extends SubsystemBase implements NetworkUser{
     @Override
     public void updateNetwork() {
         intakeLaserCanDistanceNT.set(intakeLaserDistance);
-        funnelLaserCanDistanceNT.set(funnelLaserDistance);
         coralLoadedNT.set(isCoralLoaded());
         algaeLoadedNT.set(isAlgaeLoaded());
         intakeSetpointNT.set(intakeSpeed);

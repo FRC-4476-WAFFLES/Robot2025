@@ -98,6 +98,10 @@ public class Telemetry extends SubsystemBase {
     /* Other Variables */
     /*                 */
 
+    public boolean manipulatorSimLoaded = false;
+    public boolean intakeSimLoaded = false;
+    public boolean intakeHandoffSimLoaded = false;
+
     private PowerDistribution powerDistributionHub = new PowerDistribution(1, ModuleType.kRev);
 
     // CAN checking variables
@@ -138,9 +142,8 @@ public class Telemetry extends SubsystemBase {
     private final Alert rioCanError = new Alert("RIO CAN bus error", AlertType.kError);
     private final Alert canivoreError = new Alert("CANivore bus error", AlertType.kError);
     private final Alert visionFaultDetected = new Alert("", AlertType.kError);
-    private final Alert joystickLeftDisconnected = new Alert("Joystick L disconnected [port 0].", AlertType.kWarning);
-    private final Alert joystickRightDisconnected = new Alert("Joystick R disconnected [port 1].", AlertType.kWarning); 
-    private final Alert operatorControllerDisconnected = new Alert("Operator controller disconnected [port 2].", AlertType.kWarning); 
+    private final Alert driverControllerDisconnected = new Alert("Driver controller disconnected [port 0].", AlertType.kWarning);
+    private final Alert operatorControllerDisconnected = new Alert("Operator controller disconnected [port 1].", AlertType.kWarning); 
 
     /**
      * Construct a telemetry subsystem
@@ -163,8 +166,7 @@ public class Telemetry extends SubsystemBase {
         matchTime.set(Timer.getMatchTime());
 
         // Update controls warnings
-        joystickLeftDisconnected.set(!Controls.leftJoystick.isConnected());
-        joystickRightDisconnected.set(!Controls.rightJoystick.isConnected());
+        driverControllerDisconnected.set(!Controls.driverController.isConnected());
         operatorControllerDisconnected.set(!Controls.operatorController.isConnected());
 
         // Check for CAN errors
@@ -334,5 +336,17 @@ public class Telemetry extends SubsystemBase {
 
             visionFaultDetected.setText("Vision fault detected [" + String.join(", ", details) + "]");
         }
+    }
+
+    public void toggleManipulatorSimLoaded() {
+        manipulatorSimLoaded = !manipulatorSimLoaded;
+    }
+
+    public void toggleIntakeSimLoaded() {
+        intakeSimLoaded = !intakeSimLoaded;
+    }
+
+    public void toggleIntakeHandoffSimLoaded() {
+        intakeHandoffSimLoaded = !intakeHandoffSimLoaded;
     }
 }

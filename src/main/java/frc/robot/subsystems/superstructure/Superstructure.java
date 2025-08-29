@@ -22,10 +22,10 @@ public class Superstructure {
     NET(98,1.5),
     NET_FRONT(98, 1.5),
     NET_BACK(98, 1.5),
-    L4(66,1.50),
-    L3(34,0.865),
-    L2(34,0.44),
-    L1(150,0.33),
+    L4(100,1.50),
+    L3(100,0.865),
+    L2(100,0.44),
+    L1(100,0.33),
 
     // Maybe manual mode
     MANUAL_L4(71.0,1.440),

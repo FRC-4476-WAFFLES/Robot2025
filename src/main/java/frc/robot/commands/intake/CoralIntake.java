@@ -14,10 +14,6 @@ public class CoralIntake extends Command {
   private boolean hasDetectedCoral = false;
   private double targetPosition = 0;
 
-  private Trigger funnelTrigger = new Trigger(
-    () -> RobotContainer.intakeSubsystem.funnelSeesCoral() 
-  ).debounce(0.03); // ~(>_<。)＼ WAIT! They don't love you like I love you anyways...
-
   /** Creates a new CoralIntake. */
   public CoralIntake() {
     addRequirements(RobotContainer.intakeSubsystem);
@@ -39,12 +35,7 @@ public class CoralIntake extends Command {
   @Override
   public void execute() {
     if (!hasDetectedCoral) {
-      if (!funnelTrigger.getAsBoolean()) {
-        RobotContainer.intakeSubsystem.setIntakeSpeed(ManipulatorConstants.FAST_CORAL_INTAKE_SPEED);
-      } else {
-        RobotContainer.intakeSubsystem.setIntakeSpeed(ManipulatorConstants.CORAL_INTAKE_SPEED);
-      }
-      
+      RobotContainer.intakeSubsystem.setIntakeSpeed(ManipulatorConstants.CORAL_INTAKE_SPEED);
       
       // Check if coral is detected for the first time
       if (RobotContainer.intakeSubsystem.isCoralLoaded()) {
