@@ -160,7 +160,8 @@ public class GroundIntake extends SimpleWafflesMechanism {
         canRangeConfigs.ProximityParams.ProximityThreshold = Constants.GroundIntakeConstants.CANRANGE_PROXIMITY_THRESHOLD;
         handoffCANRange.getConfigurator().apply(canRangeConfigs);
         configureLaserCAN();
-        configureIntakeMotors();
+        configureSideRollers();
+        configureTopRoller();
     }
 
     /**
@@ -205,10 +206,8 @@ public class GroundIntake extends SimpleWafflesMechanism {
             () -> handoffCoralPresent
         ).debounce(GroundIntakeConstants.SENSOR_DEBOUNCE_TIME);
     }
-    /**
-     * Configures the intake motor with current limits
-     */
-    private void configureIntakeMotors() {
+
+    private void configureSideRollers() {
         TalonFXConfiguration intakeConfigs = new TalonFXConfiguration();
         CurrentLimitsConfigs intakeCurrentLimit = new CurrentLimitsConfigs()
             .withStatorCurrentLimit(GroundIntakeConstants.STATOR_CURRENT_LIMIT)
@@ -226,7 +225,7 @@ public class GroundIntake extends SimpleWafflesMechanism {
 
         intakeConfigs.Slot0 = slot0Configs;
 
-        intakeConfigs.Feedback.SensorToMechanismRatio = PhysicalConstants.groundIntakeReduction;
+        intakeConfigs.Feedback.SensorToMechanismRatio = PhysicalConstants.groundIntakeSideRollersReduction;
 
         // Motion Magic
         MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
@@ -237,9 +236,42 @@ public class GroundIntake extends SimpleWafflesMechanism {
         intakeConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         intakeConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         intakeConfigs.MotorOutput.DutyCycleNeutralDeadband = 0.01;
-        PhoenixHelpers.tryConfig(() -> intakeMid.getConfigurator().apply(intakeConfigs));
+        
         PhoenixHelpers.tryConfig(() -> intakeRight.getConfigurator().apply(intakeConfigs));
         PhoenixHelpers.tryConfig(() -> intakeLeft.getConfigurator().apply(intakeConfigs));
+    }
+
+    private void configureTopRoller() {
+        TalonFXConfiguration intakeConfigs = new TalonFXConfiguration();
+        CurrentLimitsConfigs intakeCurrentLimit = new CurrentLimitsConfigs()
+            .withStatorCurrentLimit(GroundIntakeConstants.STATOR_CURRENT_LIMIT)
+            .withStatorCurrentLimitEnable(true);
+
+
+        intakeConfigs.CurrentLimits = intakeCurrentLimit;
+
+        var slot0Configs = new Slot0Configs();
+        slot0Configs.kP = 0.9;
+        slot0Configs.kI = 0;
+        slot0Configs.kD = 0;
+        slot0Configs.kV = 1.2;
+        slot0Configs.kG = 0.0;
+
+        intakeConfigs.Slot0 = slot0Configs;
+
+        intakeConfigs.Feedback.SensorToMechanismRatio = PhysicalConstants.groundIntakeTopRollerReduction;
+
+        // Motion Magic
+        MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
+        motionMagicConfigs.MotionMagicAcceleration = 40;
+        motionMagicConfigs.MotionMagicJerk = 0;
+        intakeConfigs.MotionMagic = motionMagicConfigs;
+
+        intakeConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        intakeConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        intakeConfigs.MotorOutput.DutyCycleNeutralDeadband = 0.01;
+
+        PhoenixHelpers.tryConfig(() -> intakeMid.getConfigurator().apply(intakeConfigs));
     }
     
     @Override

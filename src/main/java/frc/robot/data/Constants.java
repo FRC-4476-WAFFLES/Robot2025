@@ -146,15 +146,16 @@ public final class Constants {
     public static final double withBumperBotHalfWidth = 0.460; // m
 
     // In number of motor rotations per mechanism rotation
-    public static final double groundIntakeReduction = 9.0; 
-    public static final double groundPivotReduction = 37.92592592592592592; 
-    public static final double pivotReduction = 52.5625; 
-    public static final double intakeReduction = 2.5;
+    public static final double groundIntakeTopRollerReduction = 7.1111;
+    public static final double groundIntakeSideRollersReduction = 9.5238; 
+    public static final double groundPivotReduction = 32.0579; 
+    public static final double pivotReduction = 52.1481; 
+    public static final double intakeReduction = 19.4444;
 
     public static final double elevatorReductionToMeters = 26.6; // Motor rotations to elevator height in meters
 
     public static final double pivotAbsoluteEncoderOffset = -0.267822265625;
-    public static final boolean usePivotAbsoluteEncoder = true; // Fallback, if false relies on internal motor encoder
+    public static final boolean usePivotAbsoluteEncoder = false; // Fallback, if false relies on internal motor encoder
   }
 
   public static class ScoringConstants {
