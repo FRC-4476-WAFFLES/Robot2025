@@ -83,7 +83,6 @@ public final class Constants {
 
     public static final int SUBSYSTEM_NT_UPDATE_RATE = 20; // How many times a second subsystems will publish to NT. Reduce if performance is suffering.
 
-    public static final boolean FORCE_LOAD_SIM_CORAL = true;
     public static final boolean FORCE_LOAD_SIM_ALGAE = false;
 
     // Disable all nonessential CAN status signals, potentially reducing CAN pressure
@@ -313,8 +312,8 @@ public final class Constants {
     public enum GroundPivotPosition {
       STOWED(0.0),
       HANDOFF(0.0),
-      DEPLOYED(138.0),
-      L1(27);
+      DEPLOYED(190.0),
+      L1(110);
 
       private final double degrees;
 

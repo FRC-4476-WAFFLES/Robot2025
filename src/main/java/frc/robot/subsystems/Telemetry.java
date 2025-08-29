@@ -98,6 +98,10 @@ public class Telemetry extends SubsystemBase {
     /* Other Variables */
     /*                 */
 
+    public boolean manipulatorSimLoaded = false;
+    public boolean intakeSimLoaded = false;
+    public boolean intakeHandoffSimLoaded = false;
+
     private PowerDistribution powerDistributionHub = new PowerDistribution(1, ModuleType.kRev);
 
     // CAN checking variables
@@ -332,5 +336,17 @@ public class Telemetry extends SubsystemBase {
 
             visionFaultDetected.setText("Vision fault detected [" + String.join(", ", details) + "]");
         }
+    }
+
+    public void toggleManipulatorSimLoaded() {
+        manipulatorSimLoaded = !manipulatorSimLoaded;
+    }
+
+    public void toggleIntakeSimLoaded() {
+        intakeSimLoaded = !intakeSimLoaded;
+    }
+
+    public void toggleIntakeHandoffSimLoaded() {
+        intakeHandoffSimLoaded = !intakeHandoffSimLoaded;
     }
 }

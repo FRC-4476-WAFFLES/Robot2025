@@ -2,6 +2,7 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -15,6 +16,8 @@ public class Controls {
     // Replace with CommandPS4Controller or CommandJoystick if needed
     public static final CommandXboxController driverController = new CommandXboxController(DriverConstants.kDriverControllerPort);
     public static final CommandXboxController operatorController = new CommandXboxController(OperatorConstants.kOperatorControllerPort);
+
+    public static final CommandGenericHID simController = new CommandGenericHID(3);
 
     // Constants
     private static final double JOYSTICK_DEADZONE_INNER = 0.025; // Below the inner value the input is zero

@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.ManipulatorConstants;
@@ -235,6 +236,11 @@ public class Intake extends SubsystemBase implements NetworkUser{
      * Updates the coral sensor's internal state
      */
     private void updateCoralSensors() {
+        if (RobotBase.isSimulation()) {
+            intakeLaserDistance = RobotContainer.telemetry.manipulatorSimLoaded ? 0 : 1000;
+            return;
+        }
+
         var intakeSensorResult = intakeLaserCanRefresher.getLatestValue();
         if (intakeSensorResult.isPresent()) {
             intakeLaserDistance = intakeSensorResult.get();
@@ -259,10 +265,6 @@ public class Intake extends SubsystemBase implements NetworkUser{
      * @return true if coral is detected
      */
     public boolean isCoralLoaded() {
-        if (RobotBase.isSimulation()) {
-            // Coral override for sim
-            return CodeConstants.FORCE_LOAD_SIM_CORAL;
-        }
         // return !coralSensor.get(); // Digital input is inverted (true when not pressed, false when pressed)
         return intakeLaserDistance <= Constants.ManipulatorConstants.CORAL_LOADED_DISTANCE_THRESHOLD;
     }

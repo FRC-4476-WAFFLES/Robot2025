@@ -13,7 +13,9 @@ import com.ctre.phoenix6.hardware.CANrange;
 import au.grapplerobotics.LaserCan;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.PhysicalConstants;
@@ -40,9 +42,9 @@ public class GroundIntake extends SimpleWafflesMechanism {
     private LaserCan rightLaserCan;
     
     // Sensor boilerplate
-    private double leftLaserDistance = 600;
-    private double midLaserDistance = 600;
-    private double rightLaserDistance = 600;
+    private double leftLaserDistance = 0;
+    private double midLaserDistance = 0;
+    private double rightLaserDistance = 0;
     private boolean handoffCoralPresent = false;
     
     private Trigger leftCoralSensor;
@@ -265,6 +267,15 @@ public class GroundIntake extends SimpleWafflesMechanism {
      * Updates the coral sensor's internal state
      */
     private void updateCoralSensors() {
+        if (RobotBase.isSimulation()) {
+            leftLaserDistance = RobotContainer.telemetry.intakeSimLoaded ? 0 : 1000;
+            midLaserDistance = RobotContainer.telemetry.intakeSimLoaded ? 0 : 1000;
+            rightLaserDistance = RobotContainer.telemetry.intakeSimLoaded ? 0 : 1000;
+
+            handoffCoralPresent = RobotContainer.telemetry.intakeHandoffSimLoaded;
+            return;
+        }
+
         var leftSensorResult = leftLaserCanRefresher.getLatestValue();
         if (leftSensorResult.isPresent()) {
             leftLaserDistance = leftSensorResult.get();

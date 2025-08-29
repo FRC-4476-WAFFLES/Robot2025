@@ -11,6 +11,7 @@ import com.pathplanner.lib.commands.FollowPathCommand;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -273,6 +274,23 @@ public class RobotContainer {
         () -> dynamicPathingSubsystem.getClosestFaceAngle(), true        
       )
     );
+
+
+    // Simulation
+
+    if (RobotBase.isSimulation()) { 
+      Controls.simController.button(1).onTrue(
+        Commands.runOnce(() -> telemetry.toggleIntakeSimLoaded())
+      );
+        
+      Controls.simController.button(2).onTrue(
+        Commands.runOnce(() -> telemetry.toggleIntakeHandoffSimLoaded())
+      );
+        
+      Controls.simController.button(3).onTrue(
+        Commands.runOnce(() -> telemetry.toggleManipulatorSimLoaded())
+      );
+    }
   }
 
   /**
