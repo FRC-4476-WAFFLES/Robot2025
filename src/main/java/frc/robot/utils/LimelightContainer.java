@@ -4,8 +4,11 @@
 
 package frc.robot.utils;
 
+import java.util.Objects;
+
 import com.ctre.phoenix6.Utils;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -24,8 +27,8 @@ public class LimelightContainer {
     private boolean isAlive = false;
 
     public LimelightContainer(String name, DriveSubsystem subsystem) {
-        limelightName = name;
-        driveSubsystem = subsystem;
+        this.limelightName = Objects.requireNonNull(name, "Limelight name cannot be null");
+        this.driveSubsystem = Objects.requireNonNull(subsystem, "DriveSubsystem cannot be null");
     }
     
     /**
@@ -47,64 +50,64 @@ public class LimelightContainer {
         // Update valid tag IDs, done periodically since they may change on the fly later
         LimelightHelpers.SetFiducialIDFiltersOverride(limelightName, VisionHelpers.getValidTagIDs());
 
+        // Early exit if no tags visible to avoid unnecessary processing
+        if (!LimelightHelpers.getTV(limelightName)) {
+            updateRobotOrientation(); // Still need to update robot orientation
+            return;
+        }
+
         // Integrate position from mt2
-        LimelightHelpers.PoseEstimate mt2Result = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
-        if (mt2Result != null) {
-            if(mt2Result.tagCount > 0) //Math.abs(Math.toDegrees(getCurrentRobotChassisSpeeds().omegaRadiansPerSecond)) < 10 &&
-            {
-                if (Double.isNaN(mt2Result.pose.getX()) || 
-                    Double.isNaN(mt2Result.pose.getY()) ||
-                    Double.isNaN(mt2Result.pose.getRotation().getDegrees())) 
-                {
+        LimelightHelpers.PoseEstimate megatag2Result = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
+        if (megatag2Result != null && megatag2Result.tagCount > 0) {
+                if (!isValidPose(megatag2Result.pose)) {
                     return;
                 }
 
-                var StandardDeviations = VisionHelpers.getEstimationStdDevsLimelightMT2(mt2Result.rawFiducials);
-                driveSubsystem.addVisionMeasurement(
-                    mt2Result.pose,
-                    Utils.fpgaToCurrentTime(mt2Result.timestampSeconds),
-                    StandardDeviations);
+                var standardDeviations = VisionHelpers.getEstimationStdDevsLimelightMT2(megatag2Result.rawFiducials);
+                if (standardDeviations != null && standardDeviations.get(0, 0) > 0) {
+                    driveSubsystem.addVisionMeasurement(
+                        megatag2Result.pose,
+                        Utils.fpgaToCurrentTime(megatag2Result.timestampSeconds),
+                        standardDeviations);
 
-                SmartDashboard.putNumberArray(limelightName + " Pose MT2 ", new double[] {
-                    mt2Result.pose.getX(),
-                    mt2Result.pose.getY(),
-                    mt2Result.pose.getRotation().getDegrees()
-                });
+                    SmartDashboard.putNumberArray(limelightName + " Pose MT2 ", new double[] {
+                        megatag2Result.pose.getX(),
+                        megatag2Result.pose.getY(),
+                        megatag2Result.pose.getRotation().getDegrees()
+                    });
 
-                SmartDashboard.putNumber(limelightName + "STDEV MT2", StandardDeviations.get(0, 0));
-            }
+                    SmartDashboard.putNumber(limelightName + "STDEV MT2", standardDeviations.get(0, 0));
+                }
         }
 
         // Integrate rotation from mt1
-        LimelightHelpers.PoseEstimate mt1Result = LimelightHelpers.getBotPoseEstimate_wpiBlue(limelightName);
-        if (mt1Result != null) {
-            
-            if(mt1Result.tagCount > 0) 
-            {
-                if (Double.isNaN(mt1Result.pose.getX()) || 
-                    Double.isNaN(mt1Result.pose.getY()) || 
-                    Double.isNaN(mt1Result.pose.getRotation().getDegrees())) 
-                {
+        LimelightHelpers.PoseEstimate megatag1Result = LimelightHelpers.getBotPoseEstimate_wpiBlue(limelightName);
+        if (megatag1Result != null && megatag1Result.tagCount > 0) {
+                if (!isValidPose(megatag1Result.pose)) {
                     return;
                 }
-                // Only accept in enabled if close to existing pose
-                // If disabled ignore distance heuristic
-                // if (getRobotPose().getTranslation().getDistance(mt1Result.pose.getTranslation()) < VisionConstants.MT1_REJECT_DISTANCE || DriverStation.isDisabled()) {
+                var estimationStdDevs = VisionHelpers.getEstimationStdDevsLimelight(megatag1Result.pose, megatag1Result.rawFiducials);
+                if (estimationStdDevs != null) {
+                    driveSubsystem.addVisionMeasurement(
+                        megatag1Result.pose,
+                        Utils.fpgaToCurrentTime(megatag1Result.timestampSeconds),
+                        estimationStdDevs);
 
-                driveSubsystem.addVisionMeasurement(
-                    mt1Result.pose,
-                    Utils.fpgaToCurrentTime(mt1Result.timestampSeconds),
-                    VisionHelpers.getEstimationStdDevsLimelight(mt1Result.pose, mt1Result.rawFiducials));
-
-                SmartDashboard.putNumberArray(limelightName + " Pose MT1", new double[] {
-                    mt1Result.pose.getX(),
-                    mt1Result.pose.getY(),
-                    mt1Result.pose.getRotation().getDegrees()
-                });
-                // }
-            }
+                    SmartDashboard.putNumberArray(limelightName + " Pose MT1", new double[] {
+                        megatag1Result.pose.getX(),
+                        megatag1Result.pose.getY(),
+                        megatag1Result.pose.getRotation().getDegrees()
+                    });
+                }
         }
 
+        updateRobotOrientation();
+    }
+    
+    /**
+     * Updates robot orientation and IMU mode for the limelight
+     */
+    private void updateRobotOrientation() {
         // Fuse in angle to limelight
         if (DriverStation.isEnabled()) {
             if (driveSubsystem.notRotating()) {
@@ -157,5 +160,23 @@ public class LimelightContainer {
      */
     public String getName() {
         return limelightName;
+    }
+    
+    /**
+     * Validates that a pose estimate contains valid (non-NaN) values
+     * @param pose The pose to validate
+     * @return true if the pose is valid, false otherwise
+     */
+    private boolean isValidPose(Pose2d pose) {
+        if (pose == null) {
+            return false;
+        }
+        
+        return !Double.isNaN(pose.getX()) && 
+               !Double.isNaN(pose.getY()) &&
+               !Double.isNaN(pose.getRotation().getDegrees()) &&
+               Double.isFinite(pose.getX()) &&
+               Double.isFinite(pose.getY()) &&
+               Double.isFinite(pose.getRotation().getDegrees());
     }
 }

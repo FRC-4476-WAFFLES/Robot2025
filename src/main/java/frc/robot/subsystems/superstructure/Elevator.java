@@ -24,10 +24,6 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.simulation.BatterySim;
-import edu.wpi.first.wpilibj.simulation.ElevatorSim;
-import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotContainer;
@@ -36,6 +32,7 @@ import frc.robot.data.Constants.ElevatorConstants;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.utils.PhoenixHelpers;
+import frc.robot.utils.SecondOrderSim;
 import frc.robot.utils.IO.TalonFXIO;
 import frc.robot.utils.lib.WafflesMechanism;
 
@@ -58,7 +55,7 @@ public class Elevator extends WafflesMechanism {
   private final TalonFXIO elevatorMotorLeader;
   private final TalonFXIO elevatorMotorFollower;
 
-  private ElevatorSim elevatorSim;
+  private SecondOrderSim elevatorSim;
 
   // Instance Variables
   private Trigger zeroingDebounceTrigger;
@@ -142,15 +139,7 @@ public class Elevator extends WafflesMechanism {
     }).debounce(ElevatorConstants.ZERO_DEBOUNCE_TIME);
 
     if (RobotBase.isSimulation()) {
-      elevatorSim = new ElevatorSim(
-        3,
-        0.7,
-        DCMotor.getKrakenX60Foc(2), 
-        0, 
-        ElevatorConstants.MAX_ELEVATOR_HEIGHT, 
-        true,
-        0
-      );
+      elevatorSim = new SecondOrderSim(1.5, 1, 0, 0);
     }
   }
 
@@ -228,7 +217,7 @@ public class Elevator extends WafflesMechanism {
     // Updated always so pivot always gets accurate information
     currentCollisionPrediction = isCollisionPredicted(setpoint);
 
-    runConstraint(collisionConstraint(), getName());
+    runConstraint(collisionConstraint(), "Collision Constraint");
     runConstraint(mechanismLimitsConstraint(), "Mechanism Limits");
   }
 
@@ -314,14 +303,14 @@ public class Elevator extends WafflesMechanism {
   /*             */
 
   private double mechanismLimitsConstraint() {
-    return MathUtil.clamp(setpoint, ElevatorConstants.MIN_ELEVATOR_HEIGHT, ElevatorConstants.MAX_ELEVATOR_HEIGHT);
+    return MathUtil.clamp(constrainedSetpoint, ElevatorConstants.MIN_ELEVATOR_HEIGHT, ElevatorConstants.MAX_ELEVATOR_HEIGHT);
   }
 
   private double collisionConstraint() {
     if (currentCollisionPrediction == Elevator.CollisionType.NONE) {
       // Safe to move elevator
       // Move elevator to setpoint
-      return setpoint;
+      return constrainedSetpoint;
 
     } else if(currentCollisionPrediction == Elevator.CollisionType.ENTERING_FROM_ABOVE) {
       // Move to safe setpoint
@@ -473,26 +462,12 @@ public class Elevator extends WafflesMechanism {
   public void simulationPeriodic() {
     var talonFXSim = elevatorMotorLeader.getSimState();
 
-    // set the supply voltage of the TalonFX
-    talonFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
-
-    // get the motor voltage of the TalonFX
-    var motorVoltage = talonFXSim.getMotorVoltageMeasure();
-
-    // use the motor voltage to calculate new position and velocity
-    // using WPILib's DCMotorSim class for physics simulation
-    elevatorSim.setInputVoltage(-motorVoltage.in(Volts));
-    elevatorSim.update(0.020); // assume 20 ms loop time
+    var simResult = elevatorSim.Evaluate(constrainedSetpoint, 0.02);
 
     // apply the new rotor position and velocity to the TalonFX;
     // note that this is rotor position/velocity (before gear ratio), but
     // WPILIB sim objects return mechanism position/velocity (after gear ratio)
-    // System.out.println(elevatorSim.getPositionMeters());
-    talonFXSim.setRawRotorPosition(-elevatorSim.getPositionMeters() * PhysicalConstants.elevatorReductionToMeters);
-    talonFXSim.setRotorVelocity(-elevatorSim.getVelocityMetersPerSecond() * PhysicalConstants.elevatorReductionToMeters);
-
-    RoboRioSim.setVInVoltage(
-      BatterySim.calculateDefaultBatteryLoadedVoltage(elevatorSim.getCurrentDrawAmps())
-    );
+    talonFXSim.setRawRotorPosition(-simResult.get(0) * PhysicalConstants.elevatorReductionToMeters);
+    talonFXSim.setRotorVelocity(-simResult.get(1) * PhysicalConstants.elevatorReductionToMeters);
   }
 }

@@ -8,7 +8,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
-import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class AlgaeOutake extends Command {
@@ -30,18 +29,14 @@ public class AlgaeOutake extends Command {
   @Override
   public void execute() {
     if (Controls.algaeOut.getAsBoolean()) {
-      if (RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.NET) {
-        RobotContainer.intakeSubsystem.setIntakeSpeed(-280.0);
-      } else {
-        RobotContainer.intakeSubsystem.setIntakeSpeed(-60.0);
-      }
-      
-      if (!RobotContainer.intakeSubsystem.isAlgaeLoaded() ) {
-        timer.start();
-      }
-    } 
-  }
-
+      RobotContainer.intakeSubsystem.setIntakeSpeed(-60.0);
+    }
+    
+    if (!RobotContainer.intakeSubsystem.isAlgaeLoaded() ) {
+      timer.start();
+    }
+  } 
+  
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {

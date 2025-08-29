@@ -19,6 +19,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.CANIds;
@@ -28,6 +29,7 @@ import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.subsystems.superstructure.Elevator.CollisionType;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 import frc.robot.utils.PhoenixHelpers;
+import frc.robot.utils.SecondOrderSim;
 import frc.robot.utils.IO.CANcoderIO;
 import frc.robot.utils.IO.TalonFXIO;
 import frc.robot.utils.lib.WafflesMechanism;
@@ -46,6 +48,8 @@ public class Pivot extends WafflesMechanism {
     // Hardware Components
     private final TalonFXIO pivot;
     private final CANcoderIO pivotAbsoluteEncoder;
+
+    private SecondOrderSim pivotSim;
 
     // Control Objects
     private final MotionMagicExpoVoltage motionMagicRequest = new MotionMagicExpoVoltage(0);
@@ -100,6 +104,10 @@ public class Pivot extends WafflesMechanism {
         zeroingDebounceTrigger = new Trigger(() -> {
             return pivot.signals().torqueCurrent().getValueAsDouble() < -ManipulatorConstants.PIVOT_CURRENT_THRESHOLD;     
         }).debounce(ManipulatorConstants.ZERO_DEBOUNCE_TIME);
+
+        if (RobotBase.isSimulation()) {
+            pivotSim = new SecondOrderSim(2.5, 1, 0, 0);
+        }
     }
 
     /**
@@ -156,7 +164,7 @@ public class Pivot extends WafflesMechanism {
         pivotConfigs.MotorOutput.DutyCycleNeutralDeadband = ManipulatorConstants.PIVOT_MOTOR_DEADBAND;
 
         
-        if (PhysicalConstants.usePivotAbsoluteEncoder) {
+        if (PhysicalConstants.usePivotAbsoluteEncoder && RobotBase.isReal()) {
             // For when CANCoder is present
             pivotConfigs.Feedback.RotorToSensorRatio = PhysicalConstants.pivotReduction;
             pivotConfigs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
@@ -256,23 +264,23 @@ public class Pivot extends WafflesMechanism {
     /*             */
 
     private double elevatorZeroingConstraint() {
-        return RobotContainer.superstructure.elevator.isZeroing() ? ManipulatorConstants.PIVOT_CLEARANCE_POSITION : setpoint;
+        return RobotContainer.superstructure.elevator.isZeroing() ? ManipulatorConstants.PIVOT_CLEARANCE_POSITION : constrainedSetpoint;
     }
 
     private double mechanismLimitsConstraint() {
-        return MathUtil.clamp(setpoint, ManipulatorConstants.PIVOT_MIN_ANGLE, ManipulatorConstants.PIVOT_MAX_ANGLE);
+        return MathUtil.clamp(constrainedSetpoint, ManipulatorConstants.PIVOT_MIN_ANGLE, ManipulatorConstants.PIVOT_MAX_ANGLE);
     }
 
     private double algaeConstraint() {
         if (isInAlgaeDangerZone() &&
             RobotContainer.intakeSubsystem.isAlgaeLoaded() && 
-            setpoint < ManipulatorConstants.PIVOT_CLEARANCE_POSITION_ALGAE
+            constrainedSetpoint < ManipulatorConstants.PIVOT_CLEARANCE_POSITION_ALGAE
         ) {
             // if we have an algae, we can't fully retract when we are below the crossbar of the elevator
             return ManipulatorConstants.PIVOT_CLEARANCE_POSITION_ALGAE;
         }
 
-        return setpoint;
+        return constrainedSetpoint;
     }
 
     private double collisionConstraint() {
@@ -285,7 +293,7 @@ public class Pivot extends WafflesMechanism {
                 return ManipulatorConstants.PIVOT_BUMPER_CLEARANCE_ANGLE;
             } else {
                 // If we're past the safety angle, or aren't in danger of hitting anything, move pivot normally
-                return setpoint;
+                return constrainedSetpoint;
             }
         }
 
@@ -370,5 +378,22 @@ public class Pivot extends WafflesMechanism {
      */
     public boolean isZeroing() {
         return isZeroingPivot;
+    }
+
+    /*              */
+    /*  Simulation  */
+    /*              */
+
+    @Override 
+    public void simulationPeriodic() {
+        var talonFXSim = pivot.getSimState();
+
+        var simResult = pivotSim.Evaluate(constrainedSetpoint / 360, 0.02);
+
+        // apply the new rotor position and velocity to the TalonFX;
+        // note that this is rotor position/velocity (before gear ratio), but
+        // WPILIB sim objects return mechanism position/velocity (after gear ratio)
+        talonFXSim.setRawRotorPosition(simResult.get(0) * PhysicalConstants.pivotReduction);
+        talonFXSim.setRotorVelocity(simResult.get(1) * PhysicalConstants.pivotReduction);
     }
 }

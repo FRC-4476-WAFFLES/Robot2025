@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
@@ -15,33 +16,40 @@ public class MechanismPoses extends SubsystemBase {
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
     private final NetworkTable mechanismTable = inst.getTable("Mechanism3d");
 
+    private final StructPublisher<Pose3d> zeroPose = mechanismTable.getStructTopic("Zero", Pose3d.struct).publish();
+
     // Publishers for each mechanism's pose
-    private final StructPublisher<Pose3d> elevatorFirstStagePosePub = mechanismTable.getStructTopic("elevatorFirstStage", Pose3d.struct).publish();
-    private final StructPublisher<Pose3d> elevatorCarriagePosePub = mechanismTable.getStructTopic("elevatorCarriage", Pose3d.struct).publish();
-    private final StructPublisher<Pose3d> pivotPosePub = mechanismTable.getStructTopic("pivot", Pose3d.struct).publish();
-    private final StructPublisher<Pose3d> zeroCalibPosePub = mechanismTable.getStructTopic("zerocalib", Pose3d.struct).publish();
+    private final StructArrayPublisher<Pose3d> mechanismPosesPublisher = mechanismTable.getStructArrayTopic("MechanismPoses", Pose3d.struct).publish();
+    private Pose3d[] poseArray = new Pose3d[4];
 
     // Base transforms for each mechanism (relative to robot center)
     private static final Transform3d ELEVATOR_BASE = new Transform3d(
-        new Translation3d(0.1208, 0, 0.0699), // Elevator is near the front of the robot
+        new Translation3d(0.12065, 0, 0.06985), // Elevator is near the front of the robot
         new Rotation3d(0, 0, 0)
     );
 
     private static final Transform3d PIVOT_BASE = new Transform3d(
-        new Translation3d(0.2858, 0, 0.4128), // Pivot is at the same base as elevator
+        new Translation3d(0.19685, -0.184345, 0.692425), // Pivot is at the same base as elevator
+        new Rotation3d(0, 0, 0)
+    );
+
+    
+    private static final Transform3d GROUND_INTAKE_BASE = new Transform3d(
+        new Translation3d(-0.33655, 0, 0.254), // Pivot is at the same base as elevator
         new Rotation3d(0, 0, 0)
     );
 
 
     public MechanismPoses() {
-        // Publish zeroed calibration pose
-        zeroCalibPosePub.set(new Pose3d());
+        zeroPose.set(Pose3d.kZero);
     }
 
     @Override
     public void periodic() {
         updateElevatorPoses();
         updatePivotPose();
+
+        mechanismPosesPublisher.set(poseArray);
     }
 
     private void updateElevatorPoses() {
@@ -75,8 +83,10 @@ public class MechanismPoses extends SubsystemBase {
         );
 
         // Publish poses directly
-        elevatorFirstStagePosePub.set(firstStagePose);
-        elevatorCarriagePosePub.set(carriagePose);
+        // elevatorFirstStagePosePub.set(firstStagePose);
+        // elevatorCarriagePosePub.set(carriagePose);
+        poseArray[2] = firstStagePose;
+        poseArray[3] = carriagePose;
     }
 
     private void updatePivotPose() {
@@ -86,10 +96,22 @@ public class MechanismPoses extends SubsystemBase {
         // Create pivot pose - rotates around Y axis, moves up with elevator carriage
         Pose3d pivotPose = new Pose3d(
             PIVOT_BASE.getTranslation().plus(new Translation3d(0, 0, elevatorHeight)),
-            new Rotation3d(0, pivotAngle, 0).plus(PIVOT_BASE.getRotation())
+            new Rotation3d(0, -pivotAngle, 0).plus(PIVOT_BASE.getRotation())
         );
 
         // Publish pose directly
-        pivotPosePub.set(pivotPose);
+        // pivotPosePub.set(pivotPose);
+
+        double groundIntakeAngle = Math.toRadians(RobotContainer.groundPivot.getPivotDegrees());
+
+        // Create ground intake pose - rotates around Y axis
+        Pose3d groundIntakePose = new Pose3d(
+            GROUND_INTAKE_BASE.getTranslation(),
+            new Rotation3d(0, groundIntakeAngle, 0).plus(GROUND_INTAKE_BASE.getRotation())
+        );
+
+        // groundIntakePosePub.set(groundIntakePose);
+        poseArray[0] = pivotPose;
+        poseArray[1] = groundIntakePose;
     }
 } 

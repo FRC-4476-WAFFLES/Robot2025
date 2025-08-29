@@ -1,0 +1,56 @@
+{
+  "name": "AlexOffseason",
+  "sourceUrl": "https://wafflesrobotics.com",
+  "rotations": [
+    { "axis": "x", "degrees": 180 },
+    { "axis": "z", "degrees": 90 }
+  ],
+  "position": [-0.46355, 0, 0],
+  "cameras": [],
+  "components": [
+    {
+      "zeroedRotations": [
+        { "axis": "x", "degrees": 180 },
+        { "axis": "z", "degrees": 90 }
+      ],
+      "zeroedPosition": [
+        -0.6604, 
+        0.184345,  
+        -0.692425
+    ]
+    },
+    {
+      "zeroedRotations": [
+        { "axis": "x", "degrees": 180 },
+        { "axis": "z", "degrees": 90 }
+      ],
+      "zeroedPosition": [
+        -0.127, 
+        0, 
+        -0.254
+    ]
+    },
+    {
+      "zeroedRotations": [
+        { "axis": "x", "degrees": 180 },
+        { "axis": "z", "degrees": 90 }
+      ],
+      "zeroedPosition": [
+        -0.5842, 
+        0, 
+        -0.06985
+    ]
+    },
+    {
+      "zeroedRotations": [
+        { "axis": "x", "degrees": 180 },
+        { "axis": "z", "degrees": 90 }
+      ],
+      "zeroedPosition": [
+        -0.5842, 
+        0, 
+        -0.09524993 
+    ]
+    }
+  ]
+}

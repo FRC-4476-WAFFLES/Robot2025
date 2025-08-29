@@ -264,18 +264,19 @@ public class RobotContainer {
     );
 
     // Manual net toss
-    Controls.operatorController.povDown().whileTrue(Commands.defer(() -> ScoreNet.getScoreNetCommand(0, () -> Rotation2d.kZero, false), DynamicPathing.actionCommandRequirements).onlyIf(() -> RobotContainer.intakeSubsystem.isAlgaeLoaded()));
+    Controls.operatorController.povDown().whileTrue(Commands.defer(() -> ScoreNet.getScoreNetCommand(0, () -> Rotation2d.kZero, false, true), DynamicPathing.actionCommandRequirements).onlyIf(() -> RobotContainer.intakeSubsystem.isAlgaeLoaded()));
   
     // L1 Intake / Outtake
     // Controls.rightJoystick.button(4).onTrue(
     //   Commands.either(
     //     Commands.runOnce(() -> RobotContainer.isRunningL1Intake = !RobotContainer.isRunningL1Intake), 
     //     GroundIntakeCommands.getOutakeCommand().asProxy(), 
-    //     () -> !groundIntake.isCoralHandoffLoaded()
+    //     () -> !groundIntake.isCoralLoaded()
     //   )
     // );
 
-   
+    // Run intake while intake should be running lmao
+    // runningL1Intake.whileTrue(GroundIntakeCommands.getIntakeCommand());
     
     // Heading lock for L1
     isHeadingLockedToL1 = L1Loaded.and(() -> 
@@ -432,7 +433,7 @@ public class RobotContainer {
       Commands.sequence(
         Commands.runOnce(() -> superstructure.elevator.applySetpoint(SuperstructureState.ALGAE_L2)),
         Commands.waitSeconds(0.6), // Goofy wait
-        Commands.runOnce(() -> superstructure.elevator.applySetpoint(SuperstructureState.NET_PREP))
+        Commands.runOnce(() -> superstructure.elevator.applySetpoint(SuperstructureState.NET_FRONT))
           .onlyIf(() -> ScoringConstants.USE_RISKY_NET_AUTO)
       ),
       Commands.runOnce(() -> superstructure.elevator.applySetpoint(SuperstructureState.ALGAE_L2))
