@@ -2,12 +2,12 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems.groundSuperstructure;
+package frc.robot.subsystems.groundsuperstructure;
 
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.data.Constants.GroundPivotConstants.GroundPivotPosition;
-import frc.robot.subsystems.groundSuperstructure.GroundIntake.GroundIntakeState;
+import frc.robot.subsystems.groundsuperstructure.GroundIntake.GroundIntakeState;
 import frc.robot.utils.lib.SimpleWafflesMechanism;
 
 /** Add your docs here. */

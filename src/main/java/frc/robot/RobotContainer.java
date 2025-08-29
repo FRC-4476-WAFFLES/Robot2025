@@ -45,7 +45,7 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Lights;
 import frc.robot.subsystems.MechanismPoses;
 import frc.robot.subsystems.Telemetry;
-import frc.robot.subsystems.groundSuperstructure.GroundIntakeSuperstructure;
+import frc.robot.subsystems.groundsuperstructure.GroundIntakeSuperstructure;
 import frc.robot.subsystems.superstructure.Superstructure;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 

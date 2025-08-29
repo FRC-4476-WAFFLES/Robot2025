@@ -1,4 +1,4 @@
-package frc.robot.subsystems.groundSuperstructure;
+package frc.robot.subsystems.groundsuperstructure;
 
 import com.ctre.phoenix6.configs.CANrangeConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -6,9 +6,9 @@ import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.hardware.CANrange;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.hardware.CANrange;
 
 import au.grapplerobotics.LaserCan;
 import edu.wpi.first.networktables.BooleanPublisher;
@@ -17,9 +17,8 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
-import frc.robot.data.Constants.CodeConstants;
-import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.Constants.GroundIntakeConstants;
+import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.utils.PhoenixHelpers;
 import frc.robot.utils.IO.DeferredRefresher;
 import frc.robot.utils.IO.TalonFXIO;
@@ -36,7 +35,7 @@ public class GroundIntake extends SimpleWafflesMechanism {
     private final TalonFXIO intakeRight;
     private final TalonFXIO intakeMid;
 
-    private CANrange handoffCANRange = new CANrange(Constants.CANIds.groundIntakeCanRange);
+    private CANrange handoffCANRange;
     private LaserCan leftLaserCan;
     private LaserCan midLaserCan;
     private LaserCan rightLaserCan;
@@ -155,13 +154,22 @@ public class GroundIntake extends SimpleWafflesMechanism {
         intakeRight = new TalonFXIO(Constants.CANIds.groundIntakeMotorRight);
         intakeLeft = new TalonFXIO(Constants.CANIds.groundIntakeMotorLeft);
         intakeMid = new TalonFXIO(Constants.CANIds.groundIntakeMotorMid);
+        handoffCANRange = new CANrange(Constants.CANIds.groundIntakeCanRange);
+
         // Configure hardware
-        CANrangeConfiguration canRangeConfigs = new CANrangeConfiguration();
-        canRangeConfigs.ProximityParams.ProximityThreshold = Constants.GroundIntakeConstants.CANRANGE_PROXIMITY_THRESHOLD;
-        handoffCANRange.getConfigurator().apply(canRangeConfigs);
         configureLaserCAN();
         configureSideRollers();
         configureTopRoller();
+        configureCANRange();
+    }
+
+    /**
+     * Configures the CANRange
+     */
+    private void configureCANRange() {
+        CANrangeConfiguration canRangeConfigs = new CANrangeConfiguration();
+        canRangeConfigs.ProximityParams.ProximityThreshold = Constants.GroundIntakeConstants.CANRANGE_PROXIMITY_THRESHOLD;
+        handoffCANRange.getConfigurator().apply(canRangeConfigs);
     }
 
     /**
@@ -207,6 +215,9 @@ public class GroundIntake extends SimpleWafflesMechanism {
         ).debounce(GroundIntakeConstants.SENSOR_DEBOUNCE_TIME);
     }
 
+    /**
+     * Configures the side roller motors
+     */
     private void configureSideRollers() {
         TalonFXConfiguration intakeConfigs = new TalonFXConfiguration();
         CurrentLimitsConfigs intakeCurrentLimit = new CurrentLimitsConfigs()
@@ -241,6 +252,9 @@ public class GroundIntake extends SimpleWafflesMechanism {
         PhoenixHelpers.tryConfig(() -> intakeLeft.getConfigurator().apply(intakeConfigs));
     }
 
+    /**
+     * Configures the top roller motor
+     */
     private void configureTopRoller() {
         TalonFXConfiguration intakeConfigs = new TalonFXConfiguration();
         CurrentLimitsConfigs intakeCurrentLimit = new CurrentLimitsConfigs()
@@ -281,20 +295,22 @@ public class GroundIntake extends SimpleWafflesMechanism {
         intakeMid.setControl(intakeMidControlRequest.withVelocity(currentState.getTopSpeed()).withSlot(0));
         updateCoralSensors();
     }
-      /**
-   * Sets the target rotation of the ground intake.
-   * @param setpoint Target rotation speed (GroundIntakeState enum)
-   */
+    /**
+     * Sets the target rotation of the ground intake.
+     * @param setpoint Target rotation speed (GroundIntakeState enum)
+     */
     public void setGroundIntakeSetpoint(GroundIntakeState state) {
         currentState = state;    
     }
-      /**
-   * Get the last defined rotation setpoint the ground intake was set to
-   * @return
-   */
+
+    /**
+     * Get the last defined rotation setpoint the ground intake was set to
+     * @return
+     */
     public GroundIntakeState getGroundIntakeSetpointEnum(){
         return currentState;
     }
+    
     /**
      * Updates the coral sensor's internal state
      */

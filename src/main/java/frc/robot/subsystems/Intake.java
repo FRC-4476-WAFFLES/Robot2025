@@ -6,29 +6,24 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
-import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import au.grapplerobotics.LaserCan;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.PhysicalConstants;
-import frc.robot.utils.NetworkUser;
 import frc.robot.utils.PhoenixHelpers;
-import frc.robot.utils.SubsystemNetworkManager;
 import frc.robot.utils.IO.DeferredRefresher;
 import frc.robot.utils.IO.TalonFXIO;
+import frc.robot.utils.lib.SimpleWafflesMechanism;
 
 /**
  * The Intake subsystem handles the robot's intake mechanism.
@@ -36,7 +31,7 @@ import frc.robot.utils.IO.TalonFXIO;
  * - An intake motor for collecting game pieces
  * - A LaserCan sensor for detecting game pieces
  */
-public class Intake extends SubsystemBase implements NetworkUser{
+public class Intake extends SimpleWafflesMechanism {
     // Hardware Components
     private final TalonFXIO intake;
     private LaserCan intakeLaserCan;
@@ -75,25 +70,18 @@ public class Intake extends SubsystemBase implements NetworkUser{
     private Trigger algaeDetectionTrigger;
 
     // Network Tables
-    private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    private final NetworkTable intakeTable = inst.getTable("Intake");
-    private final DoublePublisher intakeLaserCanDistanceNT = intakeTable.getDoubleTopic("Intake Laser Distance (mm)").publish();
-    private final BooleanPublisher coralLoadedNT = intakeTable.getBooleanTopic("Coral Loaded").publish();
-    private final BooleanPublisher algaeLoadedNT = intakeTable.getBooleanTopic("Algae Loaded").publish();
-    private final DoublePublisher intakeSetpointNT = intakeTable.getDoubleTopic("Intake Setpoint").publish();
-    private final DoublePublisher intakeCurrentDrawNT = intakeTable.getDoubleTopic("Intake Current Draw").publish();
-    private final DoublePublisher intakeVelocityNT = intakeTable.getDoubleTopic("Intake Velocity").publish();
-    // private final DoublePublisher intakePositionNT = intakeTable.getDoubleTopic("Intake Position").publish();
-    // private final DoublePublisher intakeTargetPositionNT = intakeTable.getDoubleTopic("Intake Target Position").publish();
-    private final BooleanPublisher coralSensorRawNT = intakeTable.getBooleanTopic("Coral Sensor Raw").publish();
+    private final DoublePublisher intakeLaserCanDistanceNT = networkTable.getDoubleTopic("Intake Laser Distance (mm)").publish();
+    private final BooleanPublisher coralLoadedNT = networkTable.getBooleanTopic("Coral Loaded").publish();
+    private final BooleanPublisher algaeLoadedNT = networkTable.getBooleanTopic("Algae Loaded").publish();
+    private final DoublePublisher intakeSetpointNT = networkTable.getDoubleTopic("Intake Setpoint").publish();
+    private final DoublePublisher intakeCurrentDrawNT = networkTable.getDoubleTopic("Intake Current Draw").publish();
+    private final DoublePublisher intakeVelocityNT = networkTable.getDoubleTopic("Intake Velocity").publish();
+    private final BooleanPublisher coralSensorRawNT = networkTable.getBooleanTopic("Coral Sensor Raw").publish();
 
-    private final BooleanPublisher isIntakingAlgaeNT = intakeTable.getBooleanTopic("IsIntaking").publish();
-    private final BooleanPublisher isOutakingAlgaeNT = intakeTable.getBooleanTopic("IsOutaking").publish();
-    // private final BooleanPublisher isPositionControlNT = intakeTable.getBooleanTopic("IsPositionControl").publish();
+    private final BooleanPublisher isIntakingAlgaeNT = networkTable.getBooleanTopic("IsIntaking").publish();
+    private final BooleanPublisher isOutakingAlgaeNT = networkTable.getBooleanTopic("IsOutaking").publish();
 
     public Intake() {
-        SubsystemNetworkManager.RegisterNetworkUser(this, true, CodeConstants.SUBSYSTEM_NT_UPDATE_RATE);
-
         intake = new TalonFXIO(Constants.CANIds.intakeMotor);
         coralSensor = new DigitalInput(Constants.DigitalOutputs.coralSensor);
 
@@ -169,7 +157,7 @@ public class Intake extends SubsystemBase implements NetworkUser{
     }
     
     @Override
-    public void periodic() {
+    public void periodicImpl() {
         if (Math.abs(dutyCycle) > 0.01) {
             intake.set(dutyCycle);
             
@@ -287,11 +275,6 @@ public class Intake extends SubsystemBase implements NetworkUser{
 
         isIntakingAlgaeNT.set(isIntakingAlgae());
         isOutakingAlgaeNT.set(isOuttakingAlgae());
-    }
-
-    @Override
-    public void initializeNetwork() {
-        // Network initialization if needed
     }
 
     /**

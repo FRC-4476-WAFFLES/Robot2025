@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems.groundSuperstructure;
+package frc.robot.subsystems.groundsuperstructure;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
@@ -87,6 +87,9 @@ public class GroundPivot extends WafflesMechanism {
     }
   }
 
+  /**
+   * Configures the pivot motor
+   */
   private void configurePivotMotor() {
     // create a configuration object for the pivot motor
     TalonFXConfiguration pivotConfig = new TalonFXConfiguration();
@@ -154,15 +157,6 @@ public class GroundPivot extends WafflesMechanism {
     pivotMotor.setControl(motionMagicRequest.withPosition(targetRotations).withSlot(0));
   }
 
-  @Override
-  protected void applyConstraints() {
-    runConstraint(MechanismLimitsConstraint(), "Mechanism Limits");
-  }
-
-  public double MechanismLimitsConstraint() {
-    return MathUtil.clamp(setpoint, GroundPivotConstants.MIN_ANGLE, GroundPivotConstants.MAX_ANGLE);
-  }
-
   /**
    * Sets the ground pivot position using a predefined GroundPivot enum
    * 
@@ -191,6 +185,37 @@ public class GroundPivot extends WafflesMechanism {
   public boolean atSetpoint() {
     return Math.abs(setpoint - getPivotDegrees()) < GroundPivotConstants.DEAD_ZONE;
   }
+
+  /*             */
+  /* Constraints */
+  /*             */
+
+  @Override
+  protected void applyConstraints() {
+    runConstraint(MechanismLimitsConstraint(), "Mechanism Limits");
+  }
+
+  public double MechanismLimitsConstraint() {
+    return MathUtil.clamp(setpoint, GroundPivotConstants.MIN_ANGLE, GroundPivotConstants.MAX_ANGLE);
+  }
+
+  /*             */
+  /*   Network   */
+  /*             */
+
+  /**
+   * This method is called automatically by the SubsystemNetworkManager
+   */
+  @Override
+  public void updateNetwork() {
+    groundPivotAngleNT.set(getPivotDegrees());
+    groundPivotisZeroingNT.set(isZeroingPivot);
+    groundPivotAtSetpointNT.set(atSetpoint());
+  }
+
+  /*             */
+  /*   Zeroing   */
+  /*             */
 
   /**
    * Run periodically while zeroing pivot
@@ -231,18 +256,6 @@ public class GroundPivot extends WafflesMechanism {
    */
   public boolean isZeroing() {
     return isZeroingPivot;
-  }
-
-  /* Networktables methods */
-
-  /**
-   * This method is called automatically by the SubsystemNetworkManager
-   */
-  @Override
-  public void updateNetwork() {
-    groundPivotAngleNT.set(getPivotDegrees());
-    groundPivotisZeroingNT.set(isZeroingPivot);
-    groundPivotAtSetpointNT.set(atSetpoint());
   }
 
   /*              */

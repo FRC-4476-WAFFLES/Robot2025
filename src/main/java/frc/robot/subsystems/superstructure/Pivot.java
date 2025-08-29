@@ -122,6 +122,7 @@ public class Pivot extends WafflesMechanism {
     /**
      * Configures the pivot motor with motion magic and current limits
      */
+    @SuppressWarnings("unused")
     private void configurePivotMotor() {
         TalonFXConfiguration pivotConfigs = new TalonFXConfiguration();
 
