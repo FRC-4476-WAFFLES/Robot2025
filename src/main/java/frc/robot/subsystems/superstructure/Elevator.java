@@ -217,7 +217,8 @@ public class Elevator extends WafflesMechanism {
     // Updated always so pivot always gets accurate information
     currentCollisionPrediction = isCollisionPredicted(setpoint);
 
-    // runConstraint(collisionConstraint(), "Collision Constraint");
+    runConstraint(crossbarCollisionConstraint(), "Crossbar Collision");
+    runConstraint(groundIntakeCollisionConstraint(), "Ground Intake Collision");
     runConstraint(mechanismLimitsConstraint(), "Mechanism Limits");
   }
 
@@ -306,17 +307,26 @@ public class Elevator extends WafflesMechanism {
     return MathUtil.clamp(constrainedSetpoint, ElevatorConstants.MIN_ELEVATOR_HEIGHT, ElevatorConstants.MAX_ELEVATOR_HEIGHT);
   }
 
-  private double collisionConstraint() {
-    if (currentCollisionPrediction == Elevator.CollisionType.NONE) {
+  private double groundIntakeCollisionConstraint() {
+    if (RobotContainer.superstructure.pivot.getSetpoint() < ElevatorConstants.PIVOT_HITS_GROUND_INTAKE_ANGLE &&
+      constrainedSetpoint < ElevatorConstants.GROUND_INTAKE_SAFETY_HEIGHT
+    ) {
+      return ElevatorConstants.GROUND_INTAKE_SAFETY_HEIGHT;
+    }
+    return constrainedSetpoint;
+  }
+
+  private double crossbarCollisionConstraint() {
+    if (currentCollisionPrediction == CollisionType.NONE) {
       // Safe to move elevator
       // Move elevator to setpoint
       return constrainedSetpoint;
 
-    } else if(currentCollisionPrediction == Elevator.CollisionType.ENTERING_FROM_ABOVE) {
+    } else if(currentCollisionPrediction == CollisionType.ENTERING_FROM_ABOVE) {
       // Move to safe setpoint
       return ElevatorConstants.COLLISION_ZONE_UPPER;
 
-    } else if(currentCollisionPrediction == Elevator.CollisionType.ENTERING_FROM_BELOW) {
+    } else if(currentCollisionPrediction == CollisionType.ENTERING_FROM_BELOW) {
       // Move to safe setpoint
       return ElevatorConstants.COLLISION_ZONE_LOWER;
 
@@ -335,7 +345,7 @@ public class Elevator extends WafflesMechanism {
     potentialCollisionPrediction = predictedPotentialCollision(setpoint);
     
     // Check if pivot is in safe position
-    boolean pivotSafe = RobotContainer.superstructure.pivot.getPivotPosition() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE;
+    boolean pivotSafe = RobotContainer.superstructure.pivot.getPivotPosition() > ElevatorConstants.CROSSBAR_MIN_CLEAR_ANGLE;
                         // RobotContainer.manipulatorSubsystem.getPivotSetpoint() > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE;
 
     // If pivot is safe, no collision possible

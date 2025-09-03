@@ -23,9 +23,15 @@ public class Superstructure {
     NET(98,1.5),
     NET_FRONT(98, 1.5),
     NET_BACK(98, 1.5),
-    L4(100,1.50),
-    L3(100,0.865),
-    L2(100,0.44),
+
+    L4(160,1.10),
+    L3(180,0.4),
+    L2(160,0.05),
+
+    EXECUTE_L4(140, 1.0),
+    EXECUTE_L3(150, 0.3),
+    EXECUTE_L2(144, 0.0),
+
     L1(100,0.33),
 
     // Maybe manual mode
@@ -34,8 +40,8 @@ public class Superstructure {
     MANUAL_L2(24.0,0.280),
     MANUAL_L1(150,0.33),
     
-    HANDOFF_READY(15, 0.4),
-    HANDOFF_EXECUTE(15, 0.2),
+    HANDOFF_READY(15, 0.32),
+    HANDOFF_EXECUTE(20, 0.17),
     HANDOFF_CLEAR(30, 0.3);
 
     private final double pivotAngle;

@@ -221,9 +221,11 @@ public class Pivot extends WafflesMechanism {
     @Override
     protected void applyConstraints() {
         // Highest priority constraints should be run last
-        // runConstraint(collisionConstraint(), "Physical Collision");
-        // runConstraint(algaeConstraint(), "Algae Constraint");
-        runConstraint(elevatorZeroingConstraint(),  "Elevator Zeroing Constraint");
+        runConstraint(crossbarCollisionConstraint(), "Crossbar Collision");
+        runConstraint(firstStageCollisionConstraint(), "First Stage Collision");
+        runConstraint(frameCollisionConstraint(), "Frame Collision");
+        runConstraint(algaeConstraint(), "Algae Constraint");
+        runConstraint(elevatorZeroingConstraint(),  "Elevator Zeroing");
         runConstraint(mechanismLimitsConstraint(), "Mechanism Limits");
     }
 
@@ -273,43 +275,66 @@ public class Pivot extends WafflesMechanism {
     }
 
     private double algaeConstraint() {
-        if (isInAlgaeDangerZone() &&
+        if (
             RobotContainer.intakeSubsystem.isAlgaeLoaded() && 
             constrainedSetpoint < ManipulatorConstants.PIVOT_CLEARANCE_POSITION_ALGAE
         ) {
-            // if we have an algae, we can't fully retract when we are below the crossbar of the elevator
+            // if we have an algae, we can't fully retract 
             return ManipulatorConstants.PIVOT_CLEARANCE_POSITION_ALGAE;
         }
 
         return constrainedSetpoint;
     }
 
-    private double collisionConstraint() {
+    private double firstStageCollisionConstraint() {
+        if (RobotContainer.superstructure.elevator.getSetpoint() < RobotContainer.superstructure.elevator.getElevatorPositionMeters() - 0.1) {
+            // Elevator moving down
+            if (RobotContainer.superstructure.elevator.getElevatorPositionMeters() > ElevatorConstants.FIRST_STAGE_START_HEIGHT) {
+                if (constrainedSetpoint > 190) {
+                    return 190;
+                }
+            }
+        }
+        return constrainedSetpoint;
+    }
+
+    private double crossbarCollisionConstraint() {
         CollisionType collisionPrediction = RobotContainer.superstructure.elevator.getCurrentCollisionPotential();
         
-        if (collisionPrediction == CollisionType.NONE || setpoint > ElevatorConstants.MIN_ELEVATOR_PIVOT_ANGLE) {
-            // Check for bumper collision, and limit angle if so
-            if (isInBumperDangerZone() && setpoint > ManipulatorConstants.PIVOT_BUMPER_CLEARANCE_ANGLE) {
-                // Move to max safe angle
-                return ManipulatorConstants.PIVOT_BUMPER_CLEARANCE_ANGLE;
-            } else {
-                // If we're past the safety angle, or aren't in danger of hitting anything, move pivot normally
-                return constrainedSetpoint;
-            }
+        if (collisionPrediction == CollisionType.NONE || constrainedSetpoint > ElevatorConstants.CROSSBAR_MIN_CLEAR_ANGLE) {
+            // If we're past the safety angle, or aren't in danger of hitting anything, move pivot normally
+            return constrainedSetpoint;
         }
 
         // Not safe in some way, move pivot out of the way
         return ManipulatorConstants.PIVOT_CLEARANCE_POSITION;
     }
 
-    public boolean isInBumperDangerZone() {
-        return RobotContainer.superstructure.elevator.getElevatorPositionMeters() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT ||
-            RobotContainer.superstructure.elevator.getSetpoint() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT;
+    private double frameCollisionConstraint() {
+        // Check for frame collision, and limit angle if needed
+        if (isInFrameDangerZone() ) {
+            // (constrainedSetpoint, ManipulatorConstants.PIVOT_FRAME_MIN_CLEARANCE_ANGLE, ManipulatorConstants.PIVOT_FRAME_MAX_CLEARANCE_ANGLE);
+            if (
+                constrainedSetpoint < ManipulatorConstants.PIVOT_FRAME_UPPER_CLEARANCE_ANGLE &&
+                constrainedSetpoint > ManipulatorConstants.PIVOT_FRAME_LOWER_CLEARANCE_ANGLE
+            ) {
+                // Setpoint is in danger zone
+                double distanceToMin = Math.abs(constrainedSetpoint - ManipulatorConstants.PIVOT_FRAME_LOWER_CLEARANCE_ANGLE);
+                double distanceToMax = Math.abs(constrainedSetpoint - ManipulatorConstants.PIVOT_FRAME_UPPER_CLEARANCE_ANGLE);
+
+                if (distanceToMin < distanceToMax) {
+                    return ManipulatorConstants.PIVOT_FRAME_LOWER_CLEARANCE_ANGLE;
+                }
+                return ManipulatorConstants.PIVOT_FRAME_UPPER_CLEARANCE_ANGLE;
+            }
+        }
+
+        return constrainedSetpoint;
     }
 
-    public boolean isInAlgaeDangerZone() {
-        return RobotContainer.superstructure.elevator.getElevatorPositionMeters() <= ElevatorConstants.COLLISION_ZONE_UPPER ||
-            RobotContainer.superstructure.elevator.getSetpoint() <= ElevatorConstants.COLLISION_ZONE_UPPER;
+    public boolean isInFrameDangerZone() {
+        return RobotContainer.superstructure.elevator.getElevatorPositionMeters() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT ||
+            RobotContainer.superstructure.elevator.getSetpoint() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT;
     }
 
     /*             */

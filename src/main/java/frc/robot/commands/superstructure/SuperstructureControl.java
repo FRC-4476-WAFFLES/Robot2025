@@ -62,7 +62,7 @@ public class SuperstructureControl {
                 
                 // Go to L2 automatically if in range to speed up motion
                 if (RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.REEF_CORAL) {
-                    RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.L2);
+                    RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.L3);
                 } else {
                     RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.HANDOFF_READY);
                 }

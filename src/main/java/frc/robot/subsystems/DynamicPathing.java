@@ -72,7 +72,7 @@ public class DynamicPathing extends SubsystemBase {
     public static final double REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE = PhysicalConstants.withBumperBotHalfWidth + 0.5; 
     public static final double REEF_SCORING_POSITION_OFFSET = PhysicalConstants.withBumperBotHalfWidth + 0.12; 
     public static final double REEF_SCORING_POSITION_OFFSET_L1 = PhysicalConstants.withBumperBotHalfWidth + 0.37; 
-    public static final double REEF_SCORING_POSITION_OFFSET_L4 = PhysicalConstants.withBumperBotHalfWidth + 0.015; 
+    public static final double REEF_SCORING_POSITION_OFFSET_L4 = PhysicalConstants.withBumperBotHalfWidth + 0.2; 
     public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE = PhysicalConstants.withBumperBotHalfWidth + 0.015; 
     public static final double REEF_ALGAE_SAFETY_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 0.35;
     public static final double REEF_ELEVATOR_RETRACTION_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 0.24;

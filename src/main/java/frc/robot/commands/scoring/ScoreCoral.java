@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
@@ -22,6 +23,7 @@ import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.commands.AlignToPose;
 import frc.robot.commands.intake.CoralOutake;
+import frc.robot.commands.superstructure.ApplySuperstructureState;
 import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.ScoringConstants;
 import frc.robot.data.Constants.ScoringConstants.CoralScoringParameters;
@@ -81,13 +83,7 @@ public class ScoreCoral extends SequentialCommandGroup {
         velocityMagnitude <= chosenParameters.maxVelocity() &&
         currentSpeeds.omegaRadiansPerSecond <= chosenParameters.maxThetaVelocity().getRadians();
 
-      // Only for L4
-      boolean pivotValidL4 = true;
-      if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == SuperstructureState.L4) {
-        pivotValidL4 = Math.abs(RobotContainer.superstructure.pivot.getPivotPosition() - SuperstructureState.L4.getPivotAngle()) < PIVOT_MIN_ANGLE_L4; 
-      }
-
-      return poseValid && velocityValid && pivotValidL4;
+      return poseValid && velocityValid;
     });
 
     addCommands(
@@ -97,16 +93,21 @@ public class ScoreCoral extends SequentialCommandGroup {
       // Main scoring sequence
       new ParallelDeadlineGroup(
         new SequentialCommandGroup(
-          // Wait until doNotScore is released
-          new WaitUntilCommand(() -> !Controls.doNotScore.getAsBoolean() && scoreTrigger.getAsBoolean()),
-          
+          new ParallelDeadlineGroup(
+            // Wait until doNotScore is released
+            new WaitUntilCommand(() -> !Controls.doNotScore.getAsBoolean() && scoreTrigger.getAsBoolean()),
+            new PrepareScoreCoral()
+          ),
+
           // Outake the coral
-          new CoralOutake()
+          new ParallelCommandGroup(
+            new ApplySuperstructureState(chosenParameters.executeScoreState()),
+            new CoralOutake()
+          )
         ),
         pathingSubsystem.wrapPathingCommand(
           new AlignToPose(finalAlignPose)
-        ),
-        new PrepareScoreCoral()
+        )
       ),
       
       // End timing
@@ -128,15 +129,7 @@ public class ScoreCoral extends SequentialCommandGroup {
    * @return The command to score coral
    */
   public static Command scoreCoralWithPath(Command driveCommand, Pose2d finalAlignPose, double maxSpeed) {
-    return new ScoreCoral(driveCommand, finalAlignPose, maxSpeed).finallyDo(() -> {
-      if (RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == SuperstructureState.L4) {
-        RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.ZERO);
-        // Do not lower elevator after L4 score
-      } else {
-        RobotContainer.superstructure.pivot.applySetpoint(ManipulatorConstants.PIVOT_CLEARANCE_POSITION);
-        // RobotContainer.superstructureSubsystem.elevator.setElevatorSetpoint(ElevatorLevel.REST_POSITION);
-      }
-    });
+    return new ScoreCoral(driveCommand, finalAlignPose, maxSpeed);
   }
 
   /**

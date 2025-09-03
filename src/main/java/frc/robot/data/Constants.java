@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.Units;
+import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -175,15 +176,20 @@ public final class Constants {
 
       double maxDistanceX,
       double maxDistanceY,
-      Rotation2d maxThetaDifference
+      Rotation2d maxThetaDifference,
+
+      SuperstructureState executeScoreState
     ) {}
+
+    
 
     public static final CoralScoringParameters L4Params = new CoralScoringParameters(
       0.05, 
       Rotation2d.fromDegrees(1), 
       0.05, 
       0.03, 
-      Rotation2d.fromDegrees(2)
+      Rotation2d.fromDegrees(2),
+      SuperstructureState.EXECUTE_L4
     );
 
     public static final CoralScoringParameters L3Params = new CoralScoringParameters(
@@ -191,7 +197,8 @@ public final class Constants {
       Rotation2d.fromDegrees(1), 
       0.03, 
       0.03, 
-      Rotation2d.fromDegrees(2)
+      Rotation2d.fromDegrees(2),
+      SuperstructureState.EXECUTE_L3
     );
 
     public static final CoralScoringParameters L2Params = new CoralScoringParameters(
@@ -199,7 +206,8 @@ public final class Constants {
       Rotation2d.fromDegrees(1), 
       0.03, 
       0.03, 
-      Rotation2d.fromDegrees(2)
+      Rotation2d.fromDegrees(2),
+      SuperstructureState.EXECUTE_L2
     );
   }
 
@@ -219,9 +227,13 @@ public final class Constants {
 
     // Pivot constants
     public static final double PIVOT_ANGLE_DEADBAND = 1.4;
+
     public static final double PIVOT_MIN_ANGLE = 0.0; // degrees
     public static final double PIVOT_MAX_ANGLE = 185.0; // degrees
-    public static final double PIVOT_BUMPER_CLEARANCE_ANGLE = 150; // degrees
+
+    // Constraints
+    public static final double PIVOT_FRAME_LOWER_CLEARANCE_ANGLE = 15;
+    public static final double PIVOT_FRAME_UPPER_CLEARANCE_ANGLE = 90;
     public static final double PIVOT_L4_CLEARANCE_ANGLE = 28;
 
     public static final double PIVOT_CLEARANCE_POSITION = 35;
@@ -256,17 +268,17 @@ public final class Constants {
     public static final double ZERO_DEBOUNCE_TIME = 0.2;
 
     // Elevator will not move if the pivot is not past this angle, to avoid collision with top bar
-    public static final double MIN_ELEVATOR_PIVOT_ANGLE = 32; 
-    public static final double PIVOT_BUMPER_CLEAR_HEIGHT = 0.13;
+    public static final double CROSSBAR_MIN_CLEAR_ANGLE = 32; 
+    public static final double PIVOT_BUMPER_CLEAR_HEIGHT = 0.08;
 
-    public static final double PIVOT_L4_CLEAR_HEIGHT_MIN = 0.70;
-    public static final double PIVOT_L4_CLEAR_HEIGHT_MAX = 1.2;
+    public static final double GROUND_INTAKE_SAFETY_HEIGHT = 0.135;
+    public static final double PIVOT_HITS_GROUND_INTAKE_ANGLE = 25;
 
     public static final double MIN_ELEVATOR_HEIGHT = 0;
     public static final double MAX_ELEVATOR_HEIGHT = 1.50;
 
     // Collision zone constants
-    public static final double COLLISION_ZONE_LOWER = 0.16; // meters
+    public static final double COLLISION_ZONE_LOWER = 0.36; // meters
     public static final double COLLISION_ZONE_UPPER = 0.61; // meters
 
     // Height where first stage starts moving
