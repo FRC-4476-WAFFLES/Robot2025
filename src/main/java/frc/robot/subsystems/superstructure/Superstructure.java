@@ -5,7 +5,6 @@
 package frc.robot.subsystems.superstructure;
 
 import edu.wpi.first.wpilibj2.command.Subsystem;
-import frc.robot.RobotContainer;
 
 public class Superstructure {
   public final Pivot pivot = new Pivot();

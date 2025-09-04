@@ -1,4 +1,4 @@
-package frc.robot.subsystems.groundsuperstructure;
+package frc.robot.subsystems.GroundSuperstructure;
 
 import com.ctre.phoenix6.configs.CANrangeConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;

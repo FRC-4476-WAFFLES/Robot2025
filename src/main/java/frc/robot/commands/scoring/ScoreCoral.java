@@ -24,7 +24,6 @@ import frc.robot.RobotContainer;
 import frc.robot.commands.AlignToPose;
 import frc.robot.commands.intake.CoralOutake;
 import frc.robot.commands.superstructure.ApplySuperstructureState;
-import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.ScoringConstants;
 import frc.robot.data.Constants.ScoringConstants.CoralScoringParameters;
 import frc.robot.subsystems.DynamicPathing;

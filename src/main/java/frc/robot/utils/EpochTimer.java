@@ -6,7 +6,6 @@ package frc.robot.utils;
 
 import java.util.HashMap;
 
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;

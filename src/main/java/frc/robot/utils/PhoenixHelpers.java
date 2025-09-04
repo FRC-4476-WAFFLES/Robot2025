@@ -11,8 +11,6 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 
 import frc.robot.Robot;
-import frc.robot.RobotContainer;
-import frc.robot.subsystems.Telemetry;
 
 public class PhoenixHelpers {
     // Maps a canbus to an array of status signals on that bus to be refreshed 

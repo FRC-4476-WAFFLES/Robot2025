@@ -4,11 +4,8 @@
 
 package frc.robot.subsystems;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,7 +30,7 @@ import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
-import frc.robot.subsystems.groundsuperstructure.GroundIntakeSuperstructure.GroundIntakeSuperstructureState;
+import frc.robot.subsystems.GroundSuperstructure.GroundIntakeSuperstructure.GroundIntakeSuperstructureState;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 
 public class Lights extends SubsystemBase {
@@ -46,7 +43,6 @@ public class Lights extends SubsystemBase {
   
   private Map<LedRange, LightColours> ledRangeColours = new EnumMap<>(LedRange.class);
   private Map<LedRange, LightColours> lastAppliedColors = new EnumMap<>(LedRange.class);
-  private List<Map.Entry<LedRange, LightColours>> entriesList = new ArrayList<>();
   
   private static final Timer blinkTimer = new Timer();
   private static final Timer animationTimer = new Timer();
