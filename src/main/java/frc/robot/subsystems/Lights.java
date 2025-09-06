@@ -30,7 +30,7 @@ import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
-import frc.robot.subsystems.GroundSuperstructure.GroundIntakeSuperstructure.GroundIntakeSuperstructureState;
+import frc.robot.subsystems.groundsuperstructure.GroundIntakeSuperstructure.GroundIntakeSuperstructureState;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 
 public class Lights extends SubsystemBase {
