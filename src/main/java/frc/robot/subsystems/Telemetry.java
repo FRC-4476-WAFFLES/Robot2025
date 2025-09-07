@@ -95,9 +95,10 @@ public class Telemetry extends SubsystemBase {
     /* Other Variables */
     /*                 */
 
-    public boolean manipulatorSimLoaded = false;
+    public boolean manipulatorCoralSimLoaded = false;
     public boolean intakeSimLoaded = false;
     public boolean intakeHandoffSimLoaded = false;
+    public boolean algeaSimLoaded = false;
 
     private PowerDistribution powerDistributionHub = new PowerDistribution(1, ModuleType.kRev);
 
@@ -335,8 +336,8 @@ public class Telemetry extends SubsystemBase {
         }
     }
 
-    public void toggleManipulatorSimLoaded() {
-        manipulatorSimLoaded = !manipulatorSimLoaded;
+    public void toggleManipulatorCoralSimLoaded() {
+        manipulatorCoralSimLoaded = !manipulatorCoralSimLoaded;
     }
 
     public void toggleIntakeSimLoaded() {
@@ -345,5 +346,9 @@ public class Telemetry extends SubsystemBase {
 
     public void toggleIntakeHandoffSimLoaded() {
         intakeHandoffSimLoaded = !intakeHandoffSimLoaded;
+    }
+
+    public void toggleAlgeaSimLoaded() {
+        algeaSimLoaded = !algeaSimLoaded;
     }
 }

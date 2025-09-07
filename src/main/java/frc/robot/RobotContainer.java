@@ -12,7 +12,6 @@ import com.pathplanner.lib.commands.FollowPathCommand;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -287,7 +286,11 @@ public class RobotContainer {
       );
         
       Controls.simController.button(3).onTrue(
-        Commands.runOnce(() -> telemetry.toggleManipulatorSimLoaded())
+        Commands.runOnce(() -> telemetry.toggleManipulatorCoralSimLoaded())
+      );
+
+      Controls.simController.button(4).onTrue(
+        Commands.runOnce(() -> telemetry.toggleAlgeaSimLoaded())
       );
     }
   }
@@ -423,29 +426,6 @@ public class RobotContainer {
       ),
       Commands.runOnce(() -> superstructure.elevator.applySetpoint(SuperstructureState.ALGAE_L2))
     ));
-
-    // Auto Coral Intake
-    // NamedCommands.registerCommand("Auto Coral Intake", AutoIntake.GetAutoIntakeCommand());
-
-    // Seconds REMAINING in auto [THIS HAS CONSEQUENCES DON'T MESS IT UP]
-    double WAIT_ONE_MATCH_TIME = 9;
-    // Seconds REMAINING in auto [DO NOT MIX THIS UP]
-    double WAIT_TWO_MATCH_TIME = 6;
-    NamedCommands.registerCommand("Wait One", 
-      Commands.either(
-        new WaitUntilCommand(() -> Timer.getMatchTime() < WAIT_ONE_MATCH_TIME), 
-        new WaitCommand(999), // Do nothing if we're too late starting 
-        () -> Timer.getMatchTime() >= WAIT_ONE_MATCH_TIME
-      )
-    );
-
-    NamedCommands.registerCommand("Wait Two", 
-    Commands.either(
-        new WaitUntilCommand(() -> Timer.getMatchTime() < WAIT_TWO_MATCH_TIME), 
-        new WaitCommand(999), // Do nothing if we're too late starting 
-        () -> Timer.getMatchTime() >= WAIT_TWO_MATCH_TIME
-      )
-    );
   }
 
   /**

@@ -9,19 +9,17 @@ import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import au.grapplerobotics.LaserCan;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
-import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
-import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.PhysicalConstants;
+import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
 import frc.robot.utils.PhoenixHelpers;
-import frc.robot.utils.IO.DeferredRefresher;
 import frc.robot.utils.IO.TalonFXIO;
 import frc.robot.utils.lib.SimpleWafflesMechanism;
 
@@ -29,87 +27,59 @@ import frc.robot.utils.lib.SimpleWafflesMechanism;
  * The Intake subsystem handles the robot's intake mechanism.
  * It controls:
  * - An intake motor for collecting game pieces
- * - A LaserCan sensor for detecting game pieces
  */
 public class Intake extends SimpleWafflesMechanism {
     // Hardware Components
     private final TalonFXIO intake;
-    private LaserCan intakeLaserCan;
-    private final DigitalInput coralSensor;
-
-    // Deferred Refreshers
-    private DeferredRefresher<Double> intakeLaserCanRefresher = new DeferredRefresher<Double>(
-        "Intake LaserCAN", 
-        0.02, // 50hz
-        () -> {
-            if (intakeLaserCan != null) {
-                var measurement = intakeLaserCan.getMeasurement();
-                if (measurement != null) {
-                    if (measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
-                        return (double)measurement.distance_mm;
-                    }
-                }
-            }
-            return null;
-        }
-    );
 
     // Control Objects
     private final MotionMagicVelocityVoltage intakeControlRequest = new MotionMagicVelocityVoltage(0);
     private final VoltageOut intakePositionRequest = new VoltageOut(0).withEnableFOC(true);
-    // private final PositionVoltage intakePositionControlRequest = new PositionVoltage(0).withSlot(1);
 
     // State Variables
-    private double intakeLaserDistance = 0;
     private double intakeSpeed = 0;
+    private boolean manipulatorLoaded = false;
 
     private boolean noAlgaeFlag = false;
-    private boolean algaeLoaded = false;
     private double dutyCycle = 0;
 
     private Trigger algaeDetectionTrigger;
+    private Trigger coralDetectionTrigger;
+
+    private enum LoadType {
+        ALGEA,
+        CORAL;
+    }
+    private LoadType loadType = LoadType.CORAL;
 
     // Network Tables
-    private final DoublePublisher intakeLaserCanDistanceNT = networkTable.getDoubleTopic("Intake Laser Distance (mm)").publish();
     private final BooleanPublisher coralLoadedNT = networkTable.getBooleanTopic("Coral Loaded").publish();
     private final BooleanPublisher algaeLoadedNT = networkTable.getBooleanTopic("Algae Loaded").publish();
+    private final BooleanPublisher manipulatorLoadedNT = networkTable.getBooleanTopic("Manipulator Loaded").publish();
+    private final StringPublisher loadTypeNT = networkTable.getStringTopic("Load Type").publish();
     private final DoublePublisher intakeSetpointNT = networkTable.getDoubleTopic("Intake Setpoint").publish();
     private final DoublePublisher intakeCurrentDrawNT = networkTable.getDoubleTopic("Intake Current Draw").publish();
-    private final DoublePublisher intakeVelocityNT = networkTable.getDoubleTopic("Intake Velocity").publish();
-    private final BooleanPublisher coralSensorRawNT = networkTable.getBooleanTopic("Coral Sensor Raw").publish();
 
     private final BooleanPublisher isIntakingAlgaeNT = networkTable.getBooleanTopic("IsIntaking").publish();
     private final BooleanPublisher isOutakingAlgaeNT = networkTable.getBooleanTopic("IsOutaking").publish();
 
     public Intake() {
         intake = new TalonFXIO(Constants.CANIds.intakeMotor);
-        coralSensor = new DigitalInput(Constants.DigitalOutputs.coralSensor);
 
         // Configure hardware
         configureIntakeMotor();
-        configureLaserCAN();
 
         algaeDetectionTrigger = new Trigger(
             () -> intake.signals().statorCurrent().getValueAsDouble() > ManipulatorConstants.ALGAE_CURRENT_THRESHOLD 
             && isIntakingAlgae() 
             && !isCoralLoaded()
         ).debounce(ManipulatorConstants.ALGAE_DETECTION_DEBOUNCE_TIME);
-    }
 
-    /**
-     * Configures the laserCAN
-     */
-    private void configureLaserCAN() {
-        // Initialize LaserCan with error handling
-        try {
-            intakeLaserCan = new LaserCan(Constants.CANIds.intakeLaserCan);
-            intakeLaserCan.setRangingMode(LaserCan.RangingMode.SHORT);
-            intakeLaserCan.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_20MS);
-        } catch (Exception e) {
-            // throw new RuntimeException("Failed to initialize LaserCan: " + e.getMessage());
-            System.out.println("Failed to initialize LaserCan: " + e.getMessage());
-            intakeLaserCan = null;
-        }
+        coralDetectionTrigger = new Trigger(
+            () -> intake.signals().statorCurrent().getValueAsDouble() > ManipulatorConstants.CORAL_CURRENT_THRESHOLD 
+            && !isIntakingAlgae() 
+            && !isCoralLoaded()
+        ).debounce(ManipulatorConstants.CORAL_DETECTION_DEBOUNCE_TIME);
     }
 
     /**
@@ -158,9 +128,25 @@ public class Intake extends SimpleWafflesMechanism {
     
     @Override
     public void periodicImpl() {
+        // Determine intake state
+        if (!manipulatorLoaded) {
+            // Only change load type while not loaded
+            if (RobotContainer.groundSuperstructure.isHandoffReady()) {
+                loadType = LoadType.CORAL;
+            } else if (
+                RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.REEF_ALGAE &&
+                RobotContainer.dynamicPathingSubsystem.runningAction.getAsBoolean()
+            ) {
+                loadType = LoadType.ALGEA;
+            }
+        }
+
+        // Update gamepeice sensing
+        detectGamepeiceLoaded();
+        
+        // Run motor
         if (Math.abs(dutyCycle) > 0.01) {
             intake.set(dutyCycle);
-            
         } else {
             if (Math.abs(intakeSpeed) < 0.01 && isAlgaeLoaded()) {
                 // When algae is loaded, run intake slowly inward
@@ -175,10 +161,6 @@ public class Intake extends SimpleWafflesMechanism {
                 intake.setControl(intakeControlRequest.withVelocity(intakeSpeed).withSlot(0));
             }
         }
-
-        // Update gamepeice sensing
-        detectAlgaeLoaded();
-        updateCoralSensors();
     }
 
     /**
@@ -198,29 +180,18 @@ public class Intake extends SimpleWafflesMechanism {
     }
 
     /**
-     * Checks if algae is present in the intake based on current draw
+     * Checks if algae or coral is present in the intake based on current draw
      */
-    private void detectAlgaeLoaded() {
-        if (algaeDetectionTrigger.getAsBoolean()) {
-            algaeLoaded = true;
-
-        } else if (isOuttakingAlgae()) {
-            algaeLoaded = false;
-        }
-    }
-
-    /**
-     * Updates the coral sensor's internal state
-     */
-    private void updateCoralSensors() {
-        if (RobotBase.isSimulation()) {
-            intakeLaserDistance = RobotContainer.telemetry.manipulatorSimLoaded ? 0 : 1000;
-            return;
-        }
-
-        var intakeSensorResult = intakeLaserCanRefresher.getLatestValue();
-        if (intakeSensorResult.isPresent()) {
-            intakeLaserDistance = intakeSensorResult.get();
+    private void detectGamepeiceLoaded() {
+        if (loadType == LoadType.ALGEA) {
+            if (algaeDetectionTrigger.getAsBoolean()) {
+                manipulatorLoaded = true;
+    
+            } else if (isOuttakingAlgae()) {
+                manipulatorLoaded = false;
+            }
+        } else {
+            manipulatorLoaded = coralDetectionTrigger.getAsBoolean();
         }
     }
 
@@ -231,10 +202,10 @@ public class Intake extends SimpleWafflesMechanism {
     public boolean isAlgaeLoaded() {
         if (RobotBase.isSimulation()) {
             // algae override for sim
-            return CodeConstants.FORCE_LOAD_SIM_ALGAE;
+            return RobotContainer.telemetry.algeaSimLoaded;
         }
 
-        return algaeLoaded;
+        return loadType == LoadType.ALGEA && manipulatorLoaded;
     }
 
     /**
@@ -242,8 +213,12 @@ public class Intake extends SimpleWafflesMechanism {
      * @return true if coral is detected
      */
     public boolean isCoralLoaded() {
-        // return !coralSensor.get(); // Digital input is inverted (true when not pressed, false when pressed)
-        return intakeLaserDistance <= Constants.ManipulatorConstants.CORAL_LOADED_DISTANCE_THRESHOLD;
+        if (RobotBase.isSimulation()) {
+            // algae override for sim
+            return RobotContainer.telemetry.manipulatorCoralSimLoaded;
+        }
+
+        return loadType == LoadType.CORAL && manipulatorLoaded;
     }
 
     /* Helper methods for determining the intake's basic state */
@@ -265,13 +240,12 @@ public class Intake extends SimpleWafflesMechanism {
      */
     @Override
     public void updateNetwork() {
-        intakeLaserCanDistanceNT.set(intakeLaserDistance);
         coralLoadedNT.set(isCoralLoaded());
         algaeLoadedNT.set(isAlgaeLoaded());
+        manipulatorLoadedNT.set(manipulatorLoaded);
+        loadTypeNT.set(loadType.toString());
         intakeSetpointNT.set(intakeSpeed);
         intakeCurrentDrawNT.set(intake.signals().statorCurrent().getValueAsDouble());
-        intakeVelocityNT.set(intake.signals().velocity().getValueAsDouble());
-        coralSensorRawNT.set(coralSensor.get());
 
         isIntakingAlgaeNT.set(isIntakingAlgae());
         isOutakingAlgaeNT.set(isOuttakingAlgae());

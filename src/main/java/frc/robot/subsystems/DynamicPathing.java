@@ -78,6 +78,9 @@ public class DynamicPathing extends SubsystemBase {
     public static final double REEF_ELEVATOR_RETRACTION_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 0.24;
     public static final double L4_ELEVATOR_DEPLOY_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 1.1;
     public static final double REEF_L1_HEADING_LOCK_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 1.0;
+
+    public static final double REEF_CORAL_CLEAR_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 0.4;
+
     /* Coral scoring pathing parameters */
     public static final double REEF_PATH_POSITION_OFFSET = 0.12; // Distance from reef to handover from path to PID
     public static final double CORAL_PATH_END_SPEED = 0.8; // m/s
@@ -113,6 +116,7 @@ public class DynamicPathing extends SubsystemBase {
     ));
 
     /* Persistent state */
+    private boolean lockCoralScoringSide = false;
     private boolean coralScoringRightSide = false;
     private boolean isPathing = false; // Is moving
     private Rotation2d currentClosestReefAngle = Rotation2d.kZero;
@@ -130,8 +134,7 @@ public class DynamicPathing extends SubsystemBase {
         REEF_CORAL, // Scoring coral -> has coral loaded and in range of reef
         REEF_ALGAE, // Picking up algae -> has no coral or algae and is in range of reef
         NET, // Scoring algae in net -> has algae and is in range of net
-        PROCESSOR, // Scoring algae in processor -> has algae and is in range of processor
-        HUMAN_PICKUP // Picking up coral from human player -> has no coral and in range of human player
+        PROCESSOR // Scoring algae in processor -> has algae and is in range of processor
     }
 
     @Override
@@ -146,10 +149,6 @@ public class DynamicPathing extends SubsystemBase {
      */
     private static DynamicPathingSituation getDynamicPathingSituation() {    
         Intake intakeSubsystem = RobotContainer.intakeSubsystem;
-
-        if (!intakeSubsystem.isCoralLoaded() && !intakeSubsystem.isAlgaeLoaded() && isRobotInRangeOfHumanPlayer()) {
-            return DynamicPathingSituation.HUMAN_PICKUP;
-        }
 
         if (isRobotInRangeOfReefPathing()) {
             if (intakeSubsystem.isCoralLoaded()) {
@@ -200,16 +199,16 @@ public class DynamicPathing extends SubsystemBase {
         return (pose.getTranslation().getDistance(PROCCESSOR_BLUE) <= PROCCESSOR_MIN_SCORING_DISTANCE);
     }
 
-    /**
-     * Is the robot within a certain distance of the human player station
-     * @return a boolean
-     */
-    public static boolean isRobotInRangeOfHumanPlayer() {
-        var pose = WafflesUtilities.FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose());
-        boolean inRangeLeft = (pose.getTranslation().getDistance(HUMAN_PLAYER_STATION_LEFT_BLUE) <= HUMAN_PLAYER_MIN_PICKUP_DISTANCE);
-        boolean inRangeRight = (pose.getTranslation().getDistance(HUMAN_PLAYER_STATION_RIGHT_BLUE) <= HUMAN_PLAYER_MIN_PICKUP_DISTANCE);
-        return inRangeLeft || inRangeRight;
-    }
+    // /**
+    //  * Is the robot within a certain distance of the human player station
+    //  * @return a boolean
+    //  */
+    // public static boolean isRobotInRangeOfHumanPlayer() {
+    //     var pose = WafflesUtilities.FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose());
+    //     boolean inRangeLeft = (pose.getTranslation().getDistance(HUMAN_PLAYER_STATION_LEFT_BLUE) <= HUMAN_PLAYER_MIN_PICKUP_DISTANCE);
+    //     boolean inRangeRight = (pose.getTranslation().getDistance(HUMAN_PLAYER_STATION_RIGHT_BLUE) <= HUMAN_PLAYER_MIN_PICKUP_DISTANCE);
+    //     return inRangeLeft || inRangeRight;
+    // }
 
     /**
      * Gets robot distance to the reef
@@ -296,30 +295,30 @@ public class DynamicPathing extends SubsystemBase {
                 }
                 break;
 
-            case HUMAN_PICKUP: {
-                    // Rotation2d humanPickupRotation = WafflesUtilities.FlipAngleIfRedAlliance(getHumanPlayerPickupAngle());
+            // case HUMAN_PICKUP: {
+            //         // Rotation2d humanPickupRotation = WafflesUtilities.FlipAngleIfRedAlliance(getHumanPlayerPickupAngle());
 
-                    // cmd = new ParallelDeadlineGroup(
-                    //     new CoralIntake(),
-                    //     new DriveTeleop(
-                    //         Controls::getDriveY, false,
-                    //         Controls::getDriveX, false,
-                    //         () -> humanPickupRotation, true
-                    //     ),
-                    //     new ApplySuperstructureState(SuperstructureState.CORAL_INTAKE)
-                    // ).finallyDo(() -> {
-                    //     if (!RobotContainer.intakeSubsystem.isCoralLoaded()) {
-                    //         // Keep running intake for 5 seconds after ending if no coral detected
-                    //         Command runAfterCommand = new CoralIntake().withTimeout(4);
+            //         // cmd = new ParallelDeadlineGroup(
+            //         //     new CoralIntake(),
+            //         //     new DriveTeleop(
+            //         //         Controls::getDriveY, false,
+            //         //         Controls::getDriveX, false,
+            //         //         () -> humanPickupRotation, true
+            //         //     ),
+            //         //     new ApplySuperstructureState(SuperstructureState.CORAL_INTAKE)
+            //         // ).finallyDo(() -> {
+            //         //     if (!RobotContainer.intakeSubsystem.isCoralLoaded()) {
+            //         //         // Keep running intake for 5 seconds after ending if no coral detected
+            //         //         Command runAfterCommand = new CoralIntake().withTimeout(4);
 
-                    //         // This is one of the few cases where directly scheduling a command is okay, 
-                    //         // since we don't want it to be canceled by releasing the driver assist button
-                    //         runAfterCommand.schedule();
-                    //     }
-                    // });
+            //         //         // This is one of the few cases where directly scheduling a command is okay, 
+            //         //         // since we don't want it to be canceled by releasing the driver assist button
+            //         //         runAfterCommand.schedule();
+            //         //     }
+            //         // });
 
-                }
-                break;
+            //     }
+            //     break;
                 
             default:
                 break;
@@ -340,6 +339,10 @@ public class DynamicPathing extends SubsystemBase {
      * @param rightSide if the side is to the right or the left, relative to the driver's point of view
      */
     public void setCoralScoringSide(boolean rightSide) {
+        if (lockCoralScoringSide) {
+            return;
+        }
+
         if (coralScoringRightSide != rightSide) {
             coralScoringRightSide = rightSide;
             //System.out.println("Setting coral scoring to right side: " + coralScoringRightSide);
@@ -401,6 +404,14 @@ public class DynamicPathing extends SubsystemBase {
     }
 
     /**
+     * Locks the coral scoring side
+     * @param value the lock's enabled value
+     */
+    public void lockCoralScoringSide(boolean value) {
+        lockCoralScoringSide = value;
+    }
+
+    /**
      * Gets the current dynamic pathing situation
      * @return a DynamicPathingSituation enum
      */
@@ -448,6 +459,14 @@ public class DynamicPathing extends SubsystemBase {
     }
 
     /**
+     * Gets coordinates in field space to the nearest coral backoff position.
+     * @return The coordinates the robot can pickup from
+     */
+    public Pose2d getCoralBackoffLocation() {
+        return getCoralLocationOffset(REEF_CORAL_CLEAR_DISTANCE);
+    }
+
+    /**
      * Gets coordinates in field space to the nearest algae scoring position.
      * @return The coordinates the robot can pickup from
      */
@@ -470,7 +489,6 @@ public class DynamicPathing extends SubsystemBase {
     public Pose2d getNearestAlgaeSafetyLocation() {
         return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), false, true, REEF_ALGAE_SAFETY_DISTANCE);
     }
-    
 
     /**
      * Gets coordinates in field space to the nearest coral scoring position or algae pickup point.

@@ -4,9 +4,12 @@
 
 package frc.robot.commands.intake;
 
+import static edu.wpi.first.units.Units.Meters;
+
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
+import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.subsystems.Intake;
 
 
@@ -14,12 +17,11 @@ public class CoralOutake extends Command {
   public static final double OUTTAKE_POSITION_CHANGE = 6; // rotations
 
   private final Intake intakeSubsystem = RobotContainer.intakeSubsystem;
-  
   private double outtakeEndPosition = 0;
+
   /** Creates a new CoralIntake. */
   public CoralOutake() {
     addRequirements(RobotContainer.intakeSubsystem);
-    // Use addRequirements() here to declare subsystem dependencies.
   }
 
   // Called when the command is initially scheduled.
@@ -33,7 +35,11 @@ public class CoralOutake extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    RobotContainer.intakeSubsystem.setIntakeSpeed(-2.0);
+    // Spin wheels at same speed as robot back off
+    var chassisSpeed = RobotContainer.driveSubsystem.getRobotChassisSpeeds();
+    double wheelspeedMetersPerSecond = Math.hypot(chassisSpeed.vxMetersPerSecond, chassisSpeed.vyMetersPerSecond);
+    double wheelCircumference = 2 * Math.PI * PhysicalConstants.manipulatorWheelRadius.in(Meters);
+    RobotContainer.intakeSubsystem.setIntakeSpeed(wheelspeedMetersPerSecond / wheelCircumference);
   }
 
   // Called once the command ends or is interrupted.
@@ -61,10 +67,5 @@ public class CoralOutake extends Command {
   @Override
   public boolean isFinished() {
     return intakeSubsystem.getCurrentPosition() <= outtakeEndPosition;
-
-    // if (DriverStation.isAutonomous()) {
-    //   return timer.get() > 0;
-    // }
-    // return timer.get() > 0.2;
   }
 }

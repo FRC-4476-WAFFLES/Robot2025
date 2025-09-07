@@ -4,7 +4,13 @@
 
 package frc.robot.commands.scoring;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
@@ -22,16 +28,18 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.commands.AlignToPose;
+import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.intake.CoralOutake;
 import frc.robot.commands.superstructure.ApplySuperstructureState;
 import frc.robot.data.Constants.ScoringConstants;
 import frc.robot.data.Constants.ScoringConstants.CoralScoringParameters;
 import frc.robot.subsystems.DynamicPathing;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
+import frc.robot.utils.WafflesUtilities;
 
 public class ScoreCoral extends SequentialCommandGroup {
-  public static final double PIVOT_MIN_ANGLE_L4 = 24; // Avoids super early releases
-
+  public static final double SCORING_FINISHED_DISTANCE = DynamicPathing.REEF_CORAL_CLEAR_DISTANCE + 0.2; 
+  
   /* Timing variables */
   private final Timer totalScoringTimer = new Timer();
   private static final NetworkTable scoringTable = NetworkTableInstance.getDefault().getTable("ScoringMetrics");
@@ -98,20 +106,56 @@ public class ScoreCoral extends SequentialCommandGroup {
             new PrepareScoreCoral()
           ),
 
-          // Outake the coral
-          new ParallelCommandGroup(
-            new ApplySuperstructureState(chosenParameters.executeScoreState()),
-            new CoralOutake()
-          )
+          // Lock in current side selection
+          new InstantCommand(() -> RobotContainer.dynamicPathingSubsystem.lockCoralScoringSide(true)),
+
+          // Place on post
+          new ApplySuperstructureState(chosenParameters.executeScoreState())
         ),
+
         pathingSubsystem.wrapPathingCommand(
           new AlignToPose(finalAlignPose)
         )
+      ),
+
+      // Rip off coral
+      new ParallelDeadlineGroup(
+        // Constrained backoff
+        new DriveTeleop(
+          this::constrainedBackoffX,
+          this::constrainedBackoffY, 
+          () -> Rotation2d.kZero
+        ).onlyWhile(() -> DynamicPathing.getDistanceToReef() < SCORING_FINISHED_DISTANCE),
+        new CoralOutake()
       ),
       
       // End timing
       endTimingCommand
     );
+  }
+
+  private double constrainedBackoffX() {
+    double influence = WafflesUtilities.InvLerp(DynamicPathing.REEF_CORAL_CLEAR_DISTANCE, SCORING_FINISHED_DISTANCE, DynamicPathing.getDistanceToReef());
+    influence = MathUtil.clamp(influence, 0, 1);
+
+    var inputVector = new Translation2d(Controls.getDriveY() , Controls.getDriveX());
+    var travelDirection = new Translation2d(1, RobotContainer.dynamicPathingSubsystem.getClosestFaceAngle().plus(Rotation2d.k180deg));
+
+    double output = travelDirection.times(Math.max(0, WafflesUtilities.translationDotProduct(travelDirection, inputVector))).getX();
+
+    return output * influence;
+  }
+
+  private double constrainedBackoffY() {
+    double influence = WafflesUtilities.InvLerp(DynamicPathing.REEF_CORAL_CLEAR_DISTANCE, SCORING_FINISHED_DISTANCE, DynamicPathing.getDistanceToReef());
+    influence = MathUtil.clamp(influence, 0, 1);
+    
+    var inputVector = new Translation2d(Controls.getDriveY() , Controls.getDriveX());
+    var travelDirection = new Translation2d(1, RobotContainer.dynamicPathingSubsystem.getClosestFaceAngle().plus(Rotation2d.k180deg));
+
+    double output = travelDirection.times(Math.max(0, WafflesUtilities.translationDotProduct(travelDirection, inputVector))).getY();
+
+    return output * influence;
   }
 
   /* 
@@ -128,7 +172,9 @@ public class ScoreCoral extends SequentialCommandGroup {
    * @return The command to score coral
    */
   public static Command scoreCoralWithPath(Command driveCommand, Pose2d finalAlignPose, double maxSpeed) {
-    return new ScoreCoral(driveCommand, finalAlignPose, maxSpeed);
+    return new ScoreCoral(driveCommand, finalAlignPose, maxSpeed).finallyDo(() ->{
+      RobotContainer.dynamicPathingSubsystem.lockCoralScoringSide(false);
+    });
   }
 
   /**

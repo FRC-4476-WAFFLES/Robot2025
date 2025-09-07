@@ -4,6 +4,8 @@
 
 package frc.robot.data;
 
+import static edu.wpi.first.units.Units.Inches;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -11,6 +13,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Distance;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 
 /**
@@ -50,8 +53,8 @@ public final class Constants {
     public static final int pivotMotor = 15;
     public static final int groundPivotMotor = 12;
     public static final int groundIntakeMotorRight = 13;
-    public static final int groundIntakeMotorLeft= 32;//random canID
-    public static final int groundIntakeMotorMid=33;
+    public static final int groundIntakeMotorLeft = 32;
+    public static final int groundIntakeMotorMid = 33;
     // Other Sensors
     public static final int pivotAbsoluteEncoder = 28;
     
@@ -83,8 +86,6 @@ public final class Constants {
     public static final double PERIODIC_LOOP_TIME = 0.02;
 
     public static final int SUBSYSTEM_NT_UPDATE_RATE = 20; // How many times a second subsystems will publish to NT. Reduce if performance is suffering.
-
-    public static final boolean FORCE_LOAD_SIM_ALGAE = false;
 
     // Disable all nonessential CAN status signals, potentially reducing CAN pressure
     public static final boolean DISABLE_UNUSED_STATUS_SIGNALS = true; 
@@ -157,6 +158,8 @@ public final class Constants {
 
     public static final double pivotAbsoluteEncoderOffset = -0.267822265625;
     public static final boolean usePivotAbsoluteEncoder = false; // Fallback, if false relies on internal motor encoder
+
+    public static final Distance manipulatorWheelRadius = Inches.of(1.5);
   }
 
   public static class ScoringConstants {
@@ -214,16 +217,19 @@ public final class Constants {
   /* Manipulator Constants */
   public static class ManipulatorConstants {
     // Detection thresholds
-    public static final double CORAL_LOADED_DISTANCE_THRESHOLD = 22.0; // mm
     public static final double ALGAE_CURRENT_THRESHOLD = 60.0; // amps
+    public static final double CORAL_CURRENT_THRESHOLD = 30;
+    
+    public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.3; 
+    public static final double CORAL_DETECTION_DEBOUNCE_TIME = 0.3;
+    
     public static final double ZERO_DEBOUNCE_TIME = 0.2;
-    public static final double ZEROING_SPEED = -0.065; // Slow inwards speed
-    public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.3; // 100ms debounce time
 
-    // Intake constantsd
+    // Intake speeds
     public static final double CORAL_INTAKE_SPEED = -5; // Rps
     public static final double ALGAE_HOLD_SPEED = 30; // Speed to hold algae in place
     public static final double ALGAE_INTAKE_SPEED = 120;
+    public static final double ZEROING_SPEED = -0.065; // Slow inwards speed
 
     // Pivot constants
     public static final double PIVOT_ANGLE_DEADBAND = 1.4;

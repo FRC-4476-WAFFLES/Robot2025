@@ -34,6 +34,9 @@ public class WafflesUtilities {
         return (t - num1)/(num2 - num1);
     }
 
+    public static double translationDotProduct(Translation2d a, Translation2d b) {
+        return a.getX() * b.getX() + a.getY() * b.getY();
+    }
 
     /**
      * Takes a pose and flips it to the other side of the field if the robot is on the red alliance.
