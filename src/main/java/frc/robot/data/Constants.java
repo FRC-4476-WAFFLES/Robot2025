@@ -278,7 +278,7 @@ public final class Constants {
 
   /* Elevator Constants */
   public static class ElevatorConstants {
-    // Control constants
+    // Controwl constants
     public static final double ELEVATOR_DEAD_ZONE = 0.015;
     public static final double ZEROING_SPEED = -0.1; // Slow downward speed
     public static final double STALL_CURRENT_THRESHOLD = 26.0; // Amperes
@@ -311,7 +311,24 @@ public final class Constants {
     public static final double kI = 0.0;
     public static final double kD = 0.01;
     public static final double kS = 0.0;
-    public static final double kG = 0.36; 
+    public static final double kG = 0.36;
+    
+    // Motor configuration constants  
+    public static final double STATOR_CURRENT_LIMIT = 80.0; // amps - Increased for better performance
+    public static final double SUPPLY_CURRENT_LIMIT = 60.0; // amps - Prevent brownouts
+    public static final double SUPPLY_CURRENT_LOWER_LIMIT = 40.0; // amps - Lower limit to prevent breaker trips
+    public static final double SUPPLY_CURRENT_LOWER_TIME = 0.1; // seconds - Time at lower limit
+    public static final double MOTION_MAGIC_EXPO_KV = 3.0; // kV is V/rps
+    public static final double MOTION_MAGIC_EXPO_KA = 0.7; // kA is V/(rps/s)
+    
+    // Simulation constants
+    public static final double SIM_DAMPING = 1.5;
+    public static final double SIM_STIFFNESS = 1.0;
+    public static final double SIM_INITIAL_POSITION = 0.0;
+    public static final double SIM_INITIAL_VELOCITY = 0.0;
+    
+    // SysId constants
+    public static final double SYSID_DYNAMIC_VOLTAGE = 3.0; // volts 
   }
   
   /* Ground Pivot Constants */

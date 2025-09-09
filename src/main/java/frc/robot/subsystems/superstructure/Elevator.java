@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.CANIds;
+import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.ElevatorConstants;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 import frc.robot.data.Constants.PhysicalConstants;
@@ -66,11 +67,11 @@ public class Elevator extends WafflesMechanism {
 
   private MotionMagicExpoVoltage motionMagicRequest = new MotionMagicExpoVoltage(0);
 
-  // Networktables Variables 
+  // NetworkTables Variables
   private final DoublePublisher elevatorPositionNT = networkTable.getDoubleTopic("Current Position (Meters)").publish();
   private final DoublePublisher elevatorVelocityNT = networkTable.getDoubleTopic("Current Velocity (rps)").publish();
   private final BooleanPublisher elevatorIsZeroingNT = networkTable.getBooleanTopic("Is Zeroing").publish();
-  private final BooleanPublisher isAtSetpointNT = networkTable.getBooleanTopic("Elevator at Setpoint").publish();
+  private final BooleanPublisher elevatorAtSetpointNT = networkTable.getBooleanTopic("Elevator at Setpoint").publish();
   private final DoublePublisher leaderCurrentDrawNT = networkTable.getDoubleTopic("Leader Motor Current (Amps)").publish();
   private final DoublePublisher followerCurrentDrawNT = networkTable.getDoubleTopic("Follower Motor Current (Amps)").publish();
   
@@ -109,7 +110,7 @@ public class Elevator extends WafflesMechanism {
   public final SysIdRoutine m_sysIdRoutineElevator = new SysIdRoutine(
       new SysIdRoutine.Config(
           null,        // Use default ramp rate (1 V/s)
-          Volts.of(3), // Use dynamic voltage of 7 V
+          Volts.of(ElevatorConstants.SYSID_DYNAMIC_VOLTAGE), // Use dynamic voltage
           null,        // Use default timeout (10 s)
           // Log state with SignalLogger class
           state -> SignalLogger.writeString("SysIdElevator_State", state.toString())
@@ -138,7 +139,7 @@ public class Elevator extends WafflesMechanism {
     }).debounce(ElevatorConstants.ZERO_DEBOUNCE_TIME);
 
     if (RobotBase.isSimulation()) {
-      elevatorSim = new SecondOrderSim(1.5, 1, 0, 0);
+      elevatorSim = new SecondOrderSim(ElevatorConstants.SIM_DAMPING, ElevatorConstants.SIM_STIFFNESS, ElevatorConstants.SIM_INITIAL_POSITION, ElevatorConstants.SIM_INITIAL_VELOCITY);
     }
   }
 
@@ -148,10 +149,16 @@ public class Elevator extends WafflesMechanism {
   private void configureElevatorMotors() {
     TalonFXConfiguration elevatorConfig = new TalonFXConfiguration();
 
-    // Current Limits
+    // Current Limits - Improved configuration per CTRE recommendations
     CurrentLimitsConfigs elevatorCurrentLimits = new CurrentLimitsConfigs();
-    elevatorCurrentLimits.StatorCurrentLimit = 50;
+    elevatorCurrentLimits.StatorCurrentLimit = ElevatorConstants.STATOR_CURRENT_LIMIT;
     elevatorCurrentLimits.StatorCurrentLimitEnable = true;
+    
+    // Supply current limits for brownout protection (Phoenix 6 2025 syntax)
+    elevatorCurrentLimits.SupplyCurrentLimit = ElevatorConstants.SUPPLY_CURRENT_LIMIT;
+    elevatorCurrentLimits.SupplyCurrentLowerLimit = ElevatorConstants.SUPPLY_CURRENT_LOWER_LIMIT;  
+    elevatorCurrentLimits.SupplyCurrentLowerTime = ElevatorConstants.SUPPLY_CURRENT_LOWER_TIME;
+    elevatorCurrentLimits.SupplyCurrentLimitEnable = true;
 
     elevatorConfig.CurrentLimits = elevatorCurrentLimits;
     
@@ -174,8 +181,8 @@ public class Elevator extends WafflesMechanism {
     // motionMagicConfigs.MotionMagicJerk = ElevatorConstants.MOTION_JERK;
 
     motionMagicConfigs.MotionMagicCruiseVelocity = 0; // Unlimited cruise velocity
-    motionMagicConfigs.MotionMagicExpo_kV = 3; // kV is V/rps
-    motionMagicConfigs.MotionMagicExpo_kA = 0.7; // Use a slower kA V/(rps/s)
+    motionMagicConfigs.MotionMagicExpo_kV = ElevatorConstants.MOTION_MAGIC_EXPO_KV; // kV is V/rps
+    motionMagicConfigs.MotionMagicExpo_kA = ElevatorConstants.MOTION_MAGIC_EXPO_KA; // Use a slower kA V/(rps/s)
     elevatorConfig.MotionMagic = motionMagicConfigs;
 
     // Mechanism Reduction
@@ -407,7 +414,7 @@ public class Elevator extends WafflesMechanism {
   public void updateNetwork() {
     elevatorPositionNT.set(getElevatorPositionMeters());
     elevatorIsZeroingNT.set(isZeroingElevator);
-    isAtSetpointNT.set(atSetpoint());
+    elevatorAtSetpointNT.set(atSetpoint());
     leaderCurrentDrawNT.set(elevatorMotorLeader.signals().statorCurrent().getValueAsDouble());
     followerCurrentDrawNT.set(elevatorMotorFollower.signals().statorCurrent().getValueAsDouble());
     elevatorVelocityNT.set(elevatorMotorLeader.signals().velocity().getValueAsDouble());
@@ -471,7 +478,7 @@ public class Elevator extends WafflesMechanism {
   public void simulationPeriodic() {
     var talonFXSim = elevatorMotorLeader.getSimState();
 
-    var simResult = elevatorSim.Evaluate(constrainedSetpoint, 0.02);
+    var simResult = elevatorSim.Evaluate(constrainedSetpoint, CodeConstants.PERIODIC_LOOP_TIME);
 
     // apply the new rotor position and velocity to the TalonFX;
     // note that this is rotor position/velocity (before gear ratio), but
