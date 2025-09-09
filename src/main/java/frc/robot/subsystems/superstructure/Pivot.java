@@ -290,8 +290,8 @@ public class Pivot extends WafflesMechanism {
         if (RobotContainer.superstructure.elevator.getSetpoint() < RobotContainer.superstructure.elevator.getElevatorPositionMeters() - 0.1) {
             // Elevator moving down
             if (RobotContainer.superstructure.elevator.getElevatorPositionMeters() > ElevatorConstants.FIRST_STAGE_START_HEIGHT) {
-                if (constrainedSetpoint > 190) {
-                    return 190;
+                if (constrainedSetpoint > ManipulatorConstants.FIRST_STAGE_AVOIDANCE_ANGLE) {
+                    return ManipulatorConstants.FIRST_STAGE_AVOIDANCE_ANGLE;
                 }
             }
         }

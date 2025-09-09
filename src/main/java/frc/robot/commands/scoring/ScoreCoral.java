@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -138,24 +139,30 @@ public class ScoreCoral extends SequentialCommandGroup {
     double influence = WafflesUtilities.InvLerp(DynamicPathing.REEF_CORAL_CLEAR_DISTANCE, SCORING_FINISHED_DISTANCE, DynamicPathing.getDistanceToReef());
     influence = MathUtil.clamp(influence, 0, 1);
 
+    System.out.println(DynamicPathing.getDistanceToReef());
+
     var inputVector = new Translation2d(Controls.getDriveY() , Controls.getDriveX());
     var travelDirection = new Translation2d(1, RobotContainer.dynamicPathingSubsystem.getClosestFaceAngle().plus(Rotation2d.k180deg));
+    // double scaledInput = Math.max(0, WafflesUtilities.translationDotProduct(travelDirection, inputVector));
+    double scaledInput = MathUtil.clamp(inputVector.getNorm(), 0, 1);
 
-    double output = travelDirection.times(Math.max(0, WafflesUtilities.translationDotProduct(travelDirection, inputVector))).getX();
+    double output = travelDirection.times(scaledInput).getX();
 
-    return output * influence;
+    return WafflesUtilities.Lerp(output, Controls.getDriveY(), influence);
   }
 
   private double constrainedBackoffY() {
     double influence = WafflesUtilities.InvLerp(DynamicPathing.REEF_CORAL_CLEAR_DISTANCE, SCORING_FINISHED_DISTANCE, DynamicPathing.getDistanceToReef());
     influence = MathUtil.clamp(influence, 0, 1);
-    
+
     var inputVector = new Translation2d(Controls.getDriveY() , Controls.getDriveX());
     var travelDirection = new Translation2d(1, RobotContainer.dynamicPathingSubsystem.getClosestFaceAngle().plus(Rotation2d.k180deg));
+    // double scaledInput = Math.max(0, WafflesUtilities.translationDotProduct(travelDirection, inputVector));
+    double scaledInput = MathUtil.clamp(inputVector.getNorm(), 0, 1);
 
-    double output = travelDirection.times(Math.max(0, WafflesUtilities.translationDotProduct(travelDirection, inputVector))).getY();
+    double output = travelDirection.times(scaledInput).getY();
 
-    return output * influence;
+    return WafflesUtilities.Lerp(output, Controls.getDriveX(), influence);
   }
 
   /* 

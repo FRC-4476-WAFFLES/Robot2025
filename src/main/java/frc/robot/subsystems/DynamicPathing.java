@@ -49,6 +49,7 @@ public class DynamicPathing extends SubsystemBase {
     public static final double REEF_MIN_SCORING_DISTANCE_L1 = 0.78; // Don't try to score within this distance
     public static final double PROCCESSOR_MIN_SCORING_DISTANCE = 2.2;
     public static final double HUMAN_PLAYER_MIN_PICKUP_DISTANCE = 2;
+    public static final double NET_CLEARANCE_FLIPAROUND_DISTANCE = 0.8;
 
     /* Net AABB bounds */
     public static final double NET_MIN_SCORING_X = Units.inchesToMeters(150);
@@ -67,19 +68,20 @@ public class DynamicPathing extends SubsystemBase {
     public static final double REEF_INRADIUS = 0.81901;
     public static final double REEF_PIPE_CENTER_OFFSET = Units.inchesToMeters(6.5); // Fudged
 
-    /* Various robot to reef distances */
+    /* Various robot to reef face distances */
     /* Robot is assumed to have bumpers on */
-    public static final double REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE = PhysicalConstants.withBumperBotHalfWidth + 0.5; 
     public static final double REEF_SCORING_POSITION_OFFSET = PhysicalConstants.withBumperBotHalfWidth + 0.12; 
     public static final double REEF_SCORING_POSITION_OFFSET_L1 = PhysicalConstants.withBumperBotHalfWidth + 0.37; 
     public static final double REEF_SCORING_POSITION_OFFSET_L4 = PhysicalConstants.withBumperBotHalfWidth + 0.2; 
-    public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE = PhysicalConstants.withBumperBotHalfWidth + 0.015; 
-    public static final double REEF_ALGAE_SAFETY_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 0.35;
+    public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE_CLEARANCE = PhysicalConstants.withBumperBotHalfWidth + 0.45; 
+    public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE = PhysicalConstants.withBumperBotHalfWidth + 0.25; 
+    public static final double REEF_ALGAE_SAFETY_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 0.4;
     public static final double REEF_ELEVATOR_RETRACTION_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 0.24;
     public static final double L4_ELEVATOR_DEPLOY_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 1.1;
     public static final double REEF_L1_HEADING_LOCK_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 1.0;
 
-    public static final double REEF_CORAL_CLEAR_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 0.4;
+    /* Robot to reef center distance */
+    public static final double REEF_CORAL_CLEAR_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 0.25 + REEF_INRADIUS;
 
     /* Coral scoring pathing parameters */
     public static final double REEF_PATH_POSITION_OFFSET = 0.12; // Distance from reef to handover from path to PID
@@ -97,7 +99,7 @@ public class DynamicPathing extends SubsystemBase {
     public static final double PROCESSOR_SCORING_DISTANCE_Y = 0.35; // Distance from processor Y in meters to score from 
 
     /* Net physical parameters */
-    public static final double NET_LINE_X_BLUE = 7.815; // Meters
+    public static final double NET_LINE_X_BLUE = 7.7; // Meters
 
     /* Path following parameters */
     public static final double MAX_SPEED = 2.5f;
@@ -108,8 +110,8 @@ public class DynamicPathing extends SubsystemBase {
     public static final double MAX_ANGULAR_ACCELERATION = 2 * Math.PI;
 
     // All scoring commands require these subsystems
-    public static final HashSet<Subsystem> actionCommandRequirements = new HashSet<>(Arrays.asList(
-        RobotContainer.driveSubsystem, 
+    public static final HashSet<Subsystem> actionCommandRequirements = new HashSet<>(Arrays.asList( 
+        RobotContainer.driveSubsystem,
         RobotContainer.superstructure.pivot, 
         RobotContainer.superstructure.elevator, 
         RobotContainer.intakeSubsystem
@@ -479,7 +481,7 @@ public class DynamicPathing extends SubsystemBase {
      * @return The coordinates 
      */
     public Pose2d getNearestAlgaeClearanceLocation() {
-        return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), false, true, REEF_SCORING_POSITION_OFFSET_ALGAE_CLEARANCE);
+        return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), false, true, REEF_PICKUP_POSITION_OFFSET_ALGAE_CLEARANCE);
     }
 
     /**
@@ -805,21 +807,26 @@ public class DynamicPathing extends SubsystemBase {
             // }
         } else {
             // Make two disjointed paths to avoid spline funniness
-            var initialBackOffPath = DynamicPathing.simplePathToPose(clearancePose);
+            // var initialBackOffPath = DynamicPathing.simplePathToPose(clearancePose);
             // var arrivalPath = DynamicPathing.generateComplexPath(clearancePose, null, targetAlgaePose);
 
             // new AlignToPose(clearancePose)
             // .withPositionTolerance(0.04)
             // .withThetaTolerance(Rotation2d.fromDegrees(3)),
             // Give up if path doesn't exist
-            if (initialBackOffPath.isPresent()) {
-                arrivalPathingCommand = Commands.sequence(
-                    AutoBuilder.followPath(initialBackOffPath.get()),
-                    new AlignToPose(targetAlgaePose)
-                );
-            } else {
-                return new InstantCommand();
-            }
+            // if (initialBackOffPath.isPresent()) {
+            //     arrivalPathingCommand = Commands.sequence(
+            //         AutoBuilder.followPath(initialBackOffPath.get()),
+            //         new AlignToPose(targetAlgaePose)
+            //     );
+            // } else {
+            //     return new InstantCommand();
+            // }
+
+            arrivalPathingCommand = Commands.sequence(
+                new AlignToPose(clearancePose),
+                new AlignToPose(targetAlgaePose)
+            );
         }
         
         var backOffPath = DynamicPathing.generateComplexPath(targetAlgaePose, null, safetyPose, 1.0);
@@ -849,16 +856,26 @@ public class DynamicPathing extends SubsystemBase {
         }
 
         Pose2d currentPose = RobotContainer.driveSubsystem.getRobotPose();
-        Rotation2d currentHeading = currentPose.getRotation();
+        Rotation2d currentHeading = WafflesUtilities.FlipAngleIfRedAlliance(currentPose.getRotation());
         
         // Choose 0° or 180° based on which is closer
         boolean isFrontScoring = Math.abs(currentHeading.getDegrees()) < 90;
+        double targetNetX = WafflesUtilities.FlipXIfRedAlliance(NET_LINE_X_BLUE);
+
+        if (Math.abs(currentPose.getX() - targetNetX) < NET_CLEARANCE_FLIPAROUND_DISTANCE) {
+            // Prevent hitting manipulator on net if too close
+            isFrontScoring = false;
+        } 
         
         Rotation2d targetRotation = WafflesUtilities.FlipAngleIfRedAlliance(
             isFrontScoring ? Rotation2d.kZero : Rotation2d.k180deg
         );
+
+        if (!isFrontScoring) {
+            targetNetX = WafflesUtilities.FlipXIfRedAlliance(NET_LINE_X_BLUE + 0.2); // Nudge a little closer for backwards scoring
+        }
         
-        double targetNetX = WafflesUtilities.FlipXIfRedAlliance(NET_LINE_X_BLUE);
+        
         
         return ScoreNet.getScoreNetCommand(targetNetX, () -> targetRotation, true, isFrontScoring);
     }

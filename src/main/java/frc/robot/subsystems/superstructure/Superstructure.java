@@ -14,14 +14,17 @@ public class Superstructure {
 
   public enum SuperstructureState {
     ZERO(0, 0),
-    ALGAE_L2(178.5,0.88),
-    ALGAE_L1(178.5,0.54),
+    ALGAE_L2(130,0.65),
+    ALGAE_L1(130,0.25),
     PROCESSOR(189,0.135),
     SPIT_ALGAE(140,0.2),
     CORAL_INTAKE(2.6,0),
     NET(98,1.5),
-    NET_FRONT(98, 1.5),
-    NET_BACK(98, 1.5),
+    NET_FRONT(170, 1.5),
+    NET_BACK(270, 1.5),
+
+    NET_FRONT_CLEAR(215, 1.5),
+    NET_FRONT_CLEAR_FINISHED(215, 0.4),
 
     L4(160,1.10),
     L3(180,0.4),

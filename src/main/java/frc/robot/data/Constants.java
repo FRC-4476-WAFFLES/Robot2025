@@ -224,6 +224,7 @@ public final class Constants {
     
     public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.3; 
     public static final double CORAL_DETECTION_DEBOUNCE_TIME = 0.3;
+    public static final double CORAL_RELEASE_DEBOUNCE_TIME = 0.3;
     
     public static final double ZERO_DEBOUNCE_TIME = 0.2;
 
@@ -236,13 +237,13 @@ public final class Constants {
     // Pivot constants
     public static final double PIVOT_ANGLE_DEADBAND = 1.4;
 
-    public static final double PIVOT_MIN_ANGLE = 0.0; // degrees
-    public static final double PIVOT_MAX_ANGLE = 185.0; // degrees
+    public static final double PIVOT_MIN_ANGLE = 0.0; // degrees 
+    public static final double PIVOT_MAX_ANGLE = 270.0; // degrees
 
     // Constraints
     public static final double PIVOT_FRAME_LOWER_CLEARANCE_ANGLE = 15;
     public static final double PIVOT_FRAME_UPPER_CLEARANCE_ANGLE = 90;
-    public static final double PIVOT_L4_CLEARANCE_ANGLE = 28;
+    public static final double FIRST_STAGE_AVOIDANCE_ANGLE = 215;
 
     public static final double PIVOT_CLEARANCE_POSITION = 35;
     public static final double PIVOT_CLEARANCE_POSITION_ALGAE = 105;
