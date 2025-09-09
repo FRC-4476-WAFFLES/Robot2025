@@ -66,6 +66,7 @@ public class AlignToPose extends Command {
   private boolean lockWheelsOnceFinished = true;
 
   private double lastMeasuredTime = 0;
+  private double lastMaxAcceleration = maxAccelerationElevatorDown; // Cache acceleration to reduce allocations
 
   private SwerveRequest.FieldCentric driveRequest = new SwerveRequest.FieldCentric();
   
@@ -140,7 +141,7 @@ public class AlignToPose extends Command {
    */
   public AlignToPose withPositionTolerance(double tolerance) {
     PosMaxError = tolerance;
-    approachPidController.setTolerance(PosMaxError);
+    approachPidController.setTolerance(PosMaxError, 0.04); // Keep default velocity tolerance
 
     return this;
   }
@@ -151,7 +152,7 @@ public class AlignToPose extends Command {
    */
   public AlignToPose withThetaTolerance(Rotation2d tolerance) {
     RotMaxError = tolerance;
-    thetaPidController.setTolerance(RotMaxError.getDegrees());
+    thetaPidController.setTolerance(RotMaxError.getRadians(), Math.toRadians(5.0)); // Keep default velocity tolerance
 
     return this;
   }
@@ -175,9 +176,9 @@ public class AlignToPose extends Command {
       currentPose.getRotation()
     );
 
-    // Set tolerances
-    thetaPidController.setTolerance(RotMaxError.getDegrees());
-    approachPidController.setTolerance(PosMaxError);
+    // Set tolerances (both position AND velocity for proper atGoal() behavior)
+    thetaPidController.setTolerance(RotMaxError.getRadians(), Math.toRadians(5.0)); // 5 deg/s velocity tolerance
+    approachPidController.setTolerance(PosMaxError, 0.08); // 8 cm/s velocity tolerance
 
     // Reset theta controller
     thetaPidController.reset(currentPose.getRotation().getRadians(), RobotContainer.driveSubsystem.getRobotChassisSpeeds().omegaRadiansPerSecond);
@@ -206,9 +207,15 @@ public class AlignToPose extends Command {
     // Update goal pose once from supplier
     goalPose = goalPoseSupplier.get();
 
-    // Update max acceleration based on elevator height
+    // Update max acceleration based on elevator height (optimized to reduce allocations)
     double maxAcceleration = MathUtil.interpolate(maxAccelerationElevatorDown, maxAccelerationElevatorUp, RobotContainer.superstructure.elevator.getElevatorExtendedPercent());
-    approachPidController.setConstraints(new Constraints(maxVelocity, maxAcceleration)); // Inefficient reallocation :/
+    
+    // Only update constraints if acceleration changed significantly (reduces allocations)
+    if (Math.abs(maxAcceleration - lastMaxAcceleration) > 0.1) { // 0.1 m/s² threshold
+      approachPidController.setConstraints(new Constraints(maxVelocity, maxAcceleration));
+      lastMaxAcceleration = maxAcceleration;
+    }
+    
     maxAccelerationPublisher.set(maxAcceleration);
 
     // Update deltatime
@@ -273,16 +280,17 @@ public class AlignToPose extends Command {
       isAligningVelocityPublisher.set(true);
       // If there is too much lateral speed, instead rotate the current velocity towards the target as fast as possible
       double currentVelocityMagnitude = Math.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
-      Rotation2d currentVelocityDirection = new Rotation2d(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
+      double currentVelocityAngle = Math.atan2(currentSpeeds.vyMetersPerSecond, currentSpeeds.vxMetersPerSecond);
 
       // Constrained by current velocity & max acceleration
-      Rotation2d maxTurnRate = Rotation2d.fromRadians(2 * Math.asin(maxInstantaneousAcceleration / 2 * currentVelocityMagnitude));
+      double maxTurnRateRad = 2 * Math.asin(maxInstantaneousAcceleration / 2 * currentVelocityMagnitude);
+      double targetAngle = angleToTarget.getRadians();
       double lerpValue = MathUtil.clamp(
-        maxTurnRate.getRadians() / Math.abs(angleToTarget.minus(currentVelocityDirection).getRadians()), 
+        maxTurnRateRad / Math.abs(targetAngle - currentVelocityAngle), 
         0, 1
       );
 
-      Rotation2d newVelocityAngle = currentVelocityDirection.interpolate(angleToTarget, lerpValue);
+      double newVelocityAngle = currentVelocityAngle + (targetAngle - currentVelocityAngle) * lerpValue;
 
       // Calculate final field velocity
       targetFieldVelocity = new Translation2d(currentVelocityMagnitude - (alignmentDecelerationMultiplier * maxInstantaneousAcceleration), newVelocityAngle);
@@ -332,13 +340,11 @@ public class AlignToPose extends Command {
   }
 
   /**
-   * If current pose is within a certain range of target
+   * If current pose is within a certain range of target (both position and velocity)
    */
   public boolean isAtGoal() {
-    var currentPose = RobotContainer.driveSubsystem.getRobotPose();
-
-    return currentPose.getTranslation().getDistance(goalPose.getTranslation()) <= PosMaxError &&
-      Math.abs(currentPose.getRotation().minus(goalPose.getRotation()).getDegrees()) < RotMaxError.getDegrees();
+    // Use controller's built-in atGoal() which considers both position AND velocity
+    return approachPidController.atGoal() && thetaPidController.atGoal();
   }
 
   /**
