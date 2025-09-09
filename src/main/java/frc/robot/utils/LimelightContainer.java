@@ -8,23 +8,29 @@ import java.util.Objects;
 
 import com.ctre.phoenix6.Utils;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.data.Constants.VisionConstants;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.utils.LimelightHelpers.RawFiducial;
 
 /** Encapsulates the logic for megatag based localization with a limelight */
 public class LimelightContainer {
     private String limelightName;
     private DriveSubsystem driveSubsystem;
 
-    // Check if limelight is connected
+    // Connection monitoring
     private double lastHeartbeatValue = -1;
     private double lastHeartbeatTime = -1;
-
     private boolean isAlive = false;
+
+    // Timestamp deduplication
+    private double lastMT1Timestamp = -1;
+    private double lastMT2Timestamp = -1;
 
     public LimelightContainer(String name, DriveSubsystem subsystem) {
         this.limelightName = Objects.requireNonNull(name, "Limelight name cannot be null");
@@ -36,7 +42,7 @@ public class LimelightContainer {
      * LimelightHelpers.Flush() or equivalent must be called after all limelights have run update() 
      */
     public void update() {
-        // Check for limelight heartbeat
+        // Update connection status
         double heartBeat = LimelightHelpers.getLimelightNTDouble(limelightName, "hb");
         if (lastHeartbeatValue != heartBeat) {
             lastHeartbeatValue = heartBeat;
@@ -44,60 +50,89 @@ public class LimelightContainer {
         }
         isAlive = (Timer.getFPGATimestamp() - lastHeartbeatTime) < VisionConstants.LL_HEARTBEAT_MIN_FREQ;
 
-        // Do not integrate last reported pose if limelight disconnected
+        // Skip if disconnected
         if (!isAlive) return;
 
-        // Update valid tag IDs, done periodically since they may change on the fly later
+        // Update valid tag IDs
         LimelightHelpers.SetFiducialIDFiltersOverride(limelightName, VisionHelpers.getValidTagIDs());
 
-        // Early exit if no tags visible to avoid unnecessary processing
+        // Skip if no tags visible
         if (!LimelightHelpers.getTV(limelightName)) {
-            updateRobotOrientation(); // Still need to update robot orientation
+            updateRobotOrientation();
             return;
         }
 
-        // Integrate position from mt2
+        // Process MegaTag2
         LimelightHelpers.PoseEstimate megatag2Result = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
         if (megatag2Result != null && megatag2Result.tagCount > 0) {
-            if (!isValidPose(megatag2Result.pose)) {
-                return;
-            }
+            // Skip duplicates
+            if (megatag2Result.timestampSeconds > lastMT2Timestamp) {
 
-            var standardDeviations = VisionHelpers.getEstimationStdDevsLimelightMT2(megatag2Result.rawFiducials);
-            if (standardDeviations != null && standardDeviations.get(0, 0) > 0) {
-                driveSubsystem.addVisionMeasurement(
-                    megatag2Result.pose,
-                    Utils.fpgaToCurrentTime(megatag2Result.timestampSeconds),
-                    standardDeviations);
-
-                SmartDashboard.putNumberArray(limelightName + " Pose MT2 ", new double[] {
-                    megatag2Result.pose.getX(),
-                    megatag2Result.pose.getY(),
-                    megatag2Result.pose.getRotation().getDegrees()
-                });
-
-                SmartDashboard.putNumber(limelightName + "STDEV MT2", standardDeviations.get(0, 0));
+                if (isValidPose(megatag2Result.pose)) {
+                    // Validate Z-axis
+                    Pose3d pose3d = LimelightHelpers.getBotPose3d_wpiBlue(limelightName);
+                    if (Math.abs(pose3d.getZ()) <= VisionConstants.MAX_Z_ERROR) {
+                        // Single-tag validation
+                        boolean passValidation = true;
+                        if (megatag2Result.tagCount == 1) {
+                            passValidation = isAmbiguityAcceptable(megatag2Result.rawFiducials) &&
+                                           megatag2Result.avgTagArea >= VisionConstants.MIN_TAG_AREA;
+                            
+                            // For small tags, also check yaw difference
+                            if (passValidation && megatag2Result.avgTagArea < VisionConstants.MIN_TAG_AREA_FOR_YAW_CHECK) {
+                                passValidation = isYawDifferenceAcceptable(megatag2Result.pose);
+                            }
+                        }
+                        
+                        if (passValidation) {
+                            var standardDeviations = VisionHelpers.getEstimationStdDevsLimelightMT2(megatag2Result.rawFiducials);
+                            if (standardDeviations != null && standardDeviations.get(0, 0) > 0) {
+                                driveSubsystem.addVisionMeasurement(
+                                    megatag2Result.pose,
+                                    Utils.fpgaToCurrentTime(megatag2Result.timestampSeconds),
+                                    standardDeviations);
+                                lastMT2Timestamp = megatag2Result.timestampSeconds;
+                            }
+                        }
+                    }
+                }
             }
         }
 
-        // Integrate rotation from mt1
+        // Process MegaTag1
         LimelightHelpers.PoseEstimate megatag1Result = LimelightHelpers.getBotPoseEstimate_wpiBlue(limelightName);
         if (megatag1Result != null && megatag1Result.tagCount > 0) {
-            if (!isValidPose(megatag1Result.pose)) {
-                return;
-            }
-            var estimationStdDevs = VisionHelpers.getEstimationStdDevsLimelight(megatag1Result.pose, megatag1Result.rawFiducials);
-            if (estimationStdDevs != null) {
-                driveSubsystem.addVisionMeasurement(
-                    megatag1Result.pose,
-                    Utils.fpgaToCurrentTime(megatag1Result.timestampSeconds),
-                    estimationStdDevs);
+            // Skip duplicates
+            if (megatag1Result.timestampSeconds > lastMT1Timestamp) {
 
-                SmartDashboard.putNumberArray(limelightName + " Pose MT1", new double[] {
-                    megatag1Result.pose.getX(),
-                    megatag1Result.pose.getY(),
-                    megatag1Result.pose.getRotation().getDegrees()
-                });
+                if (isValidPose(megatag1Result.pose)) {
+                    // Validate Z-axis
+                    Pose3d pose3d = LimelightHelpers.getBotPose3d_wpiBlue(limelightName);
+                    if (Math.abs(pose3d.getZ()) <= VisionConstants.MAX_Z_ERROR) {
+                        // Single-tag validation
+                        boolean passValidation = true;
+                        if (megatag1Result.tagCount == 1) {
+                            passValidation = isAmbiguityAcceptable(megatag1Result.rawFiducials) &&
+                                           megatag1Result.avgTagArea >= VisionConstants.MIN_TAG_AREA;
+                            
+                            // For small tags, also check yaw difference
+                            if (passValidation && megatag1Result.avgTagArea < VisionConstants.MIN_TAG_AREA_FOR_YAW_CHECK) {
+                                passValidation = isYawDifferenceAcceptable(megatag1Result.pose);
+                            }
+                        }
+                        
+                        if (passValidation) {
+                            var estimationStdDevs = VisionHelpers.getEstimationStdDevsLimelight(megatag1Result.pose, megatag1Result.rawFiducials);
+                            if (estimationStdDevs != null) {
+                                driveSubsystem.addVisionMeasurement(
+                                    megatag1Result.pose,
+                                    Utils.fpgaToCurrentTime(megatag1Result.timestampSeconds),
+                                    estimationStdDevs);
+                                lastMT1Timestamp = megatag1Result.timestampSeconds;
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -108,21 +143,17 @@ public class LimelightContainer {
      * Updates robot orientation and IMU mode for the limelight
      */
     private void updateRobotOrientation() {
-        // Fuse in angle to limelight
         if (DriverStation.isEnabled()) {
             if (driveSubsystem.notRotating()) {
                 onSeeding();
             } else {
-                onMoving(); // Use IMU mode 2 while rotating to avoid latency issues
+                onMoving();
             }
-
             LimelightHelpers.SetRobotOrientation_NoFlush(limelightName, driveSubsystem.getRobotPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
         } else {
             onSeeding();
-            // Seeding in disabled (Uses IMU mode 1)
             LimelightHelpers.SetRobotOrientation_NoFlush(limelightName, driveSubsystem.getRobotPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
         }
-        // SetRobotOrientation_NoFlush() is used since SetRobotOrientation() flushes NT implicitly
     }
 
     /**
@@ -163,7 +194,7 @@ public class LimelightContainer {
     }
     
     /**
-     * Validates that a pose estimate contains valid (non-NaN) values
+     * Validates that a pose estimate contains valid values and is reasonable
      * @param pose The pose to validate
      * @return true if the pose is valid, false otherwise
      */
@@ -172,11 +203,49 @@ public class LimelightContainer {
             return false;
         }
         
-        return !Double.isNaN(pose.getX()) && 
-               !Double.isNaN(pose.getY()) &&
-               !Double.isNaN(pose.getRotation().getDegrees()) &&
-               Double.isFinite(pose.getX()) &&
-               Double.isFinite(pose.getY()) &&
-               Double.isFinite(pose.getRotation().getDegrees());
+        // Check for NaN/infinite values
+        if (Double.isNaN(pose.getX()) || Double.isNaN(pose.getY()) ||
+            Double.isNaN(pose.getRotation().getDegrees()) ||
+            !Double.isFinite(pose.getX()) || !Double.isFinite(pose.getY()) ||
+            !Double.isFinite(pose.getRotation().getDegrees())) {
+            return false;
+        }
+        
+        // Check if pose is too close to field origin (common vision failure)
+        return pose.getTranslation().getNorm() >= VisionConstants.MIN_POSE_DISTANCE_FROM_ORIGIN;
+    }
+
+    /**
+     * Checks if the ambiguity of detected tags is acceptable
+     * @param tags Array of raw fiducial detections
+     * @return true if ambiguity is below threshold, false otherwise
+     */
+    private boolean isAmbiguityAcceptable(RawFiducial[] tags) {
+        if (tags == null || tags.length == 0) {
+            return false;
+        }
+
+        for (RawFiducial tag : tags) {
+            if (tag.ambiguity > VisionConstants.AMBIGUITY_THRESHOLD) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    /**
+     * Checks if the yaw difference between vision and odometry is acceptable for small tags
+     * @param visionPose The pose estimate from vision
+     * @return true if yaw difference is below threshold, false otherwise
+     */
+    private boolean isYawDifferenceAcceptable(Pose2d visionPose) {
+        Pose2d odometryPose = driveSubsystem.getRobotPose();
+        
+        double yawDifference = Math.abs(MathUtil.angleModulus(
+            odometryPose.getRotation().getRadians() - visionPose.getRotation().getRadians()
+        ));
+        
+        return Math.toDegrees(yawDifference) <= VisionConstants.MAX_YAW_DIFFERENCE_DEG;
     }
 }

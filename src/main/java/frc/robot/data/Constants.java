@@ -114,6 +114,14 @@ public final class Constants {
     public static final int SEDING_LL_IMU_MODE = 1; // Enables seeding
     public static final int MOVING_LL_IMU_MODE = 2; // Uses internal IMU
 
+    // Vision validation thresholds
+    public static final double AMBIGUITY_THRESHOLD = 0.19; // Max ambiguity for single tag (0-1, lower is better), 0.19 is what 254 used
+    public static final double MIN_TAG_AREA = 1.0; // Minimum tag area (% of image, 0-100 scale) for single tag
+    public static final double MIN_TAG_AREA_FOR_YAW_CHECK = 2.0; // Tag area threshold (% of image) for yaw validation
+    public static final double MAX_Z_ERROR = 0.2; // Maximum acceptable Z-axis error in meters (robot should be on ground)
+    public static final double MAX_YAW_DIFFERENCE_DEG = 5.0; // Max degrees difference between vision and odometry yaw for single tag
+    public static final double MIN_POSE_DISTANCE_FROM_ORIGIN = 1.0; // Minimum distance from field origin (0,0) in meters
+
     // Names of limelights
     public static final String LIMELIGHT_NAME_L = "limelight-right";
     public static final String LIMELIGHT_NAME_R = "limelight-left"; 
