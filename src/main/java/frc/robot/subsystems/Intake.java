@@ -214,11 +214,23 @@ public class Intake extends SimpleWafflesMechanism {
      */
     public boolean isCoralLoaded() {
         if (RobotBase.isSimulation()) {
-            // algae override for sim
+            // coral override for sim
             return RobotContainer.telemetry.manipulatorCoralSimLoaded;
         }
 
         return loadType == LoadType.CORAL && manipulatorLoaded;
+    }
+
+    /**
+     * Checks if any gamepeice is occupying the intake
+     * @return true if a gamepeice is loaded
+     */
+    public boolean manipulatorLoaded() {
+        if (RobotBase.isSimulation()) {
+            return RobotContainer.telemetry.manipulatorCoralSimLoaded || RobotContainer.telemetry.algeaSimLoaded;
+        }
+
+        return manipulatorLoaded;
     }
 
     /* Helper methods for determining the intake's basic state */

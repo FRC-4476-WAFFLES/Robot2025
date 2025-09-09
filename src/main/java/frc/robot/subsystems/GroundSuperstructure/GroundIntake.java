@@ -304,10 +304,10 @@ public class GroundIntake extends SimpleWafflesMechanism {
     }
 
     /**
-     * Get the last defined rotation setpoint the ground intake was set to
+     * Get the last defined setpoint the ground intake was set to
      * @return
      */
-    public GroundIntakeState getGroundIntakeSetpointEnum(){
+    public GroundIntakeState getSetpoint(){
         return currentState;
     }
     

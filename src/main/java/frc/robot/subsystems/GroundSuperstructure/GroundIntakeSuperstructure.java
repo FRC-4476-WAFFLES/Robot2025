@@ -181,6 +181,14 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
             currentState = GroundIntakeSuperstructureState.SPIT_OUT_STATE; // Spit out if interrupted mid intake
         }
     }
+    
+    public boolean anyCoralSensorActive() {
+        return intake.isCoralHandoffLoaded() || intake.isCoralLeft() || intake.isCoralMid() || intake.isCoralRight();
+    }
+
+    public boolean isIntaking() {
+        return currentState == GroundIntakeSuperstructureState.INTAKE_HANDOFF_STATE || currentState == GroundIntakeSuperstructureState.INTAKE_L1_STATE;
+    }
 
     @Override
     public void updateNetwork() {

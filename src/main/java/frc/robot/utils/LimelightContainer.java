@@ -59,46 +59,46 @@ public class LimelightContainer {
         // Integrate position from mt2
         LimelightHelpers.PoseEstimate megatag2Result = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
         if (megatag2Result != null && megatag2Result.tagCount > 0) {
-                if (!isValidPose(megatag2Result.pose)) {
-                    return;
-                }
+            if (!isValidPose(megatag2Result.pose)) {
+                return;
+            }
 
-                var standardDeviations = VisionHelpers.getEstimationStdDevsLimelightMT2(megatag2Result.rawFiducials);
-                if (standardDeviations != null && standardDeviations.get(0, 0) > 0) {
-                    driveSubsystem.addVisionMeasurement(
-                        megatag2Result.pose,
-                        Utils.fpgaToCurrentTime(megatag2Result.timestampSeconds),
-                        standardDeviations);
+            var standardDeviations = VisionHelpers.getEstimationStdDevsLimelightMT2(megatag2Result.rawFiducials);
+            if (standardDeviations != null && standardDeviations.get(0, 0) > 0) {
+                driveSubsystem.addVisionMeasurement(
+                    megatag2Result.pose,
+                    Utils.fpgaToCurrentTime(megatag2Result.timestampSeconds),
+                    standardDeviations);
 
-                    SmartDashboard.putNumberArray(limelightName + " Pose MT2 ", new double[] {
-                        megatag2Result.pose.getX(),
-                        megatag2Result.pose.getY(),
-                        megatag2Result.pose.getRotation().getDegrees()
-                    });
+                SmartDashboard.putNumberArray(limelightName + " Pose MT2 ", new double[] {
+                    megatag2Result.pose.getX(),
+                    megatag2Result.pose.getY(),
+                    megatag2Result.pose.getRotation().getDegrees()
+                });
 
-                    SmartDashboard.putNumber(limelightName + "STDEV MT2", standardDeviations.get(0, 0));
-                }
+                SmartDashboard.putNumber(limelightName + "STDEV MT2", standardDeviations.get(0, 0));
+            }
         }
 
         // Integrate rotation from mt1
         LimelightHelpers.PoseEstimate megatag1Result = LimelightHelpers.getBotPoseEstimate_wpiBlue(limelightName);
         if (megatag1Result != null && megatag1Result.tagCount > 0) {
-                if (!isValidPose(megatag1Result.pose)) {
-                    return;
-                }
-                var estimationStdDevs = VisionHelpers.getEstimationStdDevsLimelight(megatag1Result.pose, megatag1Result.rawFiducials);
-                if (estimationStdDevs != null) {
-                    driveSubsystem.addVisionMeasurement(
-                        megatag1Result.pose,
-                        Utils.fpgaToCurrentTime(megatag1Result.timestampSeconds),
-                        estimationStdDevs);
+            if (!isValidPose(megatag1Result.pose)) {
+                return;
+            }
+            var estimationStdDevs = VisionHelpers.getEstimationStdDevsLimelight(megatag1Result.pose, megatag1Result.rawFiducials);
+            if (estimationStdDevs != null) {
+                driveSubsystem.addVisionMeasurement(
+                    megatag1Result.pose,
+                    Utils.fpgaToCurrentTime(megatag1Result.timestampSeconds),
+                    estimationStdDevs);
 
-                    SmartDashboard.putNumberArray(limelightName + " Pose MT1", new double[] {
-                        megatag1Result.pose.getX(),
-                        megatag1Result.pose.getY(),
-                        megatag1Result.pose.getRotation().getDegrees()
-                    });
-                }
+                SmartDashboard.putNumberArray(limelightName + " Pose MT1", new double[] {
+                    megatag1Result.pose.getX(),
+                    megatag1Result.pose.getY(),
+                    megatag1Result.pose.getRotation().getDegrees()
+                });
+            }
         }
 
         updateRobotOrientation();

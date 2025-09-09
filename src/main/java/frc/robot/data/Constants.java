@@ -118,6 +118,8 @@ public final class Constants {
     public static final String LIMELIGHT_NAME_L = "limelight-right";
     public static final String LIMELIGHT_NAME_R = "limelight-left"; 
 
+    public static final String LIMELIGHT_NAME_CORAL = "limelight-coral"; 
+
     // Exclusively rely on reef tags for megatag
     // Prob want to expand this a lot later, but for terminal guidance this is all we should care about
     public static final int[] RED_VALID_REEF_TAG_IDs = {
