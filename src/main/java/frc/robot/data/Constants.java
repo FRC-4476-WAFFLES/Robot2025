@@ -60,9 +60,9 @@ public final class Constants {
     // Other Sensors
     public static final int pivotAbsoluteEncoder = 70;
     
-    public static final int groundIntakeLaserCanRight = 31;
-    public static final int groundIntakeLaserCanMid = 29;
-    public static final int groundIntakeLaserCanLeft = 30;
+    public static final int groundIntakeLaserCanRight = 42;
+    public static final int groundIntakeLaserCanMid = 40;
+    public static final int groundIntakeLaserCanLeft = 41;
     
     public static final int groundIntakeCanRange = 17;
     public static final int CANdle = 22;
@@ -361,7 +361,8 @@ public final class Constants {
       STOWED(0.0),
       HANDOFF(0.0),
       DEPLOYED(190.0),
-      L1(110);
+      L1(110),
+      ZEROING_CLEARANCE(150);
 
       private final double degrees;
 
@@ -385,9 +386,9 @@ public final class Constants {
     public static final double STATOR_CURRENT_LIMIT = 60;
 
     public static final double CANRANGE_PROXIMITY_THRESHOLD = 0.15;//TODO remember to tune number
-    public static final double CORAL_LEFT_DISTANCE_THRESHOLD = 10;
-    public static final double CORAL_MID_DISTANCE_THRESHOLD = 10;
-    public static final double CORAL_RIGHT_DISTANCE_THRESHOLD = 10;
+    public static final double CORAL_LEFT_DISTANCE_THRESHOLD = 20;
+    public static final double CORAL_MID_DISTANCE_THRESHOLD = 20;
+    public static final double CORAL_RIGHT_DISTANCE_THRESHOLD = 20;
     
     public static final double SENSOR_DEBOUNCE_TIME = 0.1;
   }
