@@ -47,7 +47,7 @@ import edu.wpi.first.math.util.Units;
 public class Pivot extends WafflesMechanism {
     // Hardware Components
     private final TalonFXIO pivot;
-    private final CANcoderIO pivotAbsoluteEncoder;
+    // private final CANcoderIO pivotAbsoluteEncoder;
 
     private SecondOrderSim pivotSim;
 
@@ -91,8 +91,8 @@ public class Pivot extends WafflesMechanism {
 
     public Pivot() {
         // Initialize hardware
-        pivot = new TalonFXIO(CANIds.pivotMotor);
-        pivotAbsoluteEncoder = new CANcoderIO(CANIds.pivotAbsoluteEncoder);
+        pivot = new TalonFXIO(CANIds.manipulatorPivot);
+        // pivotAbsoluteEncoder = new CANcoderIO(CANIds.pivotAbsoluteEncoder);
         
         // Configure hardware
         configureCANCoder();
@@ -116,7 +116,7 @@ public class Pivot extends WafflesMechanism {
     private void configureCANCoder() {
         CANcoderConfiguration config = new CANcoderConfiguration();
         config.MagnetSensor.MagnetOffset = PhysicalConstants.pivotAbsoluteEncoderOffset;
-        PhoenixHelpers.tryConfig(() -> pivotAbsoluteEncoder.getConfigurator().apply(config));
+        // PhoenixHelpers.tryConfig(() -> pivotAbsoluteEncoder.getConfigurator().apply(config));
     }
 
     /**
@@ -169,7 +169,7 @@ public class Pivot extends WafflesMechanism {
             // For when CANCoder is present
             pivotConfigs.Feedback.RotorToSensorRatio = PhysicalConstants.pivotReduction;
             pivotConfigs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
-            pivotConfigs.Feedback.FeedbackRemoteSensorID = pivotAbsoluteEncoder.getDeviceID();
+            // pivotConfigs.Feedback.FeedbackRemoteSensorID = pivotAbsoluteEncoder.getDeviceID();
 
             pivotConfigs.Feedback.SensorToMechanismRatio = 1;
         } else { 

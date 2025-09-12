@@ -29,6 +29,7 @@ import frc.robot.RobotContainer;
 import frc.robot.data.Constants.CANIds;
 import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.ElevatorConstants;
+import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.utils.PhoenixHelpers;
@@ -180,9 +181,9 @@ public class Elevator extends WafflesMechanism {
     // motionMagicConfigs.MotionMagicAcceleration = ElevatorConstants.MOTION_ACCELERATION;
     // motionMagicConfigs.MotionMagicJerk = ElevatorConstants.MOTION_JERK;
 
-    motionMagicConfigs.MotionMagicCruiseVelocity = 0; // Unlimited cruise velocity
-    motionMagicConfigs.MotionMagicExpo_kV = ElevatorConstants.MOTION_MAGIC_EXPO_KV; // kV is V/rps
-    motionMagicConfigs.MotionMagicExpo_kA = ElevatorConstants.MOTION_MAGIC_EXPO_KA; // Use a slower kA V/(rps/s)
+    motionMagicConfigs.MotionMagicCruiseVelocity = ElevatorConstants.MOTION_CRUISE_VELOCITY; 
+    motionMagicConfigs.MotionMagicExpo_kV = ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ElevatorConstants.MOTION_CRUISE_VELOCITY; // kV is V/rps
+    motionMagicConfigs.MotionMagicExpo_kA = ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ElevatorConstants.MOTION_ACCELERATION; // kA is V/(rps/s)
     elevatorConfig.MotionMagic = motionMagicConfigs;
 
     // Mechanism Reduction

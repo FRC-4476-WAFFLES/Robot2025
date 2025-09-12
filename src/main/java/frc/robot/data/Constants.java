@@ -29,42 +29,43 @@ public final class Constants {
   /* CAN IDs  */
   public static class CANIds {
     // Drive Motors
-    public static final int steeringFrontLeft = 1; 
-    public static final int drivingFrontLeft = 2; 
-    public static final int steeringFrontRight = 3; 
-    public static final int drivingFrontRight = 4; 
-    public static final int steeringBackLeft = 5; 
-    public static final int drivingBackLeft = 6; 
-    public static final int steeringBackRight = 7; 
-    public static final int drivingBackRight = 8; 
+    // Drivetrain IDS are located in TunerConstants
 
-    // Drive Sensors
-    public static final int frontLeftAbsoluteEncoder = 19; // CANcoder
-    public static final int frontRightAbsoluteEncoder = 20; // CANcoder
-    public static final int backLeftAbsoluteEncoder = 21; // CANcoder
-    public static final int backRightAbsoluteEncoder = 22; // CANcoder
+    // public static final int steeringFrontLeft = 1; 
+    // public static final int drivingFrontLeft = 2; 
+    // public static final int steeringFrontRight = 3; 
+    // public static final int drivingFrontRight = 4; 
+    // public static final int steeringBackLeft = 5; 
+    // public static final int drivingBackLeft = 6; 
+    // public static final int steeringBackRight = 7; 
+    // public static final int drivingBackRight = 8; 
 
-    public static final int pidgeon = 25;
+    // // Drive Sensors
+    // public static final int frontLeftAbsoluteEncoder = 9; // CANcoder
+    // public static final int frontRightAbsoluteEncoder = 10; // CANcoder
+    // public static final int backLeftAbsoluteEncoder = 11; // CANcoder
+    // public static final int backRightAbsoluteEncoder = 12; // CANcoder
+
+    // public static final int pidgeon = 50;
 
     // Other Motors
-    public static final int elevator1 = 9; 
-    public static final int elevator2 = 10; 
-    public static final int intakeMotor = 14;
-    public static final int pivotMotor = 15;
-    public static final int groundPivotMotor = 12;
-    public static final int groundIntakeMotorRight = 13;
-    public static final int groundIntakeMotorLeft = 32;
-    public static final int groundIntakeMotorMid = 33;
+    public static final int elevator1 = 13; 
+    public static final int elevator2 = 14; 
+    public static final int manipulatorIntake = 16;
+    public static final int manipulatorPivot = 15;
+    public static final int groundPivotMotor = 21;
+    public static final int groundIntakeMotorMid = 18;
+    public static final int groundIntakeMotorRight = 19;
+    public static final int groundIntakeMotorLeft = 20;
     // Other Sensors
-    public static final int pivotAbsoluteEncoder = 28;
+    public static final int pivotAbsoluteEncoder = 70;
     
-    public static final int intakeLaserCan = 29;
-    public static final int funnelLaserCan = 30;
-    public static final int groundIntakeLaserCanRight = 36;
-    public static final int groundIntakeLaserCanMid = 37;
-    public static final int groundIntakeLaserCanLeft = 38;
-    public static final int groundIntakeCanRange = 35;
-    public static final int CANdle = 26;
+    public static final int groundIntakeLaserCanRight = 31;
+    public static final int groundIntakeLaserCanMid = 29;
+    public static final int groundIntakeLaserCanLeft = 30;
+    
+    public static final int groundIntakeCanRange = 17;
+    public static final int CANdle = 22;
 
     // Canivore
     public static final String CANivoreName = "Drivetrain Backup";
@@ -257,7 +258,7 @@ public final class Constants {
     public static final double PIVOT_CLEARANCE_POSITION_ALGAE = 105;
 
     // Motor configuration
-    public static final double PIVOT_MOTION_CRUISE_VELOCITY = 6;
+    public static final double PIVOT_MOTION_CRUISE_VELOCITY = 0.1;
     public static final double PIVOT_MOTION_ACCELERATION = 30.0;
     public static final double PIVOT_MOTION_JERK = 2000.0;
     public static final double STATOR_CURRENT_LIMIT = 50.0; // amps
@@ -271,7 +272,7 @@ public final class Constants {
     public static final double PIVOT_kD = 0.0;
     public static final double PIVOT_kS = 0.15;
 
-    public static final double PIVOT_kG_HORIZONTAL = -0.3; 
+    public static final double PIVOT_kG_HORIZONTAL = 0.0;  
 
     public static final double PIVOT_kP_ALGAE_SLOW = 40.0;
   }
@@ -302,7 +303,7 @@ public final class Constants {
     public static final double FIRST_STAGE_START_HEIGHT = ElevatorConstants.MAX_ELEVATOR_HEIGHT / 2.0; 
 
     // Motion Magic configuration
-    public static final double MOTION_CRUISE_VELOCITY = 6; // 4 usually
+    public static final double MOTION_CRUISE_VELOCITY = 0.4; // 4 usually
     public static final double MOTION_ACCELERATION = 4;
     public static final double MOTION_JERK = 2000;
 
@@ -383,10 +384,10 @@ public final class Constants {
     public static final double kS = 0.0;
     public static final double STATOR_CURRENT_LIMIT = 60;
 
-    public static final double CANRANGE_PROXIMITY_THRESHOLD = 60;//TODO remember to tune number
-    public static final double CORAL_LEFT_DISTANCE_THRESHOLD = 60;
-    public static final double CORAL_MID_DISTANCE_THRESHOLD = 60;
-    public static final double CORAL_RIGHT_DISTANCE_THRESHOLD = 60;
+    public static final double CANRANGE_PROXIMITY_THRESHOLD = 0.15;//TODO remember to tune number
+    public static final double CORAL_LEFT_DISTANCE_THRESHOLD = 10;
+    public static final double CORAL_MID_DISTANCE_THRESHOLD = 10;
+    public static final double CORAL_RIGHT_DISTANCE_THRESHOLD = 10;
     
     public static final double SENSOR_DEBOUNCE_TIME = 0.1;
   }

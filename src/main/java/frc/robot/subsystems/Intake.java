@@ -65,7 +65,7 @@ public class Intake extends SimpleWafflesMechanism {
     private final BooleanPublisher isOutakingAlgaeNT = networkTable.getBooleanTopic("IsOutaking").publish();
 
     public Intake() {
-        intake = new TalonFXIO(Constants.CANIds.intakeMotor);
+        intake = new TalonFXIO(Constants.CANIds.manipulatorIntake);
 
         // Configure hardware
         configureIntakeMotor();

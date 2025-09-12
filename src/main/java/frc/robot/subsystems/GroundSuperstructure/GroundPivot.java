@@ -138,7 +138,7 @@ public class GroundPivot extends WafflesMechanism {
     
     // Reset the position to zero at startup
     // This assumes the pivot is at its zero position when the robot starts
-    pivotMotor.setPosition(0);
+    PhoenixHelpers.tryConfig(() -> pivotMotor.setPosition(192 / 360));
   }
 
   @Override
