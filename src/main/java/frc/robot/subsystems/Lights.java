@@ -224,7 +224,7 @@ public class Lights extends SubsystemBase {
   private void handleEnabledState() {
     if (!RobotContainer.isOperatorOverride) {
       handleAutomaticElevatorLights();
-      clearAllRainbow();
+      // clearAllRainbow();
     } else {
       handleManualElevatorLights();
       enableManualModeRainbow();
@@ -567,6 +567,7 @@ public class Lights extends SubsystemBase {
 
   private void applyLEDRanges() {
     if (ledRangeColours.isEmpty()) {
+      clearAllLEDs();
       return;
     }
 
