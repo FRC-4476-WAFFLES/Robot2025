@@ -140,7 +140,7 @@ public class Elevator extends WafflesMechanism {
     }).debounce(ElevatorConstants.ZERO_DEBOUNCE_TIME);
 
     if (RobotBase.isSimulation()) {
-      elevatorSim = new SecondOrderSim(ElevatorConstants.SIM_DAMPING, ElevatorConstants.SIM_STIFFNESS, ElevatorConstants.SIM_INITIAL_POSITION, ElevatorConstants.SIM_INITIAL_VELOCITY);
+      elevatorSim = new SecondOrderSim(ElevatorConstants.SIM_FREQ, ElevatorConstants.SIM_DAMPING, ElevatorConstants.SIM_INITIAL_POSITION, ElevatorConstants.SIM_INITIAL_VELOCITY);
     }
   }
 

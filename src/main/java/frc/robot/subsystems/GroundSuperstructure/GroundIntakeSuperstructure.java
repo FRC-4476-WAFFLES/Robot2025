@@ -16,6 +16,8 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
     public final GroundPivot pivot = new GroundPivot();
     public final Subsystem[] requirements = new Subsystem[] {intake, pivot};
 
+    private boolean statemachineOverrideFlag = false;
+
     public enum GroundIntakeSuperstructureState {
         INTAKE_L1_STATE,
         INDEXING_L1_STATE,
@@ -34,6 +36,10 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
 
     @Override
     protected void periodicImpl() {
+        if (statemachineOverrideFlag) {
+            return;
+        }
+
         switch (currentState) {
             case INTAKE_L1_STATE:
                 if (intake.isCoralLeft() || intake.isCoralRight() || intake.isCoralMid()) {
@@ -159,6 +165,10 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
 
     public void setState(GroundIntakeSuperstructureState state) {
         currentState = state;
+    }
+
+    public void setStatemachineOverrideFlag(boolean val) {
+        statemachineOverrideFlag = val;
     }
 
     /**

@@ -30,6 +30,7 @@ public class ExecuteHandoff extends Command {
     @Override
     public void initialize() {
         state = HandoffState.STARTED;
+
     }
 
     // Called every time the scheduler runs while the command is scheduled.
@@ -54,7 +55,6 @@ public class ExecuteHandoff extends Command {
             
             case CLEARING:
                 RobotContainer.groundSuperstructure.triggerHandoff();
-                RobotContainer.intakeSubsystem.setIntakeSpeed(0);
                 RobotContainer.superstructure.applySuperstructureState(SuperstructureState.HANDOFF_CLEAR);
                 if (RobotContainer.superstructure.atSetpoint()) {
                     // Ensure we are at a controlled ending point for the handoff
@@ -62,8 +62,11 @@ public class ExecuteHandoff extends Command {
                 }
                 break;
             case FINISHED:
+                RobotContainer.intakeSubsystem.setIntakeSpeed(0);
                 break;
         }
+
+        System.out.println(state.toString());
     }
 
     // Called once the command ends or is interrupted.

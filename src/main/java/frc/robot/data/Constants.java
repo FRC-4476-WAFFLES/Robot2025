@@ -233,14 +233,14 @@ public final class Constants {
     
     public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.3; 
     public static final double CORAL_DETECTION_DEBOUNCE_TIME = 0.3;
-    public static final double CORAL_RELEASE_DEBOUNCE_TIME = 0.3;
+    public static final double CORAL_RELEASE_DEBOUNCE_TIME = 0.1;
     
     public static final double ZERO_DEBOUNCE_TIME = 0.2;
 
     // Intake speeds
     public static final double CORAL_INTAKE_SPEED = -5; // Rps
     public static final double ALGAE_HOLD_SPEED = 30; // Speed to hold algae in place
-    public static final double ALGAE_INTAKE_SPEED = 120;
+    public static final double ALGAE_INTAKE_SPEED = -10;
     public static final double ZEROING_SPEED = -0.065; // Slow inwards speed
 
     // Pivot constants
@@ -254,11 +254,11 @@ public final class Constants {
     public static final double PIVOT_FRAME_UPPER_CLEARANCE_ANGLE = 90;
     public static final double FIRST_STAGE_AVOIDANCE_ANGLE = 215;
 
-    public static final double PIVOT_CLEARANCE_POSITION = 35;
+    public static final double PIVOT_CLEARANCE_POSITION = 38;
     public static final double PIVOT_CLEARANCE_POSITION_ALGAE = 105;
 
     // Motor configuration
-    public static final double PIVOT_MOTION_CRUISE_VELOCITY = 0.1;
+    public static final double PIVOT_MOTION_CRUISE_VELOCITY = 1;
     public static final double PIVOT_MOTION_ACCELERATION = 30.0;
     public static final double PIVOT_MOTION_JERK = 2000.0;
     public static final double STATOR_CURRENT_LIMIT = 50.0; // amps
@@ -267,7 +267,7 @@ public final class Constants {
     public static final double PIVOT_CURRENT_THRESHOLD =  27.0; // amps - Current threshold for zeroing
 
     // PID Values
-    public static final double PIVOT_kP = 80.0;
+    public static final double PIVOT_kP = 120.0;
     public static final double PIVOT_kI = 0.0;
     public static final double PIVOT_kD = 0.0;
     public static final double PIVOT_kS = 0.15;
@@ -297,13 +297,13 @@ public final class Constants {
 
     // Collision zone constants
     public static final double COLLISION_ZONE_LOWER = 0.36; // meters
-    public static final double COLLISION_ZONE_UPPER = 0.61; // meters
+    public static final double COLLISION_ZONE_UPPER = 0.85; // meters
 
     // Height where first stage starts moving
     public static final double FIRST_STAGE_START_HEIGHT = ElevatorConstants.MAX_ELEVATOR_HEIGHT / 2.0; 
 
     // Motion Magic configuration
-    public static final double MOTION_CRUISE_VELOCITY = 0.4; // 4 usually
+    public static final double MOTION_CRUISE_VELOCITY = 0.6; // 4 usually
     public static final double MOTION_ACCELERATION = 4;
     public static final double MOTION_JERK = 2000;
 
@@ -323,8 +323,8 @@ public final class Constants {
     public static final double MOTION_MAGIC_EXPO_KA = 0.7; // kA is V/(rps/s)
     
     // Simulation constants
-    public static final double SIM_DAMPING = 1.5;
-    public static final double SIM_STIFFNESS = 1.0;
+    public static final double SIM_FREQ = 0.5;
+    public static final double SIM_DAMPING = 1.0;
     public static final double SIM_INITIAL_POSITION = 0.0;
     public static final double SIM_INITIAL_VELOCITY = 0.0;
     
@@ -340,13 +340,13 @@ public final class Constants {
     public static final double MAX_ANGLE = 195.0; // Maximum angle in degrees - adjust as needed
 
     // Zeroing
-    public static final double ZEROING_SPEED = -0.05;
-    public static final double ZERO_DEBOUNCE_TIME = 0.2; // seconds
-    public static final double PIVOT_CURRENT_THRESHOLD = 20; // amps
+    public static final double ZEROING_SPEED = -0.1;
+    public static final double ZERO_DEBOUNCE_TIME = 0.8; // seconds
+    public static final double PIVOT_CURRENT_THRESHOLD = 16; // amps
 
     // Motor configuration
     public static final double STATOR_CURRENT_LIMIT = 40.0; // amps
-    public static final double MOTION_CRUISE_VELOCITY = 4; 
+    public static final double MOTION_CRUISE_VELOCITY = 0.4; 
     public static final double MOTION_ACCELERATION = 12; 
     public static final double MOTION_JERK = 2000.0; 
 
@@ -359,10 +359,10 @@ public final class Constants {
     // Predefined positions for the ground pivot (in degrees)
     public enum GroundPivotPosition {
       STOWED(0.0),
-      HANDOFF(0.0),
+      HANDOFF(17.0),
       DEPLOYED(190.0),
       L1(110),
-      ZEROING_CLEARANCE(150);
+      ZEROING_CLEARANCE(140);
 
       private final double degrees;
 
@@ -385,11 +385,11 @@ public final class Constants {
     public static final double kS = 0.0;
     public static final double STATOR_CURRENT_LIMIT = 60;
 
-    public static final double CANRANGE_PROXIMITY_THRESHOLD = 0.15;//TODO remember to tune number
+    public static final double CANRANGE_PROXIMITY_THRESHOLD = 0.15;
     public static final double CORAL_LEFT_DISTANCE_THRESHOLD = 20;
     public static final double CORAL_MID_DISTANCE_THRESHOLD = 20;
     public static final double CORAL_RIGHT_DISTANCE_THRESHOLD = 20;
     
-    public static final double SENSOR_DEBOUNCE_TIME = 0.1;
+    public static final double SENSOR_DEBOUNCE_TIME = 0.25;
   }
 }

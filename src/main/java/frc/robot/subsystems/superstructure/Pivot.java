@@ -221,9 +221,10 @@ public class Pivot extends WafflesMechanism {
     @Override
     protected void applyConstraints() {
         // Highest priority constraints should be run last
-        runConstraint(crossbarCollisionConstraint(), "Crossbar Collision");
-        runConstraint(firstStageCollisionConstraint(), "First Stage Collision");
         runConstraint(frameCollisionConstraint(), "Frame Collision");
+        runConstraint(firstStageCollisionConstraint(), "First Stage Collision");
+        runConstraint(groundIntakeConstraint(), "Ground Intake");
+        runConstraint(crossbarCollisionConstraint(), "Crossbar Collision");
         runConstraint(algaeConstraint(), "Algae Constraint");
         runConstraint(elevatorZeroingConstraint(),  "Elevator Zeroing");
         runConstraint(mechanismLimitsConstraint(), "Mechanism Limits");
@@ -286,6 +287,21 @@ public class Pivot extends WafflesMechanism {
         return constrainedSetpoint;
     }
 
+    private double groundIntakeConstraint()
+    {
+        if (RobotContainer.groundSuperstructure.pivot.getPivotDegrees() < 20 ||
+            RobotContainer.groundSuperstructure.pivot.getSetpoint() < 20) {
+            // Ground intake is in
+            if (constrainedSetpoint < ManipulatorConstants.PIVOT_CLEARANCE_POSITION) {
+                if (RobotContainer.superstructure.elevator.getSetpoint() < 0.15 || 
+                    RobotContainer.superstructure.elevator.getElevatorPositionMeters() < 0.15) {
+                     return ManipulatorConstants.PIVOT_CLEARANCE_POSITION;
+                }
+            }
+        }
+        return constrainedSetpoint;
+    }
+
     private double firstStageCollisionConstraint() {
         if (RobotContainer.superstructure.elevator.getSetpoint() < RobotContainer.superstructure.elevator.getElevatorPositionMeters() - 0.1) {
             // Elevator moving down
@@ -312,7 +328,7 @@ public class Pivot extends WafflesMechanism {
 
     private double frameCollisionConstraint() {
         // Check for frame collision, and limit angle if needed
-        if (isInFrameDangerZone() ) {
+        if (isInFrameDangerZone() && RobotContainer.intakeSubsystem.isCoralLoaded()) {
             // (constrainedSetpoint, ManipulatorConstants.PIVOT_FRAME_MIN_CLEARANCE_ANGLE, ManipulatorConstants.PIVOT_FRAME_MAX_CLEARANCE_ANGLE);
             if (
                 constrainedSetpoint < ManipulatorConstants.PIVOT_FRAME_UPPER_CLEARANCE_ANGLE &&

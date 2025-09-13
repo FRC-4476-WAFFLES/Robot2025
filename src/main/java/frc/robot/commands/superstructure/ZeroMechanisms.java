@@ -26,6 +26,7 @@ public class ZeroMechanisms extends Command {
 
         RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.ZERO);
         
+        RobotContainer.groundSuperstructure.setStatemachineOverrideFlag(true);
     }
 
     @Override
@@ -49,6 +50,8 @@ public class ZeroMechanisms extends Command {
 
     @Override
     public void end(boolean interrupted) {
+        RobotContainer.groundSuperstructure.setStatemachineOverrideFlag(false);
+
         // If interrupted, make sure to stop both mechanisms
         if (interrupted) {
             if (RobotContainer.superstructure.elevator.isZeroing()) {

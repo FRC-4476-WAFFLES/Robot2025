@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -36,6 +37,7 @@ import frc.robot.commands.superstructure.ZeroMechanisms;
 import frc.robot.commands.test.TestDriveAuto;
 import frc.robot.commands.test.TestElevatorAuto;
 import frc.robot.commands.test.WheelRadiusCharacterization;
+import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.ScoringConstants;
 import frc.robot.data.TunerConstants;
 import frc.robot.subsystems.DriveSubsystem;
@@ -252,6 +254,15 @@ public class RobotContainer {
       )
     );
 
+    // Controls.operatorController.povUp().whileTrue(
+    //   new ParallelCommandGroup(
+    //     new InstantCommand(
+    //       () -> {intakeSubsystem.setIntakeSpeed(ManipulatorConstants.ALGAE_INTAKE_SPEED);}
+    //     ),
+    //     new ApplySuperstructureState(SuperstructureState.GROUND_PICKUP_ALGAE)
+    //   )
+    // );
+
     // Manual net toss
     Controls.operatorController.povDown().whileTrue(Commands.defer(() -> ScoreNet.getScoreNetCommand(0, () -> Rotation2d.kZero, false, true), DynamicPathing.actionCommandRequirements).onlyIf(() -> RobotContainer.intakeSubsystem.isAlgaeLoaded()));
     
@@ -271,6 +282,7 @@ public class RobotContainer {
       )
     );
 
+    // HADNOFF DISABLED
     triggerHandoff.onTrue(new ExecuteHandoff());
 
 

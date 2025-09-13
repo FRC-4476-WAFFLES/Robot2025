@@ -14,6 +14,7 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ManipulatorConstants;
@@ -100,10 +101,10 @@ public class Intake extends SimpleWafflesMechanism {
         intakeConfigs.CurrentLimits = intakeCurrentLimit;
 
         var slot0Configs = new Slot0Configs();
-        slot0Configs.kP = 0.3;
+        slot0Configs.kP = 1;
         slot0Configs.kI = 0;
         slot0Configs.kD = 0;
-        slot0Configs.kV = 0.33;
+        slot0Configs.kV = 1.5;
         slot0Configs.kG = 0.0;
 
         var slot1Configs = new Slot1Configs();
@@ -142,6 +143,9 @@ public class Intake extends SimpleWafflesMechanism {
                 RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.REEF_ALGAE &&
                 RobotContainer.dynamicPathingSubsystem.runningAction.getAsBoolean()
             ) {
+                loadType = LoadType.ALGEA;
+            } else if (Controls.operatorController.povDown().getAsBoolean()) {
+                // Quick hack
                 loadType = LoadType.ALGEA;
             }
         }
@@ -188,6 +192,10 @@ public class Intake extends SimpleWafflesMechanism {
      * Checks if algae or coral is present in the intake based on current draw
      */
     private void detectGamepeiceLoaded() {
+        if (RobotBase.isSimulation()) {
+            return;
+        }
+
         if (loadType == LoadType.ALGEA) {
             if (algaeDetectionTrigger.getAsBoolean()) {
                 manipulatorLoaded = true;
@@ -250,11 +258,11 @@ public class Intake extends SimpleWafflesMechanism {
     }
 
     public boolean isOuttakingAlgae() {
-        return isAlgaeLoaded() && intake.signals().velocity().getValueAsDouble() < -12;
+        return isAlgaeLoaded() && intake.signals().velocity().getValueAsDouble() > 0.5;
     }
 
     public boolean isOuttakingCoral() {
-        return isCoralLoaded() && intake.signals().velocity().getValueAsDouble() < -12;
+        return isCoralLoaded() && intake.signals().velocity().getValueAsDouble() > 0.5;
     }
 
     public boolean isIntakeStopped() {
@@ -268,7 +276,7 @@ public class Intake extends SimpleWafflesMechanism {
     public void updateNetwork() {
         coralLoadedNT.set(isCoralLoaded());
         algaeLoadedNT.set(isAlgaeLoaded());
-        manipulatorLoadedNT.set(manipulatorLoaded);
+        manipulatorLoadedNT.set(manipulatorLoaded());
         loadTypeNT.set(loadType.toString());
         intakeSetpointNT.set(intakeSpeed);
         intakeCurrentDrawNT.set(intake.signals().statorCurrent().getValueAsDouble());

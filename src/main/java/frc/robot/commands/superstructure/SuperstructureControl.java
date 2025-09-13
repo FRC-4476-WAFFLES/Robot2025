@@ -39,7 +39,11 @@ public class SuperstructureControl {
                 if (RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.REEF_CORAL) {
                     RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.L2);
                 } else {
-                    RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.HANDOFF_READY);
+                    if (RobotContainer.intakeSubsystem.isAlgaeLoaded()) {
+                        RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.ALGAE_REST);
+                    } else {
+                        RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.HANDOFF_READY);
+                    }
                 }
             }, 
             (interrupted) -> {},
@@ -64,7 +68,15 @@ public class SuperstructureControl {
                 if (RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.REEF_CORAL) {
                     RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.L3);
                 } else {
-                    RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.HANDOFF_READY);
+                    if (RobotContainer.intakeSubsystem.isCoralLoaded()) {
+                        RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.HANDOFF_CLEAR);
+                    } else {
+                        if (RobotContainer.intakeSubsystem.isAlgaeLoaded()) {
+                            RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.ALGAE_REST);
+                        } else {
+                            RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.HANDOFF_READY);
+                        }
+                    }
                 }
             }, 
             (interrupted) -> {},
@@ -92,8 +104,7 @@ public class SuperstructureControl {
                 if (interrupted) {
                     return;
                 }
-                RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.L4);
-                RobotContainer.superstructure.pivot.applySetpoint(ManipulatorConstants.PIVOT_CLEARANCE_POSITION);
+                RobotContainer.superstructure.applySuperstructureState(SuperstructureState.L4);
             },
             () -> DynamicPathing.isElevatorL4Ready(), 
             RobotContainer.superstructure.elevator
