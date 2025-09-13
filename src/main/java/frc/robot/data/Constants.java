@@ -346,7 +346,7 @@ public final class Constants {
 
     // Motor configuration
     public static final double STATOR_CURRENT_LIMIT = 40.0; // amps
-    public static final double MOTION_CRUISE_VELOCITY = 0.9; 
+    public static final double MOTION_CRUISE_VELOCITY = 0.6; 
     public static final double MOTION_ACCELERATION = 4; 
     public static final double MOTION_JERK = 2000.0; 
 

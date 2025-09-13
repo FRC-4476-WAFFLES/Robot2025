@@ -4,23 +4,17 @@
 
 package frc.robot.subsystems;
 
-import java.util.EnumMap;
+import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
-import com.ctre.phoenix.led.Animation;
 import com.ctre.phoenix.led.CANdle;
 import com.ctre.phoenix.led.CANdle.LEDStripType;
 import com.ctre.phoenix.led.CANdle.VBatOutputMode;
 import com.ctre.phoenix.led.CANdleConfiguration;
-import com.ctre.phoenix.led.ColorFlowAnimation;
-import com.ctre.phoenix.led.ColorFlowAnimation.Direction;
-import com.ctre.phoenix.led.LarsonAnimation;
-import com.ctre.phoenix.led.LarsonAnimation.BounceMode;
-import com.ctre.phoenix.led.RainbowAnimation;
-import com.ctre.phoenix.led.StrobeAnimation;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -33,58 +27,77 @@ import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
 import frc.robot.subsystems.groundsuperstructure.GroundIntakeSuperstructure.GroundIntakeSuperstructureState;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 
+/**
+ * Simple LED subsystem using array-based approach for reliable, conflict-free operation.
+ * 
+ * Features:
+ * - Static colors for elevator levels and states  
+ * - Blinking for active processes (intake, etc.)
+ * - Rainbow and flow animations
+ * - Diagnostic indicators
+ * - Predictable "last call wins" behavior
+ */
 public class Lights extends SubsystemBase {
+  // Hardware constants
   private static final int LED_COUNT = 186;
-  private static final double DEFAULT_BLINK_RATE = 0.1;
-  private static final int FLOW_LENGTH = 32;
-  private static final double LED_UPDATE_RATE = 0.05; 
+  private static final int FLOW_LENGTH = 15;  // Reduced from 32 for fewer chunks
+  private static final double ANIMATION_UPDATE_RATE = 0.05; // 20Hz
   
   private static final CANdle candle = new CANdle(Constants.CANIds.CANdle);
   
-  private Map<LedRange, LightColours> ledRangeColours = new EnumMap<>(LedRange.class);
-  private Map<LedRange, LightColours> lastAppliedColors = new EnumMap<>(LedRange.class);
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  // LED STATE
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
   
-  private static final Timer blinkTimer = new Timer();
+  private int[] currentLEDs = new int[LED_COUNT];    // Current frame (RGB packed as 0xRRGGBB)
+  private int[] lastSentLEDs = new int[LED_COUNT];   // Last sent frame (for change detection)
+  
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  // ANIMATION STATE  
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  
   private static final Timer animationTimer = new Timer();
-  private boolean isBlinkColour = true;
-  private double blinkRate = DEFAULT_BLINK_RATE;
+  private int flowPosition = 8;                      // Global flow position counter
+  private int rainbowOffset = 0;                     // Global rainbow hue offset
   
-  private int flowPosition = 8;
+  private Set<LedRange> rainbowRanges = new HashSet<>();  // Ranges showing rainbow
+  private Set<LedRange> flowRanges = new HashSet<>();     // Ranges showing flow
+  
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  // BLINK STATE
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  
+  private long lastBlinkTime = 0;
+  private boolean blinkState = false;
   private boolean isCoralIntakeRunning = false;
-  
-  private int rainbowOffset = 0;
-  private boolean rainbowActive = false;
-  private Set<LedRange> rainbowRanges = new HashSet<>();
-  
-  private enum UpdateMode { STATIC, ANIMATED }
-  private Map<LedRange, UpdateMode> rangeUpdateModes = new EnumMap<>(LedRange.class);
 
-  /**
-   * Enum containing start and and indicies for various defined LED groups
-   */
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  // LED RANGES - Physical layout of LED strip sections
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  
   public enum LedRange {
-    CANDLE(0,8),
-    // Full sections
-    RIGHT_SIDE_FULL(129,186),//59
-    MIDDLE_FULL(68,128),//60
-    LEFT_SIDE_FULL(8,67), //59
-
-    // Right side
-    R1(173,186),      // Bottom section
-    R2(158,186),      // Bottom + lower middle
-    R3(144,186),      // Bottom + lower middle + upper middle
-
-    // Middle sections
-    MIDDLE_LEFT(68,88),      // First third of middle
-    MIDDLE_MIDDLE(88,108),   // Second third of middle
-    MIDDLE_RIGHT(108,127),   // Final third of middle
+    // Hardware candle LEDs
+    CANDLE(0, 8),
     
-    // Left side sections and progressive ranges
-    L1(8,23),         // Bottom section
-    L2(8,38),         // Bottom + lower middle
-    L3(8,52);         // Bottom + lower middle + upper middle
+    // Full sections (non-overlapping)
+    LEFT_SIDE_FULL(8, 67),      // 59 LEDs - left side elevator
+    MIDDLE_FULL(67, 128),       // 61 LEDs - middle pathfinding indicators  
+    RIGHT_SIDE_FULL(128, 186),  // 58 LEDs - right side elevator
 
-  
+    // Progressive elevator ranges (left side - overlapping by design)
+    L1(8, 23),                  // Bottom level
+    L2(8, 38),                  // Bottom + lower middle  
+    L3(8, 52),                  // Bottom + lower + upper middle
+
+    // Progressive elevator ranges (right side - overlapping by design)  
+    R1(170, 186),               // Bottom level (16 LEDs, close to L1's 15)
+    R2(155, 186),               // Bottom + lower middle (31 LEDs, close to L2's 30)
+    R3(141, 186),               // Bottom + lower + upper middle (45 LEDs, close to L3's 44)
+
+    // Middle subsections
+    MIDDLE_LEFT(67, 87),        // Pathfinding indicator left
+    MIDDLE_MIDDLE(87, 107),     // Override/score indicators  
+    MIDDLE_RIGHT(107, 128);     // Pathfinding indicator right
 
     private final int start;
     private final int end;
@@ -94,137 +107,293 @@ public class Lights extends SubsystemBase {
       this.end = end;
     }
 
-    public int getStart() {
-      return start;
-    }
-
-    public int getEnd() {
-      return end;
-    }
+    public int getStart() { return start; }
+    public int getEnd() { return end; }
   }
 
-  /**
-   * Enum containing commonly used RGB colors
-   */
+
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  // COLORS - RGB color palette  
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  
   public enum LightColours {
+    // Basic colors
     BLACK(0, 0, 0),
-    BROWN(96, 32, 8),
-    INFRARED(50, 0, 0),
-    RED(255, 0, 0),
-    LIGHTRED(255, 105, 105),
-    SUN(255, 60, 0),
-    ORANGE(255, 18, 0),
-    YELLOW(255, 190, 0),
-    LIME(187, 255, 0),
-    LIGHTGREEN(130, 247, 119),
-    GREEN(0, 255, 0),
-    DARKGREEN(21, 102, 13),
-    CYAN(0, 255, 179),
-    LIGHTBLUE(103, 120, 214),
-    BLUE(0, 0, 255),
-    NAVY(9, 15, 79),
-    ULTRAVIOLET(50, 0, 100),
-    PURPLE(150, 0, 255),
-    MAGENTA(150, 15, 92),
-    PINK(255, 0, 255),
     WHITE(255, 255, 255),
     GRAY(127, 127, 127),
+    
+    // Primary colors
+    RED(255, 0, 0),
+    GREEN(0, 255, 0), 
+    BLUE(0, 0, 255),
+    
+    // Secondary colors
+    YELLOW(255, 190, 0),
+    ORANGE(255, 18, 0),
+    PURPLE(150, 0, 255),
+    CYAN(0, 255, 179),
+    PINK(255, 0, 255),
+    
+    // Specialized colors
+    DARKGREEN(21, 102, 13),        // Algae loaded indicator
+    LIGHTGREEN(130, 247, 119),     // Light green variant
+    LIGHTRED(255, 105, 105),       // Light red variant  
+    LIGHTBLUE(103, 120, 214),      // Light blue variant
+    NAVY(9, 15, 79),               // Dark blue
+    
+    // Dimmed variants for elevator indication
+    DIM_YELLOW(64, 48, 0),         // 25% brightness yellow
+    DIM_PURPLE(38, 0, 64),         // 25% brightness purple
+    
+    // Uncommon colors
+    BROWN(96, 32, 8),
+    INFRARED(50, 0, 0),
+    SUN(255, 60, 0),
+    LIME(187, 255, 0),
+    ULTRAVIOLET(50, 0, 100),
+    MAGENTA(150, 15, 92),
+    
+    // Animation colors
+    FLOW_COLOR(255, 190, 0);       // Yellow flow animation
 
-    FLOW_COLOR(255, 190, 0);
-
-    private final int red;
-    private final int green;
-    private final int blue;
-
-    private int[] packedColors;
+    public final int red, green, blue;
+    public final int packed;           // RGB packed as 0xRRGGBB for efficiency
 
     LightColours(int red, int green, int blue) {
       this.red = red;
       this.green = green;
       this.blue = blue;
-
-      // cache array to reduce allocations
-      this.packedColors = new int[]{red, green, blue};
-    }
-
-    public int[] getRGBValues() {
-      return packedColors;
+      this.packed = (red << 16) | (green << 8) | blue;
     }
   }
 
-  /**
-   * CANDLE Hardware Animations
-   */
-  public enum LedAnimation {
-    STROBE(new StrobeAnimation(255, 0, 0, 0, 98.0 / 256.0, LED_COUNT)),
-    LARSON(new LarsonAnimation(255, 255, 0, 0, 0.2, LED_COUNT, BounceMode.Front, 2)),
-    COLOR_FLOW(new ColorFlowAnimation(255, 255, 0, 0, 0.05, LED_COUNT, Direction.Forward)),
-    RAINBOW(new RainbowAnimation(0.9, 0.1, LED_COUNT));
 
-    private final Animation animation;
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  // CONSTRUCTOR & PERIODIC
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
 
-    LedAnimation(Animation animation) {
-        this.animation = animation;
-    }
-
-    public Animation getAnimation() {
-        return animation;
-    }
-  }
-
-  /**
-   * Constructs a new LightSubsystem.
-   * Initializes the blink timer and configures the CANdle settings.
-   */
   public Lights() {
-    blinkTimer.reset();
-    blinkTimer.start();
-
-    CANdleConfiguration configAll = new CANdleConfiguration();
-
-    configAll.stripType = LEDStripType.GRB;
-    configAll.brightnessScalar = 0.75;
-    configAll.vBatOutputMode = VBatOutputMode.On;
-    configAll.v5Enabled = true;
-
-    candle.configAllSettings(configAll, 1000);
-
-    for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
-      candle.clearAnimation(i);
-    }
-    candle.animate(null);
+    // Validate LED ranges at startup
+    validateLedRanges();
     
-    animationTimer.reset();
+    // Configure CANdle hardware  
+    CANdleConfiguration config = new CANdleConfiguration();
+    config.stripType = LEDStripType.GRB;
+    config.brightnessScalar = 0.75;
+    config.vBatOutputMode = VBatOutputMode.On;
+    config.v5Enabled = true;
+    candle.configAllSettings(config, 1000);
+
+    clearHardwareAnimations();
+    
     animationTimer.start();
-    
+    Arrays.fill(currentLEDs, 0);
+    Arrays.fill(lastSentLEDs, 0);
+  }
+  
+  /**
+   * Validate that all LED ranges are within bounds
+   */
+  private void validateLedRanges() {
     for (LedRange range : LedRange.values()) {
-      rangeUpdateModes.put(range, UpdateMode.STATIC);
+      if (range.getStart() < 0 || range.getEnd() > LED_COUNT || range.getStart() >= range.getEnd()) {
+        System.err.println("WARNING: Invalid LED range " + range.name() + 
+                         " [" + range.getStart() + "-" + range.getEnd() + 
+                         "] exceeds LED_COUNT=" + LED_COUNT);
+      }
     }
   }
-
 
   @Override
   public void periodic() {
-    if (RobotBase.isSimulation()) {
-      return;
+    if (RobotBase.isSimulation()) return;
+
+    // Clear frame and update animations
+    Arrays.fill(currentLEDs, 0);
+    
+    if (animationTimer.get() > ANIMATION_UPDATE_RATE) {
+      updateAnimations();
+      animationTimer.reset();
     }
+    
+    updateBlinkState();
 
-    ledRangeColours.clear();
-
+    // Apply LED logic based on robot state
     if (DriverStation.isEnabled()) {
       handleEnabledState();
     } else {
       handleDisabledState();
     }
 
-    updateBlinkTimer();
-    applyLEDRanges();
+    sendLEDsToHardware();
   }
 
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  // CORE LED CONTROL METHODS
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Set a range of LEDs to a specific color
+   */
+  private void setRange(LedRange range, LightColours color) {
+    setRange(range.getStart(), range.getEnd(), color.packed);
+  }
+
+  /**
+   * Set a range of LEDs with RGB values
+   */
+  private void setRange(int start, int end, int r, int g, int b) {
+    setRange(start, end, (r << 16) | (g << 8) | b);
+  }
+
+  /**
+   * Set a range of LEDs with packed RGB value
+   */
+  private void setRange(int start, int end, int packedColor) {
+    if (start < 0 || end < 0 || start > LED_COUNT) return;
+    int safeStart = Math.max(0, start);
+    int safeEnd = Math.min(end, LED_COUNT);
+    for (int i = safeStart; i < safeEnd; i++) {
+      currentLEDs[i] = packedColor;
+    }
+  }
+
+  /**
+   * Set a range to blink between two colors based on current blink state
+   */
+  private void setRangeBlinking(LedRange range, LightColours color1, LightColours color2) {
+    setRange(range, blinkState ? color1 : color2);
+  }
+
+  /**
+   * Set a range to display rainbow spectrum
+   */
+  private void setRangeRainbow(LedRange range) {
+    int start = range.getStart();
+    int end = range.getEnd();
+    int length = end - start;
+    
+    if (length <= 0 || start < 0 || end > LED_COUNT) return;
+    
+    for (int i = 0; i < length; i++) {
+      int ledIndex = start + i;
+      if (ledIndex >= LED_COUNT) break;
+      int hue = ((i + rainbowOffset) * 255 / length) % 255;
+      int[] rgb = hsvToRgb(hue, 255, 200);
+      currentLEDs[ledIndex] = (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  // ANIMATION UPDATES
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  
+  /**
+   * Update animation state (rainbow offset, flow position)
+   */
+  private void updateAnimations() {
+    rainbowOffset = (rainbowOffset + 3) % 255;
+    
+    // Flow animation increments continuously
+    // Use a large number that's coprime with typical range lengths to avoid sync issues
+    flowPosition = (flowPosition + 2) % 10000;
+  }
+
+  /**
+   * Update blink state based on time
+   */
+  private void updateBlinkState() {
+    long currentTime = System.currentTimeMillis();
+    if (currentTime - lastBlinkTime > 100) {
+      blinkState = !blinkState;
+      lastBlinkTime = currentTime;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  // HARDWARE COMMUNICATION
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  
+  /**
+   * Send LED data to hardware efficiently (only send changed LEDs)
+   */
+  private void sendLEDsToHardware() {
+    int start = -1;
+    
+    for (int i = 0; i < LED_COUNT; i++) {
+      if (currentLEDs[i] != lastSentLEDs[i]) {
+        if (start == -1) {
+          start = i;
+        }
+      } else {
+        if (start != -1) {
+          sendBatch(start, i);
+          start = -1;
+        }
+      }
+    }
+    
+    if (start != -1) {
+      sendBatch(start, LED_COUNT);
+    }
+    
+    System.arraycopy(currentLEDs, 0, lastSentLEDs, 0, LED_COUNT);
+  }
+
+  /**
+   * Send a batch of LEDs to hardware efficiently
+   */
+  private void sendBatch(int start, int end) {
+    int batchSize = end - start;
+    
+    // Send in chunks to avoid overwhelming CAN bus
+    // CANdle can handle larger batches, so we'll send in groups
+    int maxChunkSize = 10;  // Send 10 LEDs at a time
+    
+    for (int chunkStart = start; chunkStart < end; chunkStart += maxChunkSize) {
+      int chunkEnd = Math.min(chunkStart + maxChunkSize, end);
+      int chunkSize = chunkEnd - chunkStart;
+      
+      // For uniform colors, we can use a single setLEDs call
+      // Check if all LEDs in this chunk are the same color
+      boolean uniformColor = true;
+      int firstColor = currentLEDs[chunkStart];
+      for (int i = chunkStart + 1; i < chunkEnd; i++) {
+        if (currentLEDs[i] != firstColor) {
+          uniformColor = false;
+          break;
+        }
+      }
+      
+      if (uniformColor && chunkSize > 1) {
+        // All LEDs in chunk are same color, send as single command
+        int r = (firstColor >> 16) & 0xFF;
+        int g = (firstColor >> 8) & 0xFF;
+        int b = firstColor & 0xFF;
+        candle.setLEDs(r, g, b, 0, chunkStart, chunkSize);
+      } else {
+        // Different colors, send individually but in quick succession
+        for (int i = chunkStart; i < chunkEnd; i++) {
+          int color = currentLEDs[i];
+          int r = (color >> 16) & 0xFF;
+          int g = (color >> 8) & 0xFF;
+          int b = color & 0xFF;
+          candle.setLEDs(r, g, b, 0, i, 1);
+        }
+      }
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  // ROBOT STATE HANDLERS
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  
   private void handleEnabledState() {
+    flowRanges.clear(); // Flow animation only during disabled
+    rainbowRanges.clear(); // Clear rainbow ranges before setting new ones
+    
     if (!RobotContainer.isOperatorOverride) {
       handleAutomaticElevatorLights();
-      // clearAllRainbow();
     } else {
       handleManualElevatorLights();
       enableManualModeRainbow();
@@ -233,145 +402,131 @@ public class Lights extends SubsystemBase {
     updatePathingIndicators();
     updateOverrideIndicators();
     
-    if (rainbowActive && animationTimer.get() > LED_UPDATE_RATE) {
-      updateRainbow();
-      animationTimer.reset();
+    // Apply rainbow to active ranges
+    for (LedRange range : rainbowRanges) {
+      setRangeRainbow(range);
     }
   }
 
-  /**
-   * Updates the following operator override indicators
-   *  - Do not score 
-   *  - Is in override mode
-   */ 
   private void updateOverrideIndicators() {
     if (RobotContainer.isOperatorOverride) {
-      // Update green central range if in override mode
-      setLEDRangeGroup(LedRange.MIDDLE_MIDDLE, LightColours.GREEN, LightColours.BLACK, false);
-
+      setRange(LedRange.MIDDLE_MIDDLE, LightColours.GREEN);
     } else if (Controls.doNotScore.getAsBoolean()) {
-      // When "do not score" is active, and we are in normal mode, set middle lights to red
-      setLEDRangeGroup(LedRange.MIDDLE_MIDDLE, LightColours.RED, LightColours.BLACK, false);
-
+      setRange(LedRange.MIDDLE_MIDDLE, LightColours.RED);
     } else {
-      // Clear central LEDs if no state is being displayed
-      setLEDRangeGroup(LedRange.MIDDLE_MIDDLE, LightColours.BLACK, LightColours.BLACK, false);
+      setRange(LedRange.MIDDLE_MIDDLE, LightColours.BLACK);
     }
   }
 
   private void handleDisabledState() {
     clearHardwareAnimations();
-
     updateDiagnosticIndicators();
     
-    if (animationTimer.get() > LED_UPDATE_RATE) {
-      if (rainbowActive) {
-        updateRainbow();
-      } else {
-        updateFlowAnimation();
-      }
-      animationTimer.reset();
+    // Enable flow animation across entire strip when disabled
+    flowRanges.clear();
+    flowRanges.add(LedRange.LEFT_SIDE_FULL);
+    flowRanges.add(LedRange.MIDDLE_FULL);
+    flowRanges.add(LedRange.RIGHT_SIDE_FULL);
+    
+    // Apply animations to active ranges
+    for (LedRange range : flowRanges) {
+      setRangeFlow(range);
+    }
+    for (LedRange range : rainbowRanges) {
+      setRangeRainbow(range);
     }
   }
   
-  private void updateFlowAnimation() {
-    int clearStart = flowPosition - FLOW_LENGTH;
-    if (clearStart < 8) {
-      clearStart = LED_COUNT - (8 - clearStart);
-    }
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  // ANIMATION IMPLEMENTATIONS
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  
+  /**
+   * Set a range to display flow animation
+   */
+  private void setRangeFlow(LedRange range) {
+    int start = range.getStart();
+    int end = range.getEnd();
+    int length = end - start;
     
-    flowPosition = (flowPosition + 2) % LED_COUNT;
-    if (flowPosition < 8) {
-      flowPosition = 8;
-    }
+    if (length <= 0 || start < 0 || end > LED_COUNT) return;
     
-    int segmentLength = Math.min(FLOW_LENGTH, LED_COUNT - flowPosition);
-    if (segmentLength > 0) {
-      candle.setLEDs(LightColours.FLOW_COLOR.red, 
-                     LightColours.FLOW_COLOR.green, 
-                     LightColours.FLOW_COLOR.blue, 
-                     0, flowPosition, segmentLength);
-    }
+    // Simple single flow segment that moves smoothly through the range
+    // Use a larger modulo to prevent stuttering at wrap-around
+    int cycleLength = length + FLOW_LENGTH; // Add flow length to create smooth wrap
+    int relativeFlowPos = flowPosition % cycleLength;
     
-    if (clearStart >= 8 && clearStart < LED_COUNT) {
-      int clearLength = Math.min(FLOW_LENGTH, LED_COUNT - clearStart);
-      candle.setLEDs(0, 0, 0, 0, clearStart, clearLength);
+    // Draw the flow segment
+    for (int i = 0; i < FLOW_LENGTH; i++) {
+      int ledPos = relativeFlowPos + i - FLOW_LENGTH; // Start behind to allow smooth entry
+      
+      // Wrap around within the range
+      if (ledPos >= 0 && ledPos < length) {
+        int ledIndex = start + ledPos;
+        
+        if (ledIndex >= start && ledIndex < end) {
+          // Simple solid yellow for the flow
+          currentLEDs[ledIndex] = LightColours.FLOW_COLOR.packed;
+        }
+      }
     }
   }
 
 
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  // DIAGNOSTIC & STATUS INDICATORS
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  
   /**
    * Indicators used to perform systems check
    */
   private void updateDiagnosticIndicators() {
-    // Algae Loaded
-    if (RobotContainer.intakeSubsystem.isAlgaeLoaded()) {
-      setLEDRange(0, 1, LightColours.DARKGREEN);
-    } else {
-      setLEDRange(0, 1, LightColours.BLACK);
-    }
+    setRange(0, 1, RobotContainer.intakeSubsystem.isAlgaeLoaded() ?
+             LightColours.DARKGREEN.packed : LightColours.BLACK.packed);
     
-    // Coral Loaded
-    if (RobotContainer.intakeSubsystem.isCoralLoaded()) {
-      setLEDRange(1, 2, LightColours.WHITE);
-    } else {
-      setLEDRange(1, 2, LightColours.BLACK);
-    }
+    setRange(1, 2, RobotContainer.intakeSubsystem.isCoralLoaded() ?
+             LightColours.WHITE.packed : LightColours.BLACK.packed);
 
-    // Add pivot position indicator
     double pivotPosition = RobotContainer.superstructure.pivot.getPivotPosition();
-    if (Math.abs(pivotPosition) <= 2.0) { // Within 2 degrees of zero
-      setLEDRange(2, 3, LightColours.BLUE);
-    } else {
-      setLEDRange(2, 3, LightColours.BLACK);
-    }
+    setRange(2, 3, Math.abs(pivotPosition) <= 2.0 ?
+             LightColours.BLUE.packed : LightColours.BLACK.packed);
 
-    // Add elevator position indicator 
     double elevatorPosition = RobotContainer.superstructure.elevator.getElevatorPositionMeters();
-    if (Math.abs(elevatorPosition) <= 0.02) { // Within 2cm of zero
-      setLEDRange(3, 4, LightColours.CYAN);
-    } else {
-      setLEDRange(3, 4, LightColours.BLACK);
-    }
+    setRange(3, 4, Math.abs(elevatorPosition) <= 0.02 ?
+             LightColours.CYAN.packed : LightColours.BLACK.packed);
 
-    // Can see tag indicator
-    if (RobotContainer.driveSubsystem.limelightsSeeTag()) {
-      setLEDRange(4, 5, LightColours.PINK);
-    } else {
-      setLEDRange(4, 5, LightColours.BLACK);
-    }
+    setRange(4, 5, RobotContainer.driveSubsystem.limelightsSeeTag() ?
+             LightColours.PINK.packed : LightColours.BLACK.packed);
 
-    // Alliance Indicator Light
     var alliance = DriverStation.getAlliance();
-    if (alliance.isPresent()) {
-      if (alliance.get() == Alliance.Blue) {
-        setLEDRange(6, 8, LightColours.BLUE);
-      } else {
-        setLEDRange(6, 8, LightColours.RED);
-      }
-    } else {
-      setLEDRange(6, 8, LightColours.BLUE);
+    LightColours allianceColor = LightColours.BLUE;
+    if (alliance.isPresent() && alliance.get() == Alliance.Red) {
+      allianceColor = LightColours.RED;
     }
+    setRange(6, 8, allianceColor.packed);
   }
 
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  // ELEVATOR LIGHT CONTROL
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  
   /**
    * Updates elevator side lights based on targeted elevator height in automatic mode
    */
   private void handleAutomaticElevatorLights() {
     if (RobotContainer.isHeadingLockedToL1.getAsBoolean()) {
-      setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.ORANGE, LightColours.BLACK, true);
-      setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.ORANGE, LightColours.BLACK, true);
-      return; 
+      setRangeBlinking(LedRange.LEFT_SIDE_FULL, LightColours.ORANGE, LightColours.BLACK);
+      setRangeBlinking(LedRange.RIGHT_SIDE_FULL, LightColours.ORANGE, LightColours.BLACK);
+      return;
     }
     if (RobotContainer.groundSuperstructure.isL1Ready()) {
-      setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.GREEN, LightColours.BLACK, false);
-      setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.GREEN, LightColours.BLACK, false);
+      setRange(LedRange.LEFT_SIDE_FULL, LightColours.GREEN);
+      setRange(LedRange.RIGHT_SIDE_FULL, LightColours.GREEN);
       return;
-    } 
+    }
     if (RobotContainer.groundSuperstructure.getState() == GroundIntakeSuperstructureState.INTAKE_L1_STATE) {
-      // Flash green if intaking
-      setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.GREEN, LightColours.BLACK, true);
-      setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.GREEN, LightColours.BLACK, true);
+      setRangeBlinking(LedRange.LEFT_SIDE_FULL, LightColours.GREEN, LightColours.BLACK);
+      setRangeBlinking(LedRange.RIGHT_SIDE_FULL, LightColours.GREEN, LightColours.BLACK);
       return;
     }
 
@@ -380,20 +535,16 @@ public class Lights extends SubsystemBase {
     
     switch (scoringLevel) {
       case L1:
-        setElevatorRange(LedRange.L1, isRightSide);
-        setElevatorRange(LedRange.R1, isRightSide);
+        setElevatorSideLights(LedRange.L1, LedRange.R1, isRightSide);
         break;
       case L2:
-        setElevatorRange(LedRange.L2, isRightSide);
-        setElevatorRange(LedRange.R2, isRightSide);
+        setElevatorSideLights(LedRange.L2, LedRange.R2, isRightSide);
         break;
       case L3:
-        setElevatorRange(LedRange.L3, isRightSide);
-        setElevatorRange(LedRange.R3, isRightSide);
+        setElevatorSideLights(LedRange.L3, LedRange.R3, isRightSide);
         break;
       case L4:
-        setElevatorRange(LedRange.LEFT_SIDE_FULL, isRightSide);
-        setElevatorRange(LedRange.RIGHT_SIDE_FULL, isRightSide);
+        setElevatorSideLights(LedRange.LEFT_SIDE_FULL, LedRange.RIGHT_SIDE_FULL, isRightSide);
         break;
       default:
         break;
@@ -401,204 +552,146 @@ public class Lights extends SubsystemBase {
   }
 
   /**
-   * Helper methods for elevator LEDs 
+   * Set elevator side lights with appropriate colors based on scoring side
+   * Accounts for left/right inversion when robot is on opposite side of reef
    */
-  private void setElevatorRange(LedRange range, boolean isRightSide) {
-    LightColours color = isRightSide ? LightColours.PURPLE : LightColours.YELLOW;
-    setLEDRangeGroup(range, color, LightColours.WHITE, false);
+  private void setElevatorSideLights(LedRange leftRange, LedRange rightRange, boolean isRightSide) {
+    // Get the closest reef face angle to determine if we need to invert left/right
+    Pose2d robotPose = RobotContainer.driveSubsystem.getRobotPose();
+    Rotation2d closestFaceAngle = RobotContainer.dynamicPathingSubsystem.calculateClosestFaceAngle(robotPose);
+    
+    // Check if left/right should be inverted based on reef face orientation
+    // This mirrors the logic from DynamicPathing.getNearestReefLocationStatic()
+    double angleDifference = closestFaceAngle.plus(Rotation2d.k180deg).minus(Rotation2d.kZero).getDegrees();
+    boolean shouldInvertSides = Math.abs(angleDifference) > 90;
+    
+    boolean actualRightSide = shouldInvertSides ? !isRightSide : isRightSide;
+    
+    // Clear both full sides first
+    setRange(LedRange.LEFT_SIDE_FULL, LightColours.BLACK);
+    setRange(LedRange.RIGHT_SIDE_FULL, LightColours.BLACK);
+    
+    if (actualRightSide) {
+      // Show rainbow on right side (selected), yellow on left side (inactive)
+      setRange(leftRange, LightColours.YELLOW);
+      // Set the partial range to yellow first, then add rainbow on top
+      setRange(rightRange, LightColours.BLACK);
+      rainbowRanges.add(rightRange);
+    } else {
+      // Show rainbow on left side (selected), yellow on right side (inactive)
+      // Set the partial range to yellow first, then add rainbow on top
+      setRange(leftRange, LightColours.BLACK);
+      rainbowRanges.add(leftRange);
+      setRange(rightRange, LightColours.YELLOW);
+    }
   }
 
-  /**
-   * Updates elevator side lights based on current elevator height setpoint in manual mode
-   */
   private void handleManualElevatorLights() {
     SuperstructureState elevatorLevel =  RobotContainer.superstructure.elevator.getElevatorSetpointEnum();
     boolean hasCoralLoaded = RobotContainer.intakeSubsystem.isCoralLoaded();
     setElevatorLevelPattern(elevatorLevel, hasCoralLoaded);
   }
 
-  /*
-   * Helper methods for elevator LEDs 
-   */
   private void setElevatorLevelPattern(SuperstructureState level, boolean isCoralLoaded) {
-    LedRange leftRange = null;
-    LedRange rightRange = null;
     LightColours color = isCoralLoaded ? LightColours.WHITE : LightColours.BLACK;
 
     switch (level) {
       case L1:
-        leftRange = LedRange.L1;
-        rightRange = LedRange.R1;
-        break;
       case PROCESSOR:
-        leftRange = LedRange.L1;
-        rightRange = LedRange.R1;
-      case L2:
-        leftRange = LedRange.L2;
-        rightRange = LedRange.R2;
+        setRange(LedRange.L1, color);
+        setRange(LedRange.R1, color);
         break;
+      case L2:
       case ALGAE_L1:
-        leftRange = LedRange.L2;
-        rightRange = LedRange.R2;
+        setRange(LedRange.L2, color);
+        setRange(LedRange.R2, color);
         break;
       case L3:
-        leftRange = LedRange.L3;
-        rightRange = LedRange.R3;
-        break;
       case ALGAE_L2:
-        leftRange = LedRange.L3;
-        rightRange = LedRange.R3;
+        setRange(LedRange.L3, color);
+        setRange(LedRange.R3, color);
         break;
       case L4:
-        leftRange = LedRange.LEFT_SIDE_FULL;
-        rightRange = LedRange.RIGHT_SIDE_FULL;
-        break;
       case NET:
-        leftRange = LedRange.LEFT_SIDE_FULL;
-        rightRange = LedRange.RIGHT_SIDE_FULL;
+        setRange(LedRange.LEFT_SIDE_FULL, color);
+        setRange(LedRange.RIGHT_SIDE_FULL, color);
         break;
       default:
-        setLEDRangeGroup(LedRange.LEFT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
-        setLEDRangeGroup(LedRange.RIGHT_SIDE_FULL, LightColours.BLACK, LightColours.BLACK, false);
-        return;
+        setRange(LedRange.LEFT_SIDE_FULL, LightColours.BLACK);
+        setRange(LedRange.RIGHT_SIDE_FULL, LightColours.BLACK);
+        break;
     }
-
-    // Finally apply chosen range and color
-    setLEDRangeGroup(leftRange, color, LightColours.WHITE, false);
-    setLEDRangeGroup(rightRange, color, LightColours.WHITE, false);
   }
 
-  /**
-   * Update dynamic pathing indicators
-   */
   private void updatePathingIndicators() {
     var pathingSituation = RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation();
+    
+    LightColours color = LightColours.BLACK;
+    boolean shouldBlink = false;
 
     if (isCoralIntakeRunning) {
-      // When coral intake is running, blink white lights
-      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.WHITE, LightColours.BLACK, true);
-      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.WHITE, LightColours.BLACK, true);
-
+      color = LightColours.WHITE;
+      shouldBlink = true;
     } else if (pathingSituation == DynamicPathingSituation.REEF_CORAL) {
-      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.WHITE, LightColours.BLACK, false);
-      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.WHITE, LightColours.BLACK, false);
-
+      color = LightColours.WHITE;
     } else if (pathingSituation == DynamicPathingSituation.REEF_ALGAE) {
-      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.DARKGREEN, LightColours.BLACK, false);
-      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.DARKGREEN, LightColours.BLACK, false);
-    
+      color = LightColours.DARKGREEN;
     } else if (pathingSituation == DynamicPathingSituation.PROCESSOR) {
-      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.BLUE, LightColours.BLACK, false);
-      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.BLUE, LightColours.BLACK, false);
-
+      color = LightColours.BLUE;
     } else if (pathingSituation == DynamicPathingSituation.NET) {
-      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.PINK, LightColours.BLACK, false);
-      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.PINK, LightColours.BLACK, false);
+      color = LightColours.PINK;
+    }
 
+    if (shouldBlink) {
+      setRangeBlinking(LedRange.MIDDLE_LEFT, color, LightColours.BLACK);
+      setRangeBlinking(LedRange.MIDDLE_RIGHT, color, LightColours.BLACK);
     } else {
-      setLEDRangeGroup(LedRange.MIDDLE_LEFT, LightColours.BLACK, LightColours.BLACK, false);
-      setLEDRangeGroup(LedRange.MIDDLE_RIGHT, LightColours.BLACK, LightColours.BLACK, false);
+      setRange(LedRange.MIDDLE_LEFT, color);
+      setRange(LedRange.MIDDLE_RIGHT, color);
     }
   }
 
-  /*                       */
-  /* Light Utility Methods */
-  /*                       */
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  // PUBLIC API
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
 
-  /**
-   * Updates the blink timer and toggles the blink state if necessary.
-   */
-  private void updateBlinkTimer() {
-    if (blinkTimer.get() > blinkRate) {
-        isBlinkColour = !isBlinkColour;
-        blinkTimer.reset();
+
+  public void setCoralIntakeRunning(boolean running) {
+    isCoralIntakeRunning = running;
+  }
+
+  public void celebrationMode() {
+    rainbowRanges.add(LedRange.MIDDLE_FULL);
+  }
+
+  public void clearCelebrationMode() {
+    rainbowRanges.remove(LedRange.MIDDLE_FULL);
+  }
+
+  public void setRainbowAnimation(LedRange range, boolean enabled) {
+    if (enabled && range != null) {
+      rainbowRanges.add(range);
+    } else if (range != null) {
+      rainbowRanges.remove(range);
     }
   }
 
-  /**
-   * Sets the blink rate for LED animations.
-   * @param seconds The time in seconds between blinks
-   */
-  public void setBlinkTime(double seconds) {
-    blinkRate = seconds;
-  }
-
-  /**
-   * Sets the LED color for a specific range of LEDs.
-   * @param start The starting index of the LED range
-   * @param end The ending index of the LED range
-   * @param colour The color to set for the LED range
-   */
-  public void setLEDRange(int start, int end, LightColours colour) {
-    candle.setLEDs(colour.red, colour.green, colour.blue, 0, start, end-start);
-  }
-
-  /**
-   * Sets the LED color for a predefined LED range group, with optional blinking.
-   * @param range The predefined LED range
-   * @param colour The primary color for the LED range
-   * @param blinkColour The secondary color for blinking (if enabled)
-   * @param shouldBlink Whether the LED range should blink
-   */
-  public void setLEDRangeGroup(LedRange range, LightColours colour, LightColours blinkColour, boolean shouldBlink) {
-    rangeUpdateModes.put(range, shouldBlink ? UpdateMode.ANIMATED : UpdateMode.STATIC);
-    
-    if(shouldBlink){
-      if(isBlinkColour) {
-        ledRangeColours.put(range, colour);
-      } else {
-        ledRangeColours.put(range, blinkColour);
-      } 
-    } else {
-      ledRangeColours.put(range, colour);
-    }
-  }
-
-  /**
-   * Sets all LEDs to a single color.
-   * @param colour The color to set for all LEDs
-   */
-  public void setAllLEDs(LightColours colour) {
-    ledRangeColours.clear();
-    for (LedRange range : LedRange.values()) {
-      ledRangeColours.put(range, colour);
-    }
-  }
-
-  private void applyLEDRanges() {
-    if (ledRangeColours.isEmpty()) {
-      clearAllLEDs();
-      return;
-    }
-
-    for (Map.Entry<LedRange, LightColours> entry : ledRangeColours.entrySet()) {
-      LedRange range = entry.getKey();
-      LightColours newColour = entry.getValue();
-      
-      LightColours lastColour = lastAppliedColors.get(range);
-      UpdateMode updateMode = rangeUpdateModes.getOrDefault(range, UpdateMode.STATIC);
-      
-      if (updateMode == UpdateMode.STATIC && newColour.equals(lastColour)) {
-        continue;
-      }
-      
-      candle.setLEDs(newColour.red, newColour.green, newColour.blue, 0, 
-                     range.getStart(), range.getEnd() - range.getStart());
-      
-      lastAppliedColors.put(range, newColour);
+  public void setFlowAnimation(LedRange range, boolean enabled) {
+    if (enabled && range != null) {
+      flowRanges.add(range);
+    } else if (range != null) {
+      flowRanges.remove(range);
     }
   }
 
   public void clearAllLEDs() {
+    Arrays.fill(currentLEDs, 0);
+    Arrays.fill(lastSentLEDs, 0);
     candle.setLEDs(0, 0, 0, 0, 0, LED_COUNT);
-    ledRangeColours.clear();
-    lastAppliedColors.clear();
-    clearAllRainbow();
+    rainbowRanges.clear();
+    flowRanges.clear();
   }
 
-  /**
-   * Clears all CANDLE hardware animations
-   */
   public void clearHardwareAnimations() {
     candle.animate(null);
     for (int i = 0; i < candle.getMaxSimultaneousAnimationCount(); i++) {
@@ -606,42 +699,9 @@ public class Lights extends SubsystemBase {
     }
   }
 
-  /**
-   * Sets the light's is intaking state
-   * @param running is intaking
-   */
-  public void setCoralIntakeRunning(boolean running) {
-    isCoralIntakeRunning = running;
-  }
-  
-  public void setRainbowMode(LedRange range, boolean enabled) {
-    if (enabled && range != null) {
-      rainbowRanges.add(range);
-      rangeUpdateModes.put(range, UpdateMode.ANIMATED);
-      rainbowActive = true;
-    } else if (range != null) {
-      rainbowRanges.remove(range);
-      rangeUpdateModes.put(range, UpdateMode.STATIC);
-    }
-    
-    if (rainbowRanges.isEmpty()) {
-      rainbowActive = false;
-    }
-  }
-  
-  public void celebrationMode() {
-    setRainbowMode(LedRange.MIDDLE_FULL, true);
-  }
-  
-  public void clearCelebrationMode() {
-    setRainbowMode(LedRange.MIDDLE_FULL, false);
-  }
-  
-  public void clearAllRainbow() {
-    for (LedRange range : new HashSet<>(rainbowRanges)) {
-      setRainbowMode(range, false);
-    }
-  }
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  // MANUAL MODE RAINBOW
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
   
   private void enableManualModeRainbow() {
     SuperstructureState elevatorLevel = RobotContainer.superstructure.elevator.getElevatorSetpointEnum();
@@ -651,44 +711,52 @@ public class Lights extends SubsystemBase {
       switch (elevatorLevel) {
         case L1:
         case PROCESSOR:
-          setRainbowMode(LedRange.L1, true);
-          setRainbowMode(LedRange.R1, true);
+          rainbowRanges.add(LedRange.L1);
+          rainbowRanges.add(LedRange.R1);
           break;
         case L2:
         case ALGAE_L1:
-          setRainbowMode(LedRange.L2, true);
-          setRainbowMode(LedRange.R2, true);
+          rainbowRanges.add(LedRange.L2);
+          rainbowRanges.add(LedRange.R2);
           break;
         case L3:
         case ALGAE_L2:
-          setRainbowMode(LedRange.L3, true);
-          setRainbowMode(LedRange.R3, true);
+          rainbowRanges.add(LedRange.L3);
+          rainbowRanges.add(LedRange.R3);
           break;
         case L4:
         case NET:
-          setRainbowMode(LedRange.LEFT_SIDE_FULL, true);
-          setRainbowMode(LedRange.RIGHT_SIDE_FULL, true);
+          rainbowRanges.add(LedRange.LEFT_SIDE_FULL);
+          rainbowRanges.add(LedRange.RIGHT_SIDE_FULL);
           break;
         default:
-          setRainbowMode(null, false);
           break;
       }
     }
   }
-  
-  private void updateRainbow() {
-    if (!rainbowActive || rainbowRanges.isEmpty()) return;
-    
-    rainbowOffset = (rainbowOffset + 15) % 255;
-    
-    int r = (int)(127 + 127 * Math.sin(rainbowOffset * 0.024));
-    int g = (int)(127 + 127 * Math.sin(rainbowOffset * 0.024 + 2.094));
-    int b = (int)(127 + 127 * Math.sin(rainbowOffset * 0.024 + 4.188));
-    
-    for (LedRange range : rainbowRanges) {
-      candle.setLEDs(r, g, b, 0, range.getStart(), 
-                    range.getEnd() - range.getStart());
 
-                  }
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  // COLOR UTILITIES
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  
+  private int[] hsvToRgb(int h, int s, int v) {
+    // Normalize hue to 0-360 range, then convert to 0-6 range
+    double hNorm = (h % 255) * 360.0 / 255.0;
+    double hh = hNorm / 60.0;
+    int i = (int)hh % 6; // Ensure i is always 0-5
+    double ff = hh - (int)hh;
+    double p = v * (1.0 - s / 255.0);
+    double q = v * (1.0 - (s / 255.0) * ff);
+    double t = v * (1.0 - (s / 255.0) * (1.0 - ff));
+    
+    switch(i) {
+      case 0: return new int[]{v, (int)Math.round(t), (int)Math.round(p)};
+      case 1: return new int[]{(int)Math.round(q), v, (int)Math.round(p)};
+      case 2: return new int[]{(int)Math.round(p), v, (int)Math.round(t)};
+      case 3: return new int[]{(int)Math.round(p), (int)Math.round(q), v};
+      case 4: return new int[]{(int)Math.round(t), (int)Math.round(p), v};
+      case 5:
+      default: return new int[]{v, (int)Math.round(p), (int)Math.round(q)};
+    }
   }
 } 
