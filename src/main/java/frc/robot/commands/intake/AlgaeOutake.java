@@ -29,7 +29,7 @@ public class AlgaeOutake extends Command {
   @Override
   public void execute() {
     if (Controls.algaeOut.getAsBoolean()) {
-      RobotContainer.intakeSubsystem.setIntakeSpeed(-1.0);
+      RobotContainer.intakeSubsystem.setIntakeSpeed(1.0);
     }
     
     if (!RobotContainer.intakeSubsystem.isAlgaeLoaded() ) {

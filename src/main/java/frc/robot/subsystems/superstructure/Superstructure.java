@@ -13,7 +13,7 @@ public class Superstructure {
   public final Subsystem[] requirements = new Subsystem[] {pivot, elevator};
 
   public enum SuperstructureState {
-    ZERO(45, 0),
+    ZERO(80, 0),
     ALGAE_L2(130,0.65),
     ALGAE_L1(130,0.25),
     PROCESSOR(189,0.135),
@@ -27,25 +27,25 @@ public class Superstructure {
     NET_FRONT_CLEAR_FINISHED(218, 0.4),
     ALGAE_REST(218, 0.0),
 
-    L4(160,1.10),
-    L3(180,0.4),
-    L2(160,0.05),
+    L4(200,1.35),
+    L3(200,0.4),
+    L2(173,0.0),
 
-    EXECUTE_L4(140, 1.0),
-    EXECUTE_L3(150, 0.3),
-    EXECUTE_L2(144, 0.0),
+    EXECUTE_L4(140, 0.96),
+    EXECUTE_L3(140, 0.4),
+    EXECUTE_L2(140, 0.0),
 
     L1(100,0.33),
 
     // Maybe manual mode
-    MANUAL_L4(71.0,1.1),
-    MANUAL_L3(24.0,0.6772),
-    MANUAL_L2(24.0,0.280),
+    MANUAL_L4(160.0,1.35),
+    MANUAL_L3(173.0,0.4),
+    MANUAL_L2(173.0,0.0),
     MANUAL_L1(150,0.33),
     
     HANDOFF_READY(35, 0.36),
-    HANDOFF_EXECUTE(16, 0.17),
-    HANDOFF_CLEAR(150, 0.3);
+    HANDOFF_EXECUTE(18, 0.17),
+    HANDOFF_CLEAR(210, 0.3);
 
     private final double pivotAngle;
     private final double elevatorHeight;

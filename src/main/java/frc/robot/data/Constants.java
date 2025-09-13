@@ -116,9 +116,9 @@ public final class Constants {
     public static final int MOVING_LL_IMU_MODE = 2; // Uses internal IMU
 
     // Vision validation thresholds
-    public static final double AMBIGUITY_THRESHOLD = 0.19; // Max ambiguity for single tag (0-1, lower is better), 0.19 is what 254 used
-    public static final double MIN_TAG_AREA = 1.0; // Minimum tag area (% of image, 0-100 scale) for single tag
-    public static final double MIN_TAG_AREA_FOR_YAW_CHECK = 2.0; // Tag area threshold (% of image) for yaw validation
+    public static final double AMBIGUITY_THRESHOLD = 0.7; // Max ambiguity for single tag (0-1, lower is better), 0.19 is what 254 used
+    public static final double MIN_TAG_AREA = 0.8; // Minimum tag area (% of image, 0-100 scale) for single tag
+    public static final double MIN_TAG_AREA_FOR_YAW_CHECK = 1.2; // Tag area threshold (% of image) for yaw validation
     public static final double MAX_Z_ERROR = 0.2; // Maximum acceptable Z-axis error in meters (robot should be on ground)
     public static final double MAX_YAW_DIFFERENCE_DEG = 5.0; // Max degrees difference between vision and odometry yaw for single tag
     public static final double MIN_POSE_DISTANCE_FROM_ORIGIN = 1.0; // Minimum distance from field origin (0,0) in meters
@@ -228,19 +228,19 @@ public final class Constants {
   /* Manipulator Constants */
   public static class ManipulatorConstants {
     // Detection thresholds
-    public static final double ALGAE_CURRENT_THRESHOLD = 60.0; // amps
+    public static final double ALGAE_CURRENT_THRESHOLD = 30.0; // amps
     public static final double CORAL_CURRENT_THRESHOLD = 30;
     
     public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.3; 
-    public static final double CORAL_DETECTION_DEBOUNCE_TIME = 0.3;
+    public static final double CORAL_DETECTION_DEBOUNCE_TIME = 0.1;
     public static final double CORAL_RELEASE_DEBOUNCE_TIME = 0.1;
     
     public static final double ZERO_DEBOUNCE_TIME = 0.2;
 
     // Intake speeds
     public static final double CORAL_INTAKE_SPEED = -5; // Rps
-    public static final double ALGAE_HOLD_SPEED = 30; // Speed to hold algae in place
-    public static final double ALGAE_INTAKE_SPEED = -10;
+    public static final double ALGAE_HOLD_SPEED = -0.5; // Speed to hold algae in place
+    public static final double ALGAE_INTAKE_SPEED = -4;
     public static final double ZEROING_SPEED = -0.065; // Slow inwards speed
 
     // Pivot constants
@@ -347,7 +347,7 @@ public final class Constants {
     // Motor configuration
     public static final double STATOR_CURRENT_LIMIT = 40.0; // amps
     public static final double MOTION_CRUISE_VELOCITY = 0.4; 
-    public static final double MOTION_ACCELERATION = 12; 
+    public static final double MOTION_ACCELERATION = 4; 
     public static final double MOTION_JERK = 2000.0; 
 
     // PID Values
@@ -359,8 +359,8 @@ public final class Constants {
     // Predefined positions for the ground pivot (in degrees)
     public enum GroundPivotPosition {
       STOWED(0.0),
-      HANDOFF(17.0),
-      DEPLOYED(190.0),
+      HANDOFF(22.0),
+      DEPLOYED(198.0),
       L1(110),
       ZEROING_CLEARANCE(140);
 

@@ -73,13 +73,13 @@ public class Intake extends SimpleWafflesMechanism {
 
         algaeDetectionTrigger = new Trigger(
             () -> intake.signals().statorCurrent().getValueAsDouble() > ManipulatorConstants.ALGAE_CURRENT_THRESHOLD 
-            && isIntakingAlgae() 
-            && !isCoralLoaded()
+            && loadType == LoadType.ALGEA
+            && !isAlgaeLoaded()
         ).debounce(ManipulatorConstants.ALGAE_DETECTION_DEBOUNCE_TIME);
 
         coralDetectionTrigger = new Trigger(
             () -> intake.signals().statorCurrent().getValueAsDouble() > ManipulatorConstants.CORAL_CURRENT_THRESHOLD 
-            && !isIntakingAlgae() 
+            && loadType == LoadType.CORAL
             && !isCoralLoaded()
         ).debounce(ManipulatorConstants.CORAL_DETECTION_DEBOUNCE_TIME);
 
@@ -160,10 +160,6 @@ public class Intake extends SimpleWafflesMechanism {
             if (Math.abs(intakeSpeed) < 0.01 && isAlgaeLoaded()) {
                 // When algae is loaded, run intake slowly inward
                 intake.setControl(intakeControlRequest.withVelocity(Constants.ManipulatorConstants.ALGAE_HOLD_SPEED).withSlot(0));
-
-                if (intake.signals().statorCurrent().getValueAsDouble() < 4) {
-                    intake.setControl(intakeControlRequest.withVelocity(-120).withSlot(0));
-                }
             } else if (Math.abs(intakeSpeed) < 0.01 && isCoralLoaded()) {
                 intake.setControl(intakePositionRequest.withOutput(0)); // scuffed
             } else {
@@ -253,9 +249,9 @@ public class Intake extends SimpleWafflesMechanism {
 
     /* Helper methods for determining the intake's basic state */
 
-    public boolean isIntakingAlgae() {
-        return !isAlgaeLoaded() && intakeSpeed > 10 && !noAlgaeFlag;
-    }
+    // public boolean isIntakingAlgae() {
+    //     return !isAlgaeLoaded() && intakeSpeed > 10 && !noAlgaeFlag;
+    // }
 
     public boolean isOuttakingAlgae() {
         return isAlgaeLoaded() && intake.signals().velocity().getValueAsDouble() > 0.5;
@@ -281,7 +277,6 @@ public class Intake extends SimpleWafflesMechanism {
         intakeSetpointNT.set(intakeSpeed);
         intakeCurrentDrawNT.set(intake.signals().statorCurrent().getValueAsDouble());
 
-        isIntakingAlgaeNT.set(isIntakingAlgae());
         isOutakingAlgaeNT.set(isOuttakingAlgae());
     }
 

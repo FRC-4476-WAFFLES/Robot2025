@@ -6,6 +6,7 @@ package frc.robot.subsystems.groundsuperstructure;
 
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import frc.robot.RobotContainer;
 import frc.robot.data.Constants.GroundPivotConstants.GroundPivotPosition;
 import frc.robot.subsystems.groundsuperstructure.GroundIntake.GroundIntakeState;
 import frc.robot.utils.lib.SimpleWafflesMechanism;
@@ -70,7 +71,7 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
                 
             case L1_READY:
                 pivot.applySetpoint(GroundPivotPosition.L1);
-                intake.setGroundIntakeSetpoint(GroundIntakeState.INTAKE_TOP);
+                intake.setGroundIntakeSetpoint(GroundIntakeState.INTAKE_TOP_SLOW);
                 break;
 
             case L1_SCORE_STATE:
@@ -109,7 +110,11 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
             case EXECUTE_HANDOFF_STATE:
                 pivot.applySetpoint(GroundPivotPosition.HANDOFF);
                 if(intake.isCoralHandoffLoaded() || intake.isCoralMid()){
-                    intake.setGroundIntakeSetpoint(GroundIntakeState.HANDOFF);
+                    if (RobotContainer.intakeSubsystem.isCoralLoaded()) {
+                        intake.setGroundIntakeSetpoint(GroundIntakeState.HANDOFF);
+                    } else {
+                        intake.setGroundIntakeSetpoint(GroundIntakeState.REST);
+                    }
                 } else {
                     currentState = GroundIntakeSuperstructureState.STOWED;
                 }

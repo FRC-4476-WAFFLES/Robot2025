@@ -91,7 +91,9 @@ public class ScoreCoral extends SequentialCommandGroup {
         velocityMagnitude <= chosenParameters.maxVelocity() &&
         currentSpeeds.omegaRadiansPerSecond <= chosenParameters.maxThetaVelocity().getRadians();
 
-      return poseValid && velocityValid;
+      boolean superstructureValid = RobotContainer.superstructure.atSetpoint();
+      
+      return poseValid && velocityValid && superstructureValid;
     });
 
     addCommands(

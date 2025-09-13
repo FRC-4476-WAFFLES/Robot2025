@@ -138,7 +138,7 @@ public class GroundPivot extends WafflesMechanism {
     // Apply Configuration
     PhoenixHelpers.tryConfig(() -> pivotMotor.getConfigurator().apply(pivotConfig));
     if (RobotBase.isReal()) {
-      PhoenixHelpers.tryConfig(() -> pivotMotor.setPosition(192.0 / 360));
+      PhoenixHelpers.tryConfig(() -> pivotMotor.setPosition(197.0 / 360));
     }
   }
 

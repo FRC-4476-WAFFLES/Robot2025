@@ -70,9 +70,9 @@ public class DynamicPathing extends SubsystemBase {
 
     /* Various robot to reef face distances */
     /* Robot is assumed to have bumpers on */
-    public static final double REEF_SCORING_POSITION_OFFSET = PhysicalConstants.withBumperBotHalfWidth + 0.12; 
+    public static final double REEF_SCORING_POSITION_OFFSET = PhysicalConstants.withBumperBotHalfWidth + 0.16; 
     public static final double REEF_SCORING_POSITION_OFFSET_L1 = PhysicalConstants.withBumperBotHalfWidth + 0.37; 
-    public static final double REEF_SCORING_POSITION_OFFSET_L4 = PhysicalConstants.withBumperBotHalfWidth + 0.2; 
+    public static final double REEF_SCORING_POSITION_OFFSET_L4 = PhysicalConstants.withBumperBotHalfWidth + 0.16; 
     public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE_CLEARANCE = PhysicalConstants.withBumperBotHalfWidth + 0.45; 
     public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE = PhysicalConstants.withBumperBotHalfWidth + 0.25; 
     public static final double REEF_ALGAE_SAFETY_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 0.4;

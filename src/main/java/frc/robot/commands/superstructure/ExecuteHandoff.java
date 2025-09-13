@@ -48,7 +48,7 @@ public class ExecuteHandoff extends Command {
             
             case EXECUTING:
                 RobotContainer.superstructure.applySuperstructureState(SuperstructureState.HANDOFF_EXECUTE);
-                if (RobotContainer.intakeSubsystem.isCoralLoaded()) {
+                if (RobotContainer.superstructure.atSetpoint()) {
                     state = HandoffState.CLEARING;
                 }
                 break;
