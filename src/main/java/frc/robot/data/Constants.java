@@ -241,7 +241,7 @@ public final class Constants {
     public static final double CORAL_INTAKE_SPEED = -5; // Rps
     public static final double ALGAE_HOLD_SPEED = -0.5; // Speed to hold algae in place
     public static final double ALGAE_INTAKE_SPEED = -4;
-    public static final double ZEROING_SPEED = -0.065; // Slow inwards speed
+    public static final double ZEROING_SPEED = -0.095; // Slow inwards speed
 
     // Pivot constants
     public static final double PIVOT_ANGLE_DEADBAND = 1.4;
@@ -340,18 +340,18 @@ public final class Constants {
     public static final double MAX_ANGLE = 195.0; // Maximum angle in degrees - adjust as needed
 
     // Zeroing
-    public static final double ZEROING_SPEED = -0.1;
+    public static final double ZEROING_SPEED = -0.15;
     public static final double ZERO_DEBOUNCE_TIME = 0.8; // seconds
     public static final double PIVOT_CURRENT_THRESHOLD = 16; // amps
 
     // Motor configuration
     public static final double STATOR_CURRENT_LIMIT = 40.0; // amps
-    public static final double MOTION_CRUISE_VELOCITY = 0.4; 
+    public static final double MOTION_CRUISE_VELOCITY = 0.9; 
     public static final double MOTION_ACCELERATION = 4; 
     public static final double MOTION_JERK = 2000.0; 
 
     // PID Values
-    public static final double kP = 70.0;
+    public static final double kP = 170.0;
     public static final double kI = 0.0;
     public static final double kD = 0.01;
     public static final double kS = 0.0;

@@ -688,6 +688,7 @@ public class Lights extends SubsystemBase {
     for (LedRange range : rainbowRanges) {
       candle.setLEDs(r, g, b, 0, range.getStart(), 
                     range.getEnd() - range.getStart());
-    }
+
+                  }
   }
 } 
