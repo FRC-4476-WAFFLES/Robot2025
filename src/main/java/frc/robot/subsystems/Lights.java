@@ -38,66 +38,43 @@ import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
  * - Predictable "last call wins" behavior
  */
 public class Lights extends SubsystemBase {
-  // Hardware constants
   private static final int LED_COUNT = 186;
-  private static final int FLOW_LENGTH = 15;  // Reduced from 32 for fewer chunks
-  private static final double ANIMATION_UPDATE_RATE = 0.05; // 20Hz
+  private static final int FLOW_LENGTH = 15;
+  private static final double ANIMATION_UPDATE_RATE = 0.05;
   
   private static final CANdle candle = new CANdle(Constants.CANIds.CANdle);
   
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
-  // LED STATE
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
+  private int[] currentLEDs = new int[LED_COUNT];
+  private int[] lastSentLEDs = new int[LED_COUNT];
   
-  private int[] currentLEDs = new int[LED_COUNT];    // Current frame (RGB packed as 0xRRGGBB)
-  private int[] lastSentLEDs = new int[LED_COUNT];   // Last sent frame (for change detection)
-  
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
-  // ANIMATION STATE  
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
   
   private static final Timer animationTimer = new Timer();
-  private int flowPosition = 8;                      // Global flow position counter
-  private int rainbowOffset = 0;                     // Global rainbow hue offset
+  private int flowPosition = 8;
+  private int rainbowOffset = 0;
   
-  private Set<LedRange> rainbowRanges = new HashSet<>();  // Ranges showing rainbow
-  private Set<LedRange> flowRanges = new HashSet<>();     // Ranges showing flow
+  private Set<LedRange> rainbowRanges = new HashSet<>();
+  private Set<LedRange> flowRanges = new HashSet<>();
   
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
-  // BLINK STATE
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
   
   private long lastBlinkTime = 0;
   private boolean blinkState = false;
   private boolean isCoralIntakeRunning = false;
 
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
-  // LED RANGES - Physical layout of LED strip sections
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
   
   public enum LedRange {
-    // Hardware candle LEDs
     CANDLE(0, 8),
-    
-    // Full sections (non-overlapping)
-    LEFT_SIDE_FULL(8, 67),      // 59 LEDs - left side elevator
-    MIDDLE_FULL(67, 128),       // 61 LEDs - middle pathfinding indicators  
-    RIGHT_SIDE_FULL(128, 186),  // 58 LEDs - right side elevator
-
-    // Progressive elevator ranges (left side - overlapping by design)
-    L1(8, 23),                  // Bottom level
-    L2(8, 38),                  // Bottom + lower middle  
-    L3(8, 52),                  // Bottom + lower + upper middle
-
-    // Progressive elevator ranges (right side - overlapping by design)  
-    R1(170, 186),               // Bottom level (16 LEDs, close to L1's 15)
-    R2(155, 186),               // Bottom + lower middle (31 LEDs, close to L2's 30)
-    R3(141, 186),               // Bottom + lower + upper middle (45 LEDs, close to L3's 44)
-
-    // Middle subsections
-    MIDDLE_LEFT(67, 87),        // Pathfinding indicator left
-    MIDDLE_MIDDLE(87, 107),     // Override/score indicators  
-    MIDDLE_RIGHT(107, 128);     // Pathfinding indicator right
+    LEFT_SIDE_FULL(8, 67),
+    MIDDLE_FULL(67, 128),
+    RIGHT_SIDE_FULL(128, 186),
+    L1(8, 23),
+    L2(8, 38),
+    L3(8, 52),
+    R1(170, 186),
+    R2(155, 186),
+    R3(141, 186),
+    MIDDLE_LEFT(67, 87),
+    MIDDLE_MIDDLE(87, 107),
+    MIDDLE_RIGHT(107, 128);
 
     private final int start;
     private final int end;
@@ -110,54 +87,36 @@ public class Lights extends SubsystemBase {
     public int getStart() { return start; }
     public int getEnd() { return end; }
   }
-
-
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
-  // COLORS - RGB color palette  
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
   
   public enum LightColours {
-    // Basic colors
     BLACK(0, 0, 0),
     WHITE(255, 255, 255),
     GRAY(127, 127, 127),
-    
-    // Primary colors
     RED(255, 0, 0),
     GREEN(0, 255, 0), 
     BLUE(0, 0, 255),
-    
-    // Secondary colors
     YELLOW(255, 190, 0),
     ORANGE(255, 18, 0),
     PURPLE(150, 0, 255),
     CYAN(0, 255, 179),
     PINK(255, 0, 255),
-    
-    // Specialized colors
-    DARKGREEN(21, 102, 13),        // Algae loaded indicator
-    LIGHTGREEN(130, 247, 119),     // Light green variant
-    LIGHTRED(255, 105, 105),       // Light red variant  
-    LIGHTBLUE(103, 120, 214),      // Light blue variant
-    NAVY(9, 15, 79),               // Dark blue
-    
-    // Dimmed variants for elevator indication
-    DIM_YELLOW(64, 48, 0),         // 25% brightness yellow
-    DIM_PURPLE(38, 0, 64),         // 25% brightness purple
-    
-    // Uncommon colors
+    DARKGREEN(21, 102, 13),
+    LIGHTGREEN(130, 247, 119),
+    LIGHTRED(255, 105, 105),
+    LIGHTBLUE(103, 120, 214),
+    NAVY(9, 15, 79),
+    DIM_YELLOW(64, 48, 0),
+    DIM_PURPLE(38, 0, 64),
     BROWN(96, 32, 8),
     INFRARED(50, 0, 0),
     SUN(255, 60, 0),
     LIME(187, 255, 0),
     ULTRAVIOLET(50, 0, 100),
     MAGENTA(150, 15, 92),
-    
-    // Animation colors
-    FLOW_COLOR(255, 190, 0);       // Yellow flow animation
+    FLOW_COLOR(255, 190, 0);
 
     public final int red, green, blue;
-    public final int packed;           // RGB packed as 0xRRGGBB for efficiency
+    public final int packed;
 
     LightColours(int red, int green, int blue) {
       this.red = red;
@@ -167,16 +126,9 @@ public class Lights extends SubsystemBase {
     }
   }
 
-
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
-  // CONSTRUCTOR & PERIODIC
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
-
   public Lights() {
-    // Validate LED ranges at startup
     validateLedRanges();
     
-    // Configure CANdle hardware  
     CANdleConfiguration config = new CANdleConfiguration();
     config.stripType = LEDStripType.GRB;
     config.brightnessScalar = 0.75;
@@ -208,7 +160,6 @@ public class Lights extends SubsystemBase {
   public void periodic() {
     if (RobotBase.isSimulation()) return;
 
-    // Clear frame and update animations
     Arrays.fill(currentLEDs, 0);
     
     if (animationTimer.get() > ANIMATION_UPDATE_RATE) {
@@ -218,7 +169,6 @@ public class Lights extends SubsystemBase {
     
     updateBlinkState();
 
-    // Apply LED logic based on robot state
     if (DriverStation.isEnabled()) {
       handleEnabledState();
     } else {
@@ -228,22 +178,12 @@ public class Lights extends SubsystemBase {
     sendLEDsToHardware();
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
-  // CORE LED CONTROL METHODS
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
 
   /**
    * Set a range of LEDs to a specific color
    */
   private void setRange(LedRange range, LightColours color) {
     setRange(range.getStart(), range.getEnd(), color.packed);
-  }
-
-  /**
-   * Set a range of LEDs with RGB values
-   */
-  private void setRange(int start, int end, int r, int g, int b) {
-    setRange(start, end, (r << 16) | (g << 8) | b);
   }
 
   /**
@@ -284,9 +224,6 @@ public class Lights extends SubsystemBase {
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
-  // ANIMATION UPDATES
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
   
   /**
    * Update animation state (rainbow offset, flow position)
@@ -294,8 +231,6 @@ public class Lights extends SubsystemBase {
   private void updateAnimations() {
     rainbowOffset = (rainbowOffset + 3) % 255;
     
-    // Flow animation increments continuously
-    // Use a large number that's coprime with typical range lengths to avoid sync issues
     flowPosition = (flowPosition + 2) % 10000;
   }
 
@@ -310,9 +245,6 @@ public class Lights extends SubsystemBase {
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
-  // HARDWARE COMMUNICATION
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
   
   /**
    * Send LED data to hardware efficiently (only send changed LEDs)
@@ -344,18 +276,12 @@ public class Lights extends SubsystemBase {
    * Send a batch of LEDs to hardware efficiently
    */
   private void sendBatch(int start, int end) {
-    int batchSize = end - start;
-    
-    // Send in chunks to avoid overwhelming CAN bus
-    // CANdle can handle larger batches, so we'll send in groups
-    int maxChunkSize = 10;  // Send 10 LEDs at a time
+    int maxChunkSize = 10;
     
     for (int chunkStart = start; chunkStart < end; chunkStart += maxChunkSize) {
       int chunkEnd = Math.min(chunkStart + maxChunkSize, end);
       int chunkSize = chunkEnd - chunkStart;
       
-      // For uniform colors, we can use a single setLEDs call
-      // Check if all LEDs in this chunk are the same color
       boolean uniformColor = true;
       int firstColor = currentLEDs[chunkStart];
       for (int i = chunkStart + 1; i < chunkEnd; i++) {
@@ -366,13 +292,11 @@ public class Lights extends SubsystemBase {
       }
       
       if (uniformColor && chunkSize > 1) {
-        // All LEDs in chunk are same color, send as single command
         int r = (firstColor >> 16) & 0xFF;
         int g = (firstColor >> 8) & 0xFF;
         int b = firstColor & 0xFF;
         candle.setLEDs(r, g, b, 0, chunkStart, chunkSize);
       } else {
-        // Different colors, send individually but in quick succession
         for (int i = chunkStart; i < chunkEnd; i++) {
           int color = currentLEDs[i];
           int r = (color >> 16) & 0xFF;
@@ -384,13 +308,10 @@ public class Lights extends SubsystemBase {
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
-  // ROBOT STATE HANDLERS
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
   
   private void handleEnabledState() {
-    flowRanges.clear(); // Flow animation only during disabled
-    rainbowRanges.clear(); // Clear rainbow ranges before setting new ones
+    flowRanges.clear();
+    rainbowRanges.clear();
     
     if (!RobotContainer.isOperatorOverride) {
       handleAutomaticElevatorLights();
@@ -402,7 +323,6 @@ public class Lights extends SubsystemBase {
     updatePathingIndicators();
     updateOverrideIndicators();
     
-    // Apply rainbow to active ranges
     for (LedRange range : rainbowRanges) {
       setRangeRainbow(range);
     }
@@ -422,24 +342,18 @@ public class Lights extends SubsystemBase {
     clearHardwareAnimations();
     updateDiagnosticIndicators();
     
-    // Enable flow animation across entire strip when disabled
+    rainbowRanges.clear();
+    
     flowRanges.clear();
     flowRanges.add(LedRange.LEFT_SIDE_FULL);
     flowRanges.add(LedRange.MIDDLE_FULL);
     flowRanges.add(LedRange.RIGHT_SIDE_FULL);
     
-    // Apply animations to active ranges
     for (LedRange range : flowRanges) {
       setRangeFlow(range);
     }
-    for (LedRange range : rainbowRanges) {
-      setRangeRainbow(range);
-    }
   }
   
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
-  // ANIMATION IMPLEMENTATIONS
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
   
   /**
    * Set a range to display flow animation
@@ -451,31 +365,21 @@ public class Lights extends SubsystemBase {
     
     if (length <= 0 || start < 0 || end > LED_COUNT) return;
     
-    // Simple single flow segment that moves smoothly through the range
-    // Use a larger modulo to prevent stuttering at wrap-around
     int cycleLength = length + FLOW_LENGTH; // Add flow length to create smooth wrap
     int relativeFlowPos = flowPosition % cycleLength;
     
-    // Draw the flow segment
     for (int i = 0; i < FLOW_LENGTH; i++) {
-      int ledPos = relativeFlowPos + i - FLOW_LENGTH; // Start behind to allow smooth entry
+      int ledPos = relativeFlowPos + i - FLOW_LENGTH;
       
-      // Wrap around within the range
       if (ledPos >= 0 && ledPos < length) {
         int ledIndex = start + ledPos;
         
         if (ledIndex >= start && ledIndex < end) {
-          // Simple solid yellow for the flow
           currentLEDs[ledIndex] = LightColours.FLOW_COLOR.packed;
         }
       }
     }
   }
-
-
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
-  // DIAGNOSTIC & STATUS INDICATORS
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
   
   /**
    * Indicators used to perform systems check
@@ -506,9 +410,6 @@ public class Lights extends SubsystemBase {
     setRange(6, 8, allianceColor.packed);
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
-  // ELEVATOR LIGHT CONTROL
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
   
   /**
    * Updates elevator side lights based on targeted elevator height in automatic mode
@@ -556,30 +457,22 @@ public class Lights extends SubsystemBase {
    * Accounts for left/right inversion when robot is on opposite side of reef
    */
   private void setElevatorSideLights(LedRange leftRange, LedRange rightRange, boolean isRightSide) {
-    // Get the closest reef face angle to determine if we need to invert left/right
     Pose2d robotPose = RobotContainer.driveSubsystem.getRobotPose();
     Rotation2d closestFaceAngle = RobotContainer.dynamicPathingSubsystem.calculateClosestFaceAngle(robotPose);
     
-    // Check if left/right should be inverted based on reef face orientation
-    // This mirrors the logic from DynamicPathing.getNearestReefLocationStatic()
     double angleDifference = closestFaceAngle.plus(Rotation2d.k180deg).minus(Rotation2d.kZero).getDegrees();
     boolean shouldInvertSides = Math.abs(angleDifference) > 90;
     
     boolean actualRightSide = shouldInvertSides ? !isRightSide : isRightSide;
     
-    // Clear both full sides first
     setRange(LedRange.LEFT_SIDE_FULL, LightColours.BLACK);
     setRange(LedRange.RIGHT_SIDE_FULL, LightColours.BLACK);
     
     if (actualRightSide) {
-      // Show rainbow on right side (selected), yellow on left side (inactive)
       setRange(leftRange, LightColours.YELLOW);
-      // Set the partial range to yellow first, then add rainbow on top
       setRange(rightRange, LightColours.BLACK);
       rainbowRanges.add(rightRange);
     } else {
-      // Show rainbow on left side (selected), yellow on right side (inactive)
-      // Set the partial range to yellow first, then add rainbow on top
       setRange(leftRange, LightColours.BLACK);
       rainbowRanges.add(leftRange);
       setRange(rightRange, LightColours.YELLOW);
@@ -651,9 +544,6 @@ public class Lights extends SubsystemBase {
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
-  // PUBLIC API
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
 
 
   public void setCoralIntakeRunning(boolean running) {
@@ -699,9 +589,6 @@ public class Lights extends SubsystemBase {
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
-  // MANUAL MODE RAINBOW
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
   
   private void enableManualModeRainbow() {
     SuperstructureState elevatorLevel = RobotContainer.superstructure.elevator.getElevatorSetpointEnum();
@@ -735,15 +622,11 @@ public class Lights extends SubsystemBase {
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
-  // COLOR UTILITIES
-  // ═══════════════════════════════════════════════════════════════════════════════════════════════
   
   private int[] hsvToRgb(int h, int s, int v) {
-    // Normalize hue to 0-360 range, then convert to 0-6 range
     double hNorm = (h % 255) * 360.0 / 255.0;
     double hh = hNorm / 60.0;
-    int i = (int)hh % 6; // Ensure i is always 0-5
+    int i = (int)hh % 6;
     double ff = hh - (int)hh;
     double p = v * (1.0 - s / 255.0);
     double q = v * (1.0 - (s / 255.0) * ff);
