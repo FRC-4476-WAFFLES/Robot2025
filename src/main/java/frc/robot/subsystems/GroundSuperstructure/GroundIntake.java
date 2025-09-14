@@ -4,10 +4,8 @@ import com.ctre.phoenix6.configs.CANrangeConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
-import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.CANrange;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -105,16 +103,6 @@ public class GroundIntake extends SimpleWafflesMechanism {
     private final MotionMagicVelocityVoltage intakeRightControlRequest = new MotionMagicVelocityVoltage(0);
     private final MotionMagicVelocityVoltage intakeLeftControlRequest = new MotionMagicVelocityVoltage(0);
     private final MotionMagicVelocityVoltage intakeMidControlRequest = new MotionMagicVelocityVoltage(0);
-    
-    // Position control objects for holding position when speed is zero
-    private final PositionVoltage intakeRightPositionRequest = new PositionVoltage(0);
-    private final PositionVoltage intakeLeftPositionRequest = new PositionVoltage(0);
-    private final PositionVoltage intakeMidPositionRequest = new PositionVoltage(0);
-    
-    // Position tracking variables
-    private double rightHoldPosition = 0;
-    private double leftHoldPosition = 0;
-    private double midHoldPosition = 0;
 
     // State Variables
     public enum GroundIntakeState {
@@ -253,16 +241,6 @@ public class GroundIntake extends SimpleWafflesMechanism {
         slot0Configs.kG = 0.0;
 
         intakeConfigs.Slot0 = slot0Configs;
-        
-        // Slot1 for position control
-        var slot1Configs = new Slot1Configs();
-        slot1Configs.kP = 5.0;
-        slot1Configs.kI = 0;
-        slot1Configs.kD = 0.1;
-        slot1Configs.kV = 0;
-        slot1Configs.kG = 0.0;
-        
-        intakeConfigs.Slot1 = slot1Configs;
 
         intakeConfigs.Feedback.SensorToMechanismRatio = PhysicalConstants.groundIntakeSideRollersReduction;
 
@@ -301,16 +279,6 @@ public class GroundIntake extends SimpleWafflesMechanism {
         slot0Configs.kG = 0.0;
 
         intakeConfigs.Slot0 = slot0Configs;
-        
-        // Slot1 for position control
-        var slot1Configs = new Slot1Configs();
-        slot1Configs.kP = 5.0;
-        slot1Configs.kI = 0;
-        slot1Configs.kD = 0.1;
-        slot1Configs.kV = 0;
-        slot1Configs.kG = 0.0;
-        
-        intakeConfigs.Slot1 = slot1Configs;
 
         intakeConfigs.Feedback.SensorToMechanismRatio = PhysicalConstants.groundIntakeTopRollerReduction;
 
@@ -329,25 +297,9 @@ public class GroundIntake extends SimpleWafflesMechanism {
     
     @Override
     public void periodicImpl() {
-        // Use position control when speed is zero to prevent drift
-        // Hold position 0.25 rotations inward to ensure tight grip (side rollers only)
-        if (currentState.getRightSpeed() == 0) {
-            intakeRight.setControl(intakeRightPositionRequest.withPosition(rightHoldPosition - 0.25).withSlot(1));
-        } else {
-            rightHoldPosition = intakeRight.signals().position().getValueAsDouble();
-            intakeRight.setControl(intakeRightControlRequest.withVelocity(currentState.getRightSpeed()).withSlot(0));
-        }
-        
-        if (currentState.getLeftSpeed() == 0) {
-            intakeLeft.setControl(intakeLeftPositionRequest.withPosition(leftHoldPosition + 0.25).withSlot(1));
-        } else {
-            leftHoldPosition = intakeLeft.signals().position().getValueAsDouble();
-            intakeLeft.setControl(intakeLeftControlRequest.withVelocity(currentState.getLeftSpeed()).withSlot(0));
-        }
-        
-        // Middle roller uses velocity control only (no position hold)
+        intakeRight.setControl(intakeRightControlRequest.withVelocity(currentState.getRightSpeed()).withSlot(0));
+        intakeLeft.setControl(intakeLeftControlRequest.withVelocity(currentState.getLeftSpeed()).withSlot(0));
         intakeMid.setControl(intakeMidControlRequest.withVelocity(currentState.getTopSpeed()).withSlot(0));
-        
         updateCoralSensors();
     }
     /**
