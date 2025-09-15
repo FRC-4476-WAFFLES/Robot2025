@@ -4,13 +4,25 @@
 
 package frc.robot.subsystems.superstructure;
 
+import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import frc.robot.RobotContainer;
+import frc.robot.data.Constants;
+import frc.robot.utils.lib.SimpleWafflesMechanism;
 
-public class Superstructure {
+public class Superstructure extends SimpleWafflesMechanism {
   public final Pivot pivot = new Pivot();
   public final Elevator elevator = new Elevator();
 
   public final Subsystem[] requirements = new Subsystem[] {pivot, elevator};
+
+  public enum SuperstructureMode {
+    STOWED,
+    ALGAE_GROUND_PICKUP_STATE;
+  }
+
+  private SuperstructureMode currentMode = SuperstructureMode.STOWED;
+  private StringPublisher modePublisher = networkTable.getStringTopic("Current Mode").publish();
 
   public enum SuperstructureState {
     ZERO(80, 0),
@@ -26,6 +38,7 @@ public class Superstructure {
     NET_FRONT_CLEAR(218, 1.3),
     NET_FRONT_CLEAR_FINISHED(218, 0.4),
     ALGAE_REST(218, 0.0),
+    ALGAE_GROUND_PICKUP(80,0.0),
 
     L4(200,1.35),
     L3(200,0.4),
@@ -72,5 +85,54 @@ public class Superstructure {
   public boolean atSetpoint() {
     return pivot.atSetpoint() &&
       elevator.atSetpoint();
+  }
+  
+  @Override
+  protected void periodicImpl() {
+    switch (currentMode) {
+      case STOWED:
+        applySuperstructureState(SuperstructureState.ZERO);
+        RobotContainer.intakeSubsystem.setIntakeSpeed(0);
+        break;
+
+      case ALGAE_GROUND_PICKUP_STATE:
+        // Move superstructure to ground pickup position
+        applySuperstructureState(SuperstructureState.ALGAE_GROUND_PICKUP);
+        // Run upper intake for algae
+        RobotContainer.intakeSubsystem.setIntakeSpeed(Constants.ManipulatorConstants.ALGAE_INTAKE_SPEED);
+        
+        // Check if algae is loaded
+        if (RobotContainer.intakeSubsystem.isAlgaeLoaded()) {
+          RobotContainer.intakeSubsystem.setIntakeSpeed(0);
+          currentMode = SuperstructureMode.STOWED;
+        }
+        break;
+    }
+  }
+  
+  /**
+   * Toggle algae ground pickup - similar to L1 and handoff toggles
+   */
+  public void algaeGroundPickupToggle() {
+    if (currentMode == SuperstructureMode.STOWED) {
+      currentMode = SuperstructureMode.ALGAE_GROUND_PICKUP_STATE;
+    } else if (currentMode == SuperstructureMode.ALGAE_GROUND_PICKUP_STATE) {
+      // Stop intake and return to stowed
+      RobotContainer.intakeSubsystem.setIntakeSpeed(0);
+      currentMode = SuperstructureMode.STOWED;
+    }
+  }
+
+  public SuperstructureMode getMode() {
+    return currentMode;
+  }
+
+  public void setMode(SuperstructureMode mode) {
+    currentMode = mode;
+  }
+
+  @Override
+  public void updateNetwork() {
+    modePublisher.set(currentMode.toString());
   }
 }

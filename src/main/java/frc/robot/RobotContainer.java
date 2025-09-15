@@ -171,6 +171,10 @@ public class RobotContainer {
       Commands.runOnce(() -> groundSuperstructure.handoffIntakeToggle())
     );
 
+    Controls.driverController.y().onTrue(
+      Commands.runOnce(() -> superstructure.algaeGroundPickupToggle())
+    );
+
     // Operator Algea out
     dynamicPathingSubsystem.notRunningAction.and(Controls.algaeOut).whileTrue(
       new SequentialCommandGroup(

@@ -132,6 +132,7 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
                 } else {
                     currentState = GroundIntakeSuperstructureState.STOWED;
                 }
+            break;
         }
 
     }
@@ -196,6 +197,7 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
             currentState = GroundIntakeSuperstructureState.SPIT_OUT_STATE; // Spit out if interrupted mid intake
         }
     }
+    
     
     public boolean anyCoralSensorActive() {
         return intake.isCoralHandoffLoaded() || intake.isCoralLeft() || intake.isCoralMid() || intake.isCoralRight();
