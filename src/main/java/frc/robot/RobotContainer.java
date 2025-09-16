@@ -37,6 +37,8 @@ import frc.robot.commands.superstructure.ZeroMechanisms;
 import frc.robot.commands.test.TestDriveAuto;
 import frc.robot.commands.test.TestElevatorAuto;
 import frc.robot.commands.test.WheelRadiusCharacterization;
+import frc.robot.commands.AlignToCoral;
+import frc.robot.data.Constants;
 import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.ScoringConstants;
 import frc.robot.data.TunerConstants;
@@ -168,7 +170,10 @@ public class RobotContainer {
     );
 
     inNormalMode.and(Controls.driverController.rightBumper()).onTrue(
-      Commands.runOnce(() -> groundSuperstructure.handoffIntakeToggle())
+      Commands.parallel(
+        new AlignToCoral(() -> Controls.driverController.getLeftY() * Constants.PhysicalConstants.maxSpeed, () -> Controls.driverController.getLeftX() * Constants.PhysicalConstants.maxSpeed, () -> -Controls.driverController.getLeftX() * Constants.PhysicalConstants.maxAngularSpeed),
+        Commands.runOnce(() -> groundSuperstructure.handoffIntakeToggle())
+      )
     );
 
     Controls.driverController.y().onTrue(
