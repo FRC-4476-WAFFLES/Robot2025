@@ -28,7 +28,7 @@ public class Superstructure extends SimpleWafflesMechanism {
     NET_FRONT_CLEAR(218, 1.3),
     NET_FRONT_CLEAR_FINISHED(218, 0.4),
     ALGAE_REST(218, 0.0),
-    ALGAE_GROUND_PICKUP(80,0.0),
+    ALGAE_GROUND_PICKUP(83,0.0),
 
     L4(200,0.92),
     L3(200,0.4),
@@ -46,7 +46,7 @@ public class Superstructure extends SimpleWafflesMechanism {
     MANUAL_L2(173.0,0.0),
     MANUAL_L1(150,0.33),
     
-    
+
     HANDOFF_READY(35, 0.36),
     HANDOFF_EXECUTE(18, 0.17),
     HANDOFF_CLEAR(210, 0.3);

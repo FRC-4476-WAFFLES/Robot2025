@@ -137,7 +137,7 @@ public class Intake extends SimpleWafflesMechanism {
         // Determine intake state
         if (!manipulatorLoaded) {
             // Only change load type while not loaded
-            if (RobotContainer.groundSuperstructure.isHandoffReady()) {
+            if (RobotContainer.groundSuperstructure.isHandoffHappening()) {
                 loadType = LoadType.CORAL;
             } else if (
                 RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.REEF_ALGAE &&
@@ -147,7 +147,10 @@ public class Intake extends SimpleWafflesMechanism {
             } else if (Controls.operatorController.povDown().getAsBoolean()) {
                 // Quick hack
                 loadType = LoadType.ALGEA;
-            }
+            } 
+            // else if (RobotContainer.isGroundIntakingAlgae) {
+            //     loadType = LoadType.ALGEA;
+            // }
         }
 
         // Update gamepeice sensing

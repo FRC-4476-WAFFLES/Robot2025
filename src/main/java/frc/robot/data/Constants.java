@@ -337,7 +337,7 @@ public final class Constants {
     // Control constants
     public static final double DEAD_ZONE = 5.0; // In degrees
     public static final double MIN_ANGLE = 0.0; // Minimum angle in degrees
-    public static final double MAX_ANGLE = 195.0; // Maximum angle in degrees - adjust as needed
+    public static final double MAX_ANGLE = 205.0; // Maximum angle in degrees - adjust as needed
 
     // Zeroing
     public static final double ZEROING_SPEED = -0.15;
@@ -346,12 +346,12 @@ public final class Constants {
 
     // Motor configuration
     public static final double STATOR_CURRENT_LIMIT = 40.0; // amps
-    public static final double MOTION_CRUISE_VELOCITY = 0.6; 
-    public static final double MOTION_ACCELERATION = 4; 
+    public static final double MOTION_CRUISE_VELOCITY = 0.8; 
+    public static final double MOTION_ACCELERATION = 2; 
     public static final double MOTION_JERK = 2000.0; 
 
     // PID Values
-    public static final double kP = 170.0;
+    public static final double kP = 100.0;
     public static final double kI = 0.0;
     public static final double kD = 0.01;
     public static final double kS = 0.0;
@@ -360,7 +360,7 @@ public final class Constants {
     public enum GroundPivotPosition {
       STOWED(0.0),
       HANDOFF(22.0),
-      DEPLOYED(208.0),
+      DEPLOYED(204.0),
       L1(110),
       ZEROING_CLEARANCE(140);
 
