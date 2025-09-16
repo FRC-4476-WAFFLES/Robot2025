@@ -113,7 +113,7 @@ public class ScoreCoral extends SequentialCommandGroup {
           new InstantCommand(() -> RobotContainer.dynamicPathingSubsystem.lockCoralScoringSide(true)),
 
           // Place on post
-          new ApplySuperstructureState(chosenParameters.executeScoreState())
+          new ApplySuperstructureState(chosenParameters.executeScoreState(), true)
         ),
 
         pathingSubsystem.wrapPathingCommand(

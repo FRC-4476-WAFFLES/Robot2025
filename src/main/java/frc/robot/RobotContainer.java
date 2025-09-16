@@ -32,6 +32,7 @@ import frc.robot.commands.scoring.ScoreCoral;
 import frc.robot.commands.scoring.ScoreNet;
 import frc.robot.commands.superstructure.ApplySuperstructureState;
 import frc.robot.commands.superstructure.ExecuteHandoff;
+import frc.robot.commands.superstructure.GroundAlgaePickup;
 import frc.robot.commands.superstructure.SuperstructureControl;
 import frc.robot.commands.superstructure.ZeroMechanisms;
 import frc.robot.commands.test.TestDriveAuto;
@@ -65,6 +66,7 @@ public class RobotContainer {
   private  SendableChooser<Command> testChooser;
   public static boolean isOperatorOverride = false;
   public static boolean isRunningL1Intake = false;
+  public static boolean isGroundIntakingAlgae = false;
   public static Trigger isHeadingLockedToL1;
 
   /* Hardware Subsystems */
@@ -132,6 +134,8 @@ public class RobotContainer {
     Trigger inNormalMode = new Trigger(() -> !isOperatorOverride);
     Trigger inOverrideMode = new Trigger(() -> isOperatorOverride);
 
+    Trigger algaeGroundIntakeActive = new Trigger(() -> isGroundIntakingAlgae);
+
     Trigger L1Loaded = new Trigger(() -> groundSuperstructure.isL1Ready());
     Trigger triggerHandoff = new Trigger(() -> groundSuperstructure.isHandoffReady() && !intakeSubsystem.isAlgaeLoaded() && !intakeSubsystem.isCoralLoaded());
 
@@ -172,8 +176,10 @@ public class RobotContainer {
     );
 
     Controls.driverController.y().onTrue(
-      Commands.runOnce(() -> superstructure.algaeGroundPickupToggle())
+      Commands.runOnce(() -> isGroundIntakingAlgae = !isGroundIntakingAlgae)
     );
+
+    algaeGroundIntakeActive.whileTrue(new GroundAlgaePickup());
 
     // Operator Algea out
     dynamicPathingSubsystem.notRunningAction.and(Controls.algaeOut).whileTrue(

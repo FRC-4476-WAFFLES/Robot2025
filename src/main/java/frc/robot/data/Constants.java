@@ -118,7 +118,7 @@ public final class Constants {
     // Vision validation thresholds
     public static final double AMBIGUITY_THRESHOLD = 0.7; // Max ambiguity for single tag (0-1, lower is better), 0.19 is what 254 used
     public static final double MIN_TAG_AREA = 0.8; // Minimum tag area (% of image, 0-100 scale) for single tag
-    public static final double MIN_TAG_AREA_FOR_YAW_CHECK = 1.2; // Tag area threshold (% of image) for yaw validation
+    public static final double MIN_TAG_AREA_FOR_YAW_CHECK = 1.6; // Tag area threshold (% of image) for yaw validation
     public static final double MAX_Z_ERROR = 0.2; // Maximum acceptable Z-axis error in meters (robot should be on ground)
     public static final double MAX_YAW_DIFFERENCE_DEG = 5.0; // Max degrees difference between vision and odometry yaw for single tag
     public static final double MIN_POSE_DISTANCE_FROM_ORIGIN = 1.0; // Minimum distance from field origin (0,0) in meters
@@ -267,10 +267,10 @@ public final class Constants {
     public static final double PIVOT_CURRENT_THRESHOLD =  27.0; // amps - Current threshold for zeroing
 
     // PID Values
-    public static final double PIVOT_kP = 120.0;
+    public static final double PIVOT_kP = 170.0;
     public static final double PIVOT_kI = 0.0;
     public static final double PIVOT_kD = 0.0;
-    public static final double PIVOT_kS = 0.15;
+    public static final double PIVOT_kS = 0.25;
 
     public static final double PIVOT_kG_HORIZONTAL = 0.0;  
 
@@ -303,7 +303,7 @@ public final class Constants {
     public static final double FIRST_STAGE_START_HEIGHT = ElevatorConstants.MAX_ELEVATOR_HEIGHT / 2.0; 
 
     // Motion Magic configuration
-    public static final double MOTION_CRUISE_VELOCITY = 0.6; // 4 usually
+    public static final double MOTION_CRUISE_VELOCITY = 2; // 4 usually
     public static final double MOTION_ACCELERATION = 4;
     public static final double MOTION_JERK = 2000;
 
@@ -360,7 +360,7 @@ public final class Constants {
     public enum GroundPivotPosition {
       STOWED(0.0),
       HANDOFF(22.0),
-      DEPLOYED(198.0),
+      DEPLOYED(208.0),
       L1(110),
       ZEROING_CLEARANCE(140);
 
@@ -386,9 +386,9 @@ public final class Constants {
     public static final double STATOR_CURRENT_LIMIT = 60;
 
     public static final double CANRANGE_PROXIMITY_THRESHOLD = 0.15;
-    public static final double CORAL_LEFT_DISTANCE_THRESHOLD = 20;
-    public static final double CORAL_MID_DISTANCE_THRESHOLD = 20;
-    public static final double CORAL_RIGHT_DISTANCE_THRESHOLD = 20;
+    public static final double CORAL_LEFT_DISTANCE_THRESHOLD = 45;
+    public static final double CORAL_MID_DISTANCE_THRESHOLD = 30;
+    public static final double CORAL_RIGHT_DISTANCE_THRESHOLD = 45;
     
     public static final double SENSOR_DEBOUNCE_TIME = 0.25;
   }

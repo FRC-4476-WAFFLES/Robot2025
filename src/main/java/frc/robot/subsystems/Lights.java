@@ -26,6 +26,7 @@ import frc.robot.data.Constants;
 import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
 import frc.robot.subsystems.groundsuperstructure.GroundIntakeSuperstructure.GroundIntakeSuperstructureState;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
+import frc.robot.utils.WafflesUtilities;
 
 /**
  * Simple LED subsystem using array-based approach for reliable, conflict-free operation.
@@ -459,7 +460,8 @@ public class Lights extends SubsystemBase {
   private void setElevatorSideLights(LedRange leftRange, LedRange rightRange, boolean isRightSide) {
     Pose2d robotPose = RobotContainer.driveSubsystem.getRobotPose();
     Rotation2d closestFaceAngle = RobotContainer.dynamicPathingSubsystem.calculateClosestFaceAngle(robotPose);
-    
+    closestFaceAngle = WafflesUtilities.FlipAngleIfRedAlliance(closestFaceAngle);
+
     double angleDifference = closestFaceAngle.plus(Rotation2d.k180deg).minus(Rotation2d.kZero).getDegrees();
     boolean shouldInvertSides = Math.abs(angleDifference) > 90;
     
