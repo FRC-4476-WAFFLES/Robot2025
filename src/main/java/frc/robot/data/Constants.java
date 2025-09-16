@@ -228,7 +228,7 @@ public final class Constants {
   /* Manipulator Constants */
   public static class ManipulatorConstants {
     // Detection thresholds
-    public static final double ALGAE_CURRENT_THRESHOLD = 30.0; // amps
+    public static final double ALGAE_CURRENT_THRESHOLD = 25.0; // amps
     public static final double CORAL_CURRENT_THRESHOLD = 30;
     
     public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.3; 
@@ -240,7 +240,7 @@ public final class Constants {
     // Intake speeds
     public static final double CORAL_INTAKE_SPEED = -5; // Rps
     public static final double ALGAE_HOLD_SPEED = -0.5; // Speed to hold algae in place
-    public static final double ALGAE_INTAKE_SPEED = -4;
+    public static final double ALGAE_INTAKE_SPEED = -5;
     public static final double ZEROING_SPEED = -0.095; // Slow inwards speed
 
     // Pivot constants
