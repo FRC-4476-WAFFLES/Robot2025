@@ -182,6 +182,7 @@ public final class Constants {
     // Makes the elevator go up more in net autos, we can tip over but it *is* faster! :)
     public static final boolean USE_RISKY_NET_AUTO = true;
     public static final boolean USE_CORAL_SCORE_PATH_PLANNING = false; // Too slow / inconsistently latent on rio2
+    public static final double AUTO_SCORE_WAIT_TIME = 0.3; // Wait before driving away to allow arm to swing out
 
     /** A collection of scoring parameters */
     public record CoralScoringParameters(
@@ -323,7 +324,7 @@ public final class Constants {
     public static final double MOTION_MAGIC_EXPO_KA = 0.7; // kA is V/(rps/s)
     
     // Simulation constants
-    public static final double SIM_FREQ = 0.5;
+    public static final double SIM_FREQ = 2;
     public static final double SIM_DAMPING = 1.0;
     public static final double SIM_INITIAL_POSITION = 0.0;
     public static final double SIM_INITIAL_VELOCITY = 0.0;

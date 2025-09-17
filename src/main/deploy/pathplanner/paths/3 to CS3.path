@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.9319672131147536,
-        "y": 2.748309426229507
+        "x": 3.913,
+        "y": 2.697
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.454288641685727,
-        "y": 2.8070705869396977
+        "x": 4.435321428570973,
+        "y": 2.7557611607101906
       },
       "isLocked": false,
       "linkedName": "Post 3"
@@ -48,7 +48,7 @@
   "folder": "Reef to CS3",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 59.139108311650524
+    "rotation": 59.99999999999999
   },
   "useDefaultConstraints": true
 }

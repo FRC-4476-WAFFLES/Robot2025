@@ -23,9 +23,7 @@
   "autoFolders": [
     "Algae",
     "Four Piece",
-    "Two Piece",
-    "Push",
-    "Three Piece"
+    "Push"
   ],
   "defaultMaxVel": 4.1,
   "defaultMaxAccel": 7.0,

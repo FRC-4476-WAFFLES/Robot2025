@@ -35,9 +35,9 @@ public class PickupAlgae extends SequentialCommandGroup {
           }),
           // Wait until safe to move out pivot
           new WaitUntilCommand(() -> DynamicPathing.isPastAlgaeClearancePoint()),
-          new ParallelCommandGroup(
-            new ApplySuperstructureState(scoringLevel),
-            new AlgaeIntake()
+          new ParallelDeadlineGroup(
+            new AlgaeIntake(),
+            new ApplySuperstructureState(scoringLevel)
           )
         ),
 

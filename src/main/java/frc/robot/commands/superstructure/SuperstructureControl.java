@@ -4,6 +4,7 @@
 
 package frc.robot.commands.superstructure;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -26,7 +27,7 @@ public class SuperstructureControl {
         return new FunctionalCommand(
             () -> {}, 
             () -> {
-                if (RobotContainer.isOperatorOverride) {
+                if (RobotContainer.isOperatorOverride || DriverStation.isAutonomous()) {
                     return;
                 }
 
@@ -42,7 +43,11 @@ public class SuperstructureControl {
                     if (RobotContainer.intakeSubsystem.isAlgaeLoaded()) {
                         RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.ALGAE_REST);
                     } else {
-                        RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.HANDOFF_READY);
+                        if (RobotContainer.intakeSubsystem.isCoralLoaded()) {
+                            RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.L2);   
+                        } else {
+                            RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.HANDOFF_READY);
+                        }
                     }
                 }
             }, 
@@ -60,7 +65,7 @@ public class SuperstructureControl {
         return new FunctionalCommand(
             () -> {}, 
             () -> {
-                if (RobotContainer.isOperatorOverride) {
+                if (RobotContainer.isOperatorOverride || DriverStation.isAutonomous()) {
                     return;
                 }
                 

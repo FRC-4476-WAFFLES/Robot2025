@@ -4,10 +4,7 @@
 
 package frc.robot.commands.scoring;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -15,12 +12,13 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -130,7 +128,8 @@ public class ScoreCoral extends SequentialCommandGroup {
           () -> Rotation2d.kZero
         ).onlyWhile(() -> DynamicPathing.getDistanceToReef() < SCORING_FINISHED_DISTANCE),
         new CoralOutake()
-      ),
+
+      ).onlyIf(() -> DriverStation.isTeleop()),
       
       // End timing
       endTimingCommand
@@ -141,10 +140,9 @@ public class ScoreCoral extends SequentialCommandGroup {
     double influence = WafflesUtilities.InvLerp(DynamicPathing.REEF_CORAL_CLEAR_DISTANCE, SCORING_FINISHED_DISTANCE, DynamicPathing.getDistanceToReef());
     influence = MathUtil.clamp(influence, 0, 1);
 
-    System.out.println(DynamicPathing.getDistanceToReef());
-
     var inputVector = new Translation2d(Controls.getDriveY() , Controls.getDriveX());
-    var travelDirection = new Translation2d(1, RobotContainer.dynamicPathingSubsystem.getClosestFaceAngle().plus(Rotation2d.k180deg));
+    var closestFaceAngle = WafflesUtilities.FlipAngleIfRedAlliance(RobotContainer.dynamicPathingSubsystem.getClosestFaceAngle());
+    var travelDirection = new Translation2d(1, closestFaceAngle);
     // double scaledInput = Math.max(0, WafflesUtilities.translationDotProduct(travelDirection, inputVector));
     double scaledInput = MathUtil.clamp(inputVector.getNorm(), 0, 1);
 
@@ -158,8 +156,8 @@ public class ScoreCoral extends SequentialCommandGroup {
     influence = MathUtil.clamp(influence, 0, 1);
 
     var inputVector = new Translation2d(Controls.getDriveY() , Controls.getDriveX());
-    var travelDirection = new Translation2d(1, RobotContainer.dynamicPathingSubsystem.getClosestFaceAngle().plus(Rotation2d.k180deg));
-    // double scaledInput = Math.max(0, WafflesUtilities.translationDotProduct(travelDirection, inputVector));
+    var closestFaceAngle = WafflesUtilities.FlipAngleIfRedAlliance(RobotContainer.dynamicPathingSubsystem.getClosestFaceAngle());
+    var travelDirection = new Translation2d(1, closestFaceAngle);
     double scaledInput = MathUtil.clamp(inputVector.getNorm(), 0, 1);
 
     double output = travelDirection.times(scaledInput).getY();
@@ -247,7 +245,11 @@ public class ScoreCoral extends SequentialCommandGroup {
     RobotContainer.dynamicPathingSubsystem.setCoralScoringLevel(level);
     RobotContainer.dynamicPathingSubsystem.setCoralScoringSide(rightSide);
     Pose2d targetCoralPose = RobotContainer.dynamicPathingSubsystem.getNearestCoralScoringLocation();
+    Command scoreCommand = scoreCoralWithPath(new InstantCommand(), targetCoralPose, DynamicPathing.CORAL_PATH_END_SPEED);
 
-    return scoreCoralWithPath(new InstantCommand(), targetCoralPose, DynamicPathing.CORAL_PATH_END_SPEED);
+    return Commands.sequence(
+      Commands.waitSeconds(ScoringConstants.AUTO_SCORE_WAIT_TIME),  
+      scoreCommand
+    );
   }
 }
