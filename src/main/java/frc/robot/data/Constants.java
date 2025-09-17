@@ -229,7 +229,7 @@ public final class Constants {
   /* Manipulator Constants */
   public static class ManipulatorConstants {
     // Detection thresholds
-    public static final double ALGAE_CURRENT_THRESHOLD = 30.0; // amps
+    public static final double ALGAE_CURRENT_THRESHOLD = 25.0; // amps
     public static final double CORAL_CURRENT_THRESHOLD = 30;
     
     public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.3; 
