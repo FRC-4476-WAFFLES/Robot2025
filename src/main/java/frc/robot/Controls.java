@@ -20,7 +20,7 @@ public class Controls {
 
     // Constants
     private static final double JOYSTICK_DEADZONE_INNER = 0.025; // Below the inner value the input is zero
-    private static final double JOYSTICK_DEADZONE_OUTER = 0.15; // Between the inner and outer value the input is interpolated towards it's actual value
+    private static final double JOYSTICK_DEADZONE_OUTER = 0.05; // Between the inner and outer value the input is interpolated towards it's actual value
     public static final double AXIS_DEADBAND = 0.1;  // Deadband for controller axes to prevent unintended activation
     public static final double MANUAL_ELEVATOR_CONTROL_MULTIPLIER = 2; 
 
@@ -75,7 +75,7 @@ public class Controls {
     // Cube joystick input to improve precise control 
     public static double filterJoystick(double input) {
         double output = applyDeadzone(input);
-        return Math.abs(output * output * output) * Math.signum(output);
+        return Math.abs(output * output) * Math.signum(output);
     }
 
     // Clamps and squares input from two joysticks

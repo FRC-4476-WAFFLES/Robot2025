@@ -113,7 +113,7 @@ public class GroundIntake extends SimpleWafflesMechanism {
         PREPARE_HANDOFF(-3,3,5),
         HANDOFF(3,-3,0),
         REST(0, 0,0),
-        OUTAKE(0,0,-10);
+        OUTAKE(-5,5,0);
         
         private final double rightSpeed;
         private final double leftSpeed;

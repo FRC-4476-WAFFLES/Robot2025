@@ -304,7 +304,7 @@ public final class Constants {
     public static final double FIRST_STAGE_START_HEIGHT = ElevatorConstants.MAX_ELEVATOR_HEIGHT / 2.0; 
 
     // Motion Magic configuration
-    public static final double MOTION_CRUISE_VELOCITY = 2; // 4 usually
+    public static final double MOTION_CRUISE_VELOCITY = 4; // 4 usually
     public static final double MOTION_ACCELERATION = 4;
     public static final double MOTION_JERK = 2000;
 
@@ -347,20 +347,20 @@ public final class Constants {
 
     // Motor configuration
     public static final double STATOR_CURRENT_LIMIT = 40.0; // amps
-    public static final double MOTION_CRUISE_VELOCITY = 0.8; 
-    public static final double MOTION_ACCELERATION = 2; 
+    public static final double MOTION_CRUISE_VELOCITY = 5; 
+    public static final double MOTION_ACCELERATION = 10; 
     public static final double MOTION_JERK = 2000.0; 
 
     // PID Values
-    public static final double kP = 100.0;
+    public static final double kP = 25.0;
     public static final double kI = 0.0;
-    public static final double kD = 0.01;
+    public static final double kD = 0.0;
     public static final double kS = 0.0;
 
     // Predefined positions for the ground pivot (in degrees)
     public enum GroundPivotPosition {
       STOWED(0.0),
-      HANDOFF(22.0),
+      HANDOFF(23.0),
       DEPLOYED(204.0),
       L1(110),
       ZEROING_CLEARANCE(140);

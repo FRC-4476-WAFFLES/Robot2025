@@ -1,5 +1,6 @@
 package frc.robot.commands.superstructure;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.ManipulatorConstants;
@@ -14,6 +15,7 @@ public class ExecuteHandoff extends Command {
         FINISHED;
     }
     private HandoffState state = HandoffState.STARTED;
+    private Timer timer = new Timer();
 
     /** Creates a new ApplyScoringSetpoint. */
     public ExecuteHandoff() {
@@ -50,12 +52,21 @@ public class ExecuteHandoff extends Command {
                 RobotContainer.superstructure.applySuperstructureState(SuperstructureState.HANDOFF_EXECUTE);
                 if (RobotContainer.superstructure.atSetpoint()) {
                     state = HandoffState.CLEARING;
+                    
+                    timer.stop();
+                    timer.reset();
+                    timer.start();
                 }
                 break;
             
             case CLEARING:
                 RobotContainer.groundSuperstructure.triggerHandoff();
                 RobotContainer.superstructure.applySuperstructureState(SuperstructureState.HANDOFF_CLEAR);
+                
+                if (timer.get() > 0.3) {
+                    RobotContainer.intakeSubsystem.setIntakeSpeed(0);
+                }
+
                 if (RobotContainer.superstructure.atSetpoint()) {
                     // Ensure we are at a controlled ending point for the handoff
                     state = HandoffState.FINISHED;
@@ -63,6 +74,7 @@ public class ExecuteHandoff extends Command {
                 break;
             case FINISHED:
                 RobotContainer.intakeSubsystem.setIntakeSpeed(0);
+                timer.stop();
                 break;
         }
 
