@@ -50,7 +50,7 @@ public class AlignToPose extends Command {
   public static final double approachFeedforwardBlendInner = 0.02; // Distance at which velocity feedforward loses all influence
 
   /* Controllers */
-  private ProfiledPIDController approachPidController = new ProfiledPIDController(3.6, 0, 0.05, new Constraints(maxVelocity, maxAccelerationElevatorDown));
+  private ProfiledPIDController approachPidController = new ProfiledPIDController(2.4, 0, 0.05, new Constraints(maxVelocity, maxAccelerationElevatorDown));
   private ProfiledPIDController thetaPidController = new ProfiledPIDController(7.0, 0, 0.1, new Constraints(maxThetaVelocity, maxThetaAcceleration));
 
   /* Tolerances */

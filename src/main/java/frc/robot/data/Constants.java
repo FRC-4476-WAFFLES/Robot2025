@@ -29,42 +29,43 @@ public final class Constants {
   /* CAN IDs  */
   public static class CANIds {
     // Drive Motors
-    public static final int steeringFrontLeft = 1; 
-    public static final int drivingFrontLeft = 2; 
-    public static final int steeringFrontRight = 3; 
-    public static final int drivingFrontRight = 4; 
-    public static final int steeringBackLeft = 5; 
-    public static final int drivingBackLeft = 6; 
-    public static final int steeringBackRight = 7; 
-    public static final int drivingBackRight = 8; 
+    // Drivetrain IDS are located in TunerConstants
 
-    // Drive Sensors
-    public static final int frontLeftAbsoluteEncoder = 19; // CANcoder
-    public static final int frontRightAbsoluteEncoder = 20; // CANcoder
-    public static final int backLeftAbsoluteEncoder = 21; // CANcoder
-    public static final int backRightAbsoluteEncoder = 22; // CANcoder
+    // public static final int steeringFrontLeft = 1; 
+    // public static final int drivingFrontLeft = 2; 
+    // public static final int steeringFrontRight = 3; 
+    // public static final int drivingFrontRight = 4; 
+    // public static final int steeringBackLeft = 5; 
+    // public static final int drivingBackLeft = 6; 
+    // public static final int steeringBackRight = 7; 
+    // public static final int drivingBackRight = 8; 
 
-    public static final int pidgeon = 25;
+    // // Drive Sensors
+    // public static final int frontLeftAbsoluteEncoder = 9; // CANcoder
+    // public static final int frontRightAbsoluteEncoder = 10; // CANcoder
+    // public static final int backLeftAbsoluteEncoder = 11; // CANcoder
+    // public static final int backRightAbsoluteEncoder = 12; // CANcoder
+
+    // public static final int pidgeon = 50;
 
     // Other Motors
-    public static final int elevator1 = 9; 
-    public static final int elevator2 = 10; 
-    public static final int intakeMotor = 14;
-    public static final int pivotMotor = 15;
-    public static final int groundPivotMotor = 12;
-    public static final int groundIntakeMotorRight = 13;
-    public static final int groundIntakeMotorLeft = 32;
-    public static final int groundIntakeMotorMid = 33;
+    public static final int elevator1 = 13; 
+    public static final int elevator2 = 14; 
+    public static final int manipulatorIntake = 16;
+    public static final int manipulatorPivot = 15;
+    public static final int groundPivotMotor = 21;
+    public static final int groundIntakeMotorMid = 18;
+    public static final int groundIntakeMotorRight = 19;
+    public static final int groundIntakeMotorLeft = 20;
     // Other Sensors
-    public static final int pivotAbsoluteEncoder = 28;
+    public static final int pivotAbsoluteEncoder = 70;
     
-    public static final int intakeLaserCan = 29;
-    public static final int funnelLaserCan = 30;
-    public static final int groundIntakeLaserCanRight = 36;
-    public static final int groundIntakeLaserCanMid = 37;
-    public static final int groundIntakeLaserCanLeft = 38;
-    public static final int groundIntakeCanRange = 35;
-    public static final int CANdle = 26;
+    public static final int groundIntakeLaserCanRight = 42;
+    public static final int groundIntakeLaserCanMid = 40;
+    public static final int groundIntakeLaserCanLeft = 41;
+    
+    public static final int groundIntakeCanRange = 17;
+    public static final int CANdle = 22;
 
     // Canivore
     public static final String CANivoreName = "Drivetrain Backup";
@@ -115,9 +116,9 @@ public final class Constants {
     public static final int MOVING_LL_IMU_MODE = 2; // Uses internal IMU
 
     // Vision validation thresholds
-    public static final double AMBIGUITY_THRESHOLD = 0.19; // Max ambiguity for single tag (0-1, lower is better), 0.19 is what 254 used
-    public static final double MIN_TAG_AREA = 1.0; // Minimum tag area (% of image, 0-100 scale) for single tag
-    public static final double MIN_TAG_AREA_FOR_YAW_CHECK = 2.0; // Tag area threshold (% of image) for yaw validation
+    public static final double AMBIGUITY_THRESHOLD = 0.7; // Max ambiguity for single tag (0-1, lower is better), 0.19 is what 254 used
+    public static final double MIN_TAG_AREA = 0.8; // Minimum tag area (% of image, 0-100 scale) for single tag
+    public static final double MIN_TAG_AREA_FOR_YAW_CHECK = 1.6; // Tag area threshold (% of image) for yaw validation
     public static final double MAX_Z_ERROR = 0.2; // Maximum acceptable Z-axis error in meters (robot should be on ground)
     public static final double MAX_YAW_DIFFERENCE_DEG = 5.0; // Max degrees difference between vision and odometry yaw for single tag
     public static final double MIN_POSE_DISTANCE_FROM_ORIGIN = 1.0; // Minimum distance from field origin (0,0) in meters
@@ -181,6 +182,7 @@ public final class Constants {
     // Makes the elevator go up more in net autos, we can tip over but it *is* faster! :)
     public static final boolean USE_RISKY_NET_AUTO = true;
     public static final boolean USE_CORAL_SCORE_PATH_PLANNING = false; // Too slow / inconsistently latent on rio2
+    public static final double AUTO_SCORE_WAIT_TIME = 0.3; // Wait before driving away to allow arm to swing out
 
     /** A collection of scoring parameters */
     public record CoralScoringParameters(
@@ -227,20 +229,20 @@ public final class Constants {
   /* Manipulator Constants */
   public static class ManipulatorConstants {
     // Detection thresholds
-    public static final double ALGAE_CURRENT_THRESHOLD = 60.0; // amps
+    public static final double ALGAE_CURRENT_THRESHOLD = 25.0; // amps
     public static final double CORAL_CURRENT_THRESHOLD = 30;
     
     public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.3; 
-    public static final double CORAL_DETECTION_DEBOUNCE_TIME = 0.3;
-    public static final double CORAL_RELEASE_DEBOUNCE_TIME = 0.3;
+    public static final double CORAL_DETECTION_DEBOUNCE_TIME = 0.1;
+    public static final double CORAL_RELEASE_DEBOUNCE_TIME = 0.1;
     
     public static final double ZERO_DEBOUNCE_TIME = 0.2;
 
     // Intake speeds
     public static final double CORAL_INTAKE_SPEED = -5; // Rps
-    public static final double ALGAE_HOLD_SPEED = 30; // Speed to hold algae in place
-    public static final double ALGAE_INTAKE_SPEED = 120;
-    public static final double ZEROING_SPEED = -0.065; // Slow inwards speed
+    public static final double ALGAE_HOLD_SPEED = -0.5; // Speed to hold algae in place
+    public static final double ALGAE_INTAKE_SPEED = -5;
+    public static final double ZEROING_SPEED = -0.095; // Slow inwards speed
 
     // Pivot constants
     public static final double PIVOT_ANGLE_DEADBAND = 1.4;
@@ -253,11 +255,11 @@ public final class Constants {
     public static final double PIVOT_FRAME_UPPER_CLEARANCE_ANGLE = 90;
     public static final double FIRST_STAGE_AVOIDANCE_ANGLE = 215;
 
-    public static final double PIVOT_CLEARANCE_POSITION = 35;
+    public static final double PIVOT_CLEARANCE_POSITION = 38;
     public static final double PIVOT_CLEARANCE_POSITION_ALGAE = 105;
 
     // Motor configuration
-    public static final double PIVOT_MOTION_CRUISE_VELOCITY = 6;
+    public static final double PIVOT_MOTION_CRUISE_VELOCITY = 1;
     public static final double PIVOT_MOTION_ACCELERATION = 30.0;
     public static final double PIVOT_MOTION_JERK = 2000.0;
     public static final double STATOR_CURRENT_LIMIT = 50.0; // amps
@@ -266,12 +268,12 @@ public final class Constants {
     public static final double PIVOT_CURRENT_THRESHOLD =  27.0; // amps - Current threshold for zeroing
 
     // PID Values
-    public static final double PIVOT_kP = 80.0;
+    public static final double PIVOT_kP = 170.0;
     public static final double PIVOT_kI = 0.0;
     public static final double PIVOT_kD = 0.0;
-    public static final double PIVOT_kS = 0.15;
+    public static final double PIVOT_kS = 0.25;
 
-    public static final double PIVOT_kG_HORIZONTAL = -0.3; 
+    public static final double PIVOT_kG_HORIZONTAL = 0.0;  
 
     public static final double PIVOT_kP_ALGAE_SLOW = 40.0;
   }
@@ -296,13 +298,13 @@ public final class Constants {
 
     // Collision zone constants
     public static final double COLLISION_ZONE_LOWER = 0.36; // meters
-    public static final double COLLISION_ZONE_UPPER = 0.61; // meters
+    public static final double COLLISION_ZONE_UPPER = 0.85; // meters
 
     // Height where first stage starts moving
     public static final double FIRST_STAGE_START_HEIGHT = ElevatorConstants.MAX_ELEVATOR_HEIGHT / 2.0; 
 
     // Motion Magic configuration
-    public static final double MOTION_CRUISE_VELOCITY = 6; // 4 usually
+    public static final double MOTION_CRUISE_VELOCITY = 4; // 4 usually
     public static final double MOTION_ACCELERATION = 4;
     public static final double MOTION_JERK = 2000;
 
@@ -322,8 +324,8 @@ public final class Constants {
     public static final double MOTION_MAGIC_EXPO_KA = 0.7; // kA is V/(rps/s)
     
     // Simulation constants
-    public static final double SIM_DAMPING = 1.5;
-    public static final double SIM_STIFFNESS = 1.0;
+    public static final double SIM_FREQ = 2;
+    public static final double SIM_DAMPING = 1.0;
     public static final double SIM_INITIAL_POSITION = 0.0;
     public static final double SIM_INITIAL_VELOCITY = 0.0;
     
@@ -336,31 +338,32 @@ public final class Constants {
     // Control constants
     public static final double DEAD_ZONE = 5.0; // In degrees
     public static final double MIN_ANGLE = 0.0; // Minimum angle in degrees
-    public static final double MAX_ANGLE = 195.0; // Maximum angle in degrees - adjust as needed
+    public static final double MAX_ANGLE = 205.0; // Maximum angle in degrees - adjust as needed
 
     // Zeroing
-    public static final double ZEROING_SPEED = -0.05;
-    public static final double ZERO_DEBOUNCE_TIME = 0.2; // seconds
-    public static final double PIVOT_CURRENT_THRESHOLD = 20; // amps
+    public static final double ZEROING_SPEED = -0.15;
+    public static final double ZERO_DEBOUNCE_TIME = 0.8; // seconds
+    public static final double PIVOT_CURRENT_THRESHOLD = 16; // amps
 
     // Motor configuration
     public static final double STATOR_CURRENT_LIMIT = 40.0; // amps
-    public static final double MOTION_CRUISE_VELOCITY = 4; 
-    public static final double MOTION_ACCELERATION = 12; 
+    public static final double MOTION_CRUISE_VELOCITY = 5; 
+    public static final double MOTION_ACCELERATION = 10; 
     public static final double MOTION_JERK = 2000.0; 
 
     // PID Values
-    public static final double kP = 70.0;
+    public static final double kP = 25.0;
     public static final double kI = 0.0;
-    public static final double kD = 0.01;
+    public static final double kD = 0.0;
     public static final double kS = 0.0;
 
     // Predefined positions for the ground pivot (in degrees)
     public enum GroundPivotPosition {
       STOWED(0.0),
-      HANDOFF(0.0),
-      DEPLOYED(190.0),
-      L1(110);
+      HANDOFF(23.0),
+      DEPLOYED(204.0),
+      L1(110),
+      ZEROING_CLEARANCE(140);
 
       private final double degrees;
 
@@ -383,11 +386,11 @@ public final class Constants {
     public static final double kS = 0.0;
     public static final double STATOR_CURRENT_LIMIT = 60;
 
-    public static final double CANRANGE_PROXIMITY_THRESHOLD = 60;//TODO remember to tune number
-    public static final double CORAL_LEFT_DISTANCE_THRESHOLD = 60;
-    public static final double CORAL_MID_DISTANCE_THRESHOLD = 60;
-    public static final double CORAL_RIGHT_DISTANCE_THRESHOLD = 60;
+    public static final double CANRANGE_PROXIMITY_THRESHOLD = 0.15;
+    public static final double CORAL_LEFT_DISTANCE_THRESHOLD = 45;
+    public static final double CORAL_MID_DISTANCE_THRESHOLD = 30;
+    public static final double CORAL_RIGHT_DISTANCE_THRESHOLD = 45;
     
-    public static final double SENSOR_DEBOUNCE_TIME = 0.1;
+    public static final double SENSOR_DEBOUNCE_TIME = 0.25;
   }
 }

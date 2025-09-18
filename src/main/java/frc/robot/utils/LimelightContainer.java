@@ -11,6 +11,10 @@ import com.ctre.phoenix6.Utils;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StringPublisher;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -20,6 +24,8 @@ import frc.robot.utils.LimelightHelpers.RawFiducial;
 
 /** Encapsulates the logic for megatag based localization with a limelight */
 public class LimelightContainer {
+    private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+
     private String limelightName;
     private DriveSubsystem driveSubsystem;
 
@@ -28,6 +34,11 @@ public class LimelightContainer {
     private double lastHeartbeatTime = -1;
     private boolean isAlive = false;
 
+    private final NetworkTable softwareTable = inst.getTable("SoftwareInfo");
+    private final StructPublisher<Pose3d> mt1NT;
+    private final StructPublisher<Pose3d> mt2NT;
+    
+
     // Timestamp deduplication
     private double lastMT1Timestamp = -1;
     private double lastMT2Timestamp = -1;
@@ -35,6 +46,9 @@ public class LimelightContainer {
     public LimelightContainer(String name, DriveSubsystem subsystem) {
         this.limelightName = Objects.requireNonNull(name, "Limelight name cannot be null");
         this.driveSubsystem = Objects.requireNonNull(subsystem, "DriveSubsystem cannot be null");
+        
+        mt1NT = softwareTable.getStructTopic(limelightName + " MT1", Pose3d.struct).publish();
+        mt2NT = softwareTable.getStructTopic(limelightName + " MT2", Pose3d.struct).publish();
     }
     
     /**
@@ -85,6 +99,8 @@ public class LimelightContainer {
                         }
                         
                         if (passValidation) {
+                            mt2NT.set(pose3d);
+
                             var standardDeviations = VisionHelpers.getEstimationStdDevsLimelightMT2(megatag2Result.rawFiducials);
                             if (standardDeviations != null && standardDeviations.get(0, 0) > 0) {
                                 driveSubsystem.addVisionMeasurement(
@@ -122,6 +138,8 @@ public class LimelightContainer {
                         }
                         
                         if (passValidation) {
+                            mt1NT.set(pose3d);
+
                             var estimationStdDevs = VisionHelpers.getEstimationStdDevsLimelight(megatag1Result.pose, megatag1Result.rawFiducials);
                             if (estimationStdDevs != null) {
                                 driveSubsystem.addVisionMeasurement(

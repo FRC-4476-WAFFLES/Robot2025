@@ -7,10 +7,19 @@ import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 /* Continuously adjusts position of elevator and pivot to desired scoring level */
 public class ApplySuperstructureState extends Command {
     private final SuperstructureState level;
+    private boolean instant = false;
+
     /** Creates a new ApplyScoringSetpoint. */
     public ApplySuperstructureState(SuperstructureState scoringLevel) {
         addRequirements(RobotContainer.superstructure.requirements);
         level = scoringLevel;
+        instant = false;
+    }
+
+    public ApplySuperstructureState(SuperstructureState scoringLevel, boolean instantCommand) {
+        addRequirements(RobotContainer.superstructure.requirements);
+        level = scoringLevel;
+        instant = instantCommand;
     }
 
     // Called when the command is initially scheduled.
@@ -33,6 +42,6 @@ public class ApplySuperstructureState extends Command {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return RobotContainer.superstructure.atSetpoint();
+        return RobotContainer.superstructure.atSetpoint() || instant;
     }
 }

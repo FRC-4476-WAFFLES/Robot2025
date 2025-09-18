@@ -41,9 +41,9 @@ public class GroundIntake extends SimpleWafflesMechanism {
     private LaserCan rightLaserCan;
     
     // Sensor boilerplate
-    private double leftLaserDistance = 0;
-    private double midLaserDistance = 0;
-    private double rightLaserDistance = 0;
+    private double leftLaserDistance = 9999;
+    private double midLaserDistance = 9999;
+    private double rightLaserDistance = 9999;
     private boolean handoffCoralPresent = false;
     
     private Trigger leftCoralSensor;
@@ -106,13 +106,14 @@ public class GroundIntake extends SimpleWafflesMechanism {
 
     // State Variables
     public enum GroundIntakeState {
-        SHIFT_LEFT(0, 0,20),
-        INTAKE_TOP(0, 0,20),
-        SHIFT_RIGHT(0, 0,20),
-        PREPARE_HANDOFF(10,-10,20),
-        HANDOFF(0,0,0),
+        SHIFT_LEFT(-1, -1,1),
+        INTAKE_TOP(0, 0,5),
+        INTAKE_TOP_SLOW(0, 0,0.5),
+        SHIFT_RIGHT(1, 1,1),
+        PREPARE_HANDOFF(-3,3,5),
+        HANDOFF(3,-3,0),
         REST(0, 0,0),
-        OUTAKE(10,-10,0);
+        OUTAKE(-5,5,0);
         
         private final double rightSpeed;
         private final double leftSpeed;
@@ -149,6 +150,10 @@ public class GroundIntake extends SimpleWafflesMechanism {
     private final DoublePublisher rightIntakeVelocityNT = networkTable.getDoubleTopic("Right Intake Velocity").publish();
     private final DoublePublisher leftIntakeVelocityNT = networkTable.getDoubleTopic("Left Intake Velocity").publish();
     private final DoublePublisher midIntakeVelocityNT = networkTable.getDoubleTopic("Middle Intake Velocity").publish();
+    
+    private final DoublePublisher midSensorDistNT = networkTable.getDoubleTopic("Mid Distance").publish();
+    private final DoublePublisher leftSensorDistNT = networkTable.getDoubleTopic("Left Distance").publish();
+    private final DoublePublisher rightSensorDistNT = networkTable.getDoubleTopic("Right Distance").publish();
     
     public GroundIntake() {
         intakeRight = new TalonFXIO(Constants.CANIds.groundIntakeMotorRight);
@@ -227,6 +232,7 @@ public class GroundIntake extends SimpleWafflesMechanism {
 
         intakeConfigs.CurrentLimits = intakeCurrentLimit;
 
+        // Slot0 for velocity control
         var slot0Configs = new Slot0Configs();
         slot0Configs.kP = 0.9;
         slot0Configs.kI = 0;
@@ -264,6 +270,7 @@ public class GroundIntake extends SimpleWafflesMechanism {
 
         intakeConfigs.CurrentLimits = intakeCurrentLimit;
 
+        // Slot0 for velocity control
         var slot0Configs = new Slot0Configs();
         slot0Configs.kP = 0.9;
         slot0Configs.kI = 0;
@@ -291,7 +298,7 @@ public class GroundIntake extends SimpleWafflesMechanism {
     @Override
     public void periodicImpl() {
         intakeRight.setControl(intakeRightControlRequest.withVelocity(currentState.getRightSpeed()).withSlot(0));
-        intakeLeft.setControl(intakeLeftControlRequest.withVelocity(currentState.getLeftSpeed()).withSlot(0));//not sure if they will be following same speed 
+        intakeLeft.setControl(intakeLeftControlRequest.withVelocity(currentState.getLeftSpeed()).withSlot(0));
         intakeMid.setControl(intakeMidControlRequest.withVelocity(currentState.getTopSpeed()).withSlot(0));
         updateCoralSensors();
     }
@@ -368,6 +375,11 @@ public class GroundIntake extends SimpleWafflesMechanism {
         rightIntakeVelocityNT.set(intakeRight.signals().velocity().getValueAsDouble());
         leftIntakeVelocityNT.set(intakeLeft.signals().velocity().getValueAsDouble());
         midIntakeVelocityNT.set(intakeMid.signals().velocity().getValueAsDouble());
+
+
+        midSensorDistNT.set(midLaserDistance);
+        rightSensorDistNT.set(rightLaserDistance);
+        leftSensorDistNT.set(leftLaserDistance);
 
         leftSensorNT.set(isCoralLeft());
         rightSensorNT.set(isCoralRight());

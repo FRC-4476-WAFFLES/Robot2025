@@ -4,6 +4,7 @@
 
 package frc.robot.commands.superstructure;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -26,7 +27,7 @@ public class SuperstructureControl {
         return new FunctionalCommand(
             () -> {}, 
             () -> {
-                if (RobotContainer.isOperatorOverride) {
+                if (RobotContainer.isOperatorOverride || DriverStation.isAutonomous()) {
                     return;
                 }
 
@@ -37,9 +38,17 @@ public class SuperstructureControl {
 
                 // Go to L2 automatically if in range to speed up motion
                 if (RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.REEF_CORAL) {
-                    RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.L2);
+                    RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.HANDOFF_CLEAR);
                 } else {
-                    RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.HANDOFF_READY);
+                    if (RobotContainer.intakeSubsystem.isAlgaeLoaded()) {
+                        RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.ALGAE_REST);
+                    } else {
+                        if (RobotContainer.intakeSubsystem.isCoralLoaded()) {
+                            RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.HANDOFF_CLEAR);   
+                        } else {
+                            RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.HANDOFF_READY);
+                        }
+                    }
                 }
             }, 
             (interrupted) -> {},
@@ -56,15 +65,23 @@ public class SuperstructureControl {
         return new FunctionalCommand(
             () -> {}, 
             () -> {
-                if (RobotContainer.isOperatorOverride) {
+                if (RobotContainer.isOperatorOverride || DriverStation.isAutonomous()) {
                     return;
                 }
                 
                 // Go to L2 automatically if in range to speed up motion
                 if (RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.REEF_CORAL) {
-                    RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.L3);
+                    RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.HANDOFF_CLEAR);
                 } else {
-                    RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.HANDOFF_READY);
+                    if (RobotContainer.intakeSubsystem.isCoralLoaded()) {
+                        RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.HANDOFF_CLEAR);
+                    } else {
+                        if (RobotContainer.intakeSubsystem.isAlgaeLoaded()) {
+                            RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.ALGAE_REST);
+                        } else {
+                            RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.HANDOFF_READY);
+                        }
+                    }
                 }
             }, 
             (interrupted) -> {},
@@ -92,8 +109,7 @@ public class SuperstructureControl {
                 if (interrupted) {
                     return;
                 }
-                RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.L4);
-                RobotContainer.superstructure.pivot.applySetpoint(ManipulatorConstants.PIVOT_CLEARANCE_POSITION);
+                RobotContainer.superstructure.applySuperstructureState(SuperstructureState.L4);
             },
             () -> DynamicPathing.isElevatorL4Ready(), 
             RobotContainer.superstructure.elevator

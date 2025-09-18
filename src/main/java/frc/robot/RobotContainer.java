@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -31,11 +32,15 @@ import frc.robot.commands.scoring.ScoreCoral;
 import frc.robot.commands.scoring.ScoreNet;
 import frc.robot.commands.superstructure.ApplySuperstructureState;
 import frc.robot.commands.superstructure.ExecuteHandoff;
+import frc.robot.commands.superstructure.GroundAlgaePickup;
 import frc.robot.commands.superstructure.SuperstructureControl;
 import frc.robot.commands.superstructure.ZeroMechanisms;
 import frc.robot.commands.test.TestDriveAuto;
 import frc.robot.commands.test.TestElevatorAuto;
 import frc.robot.commands.test.WheelRadiusCharacterization;
+import frc.robot.commands.AlignToCoral;
+import frc.robot.data.Constants;
+import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.ScoringConstants;
 import frc.robot.data.TunerConstants;
 import frc.robot.subsystems.DriveSubsystem;
@@ -63,6 +68,7 @@ public class RobotContainer {
   private  SendableChooser<Command> testChooser;
   public static boolean isOperatorOverride = false;
   public static boolean isRunningL1Intake = false;
+  public static boolean isGroundIntakingAlgae = false;
   public static Trigger isHeadingLockedToL1;
 
   /* Hardware Subsystems */
@@ -130,6 +136,8 @@ public class RobotContainer {
     Trigger inNormalMode = new Trigger(() -> !isOperatorOverride);
     Trigger inOverrideMode = new Trigger(() -> isOperatorOverride);
 
+    Trigger algaeGroundIntakeActive = new Trigger(() -> isGroundIntakingAlgae);
+
     Trigger L1Loaded = new Trigger(() -> groundSuperstructure.isL1Ready());
     Trigger triggerHandoff = new Trigger(() -> groundSuperstructure.isHandoffReady() && !intakeSubsystem.isAlgaeLoaded() && !intakeSubsystem.isCoralLoaded());
 
@@ -166,8 +174,17 @@ public class RobotContainer {
     );
 
     inNormalMode.and(Controls.driverController.rightBumper()).onTrue(
-      Commands.runOnce(() -> groundSuperstructure.handoffIntakeToggle())
+      Commands.parallel(
+        new AlignToCoral(() -> Controls.driverController.getLeftY() * Constants.PhysicalConstants.maxSpeed, () -> Controls.driverController.getLeftX() * Constants.PhysicalConstants.maxSpeed, () -> -Controls.driverController.getLeftX() * Constants.PhysicalConstants.maxAngularSpeed),
+        Commands.runOnce(() -> groundSuperstructure.handoffIntakeToggle())
+      )
     );
+
+    Controls.driverController.y().onTrue(
+      Commands.runOnce(() -> isGroundIntakingAlgae = !isGroundIntakingAlgae)
+    );
+
+    algaeGroundIntakeActive.whileTrue(new GroundAlgaePickup());
 
     // Operator Algea out
     dynamicPathingSubsystem.notRunningAction.and(Controls.algaeOut).whileTrue(
@@ -252,6 +269,15 @@ public class RobotContainer {
       )
     );
 
+    // Controls.operatorController.povUp().whileTrue(
+    //   new ParallelCommandGroup(
+    //     new InstantCommand(
+    //       () -> {intakeSubsystem.setIntakeSpeed(ManipulatorConstants.ALGAE_INTAKE_SPEED);}
+    //     ),
+    //     new ApplySuperstructureState(SuperstructureState.GROUND_PICKUP_ALGAE)
+    //   )
+    // );
+
     // Manual net toss
     Controls.operatorController.povDown().whileTrue(Commands.defer(() -> ScoreNet.getScoreNetCommand(0, () -> Rotation2d.kZero, false, true), DynamicPathing.actionCommandRequirements).onlyIf(() -> RobotContainer.intakeSubsystem.isAlgaeLoaded()));
     
@@ -271,6 +297,7 @@ public class RobotContainer {
       )
     );
 
+    // HADNOFF DISABLED
     triggerHandoff.onTrue(new ExecuteHandoff());
 
 

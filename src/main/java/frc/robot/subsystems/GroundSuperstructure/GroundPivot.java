@@ -17,6 +17,7 @@ import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.GroundPivotConstants;
@@ -79,7 +80,8 @@ public class GroundPivot extends WafflesMechanism {
     configurePivotMotor();
 
     zeroingDebounceTrigger = new Trigger(() -> {
-      return pivotMotor.signals().torqueCurrent().getValueAsDouble() < -GroundPivotConstants.PIVOT_CURRENT_THRESHOLD;     
+      return pivotMotor.signals().torqueCurrent().getValueAsDouble() < -GroundPivotConstants.PIVOT_CURRENT_THRESHOLD
+      && isZeroingPivot;     
     }).debounce(GroundPivotConstants.ZERO_DEBOUNCE_TIME);
 
     if (RobotBase.isSimulation()) {
@@ -135,10 +137,9 @@ public class GroundPivot extends WafflesMechanism {
 
     // Apply Configuration
     PhoenixHelpers.tryConfig(() -> pivotMotor.getConfigurator().apply(pivotConfig));
-    
-    // Reset the position to zero at startup
-    // This assumes the pivot is at its zero position when the robot starts
-    pivotMotor.setPosition(0);
+    if (RobotBase.isReal()) {
+      PhoenixHelpers.tryConfig(() -> pivotMotor.setPosition(197.0 / 360));
+    }
   }
 
   @Override
@@ -148,6 +149,8 @@ public class GroundPivot extends WafflesMechanism {
       handlePivotZeroPeriodic();
       return;
     }
+
+    // SmartDashboard.putNumber("AAAA", pivotMotor.signals().torqueCurrent().getValueAsDouble());
 
     // Convert degrees to rotations for motion magic
     // Since we've set the SensorToMechanismRatio, we need to convert our
@@ -223,7 +226,7 @@ public class GroundPivot extends WafflesMechanism {
   private void handlePivotZeroPeriodic() {
     if (zeroingDebounceTrigger.getAsBoolean()) {
       pivotMotor.set(0);
-      pivotMotor.setPosition(0.0);
+      pivotMotor.setPosition(0);
       applySetpoint(0);
       
       isZeroingPivot = false;

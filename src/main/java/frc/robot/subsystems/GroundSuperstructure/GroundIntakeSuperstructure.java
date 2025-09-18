@@ -6,6 +6,7 @@ package frc.robot.subsystems.groundsuperstructure;
 
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import frc.robot.RobotContainer;
 import frc.robot.data.Constants.GroundPivotConstants.GroundPivotPosition;
 import frc.robot.subsystems.groundsuperstructure.GroundIntake.GroundIntakeState;
 import frc.robot.utils.lib.SimpleWafflesMechanism;
@@ -15,6 +16,8 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
     public final GroundIntake intake = new GroundIntake();
     public final GroundPivot pivot = new GroundPivot();
     public final Subsystem[] requirements = new Subsystem[] {intake, pivot};
+
+    private boolean statemachineOverrideFlag = false;
 
     public enum GroundIntakeSuperstructureState {
         INTAKE_L1_STATE,
@@ -34,6 +37,10 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
 
     @Override
     protected void periodicImpl() {
+        if (statemachineOverrideFlag) {
+            return;
+        }
+
         switch (currentState) {
             case INTAKE_L1_STATE:
                 if (intake.isCoralLeft() || intake.isCoralRight() || intake.isCoralMid()) {
@@ -64,7 +71,7 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
                 
             case L1_READY:
                 pivot.applySetpoint(GroundPivotPosition.L1);
-                intake.setGroundIntakeSetpoint(GroundIntakeState.INTAKE_TOP);
+                intake.setGroundIntakeSetpoint(GroundIntakeState.INTAKE_TOP_SLOW);
                 break;
 
             case L1_SCORE_STATE:
@@ -101,9 +108,18 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
                 break; 
 
             case EXECUTE_HANDOFF_STATE:
+                if (RobotContainer.isOperatorOverride) {
+                    intake.setGroundIntakeSetpoint(GroundIntakeState.OUTAKE); 
+                    return;   
+                }
+
                 pivot.applySetpoint(GroundPivotPosition.HANDOFF);
                 if(intake.isCoralHandoffLoaded() || intake.isCoralMid()){
-                    intake.setGroundIntakeSetpoint(GroundIntakeState.HANDOFF);
+                    if (RobotContainer.intakeSubsystem.isCoralLoaded()) {
+                        intake.setGroundIntakeSetpoint(GroundIntakeState.HANDOFF);
+                    } else {
+                        intake.setGroundIntakeSetpoint(GroundIntakeState.REST);
+                    }
                 } else {
                     currentState = GroundIntakeSuperstructureState.STOWED;
                 }
@@ -121,6 +137,7 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
                 } else {
                     currentState = GroundIntakeSuperstructureState.STOWED;
                 }
+            break;
         }
 
     }
@@ -145,6 +162,11 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
         return currentState == GroundIntakeSuperstructureState.READY_HANDOFF_STATE;
     }
 
+    public boolean isHandoffHappening(){
+        return currentState == GroundIntakeSuperstructureState.READY_HANDOFF_STATE ||
+        currentState == GroundIntakeSuperstructureState.EXECUTE_HANDOFF_STATE;
+    }
+
     public boolean isL1Ready(){
         return currentState == GroundIntakeSuperstructureState.L1_READY;
     }
@@ -159,6 +181,10 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
 
     public void setState(GroundIntakeSuperstructureState state) {
         currentState = state;
+    }
+
+    public void setStatemachineOverrideFlag(boolean val) {
+        statemachineOverrideFlag = val;
     }
 
     /**
@@ -181,6 +207,7 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
             currentState = GroundIntakeSuperstructureState.SPIT_OUT_STATE; // Spit out if interrupted mid intake
         }
     }
+    
     
     public boolean anyCoralSensorActive() {
         return intake.isCoralHandoffLoaded() || intake.isCoralLeft() || intake.isCoralMid() || intake.isCoralRight();

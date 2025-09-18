@@ -20,7 +20,7 @@ public class Controls {
 
     // Constants
     private static final double JOYSTICK_DEADZONE_INNER = 0.025; // Below the inner value the input is zero
-    private static final double JOYSTICK_DEADZONE_OUTER = 0.15; // Between the inner and outer value the input is interpolated towards it's actual value
+    private static final double JOYSTICK_DEADZONE_OUTER = 0.05; // Between the inner and outer value the input is interpolated towards it's actual value
     public static final double AXIS_DEADBAND = 0.1;  // Deadband for controller axes to prevent unintended activation
     public static final double MANUAL_ELEVATOR_CONTROL_MULTIPLIER = 2; 
 
@@ -41,25 +41,25 @@ public class Controls {
 
     // Methods to get driver input
     public static double getDriveX() {
-        double driveX = applyDeadzone(driverController.getLeftX());
+        double driveX = filterJoystick(driverController.getLeftX());
         RobotContainer.telemetry.publishControlInfoX(driveX);
         return -driveX * PhysicalConstants.maxSpeed;
     }
 
     public static double getDriveY() {
-        double driveY = applyDeadzone(driverController.getLeftY());
+        double driveY = filterJoystick(driverController.getLeftY());
         RobotContainer.telemetry.publishControlInfoY(driveY);
         return -driveY * PhysicalConstants.maxSpeed;
     }
 
     public static Rotation2d getDriveRotation() {
-        double driveRot = applyDeadzone(driverController.getRightX());
+        double driveRot = filterJoystick(driverController.getRightX());
         RobotContainer.telemetry.publishControlInfoRot(driveRot);
         return Rotation2d.fromRadians(-driveRot * PhysicalConstants.maxAngularSpeed);
     }
 
     public static double getDriveRotationRaw() { 
-        return applyDeadzone(driverController.getRightX());
+        return filterJoystick(driverController.getRightX());
     }
 
     // Smooths deadzone over range
@@ -70,6 +70,12 @@ public class Controls {
             0 : 
             (WafflesUtilities.Lerp(0, input, WafflesUtilities.InvLerp(JOYSTICK_DEADZONE_INNER, JOYSTICK_DEADZONE_OUTER, input)) * Math.signum(input))
         );
+    }
+
+    // Cube joystick input to improve precise control 
+    public static double filterJoystick(double input) {
+        double output = applyDeadzone(input);
+        return Math.abs(output * output) * Math.signum(output);
     }
 
     // Clamps and squares input from two joysticks

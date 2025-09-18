@@ -37,6 +37,8 @@ public class Robot extends TimedRobot {
    * initialization code.
    */
   public Robot() {
+    CanBridge.runTCP();
+    
     // Initialize subsystem network manager
     SubsystemNetworkManager.init(this);
 

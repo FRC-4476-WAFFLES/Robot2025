@@ -14,6 +14,7 @@ import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ManipulatorConstants;
@@ -65,20 +66,20 @@ public class Intake extends SimpleWafflesMechanism {
     private final BooleanPublisher isOutakingAlgaeNT = networkTable.getBooleanTopic("IsOutaking").publish();
 
     public Intake() {
-        intake = new TalonFXIO(Constants.CANIds.intakeMotor);
+        intake = new TalonFXIO(Constants.CANIds.manipulatorIntake);
 
         // Configure hardware
         configureIntakeMotor();
 
         algaeDetectionTrigger = new Trigger(
             () -> intake.signals().statorCurrent().getValueAsDouble() > ManipulatorConstants.ALGAE_CURRENT_THRESHOLD 
-            && isIntakingAlgae() 
-            && !isCoralLoaded()
+            && loadType == LoadType.ALGEA
+            && !isAlgaeLoaded()
         ).debounce(ManipulatorConstants.ALGAE_DETECTION_DEBOUNCE_TIME);
 
         coralDetectionTrigger = new Trigger(
             () -> intake.signals().statorCurrent().getValueAsDouble() > ManipulatorConstants.CORAL_CURRENT_THRESHOLD 
-            && !isIntakingAlgae() 
+            && loadType == LoadType.CORAL
             && !isCoralLoaded()
         ).debounce(ManipulatorConstants.CORAL_DETECTION_DEBOUNCE_TIME);
 
@@ -100,10 +101,10 @@ public class Intake extends SimpleWafflesMechanism {
         intakeConfigs.CurrentLimits = intakeCurrentLimit;
 
         var slot0Configs = new Slot0Configs();
-        slot0Configs.kP = 0.3;
+        slot0Configs.kP = 1;
         slot0Configs.kI = 0;
         slot0Configs.kD = 0;
-        slot0Configs.kV = 0.33;
+        slot0Configs.kV = 1.5;
         slot0Configs.kG = 0.0;
 
         var slot1Configs = new Slot1Configs();
@@ -136,14 +137,20 @@ public class Intake extends SimpleWafflesMechanism {
         // Determine intake state
         if (!manipulatorLoaded) {
             // Only change load type while not loaded
-            if (RobotContainer.groundSuperstructure.isHandoffReady()) {
+            if (RobotContainer.groundSuperstructure.isHandoffHappening()) {
                 loadType = LoadType.CORAL;
             } else if (
                 RobotContainer.dynamicPathingSubsystem.getCurrentPathingSituation() == DynamicPathingSituation.REEF_ALGAE &&
                 RobotContainer.dynamicPathingSubsystem.runningAction.getAsBoolean()
             ) {
                 loadType = LoadType.ALGEA;
-            }
+            } else if (Controls.operatorController.povDown().getAsBoolean()) {
+                // Quick hack
+                loadType = LoadType.ALGEA;
+            } 
+            // else if (RobotContainer.isGroundIntakingAlgae) {
+            //     loadType = LoadType.ALGEA;
+            // }
         }
 
         // Update gamepeice sensing
@@ -156,10 +163,6 @@ public class Intake extends SimpleWafflesMechanism {
             if (Math.abs(intakeSpeed) < 0.01 && isAlgaeLoaded()) {
                 // When algae is loaded, run intake slowly inward
                 intake.setControl(intakeControlRequest.withVelocity(Constants.ManipulatorConstants.ALGAE_HOLD_SPEED).withSlot(0));
-
-                if (intake.signals().statorCurrent().getValueAsDouble() < 4) {
-                    intake.setControl(intakeControlRequest.withVelocity(-120).withSlot(0));
-                }
             } else if (Math.abs(intakeSpeed) < 0.01 && isCoralLoaded()) {
                 intake.setControl(intakePositionRequest.withOutput(0)); // scuffed
             } else {
@@ -188,6 +191,10 @@ public class Intake extends SimpleWafflesMechanism {
      * Checks if algae or coral is present in the intake based on current draw
      */
     private void detectGamepeiceLoaded() {
+        if (RobotBase.isSimulation()) {
+            return;
+        }
+
         if (loadType == LoadType.ALGEA) {
             if (algaeDetectionTrigger.getAsBoolean()) {
                 manipulatorLoaded = true;
@@ -245,16 +252,16 @@ public class Intake extends SimpleWafflesMechanism {
 
     /* Helper methods for determining the intake's basic state */
 
-    public boolean isIntakingAlgae() {
-        return !isAlgaeLoaded() && intakeSpeed > 10 && !noAlgaeFlag;
-    }
+    // public boolean isIntakingAlgae() {
+    //     return !isAlgaeLoaded() && intakeSpeed > 10 && !noAlgaeFlag;
+    // }
 
     public boolean isOuttakingAlgae() {
-        return isAlgaeLoaded() && intake.signals().velocity().getValueAsDouble() < -12;
+        return isAlgaeLoaded() && intake.signals().velocity().getValueAsDouble() > 0.5;
     }
 
     public boolean isOuttakingCoral() {
-        return isCoralLoaded() && intake.signals().velocity().getValueAsDouble() < -12;
+        return isCoralLoaded() && intake.signals().velocity().getValueAsDouble() > 0.5;
     }
 
     public boolean isIntakeStopped() {
@@ -268,12 +275,11 @@ public class Intake extends SimpleWafflesMechanism {
     public void updateNetwork() {
         coralLoadedNT.set(isCoralLoaded());
         algaeLoadedNT.set(isAlgaeLoaded());
-        manipulatorLoadedNT.set(manipulatorLoaded);
+        manipulatorLoadedNT.set(manipulatorLoaded());
         loadTypeNT.set(loadType.toString());
         intakeSetpointNT.set(intakeSpeed);
         intakeCurrentDrawNT.set(intake.signals().statorCurrent().getValueAsDouble());
 
-        isIntakingAlgaeNT.set(isIntakingAlgae());
         isOutakingAlgaeNT.set(isOuttakingAlgae());
     }
 
