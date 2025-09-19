@@ -845,21 +845,13 @@ public class DynamicPathing extends SubsystemBase {
             );
         }
         
-        var backOffPath = DynamicPathing.generateComplexPath(targetAlgaePose, null, safetyPose, 1.0);
-        
-        if (backOffPath.isPresent()) {
-            // Generate final back off path
-            var backoffPathingCommand = AutoBuilder.followPath(backOffPath.get());
             
-            return PickupAlgae.pickupAlgaeWithPath(
-                arrivalPathingCommand, 
-                getAlgeaScoringLevel(startingPose), 
-                backoffPathingCommand,
-                targetAlgaePose
-            );
-        }
-        
-        return new InstantCommand();
+        return PickupAlgae.pickupAlgaeWithPath(
+            arrivalPathingCommand, 
+            getAlgeaScoringLevel(startingPose), 
+            new AlignToPose(safetyPose),
+            targetAlgaePose
+        );
     }
 
     /**

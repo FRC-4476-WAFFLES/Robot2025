@@ -11,6 +11,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotContainer;
@@ -29,9 +30,11 @@ public class AlignToCoral extends Command {
   private final Supplier<Rotation2d> thetaVelocitySupplier;
   private RobotCentric request;
   private Alliance alliance;
+  private double latestTx;
+  private boolean hasTarget = false;
 
   private Trigger targetLost = new Trigger(() -> !LimelightHelpers.getTV(LIMELIGHT_KEY))
-    .debounce(1.0);
+    .debounce(0.1);
 
   /** Creates a new AllignWithNote. */
   public AlignToCoral(DoubleSupplier xVelocitySupplier, DoubleSupplier yVelocitySupplier, Supplier<Rotation2d> thetaVelocitySupplier) {
@@ -44,12 +47,24 @@ public class AlignToCoral extends Command {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    latestTx = 0;
+    hasTarget = false;
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    boolean hasTarget = LimelightHelpers.getTV(LIMELIGHT_KEY);
+    if (LimelightHelpers.getTV(LIMELIGHT_KEY)) {
+      latestTx = LimelightHelpers.getTX(LIMELIGHT_KEY);
+      hasTarget = true;
+    } else {
+      if (targetLost.getAsBoolean()) {
+        hasTarget = false;
+      }
+    }
+
+    SmartDashboard.putBoolean("HasTarget Smoothed", hasTarget);
 
     if (
       !RobotContainer.groundSuperstructure.anyCoralSensorActive() && 
@@ -73,7 +88,7 @@ public class AlignToCoral extends Command {
           // Scale the Limelight TX adjustment based on the magnitude of the dot product
           double scaleFactor = Math.abs(dotProduct) / 2.8;
         //   SmartDashboard.putNumber("scaleFactor", scaleFactor);
-          double scaledTXAdjustment = -0.05 * LimelightHelpers.getTX(LIMELIGHT_KEY) * scaleFactor;
+          double scaledTXAdjustment = -0.05 * latestTx * scaleFactor;
           request = createSwerveRequest(dotProduct, scaledTXAdjustment);
       }
       RobotContainer.driveSubsystem.setControl(request);
@@ -105,8 +120,8 @@ public class AlignToCoral extends Command {
       .withDeadband(PhysicalConstants.maxSpeed * 0.03)
       .withDriveRequestType(DriveRequestType.Velocity)
       .withSteerRequestType(SteerRequestType.MotionMagicExpo)
-      .withVelocityX(velocityX)
-      .withVelocityY(velocityY);
+      .withVelocityX(-velocityX)
+      .withVelocityY(-velocityY);
   }
 
   // Called once the command ends or is interrupted.

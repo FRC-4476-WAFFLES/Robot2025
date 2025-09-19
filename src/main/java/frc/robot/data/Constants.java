@@ -259,7 +259,7 @@ public final class Constants {
     public static final double PIVOT_CLEARANCE_POSITION_ALGAE = 105;
 
     // Motor configuration
-    public static final double PIVOT_MOTION_CRUISE_VELOCITY = 1;
+    public static final double PIVOT_MOTION_CRUISE_VELOCITY = 1.5;
     public static final double PIVOT_MOTION_ACCELERATION = 30.0;
     public static final double PIVOT_MOTION_JERK = 2000.0;
     public static final double STATOR_CURRENT_LIMIT = 50.0; // amps
@@ -283,7 +283,7 @@ public final class Constants {
     // Controwl constants
     public static final double ELEVATOR_DEAD_ZONE = 0.015;
     public static final double ZEROING_SPEED = -0.1; // Slow downward speed
-    public static final double STALL_CURRENT_THRESHOLD = 26.0; // Amperes
+    public static final double STALL_CURRENT_THRESHOLD = 35.0; // Amperes
     public static final double ZERO_DEBOUNCE_TIME = 0.2;
 
     // Elevator will not move if the pivot is not past this angle, to avoid collision with top bar
