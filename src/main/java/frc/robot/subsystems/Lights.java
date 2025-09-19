@@ -535,6 +535,8 @@ public class Lights extends SubsystemBase {
       color = LightColours.BLUE;
     } else if (pathingSituation == DynamicPathingSituation.NET) {
       color = LightColours.PINK;
+    } else if (pathingSituation == DynamicPathingSituation.HUNT_CORAL) {
+      color = LightColours.ORANGE;
     }
 
     if (shouldBlink) {

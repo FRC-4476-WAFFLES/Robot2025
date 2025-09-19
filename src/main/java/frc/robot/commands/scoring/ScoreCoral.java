@@ -199,7 +199,7 @@ public class ScoreCoral extends SequentialCommandGroup {
       new DeferredCommand(() -> {
         // Check if the button is held down AND other conditions are met
         // (A variety of sanity checks)
-        boolean shouldPickupAlgae = Controls.algaeAfterScoreButton.getAsBoolean() && 
+        boolean shouldPickupAlgae = Controls.comboAlgaeButton.getAsBoolean() && 
           DynamicPathing.isRobotInRangeOfReefPathing() && 
           !RobotContainer.intakeSubsystem.isCoralLoaded() &&
           !RobotContainer.intakeSubsystem.isAlgaeLoaded() &&

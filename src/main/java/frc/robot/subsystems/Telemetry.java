@@ -140,8 +140,10 @@ public class Telemetry extends SubsystemBase {
     private final Alert rioCanError = new Alert("RIO CAN bus error", AlertType.kError);
     private final Alert canivoreError = new Alert("CANivore bus error", AlertType.kError);
     private final Alert visionFaultDetected = new Alert("", AlertType.kError);
-    private final Alert driverControllerDisconnected = new Alert("Driver controller disconnected [port 0].", AlertType.kWarning);
-    private final Alert operatorControllerDisconnected = new Alert("Operator controller disconnected [port 1].", AlertType.kWarning); 
+    // private final Alert driverControllerDisconnected = new Alert("Driver controller disconnected [port 0].", AlertType.kWarning);
+    private final Alert leftJoystickDisconnected = new Alert("Left joystick disconnected [port 0].", AlertType.kWarning);
+    private final Alert rightJoystickDisconnected = new Alert("Right joystick disconnected [port 1].", AlertType.kWarning);
+    private final Alert operatorControllerDisconnected = new Alert("Operator controller disconnected [port 2].", AlertType.kWarning); 
 
     /**
      * Construct a telemetry subsystem
@@ -164,7 +166,9 @@ public class Telemetry extends SubsystemBase {
         matchTime.set(Timer.getMatchTime());
 
         // Update controls warnings
-        driverControllerDisconnected.set(!Controls.driverController.isConnected());
+        // driverControllerDisconnected.set(!Controls.driverController.isConnected());
+        leftJoystickDisconnected.set(!Controls.leftJoystick.isConnected());
+        rightJoystickDisconnected.set(!Controls.rightJoystick.isConnected());
         operatorControllerDisconnected.set(!Controls.operatorController.isConnected());
 
         // Check for CAN errors

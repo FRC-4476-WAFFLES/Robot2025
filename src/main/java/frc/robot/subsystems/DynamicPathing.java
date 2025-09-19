@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
+import frc.robot.commands.AlignToCoral;
 import frc.robot.commands.AlignToPose;
 import frc.robot.commands.intake.AlgaeOutake;
 import frc.robot.commands.scoring.PickupAlgae;
@@ -136,7 +137,8 @@ public class DynamicPathing extends SubsystemBase {
         REEF_CORAL, // Scoring coral -> has coral loaded and in range of reef
         REEF_ALGAE, // Picking up algae -> has no coral or algae and is in range of reef
         NET, // Scoring algae in net -> has algae and is in range of net
-        PROCESSOR // Scoring algae in processor -> has algae and is in range of processor
+        PROCESSOR, // Scoring algae in processor -> has algae and is in range of processor
+        HUNT_CORAL
     }
 
     @Override
@@ -151,6 +153,11 @@ public class DynamicPathing extends SubsystemBase {
      */
     private static DynamicPathingSituation getDynamicPathingSituation() {    
         Intake intakeSubsystem = RobotContainer.intakeSubsystem;
+
+        if (RobotContainer.groundSuperstructure.isIntakingHandoff()) {
+            return DynamicPathingSituation.HUNT_CORAL;
+        }
+
 
         if (isRobotInRangeOfReefPathing()) {
             if (intakeSubsystem.isCoralLoaded()) {
@@ -294,6 +301,15 @@ public class DynamicPathing extends SubsystemBase {
                         // RobotContainer.superstructureSubsystem.pivot.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
                     });
                     
+                }
+                break;
+            
+            case HUNT_CORAL: {
+                    cmd = new AlignToCoral(
+                        Controls::getDriveY, 
+                        Controls::getDriveX, 
+                        Controls::getDriveRotation
+                    ).onlyWhile(() -> RobotContainer.groundSuperstructure.isIntakingHandoff());
                 }
                 break;
 

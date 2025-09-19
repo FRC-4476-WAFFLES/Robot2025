@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.groundsuperstructure;
 
+import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.RobotContainer;
@@ -30,9 +31,10 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
         STOWED,
         SPIT_OUT_STATE;
     }
-
+    
     private GroundIntakeSuperstructureState currentState = GroundIntakeSuperstructureState.STOWED;
     private StringPublisher statePublisher = networkTable.getStringTopic("Current State").publish();
+    private BooleanPublisher intakingHandoff = networkTable.getBooleanTopic("Intaking Handoff").publish();
     
 
     @Override
@@ -133,7 +135,7 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
             case SPIT_OUT_STATE:
                 pivot.applySetpoint(GroundPivotPosition.DEPLOYED);
                 if (intake.isCoralLeft() || intake.isCoralRight() || intake.isCoralMid()) {
-                    intake.setGroundIntakeSetpoint(GroundIntakeState.OUTAKE);
+                    intake.setGroundIntakeSetpoint(GroundIntakeState.SPIT_OUT);
                 } else {
                     currentState = GroundIntakeSuperstructureState.STOWED;
                 }
@@ -207,6 +209,13 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
             currentState = GroundIntakeSuperstructureState.SPIT_OUT_STATE; // Spit out if interrupted mid intake
         }
     }
+
+    public boolean isIntakingHandoff() {
+        return 
+            currentState == GroundIntakeSuperstructureState.INTAKE_HANDOFF_STATE &&
+            !intake.isCoralHandoffLoaded() &&
+            !RobotContainer.intakeSubsystem.manipulatorLoaded();
+    }
     
     
     public boolean anyCoralSensorActive() {
@@ -220,5 +229,6 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
     @Override
     public void updateNetwork() {
         statePublisher.set(currentState.toString());
+        intakingHandoff.set(isIntakingHandoff());
     }
 }

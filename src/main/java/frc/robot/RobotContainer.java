@@ -42,6 +42,7 @@ import frc.robot.commands.AlignToCoral;
 import frc.robot.data.Constants;
 import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.ScoringConstants;
+import frc.robot.data.Constants.VisionConstants;
 import frc.robot.data.TunerConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.DynamicPathing;
@@ -52,6 +53,7 @@ import frc.robot.subsystems.Telemetry;
 import frc.robot.subsystems.groundsuperstructure.GroundIntakeSuperstructure;
 import frc.robot.subsystems.superstructure.Superstructure;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
+import frc.robot.utils.LimelightHelpers;
 
 
 /**
@@ -126,6 +128,9 @@ public class RobotContainer {
 
     // Warmup pathplanner to reduce delay when dynamic pathing
     FollowPathCommand.warmupCommand().schedule();
+
+    // Configure coral tracker
+    LimelightHelpers.setPipelineIndex(VisionConstants.LIMELIGHT_NAME_CORAL, 1);
   }
 
   /**
@@ -146,7 +151,7 @@ public class RobotContainer {
       new InstantCommand(RobotContainer::toggleOperatorOverride)
     );
 
-    Controls.driverController.povUp().onTrue(resetGyroHeading);
+    Controls.rightJoystick.button(9).onTrue(resetGyroHeading);
     // Use the back button to zero both elevator and pivot in sequence
     Controls.operatorController.back().onTrue(new ZeroMechanisms());
     
@@ -169,20 +174,17 @@ public class RobotContainer {
     // sysIDBindings();
 
     // Intake
-    inNormalMode.and(Controls.driverController.leftBumper()).onTrue(
+    inNormalMode.and(Controls.rightJoystick.button(4)).onTrue(
+      Commands.runOnce(() -> groundSuperstructure.handoffIntakeToggle())
+    );
+
+    inNormalMode.and(Controls.leftJoystick.button(3)).onTrue(
       Commands.runOnce(() -> groundSuperstructure.L1IntakeToggle())
     );
 
-    inNormalMode.and(Controls.driverController.rightBumper()).onTrue(
-      Commands.parallel(
-        new AlignToCoral(() -> Controls.driverController.getLeftY() * Constants.PhysicalConstants.maxSpeed, () -> Controls.driverController.getLeftX() * Constants.PhysicalConstants.maxSpeed, () -> -Controls.driverController.getLeftX() * Constants.PhysicalConstants.maxAngularSpeed),
-        Commands.runOnce(() -> groundSuperstructure.handoffIntakeToggle())
-      )
-    );
-
-    Controls.driverController.y().onTrue(
-      Commands.runOnce(() -> isGroundIntakingAlgae = !isGroundIntakingAlgae)
-    );
+    // Controls.driverController.y().onTrue(
+    //   Commands.runOnce(() -> isGroundIntakingAlgae = !isGroundIntakingAlgae)
+    // );
 
     algaeGroundIntakeActive.whileTrue(new GroundAlgaePickup());
 
@@ -297,12 +299,9 @@ public class RobotContainer {
       )
     );
 
-    // HADNOFF DISABLED
     triggerHandoff.onTrue(new ExecuteHandoff());
 
-
     // Simulation
-
     if (RobotBase.isSimulation()) { 
       Controls.simController.button(1).onTrue(
         Commands.runOnce(() -> telemetry.toggleIntakeSimLoaded())

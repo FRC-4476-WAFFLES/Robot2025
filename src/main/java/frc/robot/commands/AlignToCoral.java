@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
@@ -10,12 +11,9 @@ import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotContainer;
-import frc.robot.data.Constants;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.Constants.VisionConstants;
 import frc.robot.utils.LimelightHelpers;
@@ -23,9 +21,12 @@ import frc.robot.utils.LimelightHelpers;
 public class AlignToCoral extends Command {
   private static final String LIMELIGHT_KEY = VisionConstants.LIMELIGHT_NAME_CORAL;
 
+  private SwerveRequest.FieldCentric driveRequest = new SwerveRequest.FieldCentric();
+  private SwerveRequest.RobotCentric robotCentricRequest = new SwerveRequest.RobotCentric();
+
   private final DoubleSupplier xVelocitySupplier;
   private final DoubleSupplier yVelocitySupplier;
-  private final DoubleSupplier thetaVelocitySupplier;
+  private final Supplier<Rotation2d> thetaVelocitySupplier;
   private RobotCentric request;
   private Alliance alliance;
 
@@ -33,11 +34,12 @@ public class AlignToCoral extends Command {
     .debounce(1.0);
 
   /** Creates a new AllignWithNote. */
-  public AlignToCoral(DoubleSupplier xVelocitySupplier, DoubleSupplier yVelocitySupplier, DoubleSupplier thetaVelocitySupplier) {
-      addRequirements(RobotContainer.driveSubsystem);
-      this.xVelocitySupplier = xVelocitySupplier;
-      this.yVelocitySupplier = yVelocitySupplier;
-      this.thetaVelocitySupplier = thetaVelocitySupplier;
+  public AlignToCoral(DoubleSupplier xVelocitySupplier, DoubleSupplier yVelocitySupplier, Supplier<Rotation2d> thetaVelocitySupplier) {
+    addRequirements(RobotContainer.driveSubsystem);
+    
+    this.xVelocitySupplier = xVelocitySupplier;
+    this.yVelocitySupplier = yVelocitySupplier;
+    this.thetaVelocitySupplier = thetaVelocitySupplier;
   }
 
   // Called when the command is initially scheduled.
@@ -49,7 +51,12 @@ public class AlignToCoral extends Command {
   public void execute() {
     boolean hasTarget = LimelightHelpers.getTV(LIMELIGHT_KEY);
 
-    if (!RobotContainer.groundSuperstructure.anyCoralSensorActive() && RobotContainer.intakeSubsystem.manipulatorLoaded() && hasTarget  && LimelightHelpers.getTA(LIMELIGHT_KEY)>0.75) {  
+    if (
+      !RobotContainer.groundSuperstructure.anyCoralSensorActive() && 
+      !RobotContainer.intakeSubsystem.manipulatorLoaded() && 
+      hasTarget && 
+      LimelightHelpers.getTA(LIMELIGHT_KEY) > 0.75
+    ) {  
       if (yVelocitySupplier == null) {
           // if we don't supply a y velocity, move forward at a set speed and align with the note
           if (hasTarget) {
@@ -71,16 +78,19 @@ public class AlignToCoral extends Command {
       }
       RobotContainer.driveSubsystem.setControl(request);
     } else if (!DriverStation.isAutonomous()) {
+      double speedDeadband = PhysicalConstants.maxSpeed * 0.05;
+      double rotationDeadband = PhysicalConstants.maxAngularSpeed * 0.01;
+
       // if we do have a note, don't apply any note alignment
       RobotContainer.driveSubsystem.setControl(
-      new SwerveRequest.FieldCentric()
-        .withDeadband(PhysicalConstants.maxSpeed * 0.05)
-        .withRotationalDeadband(PhysicalConstants.maxAngularSpeed * 0.01)
-        .withDriveRequestType(DriveRequestType.Velocity)
-        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
-        .withVelocityX(xVelocitySupplier.getAsDouble())
-        .withVelocityY(yVelocitySupplier.getAsDouble())
-        .withRotationalRate(thetaVelocitySupplier.getAsDouble())
+        driveRequest
+          .withDeadband(speedDeadband)
+          .withRotationalDeadband(rotationDeadband)
+          .withDriveRequestType(DriveRequestType.Velocity)
+          .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+          .withVelocityX(xVelocitySupplier.getAsDouble())
+          .withVelocityY(yVelocitySupplier.getAsDouble())
+          .withRotationalRate(thetaVelocitySupplier.get().getRadians())
       );
     }
     else if (DriverStation.isAutonomous() && !hasTarget) {
@@ -91,12 +101,12 @@ public class AlignToCoral extends Command {
 
   // Helper to create SwerveRequest
   private RobotCentric createSwerveRequest(double velocityX, double velocityY) {
-      return new SwerveRequest.RobotCentric()
-              .withDeadband(PhysicalConstants.maxSpeed * 0.03)
-              .withDriveRequestType(DriveRequestType.Velocity)
-              .withSteerRequestType(SteerRequestType.MotionMagicExpo)
-              .withVelocityX(velocityX)
-              .withVelocityY(velocityY);
+    return robotCentricRequest
+      .withDeadband(PhysicalConstants.maxSpeed * 0.03)
+      .withDriveRequestType(DriveRequestType.Velocity)
+      .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+      .withVelocityX(velocityX)
+      .withVelocityY(velocityY);
   }
 
   // Called once the command ends or is interrupted.
