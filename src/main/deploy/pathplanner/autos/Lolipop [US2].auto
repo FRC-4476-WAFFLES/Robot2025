@@ -1,0 +1,194 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Set Coral Loaded"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "US2 to 9"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Set Position L2"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Autoscore L4 Left"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "9 to LP3"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Set Position Intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Lolipop Intake"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "LP3 to 8"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Set Position L2"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Autoscore L4 Left"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "8 to CS1"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Set Position Intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Auto Coral Intake"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "CS1 to 7"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Set Position L2"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Autoscore L4 Right"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "7 to CS1"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Set Position Intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Auto Coral Intake"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "CS1 to 10"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Set Position L2"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Autoscore L4 Right"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "Four Piece",
+  "choreoAuto": false
+}
