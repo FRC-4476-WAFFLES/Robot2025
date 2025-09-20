@@ -78,7 +78,7 @@ public class ExecuteHandoff extends Command {
                 break;
         }
 
-        System.out.println(state.toString());
+        // System.out.println(state.toString());
     }
 
     // Called once the command ends or is interrupted.

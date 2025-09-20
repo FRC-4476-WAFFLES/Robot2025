@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
@@ -428,17 +429,20 @@ public class RobotContainer {
     // ));
 
     NamedCommands.registerCommand("Set Position Intake", 
-      Commands.sequence(
-        Commands.parallel(
-          new CoralOutake(),
-          Commands.runOnce(() -> groundSuperstructure.handoffIntakeToggle())
+      Commands.parallel(
+        new CoralOutake(),
+        Commands.runOnce(() -> groundSuperstructure.handoffIntakeToggle()),
+        Commands.sequence(
+          new WaitUntilCommand(() -> DynamicPathing.isElevatorRetractionSafe()),      
+          Commands.runOnce(() -> superstructure.applySuperstructureState(SuperstructureState.HANDOFF_READY))
         )
       )
     );
 
     NamedCommands.registerCommand("Auto Coral Intake", 
       Commands.sequence(
-        new AlignToCoral(null, null, null)
+        // new AlignToCoral(null, null, null),
+        new WaitUntilCommand(() -> RobotContainer.groundSuperstructure.isHandoffHappening())
       )
     );
 

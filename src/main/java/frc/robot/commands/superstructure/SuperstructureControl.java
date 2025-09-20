@@ -27,7 +27,7 @@ public class SuperstructureControl {
         return new FunctionalCommand(
             () -> {}, 
             () -> {
-                if (RobotContainer.isOperatorOverride) {
+                if (RobotContainer.isOperatorOverride || RobotContainer.dynamicPathingSubsystem.runningAction.getAsBoolean()) {
                     return;
                 }
 
@@ -65,7 +65,7 @@ public class SuperstructureControl {
         return new FunctionalCommand(
             () -> {}, 
             () -> {
-                if (RobotContainer.isOperatorOverride) {
+                if (RobotContainer.isOperatorOverride || RobotContainer.dynamicPathingSubsystem.runningAction.getAsBoolean()) {
                     return;
                 }
                 

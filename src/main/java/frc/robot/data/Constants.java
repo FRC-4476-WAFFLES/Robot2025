@@ -202,7 +202,7 @@ public final class Constants {
       0.05, 
       Rotation2d.fromDegrees(1), 
       0.05, 
-      0.03, 
+      0.05, 
       Rotation2d.fromDegrees(2),
       SuperstructureState.EXECUTE_L4
     );
@@ -210,8 +210,8 @@ public final class Constants {
     public static final CoralScoringParameters L3Params = new CoralScoringParameters(
       0.03, 
       Rotation2d.fromDegrees(1), 
-      0.03, 
-      0.03, 
+      0.05, 
+      0.05, 
       Rotation2d.fromDegrees(2),
       SuperstructureState.EXECUTE_L3
     );
@@ -219,8 +219,8 @@ public final class Constants {
     public static final CoralScoringParameters L2Params = new CoralScoringParameters(
       0.03, 
       Rotation2d.fromDegrees(1), 
-      0.03, 
-      0.03, 
+      0.05, 
+      0.05, 
       Rotation2d.fromDegrees(2),
       SuperstructureState.EXECUTE_L2
     );
@@ -361,8 +361,9 @@ public final class Constants {
     public enum GroundPivotPosition {
       STOWED(0.0),
       HANDOFF(23.0),
-      DEPLOYED(204.0),
+      DEPLOYED(190.0),
       L1(110),
+      L1_INTAKE(205),
       ZEROING_CLEARANCE(140);
 
       private final double degrees;
@@ -386,7 +387,7 @@ public final class Constants {
     public static final double kS = 0.0;
     public static final double STATOR_CURRENT_LIMIT = 60;
 
-    public static final double CANRANGE_PROXIMITY_THRESHOLD = 0.15;
+    public static final double CANRANGE_PROXIMITY_THRESHOLD = 0.07;
     public static final double CORAL_LEFT_DISTANCE_THRESHOLD = 45;
     public static final double CORAL_MID_DISTANCE_THRESHOLD = 30;
     public static final double CORAL_RIGHT_DISTANCE_THRESHOLD = 45;

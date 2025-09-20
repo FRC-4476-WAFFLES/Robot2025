@@ -190,6 +190,9 @@ public class Pivot extends WafflesMechanism {
         pivotConfigs.CurrentLimits.StatorCurrentLimit = 60;
 
         PhoenixHelpers.tryConfig(() -> pivot.getConfigurator().apply(pivotConfigs));
+        if (RobotBase.isReal()) {
+            PhoenixHelpers.tryConfig(() -> pivot.setPosition(3.0/360));
+        }
     }
 
     @Override

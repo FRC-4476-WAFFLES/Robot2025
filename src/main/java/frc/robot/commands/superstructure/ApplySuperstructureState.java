@@ -11,7 +11,7 @@ public class ApplySuperstructureState extends Command {
 
     /** Creates a new ApplyScoringSetpoint. */
     public ApplySuperstructureState(SuperstructureState scoringLevel) {
-        addRequirements(RobotContainer.superstructure.requirements);
+        addRequirements(RobotContainer.superstructure.elevator, RobotContainer.superstructure.pivot);
         level = scoringLevel;
         instant = false;
     }
@@ -32,7 +32,8 @@ public class ApplySuperstructureState extends Command {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-
+        RobotContainer.superstructure.elevator.applySetpoint(level);
+        RobotContainer.superstructure.pivot.applySetpoint(level);
     }
 
     // Called once the command ends or is interrupted.

@@ -880,7 +880,7 @@ public class DynamicPathing extends SubsystemBase {
         );
 
         if (!isFrontScoring) {
-            targetNetX = WafflesUtilities.FlipXIfRedAlliance(NET_LINE_X_BLUE + 0.2); // Nudge a little closer for backwards scoring
+            targetNetX = WafflesUtilities.FlipXIfRedAlliance(NET_LINE_X_BLUE + 0.4); // Nudge a little closer for backwards scoring
         }
         
         

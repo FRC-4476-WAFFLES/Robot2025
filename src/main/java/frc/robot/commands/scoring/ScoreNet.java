@@ -36,8 +36,9 @@ public class ScoreNet {
 
         return Commands.deadline(
             Commands.sequence(
+                new ApplySuperstructureState(SuperstructureState.NET_PREP),
                 new ApplySuperstructureState(isFrontScoring ? SuperstructureState.NET_FRONT : SuperstructureState.NET_BACK),
-                Commands.waitUntil(Controls.doNotScore.negate()),
+                // Commands.waitUntil(Controls.doNotScore.negate()),
                 new AlgaeOutake()
             ),
             alignCommand

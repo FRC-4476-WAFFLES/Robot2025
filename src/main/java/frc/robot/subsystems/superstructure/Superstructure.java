@@ -24,6 +24,7 @@ public class Superstructure extends SimpleWafflesMechanism {
     NET(98,1.3),
     NET_FRONT(185, 1.3),
     NET_BACK(260, 1.3),
+    NET_PREP(218, 1.3),
 
     NET_FRONT_CLEAR(218, 1.3),
     NET_FRONT_CLEAR_FINISHED(218, 0.4),

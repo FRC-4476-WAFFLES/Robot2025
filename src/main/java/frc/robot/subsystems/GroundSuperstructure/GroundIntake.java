@@ -110,7 +110,7 @@ public class GroundIntake extends SimpleWafflesMechanism {
         INTAKE_TOP(0, 0,5),
         INTAKE_TOP_SLOW(0, 0,0.5),
         SHIFT_RIGHT(1, 1,1),
-        PREPARE_HANDOFF(-3,3,5),
+        PREPARE_HANDOFF(-3,3,3),
         HANDOFF(3,-3,0),
         REST(0, 0,0),
         OUTAKE(-5,5,0),

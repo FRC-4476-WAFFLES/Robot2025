@@ -50,7 +50,7 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
                     currentState = GroundIntakeSuperstructureState.INDEXING_L1_STATE;
                 } else {
                     intake.setGroundIntakeSetpoint(GroundIntakeState.INTAKE_TOP);
-                    pivot.applySetpoint(GroundPivotPosition.DEPLOYED);
+                    pivot.applySetpoint(GroundPivotPosition.L1_INTAKE);
                 }
                 break;
             
