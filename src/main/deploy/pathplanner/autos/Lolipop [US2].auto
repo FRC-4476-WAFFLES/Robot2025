@@ -92,7 +92,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "8 to CS1"
+                  "pathName": "8 to LP2"
                 }
               },
               {
@@ -107,7 +107,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Auto Coral Intake"
+            "name": "Lolipop Intake"
           }
         },
         {
@@ -117,7 +117,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "CS1 to 7"
+                  "pathName": "LP2 to 6"
                 }
               },
               {
@@ -142,7 +142,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "7 to CS1"
+                  "pathName": "6 to CS1"
                 }
               },
               {
