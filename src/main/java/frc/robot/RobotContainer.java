@@ -430,7 +430,6 @@ public class RobotContainer {
     NamedCommands.registerCommand("Set Position Intake", 
       Commands.sequence(
         Commands.parallel(
-          new WaitUntilCommand(() -> DynamicPathing.isElevatorRetractionSafe()),
           new CoralOutake(),
           Commands.runOnce(() -> groundSuperstructure.handoffIntakeToggle())
         )

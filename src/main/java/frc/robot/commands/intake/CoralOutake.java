@@ -7,6 +7,8 @@ package frc.robot.commands.intake;
 import static edu.wpi.first.units.Units.Meters;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.PhysicalConstants;
@@ -19,6 +21,8 @@ public class CoralOutake extends Command {
   private final Intake intakeSubsystem = RobotContainer.intakeSubsystem;
   private double outtakeEndPosition = 0;
 
+  private Timer simTimer = new Timer();
+
   /** Creates a new CoralIntake. */
   public CoralOutake() {
     addRequirements(RobotContainer.intakeSubsystem);
@@ -30,6 +34,10 @@ public class CoralOutake extends Command {
     // Make sure the intake doesn't detect us as having loaded algae in this motion
     RobotContainer.intakeSubsystem.setNoAlgaeFlag(true);
     outtakeEndPosition = intakeSubsystem.getCurrentPosition() - OUTTAKE_POSITION_CHANGE;
+
+    // Sim
+    simTimer.reset();
+    simTimer.start();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -66,6 +74,11 @@ public class CoralOutake extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
+    if (simTimer.get() > 0.2 && RobotBase.isSimulation()) {
+      RobotContainer.telemetry.manipulatorCoralSimLoaded = false;
+      return true;
+    }
+
     return intakeSubsystem.getCurrentPosition() <= outtakeEndPosition || !intakeSubsystem.isCoralLoaded();
   }
 }
