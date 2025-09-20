@@ -10,6 +10,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -300,7 +301,8 @@ public class RobotContainer {
       )
     );
 
-    triggerHandoff.onTrue(new ExecuteHandoff());
+    // Only trigger handoff here in teleop
+    triggerHandoff.and(() -> DriverStation.isTeleop()).onTrue(new ExecuteHandoff());
 
     // Simulation
     if (RobotBase.isSimulation()) { 
@@ -436,6 +438,12 @@ public class RobotContainer {
           new WaitUntilCommand(() -> DynamicPathing.isElevatorRetractionSafe()),      
           Commands.runOnce(() -> superstructure.applySuperstructureState(SuperstructureState.HANDOFF_READY))
         )
+      )
+    );
+
+    NamedCommands.registerCommand("Lolipop Intake", 
+      Commands.sequence(
+        new WaitUntilCommand(() -> RobotContainer.intakeSubsystem.isCoralLoaded())
       )
     );
 
