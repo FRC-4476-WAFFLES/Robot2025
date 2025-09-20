@@ -433,15 +433,15 @@ public class RobotContainer {
     // ));
 
     NamedCommands.registerCommand("Set Position Intake", 
-      Commands.parallel(
-        new CoralOutake(),
-        Commands.runOnce(() -> groundSuperstructure.handoffIntakeToggle()),
-        Commands.sequence(
-          new WaitUntilCommand(() -> DynamicPathing.isElevatorRetractionSafe()),      
-          Commands.runOnce(() -> superstructure.applySuperstructureState(SuperstructureState.HANDOFF_READY)),
-          Commands.waitUntil(() -> triggerHandoff.getAsBoolean()),
-          new ExecuteHandoff()
-        )
+      Commands.sequence(
+        Commands.parallel(
+          new CoralOutake(),
+          Commands.runOnce(() -> groundSuperstructure.handoffIntakeToggle())
+        ),
+        new WaitUntilCommand(() -> DynamicPathing.isElevatorRetractionSafe()),      
+        Commands.runOnce(() -> superstructure.applySuperstructureState(SuperstructureState.HANDOFF_READY)),
+        Commands.waitUntil(() -> triggerHandoff.getAsBoolean()),
+        new ExecuteHandoff()
       )
     );
 
