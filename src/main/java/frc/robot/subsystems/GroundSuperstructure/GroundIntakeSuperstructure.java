@@ -41,9 +41,10 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
     protected void periodicImpl() {
         if (RobotContainer.isOperatorOverride) {
             intake.setGroundIntakeSetpoint(GroundIntakeState.OUTAKE); 
+            currentState = GroundIntakeSuperstructureState.STOWED;
             return;   
         }
-        
+
         if (statemachineOverrideFlag) {
             return;
         }

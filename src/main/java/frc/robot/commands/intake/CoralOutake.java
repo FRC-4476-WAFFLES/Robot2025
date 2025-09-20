@@ -84,6 +84,6 @@ public class CoralOutake extends Command {
     }
 
     return intakeSubsystem.getCurrentPosition() <= outtakeEndPosition || 
-      (!intakeSubsystem.isCoralLoaded() && RobotBase.isSimulation());
-  }
+      (!intakeSubsystem.isCoralLoaded());
+  } // && RobotBase.isSimulation()
 }

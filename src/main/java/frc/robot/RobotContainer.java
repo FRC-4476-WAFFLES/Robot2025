@@ -437,7 +437,7 @@ public class RobotContainer {
         Commands.parallel(
           new CoralOutake(),
           Commands.runOnce(() -> groundSuperstructure.handoffIntakeToggle())
-        ),
+        ).withTimeout(0.5),
         new WaitUntilCommand(() -> DynamicPathing.isElevatorRetractionSafe()),      
         Commands.runOnce(() -> superstructure.applySuperstructureState(SuperstructureState.HANDOFF_READY)),
         Commands.waitUntil(() -> triggerHandoff.getAsBoolean()),
