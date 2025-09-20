@@ -39,9 +39,15 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
 
     @Override
     protected void periodicImpl() {
+        if (RobotContainer.isOperatorOverride) {
+            intake.setGroundIntakeSetpoint(GroundIntakeState.OUTAKE); 
+            return;   
+        }
+        
         if (statemachineOverrideFlag) {
             return;
         }
+
 
         switch (currentState) {
             case INTAKE_L1_STATE:
@@ -87,6 +93,13 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
 
             case INTAKE_HANDOFF_STATE:
                 if (intake.isCoralLeft() || intake.isCoralRight() || intake.isCoralMid()) {
+                    if (intake.isCoralLeft() && intake.isCoralRight() && intake.isCoralMid()) {
+                        // We grabbed front on
+                        intake.setGroundIntakeSetpoint(GroundIntakeState.SHIFT_LEFT);
+                    } else {
+                        intake.setGroundIntakeSetpoint(GroundIntakeState.PREPARE_HANDOFF);
+                    }
+
                     if(intake.isCoralHandoffLoaded()){
                         pivot.applySetpoint(GroundPivotPosition.HANDOFF);
                         intake.setGroundIntakeSetpoint(GroundIntakeState.REST);
@@ -110,11 +123,6 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
                 break; 
 
             case EXECUTE_HANDOFF_STATE:
-                if (RobotContainer.isOperatorOverride) {
-                    intake.setGroundIntakeSetpoint(GroundIntakeState.OUTAKE); 
-                    return;   
-                }
-
                 pivot.applySetpoint(GroundPivotPosition.HANDOFF);
                 if(intake.isCoralHandoffLoaded() || intake.isCoralMid()){
                     if (RobotContainer.intakeSubsystem.isCoralLoaded()) {
@@ -134,7 +142,7 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
 
             case SPIT_OUT_STATE:
                 pivot.applySetpoint(GroundPivotPosition.DEPLOYED);
-                if (intake.isCoralLeft() || intake.isCoralRight() || intake.isCoralMid()) {
+                if (intake.isCoralLeft() || intake.isCoralRight() || intake.isCoralMid() || intake.isCoralHandoffLoaded()) {
                     intake.setGroundIntakeSetpoint(GroundIntakeState.SPIT_OUT);
                 } else {
                     currentState = GroundIntakeSuperstructureState.STOWED;

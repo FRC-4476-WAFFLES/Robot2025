@@ -20,6 +20,7 @@ public class CoralOutake extends Command {
 
   private final Intake intakeSubsystem = RobotContainer.intakeSubsystem;
   private double outtakeEndPosition = 0;
+  private double FUDGE_FACTOR = 1.4;
 
   private Timer simTimer = new Timer();
 
@@ -46,6 +47,9 @@ public class CoralOutake extends Command {
     // Spin wheels at same speed as robot back off
     var chassisSpeed = RobotContainer.driveSubsystem.getRobotChassisSpeeds();
     double wheelspeedMetersPerSecond = Math.hypot(chassisSpeed.vxMetersPerSecond, chassisSpeed.vyMetersPerSecond);
+    // Slight fudge
+    wheelspeedMetersPerSecond *= FUDGE_FACTOR;
+
     double wheelCircumference = 2 * Math.PI * PhysicalConstants.manipulatorWheelRadius.in(Meters);
     RobotContainer.intakeSubsystem.setIntakeSpeed(wheelspeedMetersPerSecond / wheelCircumference);
   }
@@ -79,6 +83,7 @@ public class CoralOutake extends Command {
       return true;
     }
 
-    return intakeSubsystem.getCurrentPosition() <= outtakeEndPosition || !intakeSubsystem.isCoralLoaded();
+    return intakeSubsystem.getCurrentPosition() <= outtakeEndPosition || 
+      (!intakeSubsystem.isCoralLoaded() && RobotBase.isSimulation());
   }
 }
