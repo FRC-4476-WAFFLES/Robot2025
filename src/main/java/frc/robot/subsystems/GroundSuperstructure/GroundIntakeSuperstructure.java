@@ -175,7 +175,8 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
 
     public boolean isHandoffHappening(){
         return currentState == GroundIntakeSuperstructureState.READY_HANDOFF_STATE ||
-        currentState == GroundIntakeSuperstructureState.EXECUTE_HANDOFF_STATE;
+        currentState == GroundIntakeSuperstructureState.EXECUTE_HANDOFF_STATE ||
+        (currentState == GroundIntakeSuperstructureState.INTAKE_HANDOFF_STATE && intake.isCoralHandoffLoaded());
     }
 
     public boolean isL1Ready(){

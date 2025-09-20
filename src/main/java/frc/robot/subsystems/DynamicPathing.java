@@ -162,7 +162,10 @@ public class DynamicPathing extends SubsystemBase {
         if (isRobotInRangeOfReefPathing()) {
             if (intakeSubsystem.isCoralLoaded()) {
                 return DynamicPathingSituation.REEF_CORAL;
-            } else if (!intakeSubsystem.isAlgaeLoaded()) {
+            } else if (
+                !intakeSubsystem.isAlgaeLoaded() && 
+                !RobotContainer.groundSuperstructure.isHandoffHappening()
+            ) {
                 return DynamicPathingSituation.REEF_ALGAE;
             }
         }

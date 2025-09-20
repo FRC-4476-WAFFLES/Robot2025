@@ -20,7 +20,7 @@ public class CoralOutake extends Command {
 
   private final Intake intakeSubsystem = RobotContainer.intakeSubsystem;
   private double outtakeEndPosition = 0;
-  private double FUDGE_FACTOR = 1.4;
+  private double FUDGE_FACTOR = 1.8;
 
   private Timer simTimer = new Timer();
 
