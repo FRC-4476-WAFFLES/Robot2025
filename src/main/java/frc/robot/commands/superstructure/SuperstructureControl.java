@@ -27,7 +27,7 @@ public class SuperstructureControl {
         return new FunctionalCommand(
             () -> {}, 
             () -> {
-                if (RobotContainer.isOperatorOverride || DriverStation.isAutonomous()) {
+                if (RobotContainer.isOperatorOverride) {
                     return;
                 }
 
@@ -65,7 +65,7 @@ public class SuperstructureControl {
         return new FunctionalCommand(
             () -> {}, 
             () -> {
-                if (RobotContainer.isOperatorOverride || DriverStation.isAutonomous()) {
+                if (RobotContainer.isOperatorOverride) {
                     return;
                 }
                 
@@ -101,8 +101,8 @@ public class SuperstructureControl {
             () -> {}, 
             () -> {
                 if (RobotContainer.intakeSubsystem.isCoralLoaded()) {
-                    RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.L2);
-                    RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.ZERO);
+                    RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.HANDOFF_CLEAR);
+                    RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.HANDOFF_CLEAR);
                 }
             }, 
             (interrupted) -> {

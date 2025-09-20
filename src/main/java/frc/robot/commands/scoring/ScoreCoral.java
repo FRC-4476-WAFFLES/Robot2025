@@ -248,8 +248,8 @@ public class ScoreCoral extends SequentialCommandGroup {
     Command scoreCommand = scoreCoralWithPath(new InstantCommand(), targetCoralPose, DynamicPathing.CORAL_PATH_END_SPEED);
 
     return Commands.sequence(
-      Commands.waitSeconds(ScoringConstants.AUTO_SCORE_WAIT_TIME),  
-      scoreCommand
+      scoreCommand,
+      Commands.waitSeconds(ScoringConstants.AUTO_SCORE_WAIT_TIME)
     );
   }
 }

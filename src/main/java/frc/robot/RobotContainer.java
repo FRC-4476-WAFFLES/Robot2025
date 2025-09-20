@@ -28,6 +28,7 @@ import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.ResetGyroHeading;
 import frc.robot.commands.intake.AlgaeOutake;
 import frc.robot.commands.intake.AxisIntakeControl;
+import frc.robot.commands.intake.CoralOutake;
 import frc.robot.commands.scoring.ScoreCoral;
 import frc.robot.commands.scoring.ScoreNet;
 import frc.robot.commands.superstructure.ApplySuperstructureState;
@@ -192,9 +193,8 @@ public class RobotContainer {
     dynamicPathingSubsystem.notRunningAction.and(Controls.algaeOut).whileTrue(
       new SequentialCommandGroup(
         new InstantCommand(() -> RobotContainer.superstructure.pivot.setIsThrowingAlgae(true)),
-        new ParallelRaceGroup(
-          new ApplySuperstructureState(SuperstructureState.SPIT_ALGAE),
-          new WaitCommand(0.45) // wait some amount of time ¯\_(ツ)_/¯
+        new ParallelCommandGroup(
+          new ApplySuperstructureState(SuperstructureState.SPIT_ALGAE)
         ),
         new AlgaeOutake()
       ).finallyDo(() -> {
@@ -429,8 +429,17 @@ public class RobotContainer {
 
     NamedCommands.registerCommand("Set Position Intake", 
       Commands.sequence(
-        new WaitUntilCommand(() -> DynamicPathing.isElevatorRetractionSafe()),
-        new ApplySuperstructureState(SuperstructureState.CORAL_INTAKE)
+        Commands.parallel(
+          new WaitUntilCommand(() -> DynamicPathing.isElevatorRetractionSafe()),
+          new CoralOutake(),
+          Commands.runOnce(() -> groundSuperstructure.handoffIntakeToggle())
+        )
+      )
+    );
+
+    NamedCommands.registerCommand("Auto Coral Intake", 
+      Commands.sequence(
+        new AlignToCoral(null, null, null)
       )
     );
 
@@ -442,6 +451,10 @@ public class RobotContainer {
     NamedCommands.registerCommand("Net Shot", Commands.defer(
       () -> dynamicPathingSubsystem.createScoreNetCommand(), DynamicPathing.actionCommandRequirements
     ));
+
+    NamedCommands.registerCommand("Set Coral Loaded", 
+      Commands.runOnce(() -> RobotContainer.intakeSubsystem.forceLoadCoral())
+    );
 
     NamedCommands.registerCommand("Net Shot Prep", Commands.parallel(
       Commands.sequence(

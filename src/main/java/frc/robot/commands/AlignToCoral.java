@@ -134,6 +134,10 @@ public class AlignToCoral extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
+      if (RobotContainer.groundSuperstructure.isHandoffReady()) {
+        return true;
+      }
+
       double robotX = RobotContainer.driveSubsystem.getRobotPose().getX();
   
       // Unwrap the Optional and return false if no alliance is available (or handle in some other way)

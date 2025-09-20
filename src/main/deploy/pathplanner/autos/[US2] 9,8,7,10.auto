@@ -5,6 +5,12 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "Set Coral Loaded"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [

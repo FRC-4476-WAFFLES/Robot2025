@@ -212,6 +212,16 @@ public class Intake extends SimpleWafflesMechanism {
         }
     }
 
+    public void forceLoadCoral() {
+        loadType = LoadType.CORAL;
+        manipulatorLoaded = true;
+
+        // sim
+        if (RobotBase.isSimulation()) {
+            RobotContainer.telemetry.manipulatorCoralSimLoaded = true;
+        }
+    }
+
     /**
      * Is algae loaded in the manipulator
      * @return a boolean
