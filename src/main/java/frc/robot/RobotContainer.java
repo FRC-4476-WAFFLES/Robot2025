@@ -99,6 +99,8 @@ public class RobotContainer {
     Controls.operatorController::getLeftTriggerAxis
   );
 
+  Trigger triggerHandoff;
+
   /** The static entry point for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure trigger bindings
@@ -147,7 +149,7 @@ public class RobotContainer {
     Trigger algaeGroundIntakeActive = new Trigger(() -> isGroundIntakingAlgae);
 
     Trigger L1Loaded = new Trigger(() -> groundSuperstructure.isL1Ready());
-    Trigger triggerHandoff = new Trigger(() -> groundSuperstructure.isHandoffReady() && !intakeSubsystem.isAlgaeLoaded() && !intakeSubsystem.isCoralLoaded());
+    triggerHandoff = new Trigger(() -> groundSuperstructure.isHandoffReady() && !intakeSubsystem.isAlgaeLoaded() && !intakeSubsystem.isCoralLoaded());
 
     // Toggle operator override
     Controls.operatorController.start().onTrue(
@@ -436,7 +438,9 @@ public class RobotContainer {
         Commands.runOnce(() -> groundSuperstructure.handoffIntakeToggle()),
         Commands.sequence(
           new WaitUntilCommand(() -> DynamicPathing.isElevatorRetractionSafe()),      
-          Commands.runOnce(() -> superstructure.applySuperstructureState(SuperstructureState.HANDOFF_READY))
+          Commands.runOnce(() -> superstructure.applySuperstructureState(SuperstructureState.HANDOFF_READY)),
+          Commands.waitUntil(() -> triggerHandoff.getAsBoolean()),
+          new ExecuteHandoff()
         )
       )
     );
