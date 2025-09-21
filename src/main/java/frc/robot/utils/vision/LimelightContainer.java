@@ -2,15 +2,17 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.utils;
+package frc.robot.utils.vision;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import com.ctre.phoenix6.Utils;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
@@ -20,7 +22,9 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.data.Constants.VisionConstants;
 import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.utils.LimelightHelpers.RawFiducial;
+import frc.robot.utils.vision.LimelightHelpers.PoseEstimate;
+import frc.robot.utils.vision.LimelightHelpers.RawFiducial;
+import frc.robot.utils.vision.TagOdometry.TagPoseEstimate;
 
 /** Encapsulates the logic for megatag based localization with a limelight */
 public class LimelightContainer {
@@ -35,27 +39,28 @@ public class LimelightContainer {
     private boolean isAlive = false;
 
     private final NetworkTable softwareTable = inst.getTable("SoftwareInfo");
+    private final NetworkTable limelightTable;
     private final StructPublisher<Pose3d> mt1NT;
-    private final StructPublisher<Pose3d> mt2NT;
+    private final IntegerPublisher tagCount;
     
 
     // Timestamp deduplication
     private double lastMT1Timestamp = -1;
-    private double lastMT2Timestamp = -1;
 
     public LimelightContainer(String name, DriveSubsystem subsystem) {
         this.limelightName = Objects.requireNonNull(name, "Limelight name cannot be null");
         this.driveSubsystem = Objects.requireNonNull(subsystem, "DriveSubsystem cannot be null");
         
-        mt1NT = softwareTable.getStructTopic(limelightName + " MT1", Pose3d.struct).publish();
-        mt2NT = softwareTable.getStructTopic(limelightName + " MT2", Pose3d.struct).publish();
+        limelightTable = softwareTable.getSubTable(limelightName);
+        mt1NT = limelightTable.getStructTopic("MT1 Estimate", Pose3d.struct).publish();
+        tagCount = limelightTable.getIntegerTopic("tagCount").publish();
     }
     
     /**
      * Call every periodic loop to update odometry with vision reported poses. 
      * LimelightHelpers.Flush() or equivalent must be called after all limelights have run update() 
      */
-    public void update() {
+    public Optional<TagPoseEstimate> update() {
         // Update connection status
         double heartBeat = LimelightHelpers.getLimelightNTDouble(limelightName, "hb");
         if (lastHeartbeatValue != heartBeat) {
@@ -65,54 +70,14 @@ public class LimelightContainer {
         isAlive = (Timer.getFPGATimestamp() - lastHeartbeatTime) < VisionConstants.LL_HEARTBEAT_MIN_FREQ;
 
         // Skip if disconnected
-        if (!isAlive) return;
+        if (!isAlive) return Optional.empty();
 
         // Update valid tag IDs
         LimelightHelpers.SetFiducialIDFiltersOverride(limelightName, VisionHelpers.getValidTagIDs());
 
         // Skip if no tags visible
         if (!LimelightHelpers.getTV(limelightName)) {
-            updateRobotOrientation();
-            return;
-        }
-
-        // Process MegaTag2
-        LimelightHelpers.PoseEstimate megatag2Result = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelightName);
-        if (megatag2Result != null && megatag2Result.tagCount > 0) {
-            // Skip duplicates
-            if (megatag2Result.timestampSeconds > lastMT2Timestamp) {
-
-                if (isValidPose(megatag2Result.pose)) {
-                    // Validate Z-axis
-                    Pose3d pose3d = LimelightHelpers.getBotPose3d_wpiBlue(limelightName);
-                    if (Math.abs(pose3d.getZ()) <= VisionConstants.MAX_Z_ERROR) {
-                        // Single-tag validation
-                        boolean passValidation = true;
-                        if (megatag2Result.tagCount == 1) {
-                            passValidation = isAmbiguityAcceptable(megatag2Result.rawFiducials) &&
-                                           megatag2Result.avgTagArea >= VisionConstants.MIN_TAG_AREA;
-                            
-                            // For small tags, also check yaw difference
-                            if (passValidation && megatag2Result.avgTagArea < VisionConstants.MIN_TAG_AREA_FOR_YAW_CHECK) {
-                                passValidation = isYawDifferenceAcceptable(megatag2Result.pose);
-                            }
-                        }
-                        
-                        if (passValidation) {
-                            mt2NT.set(pose3d);
-
-                            var standardDeviations = VisionHelpers.getEstimationStdDevsLimelightMT2(megatag2Result.rawFiducials);
-                            if (standardDeviations != null && standardDeviations.get(0, 0) > 0) {
-                                driveSubsystem.addVisionMeasurement(
-                                    megatag2Result.pose,
-                                    Utils.fpgaToCurrentTime(megatag2Result.timestampSeconds),
-                                    standardDeviations);
-                                lastMT2Timestamp = megatag2Result.timestampSeconds;
-                            }
-                        }
-                    }
-                }
-            }
+            return Optional.empty();
         }
 
         // Process MegaTag1
@@ -120,7 +85,6 @@ public class LimelightContainer {
         if (megatag1Result != null && megatag1Result.tagCount > 0) {
             // Skip duplicates
             if (megatag1Result.timestampSeconds > lastMT1Timestamp) {
-
                 if (isValidPose(megatag1Result.pose)) {
                     // Validate Z-axis
                     Pose3d pose3d = LimelightHelpers.getBotPose3d_wpiBlue(limelightName);
@@ -139,39 +103,31 @@ public class LimelightContainer {
                         
                         if (passValidation) {
                             mt1NT.set(pose3d);
+                            tagCount.set(megatag1Result.tagCount);
 
-                            var estimationStdDevs = VisionHelpers.getEstimationStdDevsLimelight(megatag1Result.pose, megatag1Result.rawFiducials);
-                            if (estimationStdDevs != null) {
-                                driveSubsystem.addVisionMeasurement(
-                                    megatag1Result.pose,
-                                    Utils.fpgaToCurrentTime(megatag1Result.timestampSeconds),
-                                    estimationStdDevs);
-                                lastMT1Timestamp = megatag1Result.timestampSeconds;
-                            }
+        // var estimationStdDevs = VisionHelpers.getEstimationStdDevsLimelight(megatag1Result.pose, megatag1Result.rawFiducials);
+        // if (estimationStdDevs != null) {
+        //     driveSubsystem.addVisionMeasurement(
+        //         megatag1Result.pose,
+        //         Utils.fpgaToCurrentTime(megatag1Result.timestampSeconds),
+        //         estimationStdDevs);
+        //     lastMT1Timestamp = megatag1Result.timestampSeconds;
+        // }
+
+                            // TODO: Calculate pose, solve based on fused angle
+                            return Optional.of(new TagPoseEstimate(
+                                pose,
+                                heartBeat,
+                                null,
+                                0
+                            ));
                         }
                     }
                 }
             }
         }
 
-        updateRobotOrientation();
-    }
-    
-    /**
-     * Updates robot orientation and IMU mode for the limelight
-     */
-    private void updateRobotOrientation() {
-        if (DriverStation.isEnabled()) {
-            if (driveSubsystem.notRotating()) {
-                onSeeding();
-            } else {
-                onMoving();
-            }
-            LimelightHelpers.SetRobotOrientation_NoFlush(limelightName, driveSubsystem.getRobotPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
-        } else {
-            onSeeding();
-            LimelightHelpers.SetRobotOrientation_NoFlush(limelightName, driveSubsystem.getRobotPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
-        }
+        return Optional.empty();
     }
 
     /**

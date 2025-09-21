@@ -85,6 +85,7 @@ public final class Constants {
   /* Code */
   public static class CodeConstants {
     public static final double PERIODIC_LOOP_TIME = 0.02;
+    public static final double POSE_HISTORY_LOOKBACK_TIME = 1; // s
 
     public static final int SUBSYSTEM_NT_UPDATE_RATE = 20; // How many times a second subsystems will publish to NT. Reduce if performance is suffering.
 

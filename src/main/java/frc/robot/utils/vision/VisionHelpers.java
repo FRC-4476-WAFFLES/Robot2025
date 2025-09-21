@@ -1,4 +1,4 @@
-package frc.robot.utils;
+package frc.robot.utils.vision;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.data.Constants.VisionConstants;
-import frc.robot.utils.LimelightHelpers.RawFiducial;
+import frc.robot.utils.vision.LimelightHelpers.RawFiducial;
 
 public class VisionHelpers {
 

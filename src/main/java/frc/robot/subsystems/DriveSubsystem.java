@@ -38,7 +38,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.VisionConstants;
 import frc.robot.data.TunerConstants.TunerSwerveDrivetrain;
-import frc.robot.utils.LimelightContainer;
+import frc.robot.utils.vision.LimelightContainer;
+import frc.robot.utils.vision.TagOdometry;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -67,13 +68,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
     private final DoublePublisher speedNT = driveStats.getDoubleTopic("Speed").publish();
 
     /* Vision */
-    // Since odometry is already handled in the drive subsystem, might as well handle vision here too
-    // private Vision visionLeft = new Vision(frc.robot.data.VisionConstants.kCameraLeft,
-    //     frc.robot.data.VisionConstants.kRobotToLeftCamera);
-    // private Vision visionRight = new Vision(frc.robot.data.VisionConstants.kCameraRight,
-    //     frc.robot.data.VisionConstants.kRobotToRightCamera);
-    public final LimelightContainer leftLimelight = new LimelightContainer(VisionConstants.LIMELIGHT_NAME_L, this);
-    public final LimelightContainer rightLimelight = new LimelightContainer(VisionConstants.LIMELIGHT_NAME_R, this);
+    public final TagOdometry vision = new TagOdometry();
 
     /* Swerve request used for autos */
     private final SwerveRequest.ApplyRobotSpeeds autoRequest = new SwerveRequest.ApplyRobotSpeeds()
@@ -238,9 +233,6 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
     */
     private void setup() {
         configurePathPlanner();
-        // Sets IMU mode on limelight
-        leftLimelight.onSeeding();
-        rightLimelight.onSeeding();
     }
 
     /**
@@ -316,20 +308,7 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
             return;
         }
 
-        // Updates odometry from vision.
-        // Does not flush networktables.
-        leftLimelight.update();
-        rightLimelight.update();
-
-        // Flush networktables explicitly once to avoid network latency
-        // Do not flush once per limelight, since flushing NT is ratelimited to once every 10ms
-        // With one or more cameras each flushing periodically, you start seeing loop overruns
-        NetworkTableInstance.getDefault().flush();
-
-        // Provide vision fault warning
-        RobotContainer.telemetry.setVisionFault(
-            !leftLimelight.isAlive() || !rightLimelight.isAlive()
-        );
+        vision.update();
     }
 
     /**
@@ -399,13 +378,13 @@ public class DriveSubsystem extends TunerSwerveDrivetrain implements Subsystem {
                 && Math.abs(speeds.vyMetersPerSecond) < 1
                 && Math.abs(speeds.omegaRadiansPerSecond) < 1;
     }
-
+    
     /**
      * Checks if both limelights see a tag, used for pit debugging
      * @return true if both limelights see a tag
      */
     public boolean limelightsSeeTag() {
-        return leftLimelight.canSeeTag() && rightLimelight.canSeeTag();
+        return vision.limelightsSeeTag();
     }
 
     /**

@@ -1,4 +1,4 @@
-package frc.robot.utils;
+package frc.robot.utils.vision;
 
 import java.io.IOException;
 import java.util.Optional;
