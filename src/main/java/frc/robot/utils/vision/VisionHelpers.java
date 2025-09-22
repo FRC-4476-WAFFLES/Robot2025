@@ -5,6 +5,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -13,6 +14,7 @@ import frc.robot.utils.vision.LimelightHelpers.PoseEstimate;
 import frc.robot.utils.vision.LimelightHelpers.RawFiducial;
 
 public class VisionHelpers {
+    private static final double[] DEFAULT_STDDEVS = new double[12];
 
     /**
      * Depending on the state of the robot, get which tags to localize off of 
@@ -33,14 +35,14 @@ public class VisionHelpers {
      * Calculates the standard deviations for a given limelight pose estimate
      * For use with Megatag 1
      */
-    public static Matrix<N3, N1> getEstimationStdDevsMegatag(PoseEstimate limelightPoseEstimate) {
+    public static Matrix<N3, N1> calculateStdDevsMegatag(PoseEstimate limelightPoseEstimate) {
         Matrix<N3, N1> estStdDevs;
 
         if (limelightPoseEstimate.tagCount == 1) {
             estStdDevs = VisionConstants.defaultkSingleTagStdDevsMT1;
 
             // Reduce the contribution of ambiguous tags
-            estStdDevs.times(1 / (1 - limelightPoseEstimate.rawFiducials[0].ambiguity));
+            estStdDevs.times(getMegatagEstimateQuality(limelightPoseEstimate));
         } else {
             // If multiple tags are visible, use different (lower) deviations
             estStdDevs = VisionConstants.defaultMultiTagStdDevsMT1;
@@ -60,7 +62,7 @@ public class VisionHelpers {
      * Calculates the standard deviations for a given limelight pose estimate being fused with gyro orientation
      * For use with Megatag 1 + Gyro estimates
      */
-    public static Matrix<N3, N1> getEstimationStdDevsGyroFusion(PoseEstimate limelightPoseEstimate) {
+    public static Matrix<N3, N1> calculateStdDevsGyroFusion(PoseEstimate limelightPoseEstimate) {
         Matrix<N3, N1> estStdDevs = VisionConstants.defaultStdDevsFusedGyroEstimate;
 
         if (limelightPoseEstimate.tagCount == 0) {
@@ -71,5 +73,13 @@ public class VisionHelpers {
         estStdDevs = estStdDevs.times(1 + (limelightPoseEstimate.avgTagDist * limelightPoseEstimate.avgTagDist / 50));
 
         return estStdDevs;
+    }
+
+    public static double[] getAutomaticStandardDeviations(String limelightName) {
+        return NetworkTableInstance.getDefault().getTable(limelightName).getEntry("stddevs").getDoubleArray(DEFAULT_STDDEVS);
+    }
+
+    public static double getMegatagEstimateQuality(PoseEstimate limelightPoseEstimate) {
+        return 1 / (1 - limelightPoseEstimate.rawFiducials[0].ambiguity);
     }
 }

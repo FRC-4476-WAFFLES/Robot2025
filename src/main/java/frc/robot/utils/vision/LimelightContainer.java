@@ -8,9 +8,14 @@ import java.util.Objects;
 import java.util.Optional;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -29,6 +34,8 @@ public class LimelightContainer {
 
     private String limelightName;
 
+    private double[] rawStandardDeviationArray = new double[12];
+
     // Connection monitoring
     private double lastHeartbeatValue = -1;
     private double lastHeartbeatTime = -1;
@@ -41,6 +48,8 @@ public class LimelightContainer {
     private final StructPublisher<Pose2d> gyroFusedAcceptedNT;
     private final IntegerPublisher tagCountNT;
     private final StringPublisher chosenTypeNT;
+    private final DoubleArrayPublisher stddevFusedNT;
+    private final DoubleArrayPublisher stddevMegatagNT;
 
     // Timestamp deduplication
     private double lastMT1Timestamp = -1;
@@ -56,6 +65,9 @@ public class LimelightContainer {
         gyroFusedAcceptedNT = limelightTable.getStructTopic("Gyro Fused", Pose2d.struct).publish();
 
         chosenTypeNT = limelightTable.getStringTopic("Estimate Type").publish();
+
+        stddevFusedNT = limelightTable.getDoubleArrayTopic("Fused STDDevs").publish();
+        stddevMegatagNT = limelightTable.getDoubleArrayTopic("Megatag STDDevs").publish();
     }
     
     /**
@@ -73,6 +85,9 @@ public class LimelightContainer {
 
         // Skip if disconnected
         if (!isAlive) return Optional.empty();
+
+        // Get latest standard deviations from cameras
+        rawStandardDeviationArray = VisionHelpers.getAutomaticStandardDeviations(limelightName);
 
         // Update valid tag IDs
         LimelightHelpers.SetFiducialIDFiltersOverride(limelightName, VisionHelpers.getValidTagIDs());
@@ -150,9 +165,27 @@ public class LimelightContainer {
         //     }
         // }
 
-        var estimationStdDevs = VisionHelpers.getEstimationStdDevsMegatag(megatagResult);
-        var odometryAtTimestamp = RobotContainer.telemetry.getPoseAtTimestamp(megatagResult.timestampSeconds);
+        // Calculate standard deviations
+        Matrix<N3, N1> estimationStdDevs;
+        if (VisionConstants.USE_AUTOMATIC_STANDARD_DEVIATIONS) {
+            double quality = VisionHelpers.getMegatagEstimateQuality(megatagResult);
 
+            double xStd = rawStandardDeviationArray[VisionConstants.kMegatag1XStdDevIndex] * quality;
+            double yStd = rawStandardDeviationArray[VisionConstants.kMegatag1YStdDevIndex] * quality;
+            double xyStd = Math.max(xStd, yStd);
+
+            double yawStd = rawStandardDeviationArray[VisionConstants.kMegatag1YawStdDevIndex] * quality;
+
+            estimationStdDevs = VecBuilder.fill(xyStd, xyStd, yawStd);
+        } else {
+            estimationStdDevs = VisionHelpers.calculateStdDevsMegatag(megatagResult);
+        }
+        // Log stddevs
+        stddevMegatagNT.set(new double[] {estimationStdDevs.get(0, 0), estimationStdDevs.get(1, 0), estimationStdDevs.get(2, 0)});
+
+
+
+        var odometryAtTimestamp = RobotContainer.telemetry.getPoseAtTimestamp(megatagResult.timestampSeconds);
         // Edgecase handling for if pose buffer hasn't been filled yet or the megatagResult is extremely out of date 
         if (odometryAtTimestamp.isEmpty()) {
             return Optional.empty();
@@ -205,7 +238,18 @@ public class LimelightContainer {
                             .rotateBy(odometryAtTimestamp.get().getRotation())),
                 odometryAtTimestamp.get().getRotation());
 
-        var estimationStdDevs = VisionHelpers.getEstimationStdDevsGyroFusion(megatagResult);
+
+        // Calculate standard deviations
+        Matrix<N3, N1> estimationStdDevs;
+        if (VisionConstants.USE_AUTOMATIC_STANDARD_DEVIATIONS) {
+            double xStd = rawStandardDeviationArray[VisionConstants.kMegatag1XStdDevIndex];
+            double yStd = rawStandardDeviationArray[VisionConstants.kMegatag1YStdDevIndex];
+            double xyStd = Math.max(xStd, yStd);
+            estimationStdDevs = VecBuilder.fill(xyStd, xyStd, VisionConstants.LARGE_VARIANCE);
+        } else {
+            estimationStdDevs = VisionHelpers.calculateStdDevsGyroFusion(megatagResult);
+        }
+        stddevFusedNT.set(new double[] {estimationStdDevs.get(0, 0), estimationStdDevs.get(1, 0), estimationStdDevs.get(2, 0)});
 
         return Optional.of(new TagPoseEstimate(
             calculatedPose,

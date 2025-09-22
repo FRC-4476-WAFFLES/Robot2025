@@ -7,8 +7,11 @@ package frc.robot.utils.vision;
 import java.util.Optional;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.networktables.NetworkTable;
@@ -86,6 +89,7 @@ public class TagOdometry {
         );
     }
 
+    // Directly taken from FRC 254's 2025 codebase
     private Optional<TagPoseEstimate> combineEstimates(TagPoseEstimate a, TagPoseEstimate b) {
         // Ensure A is the most recent pose
         if (a.timestampSeconds < b.timestampSeconds) {
@@ -102,15 +106,55 @@ public class TagOdometry {
         Pose2d poseA = a.pose;
         Pose2d poseB = b.pose.transformBy(b_T_a);
 
-        // Perform inverse variance weighting
-        return Optional.of(
-            new TagPoseEstimate(
-                pose, 
-                0, 
-                null, 
-                0
-            )
-        );
+        // Inverse‑variance weighting
+        var varianceA =
+                a.standardDeviation.elementTimes(a.standardDeviation);
+        var varianceB =
+                b.standardDeviation.elementTimes(b.standardDeviation);
+
+        Rotation2d fusedHeading = poseB.getRotation();
+        if (varianceA.get(2, 0) < VisionConstants.LARGE_VARIANCE
+                && varianceB.get(2, 0) < VisionConstants.LARGE_VARIANCE) {
+            fusedHeading =
+                    new Rotation2d(
+                            poseA.getRotation().getCos() / varianceA.get(2, 0)
+                                    + poseB.getRotation().getCos() / varianceB.get(2, 0),
+                            poseA.getRotation().getSin() / varianceA.get(2, 0)
+                                    + poseB.getRotation().getSin() / varianceB.get(2, 0));
+        }
+
+        double weightAx = 1.0 / varianceA.get(0, 0);
+        double weightAy = 1.0 / varianceA.get(1, 0);
+        double weightBx = 1.0 / varianceB.get(0, 0);
+        double weightBy = 1.0 / varianceB.get(1, 0);
+
+        Pose2d fusedPose =
+                new Pose2d(
+                        new Translation2d(
+                                (poseA.getTranslation().getX() * weightAx
+                                                + poseB.getTranslation().getX() * weightBx)
+                                        / (weightAx + weightBx),
+                                (poseA.getTranslation().getY() * weightAy
+                                                + poseB.getTranslation().getY() * weightBy)
+                                        / (weightAy + weightBy)),
+                        fusedHeading);
+
+        Matrix<N3, N1> fusedStdDev =
+                VecBuilder.fill(
+                        Math.sqrt(1.0 / (weightAx + weightBx)),
+                        Math.sqrt(1.0 / (weightAy + weightBy)),
+                        Math.sqrt(1.0 / (1.0 / varianceA.get(2, 0) + 1.0 / varianceB.get(2, 0))));
+
+        int numTags = a.numTags + b.numTags;
+        double time = b.timestampSeconds;
+
+        return Optional.of(new TagPoseEstimate(
+            fusedPose, 
+            time, 
+            fusedStdDev, 
+            numTags,
+            a.odometryAtTimestamp
+        ));
     }
 
     /**

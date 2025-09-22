@@ -115,6 +115,9 @@ public final class Constants {
     // Number of frames to skip processing while disabled to prevent overheating
     public static final int LIMELIGHT_DISABLED_THROTTLE = 80;
 
+    // Use standard deviations reported by the limelight as opposed to hand calculating them
+    public static final boolean USE_AUTOMATIC_STANDARD_DEVIATIONS = true; 
+
     public static final int SEDING_LL_IMU_MODE = 1; // Enables seeding
     public static final int MOVING_LL_IMU_MODE = 2; // Uses internal IMU
 
@@ -149,6 +152,11 @@ public final class Constants {
 
     // Limelights are considered disconnected if their heartbeat value is older than this many seconds
     public static final double LL_HEARTBEAT_MIN_FREQ = 0.5;
+
+    // Used to read from the raw stddevs array returned by a limelight
+    public static final int kMegatag1XStdDevIndex = 0;
+    public static final int kMegatag1YStdDevIndex = 1;
+    public static final int kMegatag1YawStdDevIndex = 5;
   }
 
   /* Field */
