@@ -22,6 +22,7 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.RobotContainer;
 import frc.robot.data.Constants.VisionConstants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.utils.vision.LimelightHelpers.PoseEstimate;
@@ -42,8 +43,11 @@ public class LimelightContainer {
 
     private final NetworkTable softwareTable = inst.getTable("SoftwareInfo");
     private final NetworkTable limelightTable;
-    private final StructPublisher<Pose3d> mt1NT;
-    private final IntegerPublisher tagCount;
+    private final StructPublisher<Pose3d> megatagRawNT;
+    private final StructPublisher<Pose2d> megatagAcceptedNT;
+    private final StructPublisher<Pose2d> gyroFusedAcceptedNT;
+    private final IntegerPublisher tagCountNT;
+    private final StringPublisher chosenTypeNT;
     
 
     // Timestamp deduplication
@@ -54,8 +58,13 @@ public class LimelightContainer {
         this.driveSubsystem = Objects.requireNonNull(subsystem, "DriveSubsystem cannot be null");
         
         limelightTable = softwareTable.getSubTable(limelightName);
-        mt1NT = limelightTable.getStructTopic("MT1 Estimate", Pose3d.struct).publish();
-        tagCount = limelightTable.getIntegerTopic("tagCount").publish();
+        megatagRawNT = limelightTable.getStructTopic("MT1 Raw", Pose3d.struct).publish();
+        tagCountNT = limelightTable.getIntegerTopic("Tag Count Raw").publish();
+
+        megatagAcceptedNT = limelightTable.getStructTopic("Megatag Accepted", Pose2d.struct).publish();
+        gyroFusedAcceptedNT = limelightTable.getStructTopic("Gyro Fused", Pose2d.struct).publish();
+
+        chosenTypeNT = limelightTable.getStringTopic("Estimate Type").publish();
     }
     
     /**
@@ -91,47 +100,81 @@ public class LimelightContainer {
                     // Validate Z-axis
                     Pose3d pose3d = LimelightHelpers.getBotPose3d_wpiBlue(limelightName);
                     if (Math.abs(pose3d.getZ()) <= VisionConstants.MAX_Z_ERROR) {
-                        // Single-tag validation
-                        boolean passValidation = true;
-                        if (megatag1Result.tagCount == 1) {
-                            passValidation = isAmbiguityAcceptable(megatag1Result.rawFiducials) &&
-                                           megatag1Result.avgTagArea >= VisionConstants.MIN_TAG_AREA;
-                            
-                            // For small tags, also check yaw difference
-                            if (passValidation && megatag1Result.avgTagArea < VisionConstants.MIN_TAG_AREA_FOR_YAW_CHECK) {
-                                passValidation = isYawDifferenceAcceptable(megatag1Result.pose);
-                            }
+                        megatagRawNT.set(pose3d);
+                        tagCountNT.set(megatag1Result.tagCount);
+
+                        var megatagEstimate = filterMegatagEstimate(megatag1Result);
+                        var gyroEstimate = calculateGyroEstimate(megatag1Result);
+                              
+                        
+                        if (megatagEstimate.isPresent()) {
+                            megatagAcceptedNT.set(megatagEstimate.get().pose());
+                        }
+                        if (gyroEstimate.isPresent()) {
+                            gyroFusedAcceptedNT.set(gyroEstimate.get().pose());
                         }
                         
-                        if (passValidation) {
-                            mt1NT.set(pose3d);
-                            tagCount.set(megatag1Result.tagCount);
-
-        // var estimationStdDevs = VisionHelpers.getEstimationStdDevsLimelight(megatag1Result.pose, megatag1Result.rawFiducials);
-        // if (estimationStdDevs != null) {
-        //     driveSubsystem.addVisionMeasurement(
-        //         megatag1Result.pose,
-        //         Utils.fpgaToCurrentTime(megatag1Result.timestampSeconds),
-        //         estimationStdDevs);
-        //     lastMT1Timestamp = megatag1Result.timestampSeconds;
-        // }
-
-                            
-
-                            // TODO: Calculate pose, solve based on fused angle
-                            return Optional.of(new TagPoseEstimate(
-                                pose,
-                                heartBeat,
-                                null,
-                                0
-                            ));
+                        if (megatagEstimate.isPresent()) {
+                            chosenTypeNT.set("MEGATAG");
+                            return megatagEstimate;
+                        } else if (gyroEstimate.isPresent()) {
+                            chosenTypeNT.set("GYRO");
+                            return gyroEstimate;
                         }
+                        chosenTypeNT.set("NONE");
                     }
                 }
             }
         }
 
         return Optional.empty();
+    }
+
+    private Optional<TagPoseEstimate> filterMegatagEstimate(PoseEstimate megatagResult) {
+        // Single-tag validation
+        if (megatagResult.tagCount == 1) {
+            if (!isAmbiguityAcceptable(megatagResult.rawFiducials)) {
+                return Optional.empty();
+            }
+
+            if (megatagResult.avgTagArea < VisionConstants.MIN_TAG_AREA_SINGLE_TAG) {
+                return Optional.empty();
+            }
+            
+            // For small tags, also check yaw difference
+            if (megatagResult.avgTagArea < VisionConstants.MIN_TAG_AREA_FOR_YAW_CHECK) {
+                if (!isYawDifferenceAcceptable(megatagResult)) {
+                    return Optional.empty();   
+                }
+            }
+        }
+
+        // If not disabled, ensure tag is within a certain distance
+        // if (!DriverStation.isDisabled()) {
+        //     if (
+        //         megatagResult.pose.minus(driveSubsystem.getRobotPose()).getTranslation().getNorm() 
+        //         < VisionConstants.MEGATAG1_MAX_DISTANCE_THRESHOLD
+        //     ) {
+        //         return Optional.empty();   
+        //     }
+        // }
+
+        var estimationStdDevs = VisionHelpers.getEstimationStdDevsLimelight(megatagResult);
+
+
+        return Optional.of(new TagPoseEstimate(
+            megatagResult.pose,
+            megatagResult.timestampSeconds,
+            estimationStdDevs,
+            megatagResult.tagCount
+        ));
+    }
+
+    private Optional<TagPoseEstimate> calculateGyroEstimate(PoseEstimate megatagResult) {
+        // Prefer megatag 1 when more than one tag is visible
+        if (megatagResult.tagCount > 1) {
+            return Optional.empty();
+        }
     }
 
     /**
@@ -215,13 +258,17 @@ public class LimelightContainer {
     /**
      * Checks if the yaw difference between vision and odometry is acceptable for small tags
      * @param visionPose The pose estimate from vision
+     * @param timestamp the timestamp of the vision estimate for latency compensation
      * @return true if yaw difference is below threshold, false otherwise
      */
-    private boolean isYawDifferenceAcceptable(Pose2d visionPose) {
-        Pose2d odometryPose = driveSubsystem.getRobotPose();
-        
+    private boolean isYawDifferenceAcceptable(PoseEstimate visionPose) {
+        var odometryPose = RobotContainer.telemetry.getPoseAtTimestamp(visionPose.timestampSeconds);
+        if (odometryPose.isEmpty()) {
+            return false;
+        }
+
         double yawDifference = Math.abs(MathUtil.angleModulus(
-            odometryPose.getRotation().getRadians() - visionPose.getRotation().getRadians()
+            odometryPose.get().getRotation().getRadians() - visionPose.pose.getRotation().getRadians()
         ));
         
         return Math.toDegrees(yawDifference) <= VisionConstants.MAX_YAW_DIFFERENCE_DEG;
