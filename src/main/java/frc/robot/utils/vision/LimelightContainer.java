@@ -7,24 +7,18 @@ package frc.robot.utils.vision;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.photonvision.PhotonPoseEstimator;
-
-import com.ctre.phoenix6.Utils;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.networktables.StructPublisher;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.VisionConstants;
-import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.utils.vision.LimelightHelpers.PoseEstimate;
 import frc.robot.utils.vision.LimelightHelpers.RawFiducial;
 import frc.robot.utils.vision.TagOdometry.TagPoseEstimate;
@@ -34,7 +28,6 @@ public class LimelightContainer {
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
 
     private String limelightName;
-    private DriveSubsystem driveSubsystem;
 
     // Connection monitoring
     private double lastHeartbeatValue = -1;
@@ -48,14 +41,12 @@ public class LimelightContainer {
     private final StructPublisher<Pose2d> gyroFusedAcceptedNT;
     private final IntegerPublisher tagCountNT;
     private final StringPublisher chosenTypeNT;
-    
 
     // Timestamp deduplication
     private double lastMT1Timestamp = -1;
 
-    public LimelightContainer(String name, DriveSubsystem subsystem) {
+    public LimelightContainer(String name) {
         this.limelightName = Objects.requireNonNull(name, "Limelight name cannot be null");
-        this.driveSubsystem = Objects.requireNonNull(subsystem, "DriveSubsystem cannot be null");
         
         limelightTable = softwareTable.getSubTable(limelightName);
         megatagRawNT = limelightTable.getStructTopic("MT1 Raw", Pose3d.struct).publish();
@@ -159,14 +150,20 @@ public class LimelightContainer {
         //     }
         // }
 
-        var estimationStdDevs = VisionHelpers.getEstimationStdDevsLimelight(megatagResult);
+        var estimationStdDevs = VisionHelpers.getEstimationStdDevsMegatag(megatagResult);
+        var odometryAtTimestamp = RobotContainer.telemetry.getPoseAtTimestamp(megatagResult.timestampSeconds);
 
+        // Edgecase handling for if pose buffer hasn't been filled yet or the megatagResult is extremely out of date 
+        if (odometryAtTimestamp.isEmpty()) {
+            return Optional.empty();
+        }
 
         return Optional.of(new TagPoseEstimate(
             megatagResult.pose,
             megatagResult.timestampSeconds,
             estimationStdDevs,
-            megatagResult.tagCount
+            megatagResult.tagCount,
+            odometryAtTimestamp.get()
         ));
     }
 
@@ -175,6 +172,48 @@ public class LimelightContainer {
         if (megatagResult.tagCount > 1) {
             return Optional.empty();
         }
+
+        var odometryAtTimestamp = RobotContainer.telemetry.getPoseAtTimestamp(megatagResult.timestampSeconds);
+        // Edgecase handling for if pose buffer hasn't been filled yet or the megatagResult is extremely out of date 
+        if (odometryAtTimestamp.isEmpty()) {
+            return Optional.empty();
+        }
+
+        // Filter out estimates taken while spinning too fast (latency compensation has it's limits)
+        if (RobotContainer.telemetry.getYawVelocityAtTimestamp(
+                megatagResult.timestampSeconds
+            ).orElse(Double.POSITIVE_INFINITY) > VisionConstants.MAX_YAW_RATE_RADS) {
+
+            return Optional.empty();
+        }
+
+        var tagPose3d = VisionConstants.APRIL_TAG_FIELD_LAYOUT.getTagPose(megatagResult.rawFiducials[0].id);
+        if (tagPose3d.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Pose2d tagPose2d = new Pose2d(tagPose3d.get().toPose2d().getTranslation(), Rotation2d.kZero);
+        Pose2d robotToTag = tagPose2d.relativeTo(megatagResult.pose);
+
+        Pose2d calculatedPose =
+            new Pose2d(
+                tagPose2d
+                    .getTranslation()
+                    .minus(
+                        robotToTag
+                            .getTranslation()
+                            .rotateBy(odometryAtTimestamp.get().getRotation())),
+                odometryAtTimestamp.get().getRotation());
+
+        var estimationStdDevs = VisionHelpers.getEstimationStdDevsGyroFusion(megatagResult);
+
+        return Optional.of(new TagPoseEstimate(
+            calculatedPose,
+            megatagResult.timestampSeconds,
+            estimationStdDevs,
+            1,
+            odometryAtTimestamp.get()
+        ));
     }
 
     /**
@@ -185,18 +224,18 @@ public class LimelightContainer {
         return LimelightHelpers.getTV(limelightName) && isAlive;
     }
 
-    /**
-     * When the robot isn't moving, configure vision mode
+    /** 
+     * Runs cameras unthrottled while enabled
      */
-    public void onSeeding() {
-        LimelightHelpers.SetIMUMode(limelightName, VisionConstants.SEDING_LL_IMU_MODE);
+    public void setEnabled() {
+        LimelightHelpers.SetThrottle(limelightName, 0);
     }
 
     /**
-     * When the robot is moving, configure vision mode
+     * Throttles cameras to manage temperature while robot is disabled
      */
-    public void onMoving() {
-        LimelightHelpers.SetIMUMode(limelightName, VisionConstants.MOVING_LL_IMU_MODE); 
+    public void setDisabled() {
+        LimelightHelpers.SetThrottle(limelightName, VisionConstants.LIMELIGHT_DISABLED_THROTTLE);
     }
 
     /**

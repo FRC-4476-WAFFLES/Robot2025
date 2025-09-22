@@ -11,6 +11,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import edu.wpi.first.hal.can.CANJNI;
 import edu.wpi.first.hal.can.CANStatus;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
@@ -155,7 +156,9 @@ public class Telemetry extends SubsystemBase {
 
     // Timestamps are in the timebase of Timer.getFPGATimestamp()
     private ConcurrentTimeInterpolatableBuffer<Pose2d> poseHistoryBuffer = 
-        ConcurrentTimeInterpolatableBuffer.createBuffer(CodeConstants.POSE_HISTORY_LOOKBACK_TIME);
+        ConcurrentTimeInterpolatableBuffer.createBuffer(CodeConstants.TELEMETRY_LOOKBACK_TIME);
+    private ConcurrentTimeInterpolatableBuffer<Double> yawVelocityHistoryBuffer = 
+        ConcurrentTimeInterpolatableBuffer.createDoubleBuffer(CodeConstants.TELEMETRY_LOOKBACK_TIME);
 
     /**
      * Construct a telemetry subsystem
@@ -222,7 +225,9 @@ public class Telemetry extends SubsystemBase {
         driveSetpoint.set(state.ModuleTargets[0].speedMetersPerSecond);
         angleSetpoint.set(state.ModuleTargets[0].angle.getDegrees());
 
-        poseHistoryBuffer.addSample(WafflesUtilities.currentTimeToFPGA(state.Timestamp), pose);
+        double FPGATimestamp = WafflesUtilities.currentTimeToFPGA(state.Timestamp);
+        poseHistoryBuffer.addSample(FPGATimestamp, pose);
+        yawVelocityHistoryBuffer.addSample(FPGATimestamp, state.Speeds.omegaRadiansPerSecond);
     }
 
     /**
@@ -230,6 +235,13 @@ public class Telemetry extends SubsystemBase {
      */
     public Optional<Pose2d> getPoseAtTimestamp(double timestamp) {
         return poseHistoryBuffer.getSample(timestamp);
+    }
+
+    /**
+     * Gets the robot yaw velocity at the given timestamp (FPGA timebase) 
+     */
+    public Optional<Double> getYawVelocityAtTimestamp(double timestamp) {
+        return yawVelocityHistoryBuffer.getSample(timestamp);
     }
 
     /**

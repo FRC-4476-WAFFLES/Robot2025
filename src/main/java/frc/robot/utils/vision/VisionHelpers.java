@@ -33,7 +33,7 @@ public class VisionHelpers {
      * Calculates the standard deviations for a given limelight pose estimate
      * For use with Megatag 1
      */
-    public static Matrix<N3, N1> getEstimationStdDevsLimelight(PoseEstimate limelightPoseEstimate) {
+    public static Matrix<N3, N1> getEstimationStdDevsMegatag(PoseEstimate limelightPoseEstimate) {
         Matrix<N3, N1> estStdDevs;
 
         if (limelightPoseEstimate.tagCount == 1) {
@@ -52,6 +52,23 @@ public class VisionHelpers {
 
         // Scale based on distance
         estStdDevs = estStdDevs.times(1 + (limelightPoseEstimate.avgTagDist * limelightPoseEstimate.avgTagDist / 6));
+
+        return estStdDevs;
+    }
+
+    /**
+     * Calculates the standard deviations for a given limelight pose estimate being fused with gyro orientation
+     * For use with Megatag 1 + Gyro estimates
+     */
+    public static Matrix<N3, N1> getEstimationStdDevsGyroFusion(PoseEstimate limelightPoseEstimate) {
+        Matrix<N3, N1> estStdDevs = VisionConstants.defaultStdDevsFusedGyroEstimate;
+
+        if (limelightPoseEstimate.tagCount == 0) {
+            return estStdDevs;
+        }
+
+        // Lightly scale based on distance
+        estStdDevs = estStdDevs.times(1 + (limelightPoseEstimate.avgTagDist * limelightPoseEstimate.avgTagDist / 50));
 
         return estStdDevs;
     }

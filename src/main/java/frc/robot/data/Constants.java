@@ -6,6 +6,8 @@ package frc.robot.data;
 
 import static edu.wpi.first.units.Units.Inches;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -85,7 +87,7 @@ public final class Constants {
   /* Code */
   public static class CodeConstants {
     public static final double PERIODIC_LOOP_TIME = 0.02;
-    public static final double POSE_HISTORY_LOOKBACK_TIME = 1; // s
+    public static final double TELEMETRY_LOOKBACK_TIME = 1; // s
 
     public static final int SUBSYSTEM_NT_UPDATE_RATE = 20; // How many times a second subsystems will publish to NT. Reduce if performance is suffering.
 
@@ -100,13 +102,24 @@ public final class Constants {
 
   /* Vision */
   public static class VisionConstants {
-    public static final Matrix<N3, N1> defaultkSingleTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 4);
-    public static final Matrix<N3, N1> defaultMultiTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 3);
+    // Used in place of Double.maxValue to stay far away from under/overflows when performing arithematic
+    public static final double LARGE_VARIANCE = 1e7;
 
-    public static final Matrix<N3, N1> defaultStdDevsMT2 = VecBuilder.fill(0.01,0.01, Double.MAX_VALUE);
+    public static final Matrix<N3, N1> defaultkSingleTagStdDevsMT1 = VecBuilder.fill(0.04, 0.04, 4);
+    public static final Matrix<N3, N1> defaultMultiTagStdDevsMT1 = VecBuilder.fill(0.02, 0.02, 3);
+
+    public static final Matrix<N3, N1> defaultStdDevsFusedGyroEstimate = VecBuilder.fill(0.03,0.03, LARGE_VARIANCE);
+
+    public static final Matrix<N3, N1> defaultStdDevsMT2 = VecBuilder.fill(0.01,0.01, LARGE_VARIANCE);
+
+    // Number of frames to skip processing while disabled to prevent overheating
+    public static final int LIMELIGHT_DISABLED_THROTTLE = 80;
 
     public static final int SEDING_LL_IMU_MODE = 1; // Enables seeding
     public static final int MOVING_LL_IMU_MODE = 2; // Uses internal IMU
+
+    public static final AprilTagFieldLayout APRIL_TAG_FIELD_LAYOUT =
+        AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
 
     // Vision validation thresholds
     public static final double AMBIGUITY_THRESHOLD = 0.7; // Max ambiguity for single tag (0-1, lower is better), 0.19 is what 254 used
@@ -116,6 +129,7 @@ public final class Constants {
     public static final double MAX_YAW_DIFFERENCE_DEG = 5.0; // Max degrees difference between vision and odometry yaw for single tag
     public static final double MIN_POSE_DISTANCE_FROM_ORIGIN = 1.0; // Minimum distance from field origin (0,0) in meters
     public static final double MEGATAG1_MAX_DISTANCE_THRESHOLD = 1; // Max distance at which MT1 estimates are used raw from cameras
+    public static final double MAX_YAW_RATE_RADS = 5.0;
 
     // Names of limelights
     public static final String LIMELIGHT_NAME_L = "limelight-right";

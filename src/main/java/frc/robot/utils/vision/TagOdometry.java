@@ -14,6 +14,7 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.VisionConstants;
 
@@ -23,7 +24,8 @@ public class TagOdometry {
         Pose2d pose,
         double timestampSeconds,
         Matrix<N3, N1> standardDeviation,
-        int numTags
+        int numTags,
+        Pose2d odometryAtTimestamp
     ) {}
 
     /** Networktables */
@@ -32,10 +34,19 @@ public class TagOdometry {
     private final StructPublisher<Pose2d> validPoseNT = softwareTable.getStructTopic("Validated Pose", Pose2d.struct).publish();
 
     /** Limelight hardware */
-    public final LimelightContainer leftLimelight = new LimelightContainer(VisionConstants.LIMELIGHT_NAME_L, RobotContainer.driveSubsystem);
-    public final LimelightContainer rightLimelight = new LimelightContainer(VisionConstants.LIMELIGHT_NAME_R, RobotContainer.driveSubsystem);
+    public final LimelightContainer leftLimelight = new LimelightContainer(VisionConstants.LIMELIGHT_NAME_L);
+    public final LimelightContainer rightLimelight = new LimelightContainer(VisionConstants.LIMELIGHT_NAME_R);
 
     public void update() {
+        // Throttle performance while disabled to prevent overheating
+        if (DriverStation.isEnabled()) {
+            leftLimelight.setEnabled();
+            rightLimelight.setEnabled();
+        } else {
+            leftLimelight.setDisabled();
+            rightLimelight.setDisabled();
+        }
+
         // Updates odometry from vision.
         // Does not flush networktables.
         var leftEstimate = leftLimelight.update();
@@ -83,25 +94,10 @@ public class TagOdometry {
             b = tmp;   
         }
 
-        var poseAtTimestampB = RobotContainer.telemetry.getPoseAtTimestamp(b.timestampSeconds);
-        var poseAtTimestampA = RobotContainer.telemetry.getPoseAtTimestamp(a.timestampSeconds);
-
-        // Edgecase handling to avoid a crash if pose is somehow >1 second old
-        if (poseAtTimestampA.isEmpty() || poseAtTimestampB.isEmpty()) {
-            if (poseAtTimestampA.isPresent()) {
-                return Optional.of(a);
-            }
-            if (poseAtTimestampB.isPresent()) {
-                return Optional.of(b);
-            }
-            return Optional.empty();
-        }
-
         // Latency compensate the older pose to match the more recent one's timestamp
         Transform2d b_T_a =
-            poseAtTimestampA
-            .get()
-            .minus(poseAtTimestampB.get());
+            a.odometryAtTimestamp
+            .minus(b.odometryAtTimestamp);
 
         Pose2d poseA = a.pose;
         Pose2d poseB = b.pose.transformBy(b_T_a);
