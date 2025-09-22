@@ -6,11 +6,9 @@ package frc.robot.utils.vision;
 
 import java.util.Optional;
 
-import com.ctre.phoenix6.Utils;
-
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.networktables.NetworkTable;
@@ -18,7 +16,6 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.VisionConstants;
-import frc.robot.utils.vision.LimelightHelpers.PoseEstimate;
 
 /** Add your docs here. */
 public class TagOdometry {
@@ -56,7 +53,7 @@ public class TagOdometry {
         if (leftEstimate.isPresent() != rightEstimate.isPresent()) {
             chosenEstimate = leftEstimate.isPresent() ? leftEstimate : rightEstimate;
         } else if (leftEstimate.isPresent() && rightEstimate.isPresent()) {
-            chosenEstimate = Optional.of(combineEstimates(leftEstimate.get(), rightEstimate.get()));
+            chosenEstimate = combineEstimates(leftEstimate.get(), rightEstimate.get());
         }
 
         // Only fuse in one estimate to avoid "double tapping" the Kalman filter
@@ -78,8 +75,46 @@ public class TagOdometry {
         );
     }
 
-    private TagPoseEstimate combineEstimates(TagPoseEstimate A, TagPoseEstimate B) {
+    private Optional<TagPoseEstimate> combineEstimates(TagPoseEstimate a, TagPoseEstimate b) {
+        // Ensure A is the most recent pose
+        if (a.timestampSeconds < b.timestampSeconds) {
+            var tmp = a;
+            a = b;
+            b = tmp;   
+        }
 
+        var poseAtTimestampB = RobotContainer.telemetry.getPoseAtTimestamp(b.timestampSeconds);
+        var poseAtTimestampA = RobotContainer.telemetry.getPoseAtTimestamp(a.timestampSeconds);
+
+        // Edgecase handling to avoid a crash if pose is somehow >1 second old
+        if (poseAtTimestampA.isEmpty() || poseAtTimestampB.isEmpty()) {
+            if (poseAtTimestampA.isPresent()) {
+                return Optional.of(a);
+            }
+            if (poseAtTimestampB.isPresent()) {
+                return Optional.of(b);
+            }
+            return Optional.empty();
+        }
+
+        // Latency compensate the older pose to match the more recent one's timestamp
+        Transform2d b_T_a =
+            poseAtTimestampA
+            .get()
+            .minus(poseAtTimestampB.get());
+
+        Pose2d poseA = a.pose;
+        Pose2d poseB = b.pose.transformBy(b_T_a);
+
+        // Perform inverse variance weighting
+        return Optional.of(
+            new TagPoseEstimate(
+                pose, 
+                0, 
+                null, 
+                0
+            )
+        );
     }
 
     /**
