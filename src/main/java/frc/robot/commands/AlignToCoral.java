@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.Constants.VisionConstants;
-import frc.robot.utils.LimelightHelpers;
+import frc.robot.utils.vision.LimelightHelpers;
 
 public class AlignToCoral extends Command {
   private static final String LIMELIGHT_KEY = VisionConstants.LIMELIGHT_NAME_CORAL;

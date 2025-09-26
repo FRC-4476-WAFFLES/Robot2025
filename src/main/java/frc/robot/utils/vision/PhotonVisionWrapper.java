@@ -1,4 +1,4 @@
-package frc.robot.utils;
+package frc.robot.utils.vision;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -150,7 +150,7 @@ public class PhotonVisionWrapper {
      * @param estimatedPose The estimated pose to guess standard deviations for.
      */
     public Matrix<N3, N1> getEstimationStdDevs(Pose2d estimatedPose) {
-        var estStdDevs = VisionConstants.kSingleTagStdDevs;
+        var estStdDevs = VisionConstants.defaultkSingleTagStdDevsMT1;
         var targets = getLatestResult().getTargets();
         int numTags = 0;
         double avgDist = 0;
@@ -166,7 +166,7 @@ public class PhotonVisionWrapper {
         avgDist /= numTags;
         // Decrease std devs if multiple targets are visible
         if (numTags > 1)
-            estStdDevs = VisionConstants.kMultiTagStdDevs;
+            estStdDevs = VisionConstants.defaultMultiTagStdDevsMT1;
         // Increase std devs based on (average) distance
         if (numTags == 1 && avgDist > 4)
             estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);

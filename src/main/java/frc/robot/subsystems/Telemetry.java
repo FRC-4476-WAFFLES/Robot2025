@@ -1,14 +1,17 @@
 package frc.robot.subsystems;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.CANBus.CANBusStatus;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import edu.wpi.first.hal.can.CANJNI;
 import edu.wpi.first.hal.can.CANStatus;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
@@ -30,7 +33,9 @@ import frc.robot.RobotContainer;
 import frc.robot.data.BuildConstants;
 import frc.robot.data.Constants.CANIds;
 import frc.robot.data.Constants.CodeConstants;
+import frc.robot.utils.WafflesUtilities;
 import frc.robot.utils.IO.DeferredRefresher;
+import frc.robot.utils.external.ConcurrentTimeInterpolatableBuffer;
 
 public class Telemetry extends SubsystemBase {
     /*                         */
@@ -145,6 +150,16 @@ public class Telemetry extends SubsystemBase {
     private final Alert rightJoystickDisconnected = new Alert("Right joystick disconnected [port 1].", AlertType.kWarning);
     private final Alert operatorControllerDisconnected = new Alert("Operator controller disconnected [port 2].", AlertType.kWarning); 
 
+    /*                       */
+    /*  Latency Compensation */
+    /*                       */
+
+    // Timestamps are in the timebase of Timer.getFPGATimestamp()
+    private ConcurrentTimeInterpolatableBuffer<Pose2d> poseHistoryBuffer = 
+        ConcurrentTimeInterpolatableBuffer.createBuffer(CodeConstants.TELEMETRY_LOOKBACK_TIME);
+    private ConcurrentTimeInterpolatableBuffer<Double> yawVelocityHistoryBuffer = 
+        ConcurrentTimeInterpolatableBuffer.createDoubleBuffer(CodeConstants.TELEMETRY_LOOKBACK_TIME);
+
     /**
      * Construct a telemetry subsystem
      */
@@ -181,31 +196,10 @@ public class Telemetry extends SubsystemBase {
         } else {
             canFaultDetected.set(false);
         }
-        
-
-        // Pathplanner Telemetry
-        // Logging callback for current robot pose
-        // PathPlannerLogging.setLogCurrentPoseCallback((pose) -> {
-        //     // Do whatever you want with the pose here
-        //     // pathplannerCurrentPoseNT.set(pose);
-        // });
-
-        // // Logging callback for target robot pose
-        // PathPlannerLogging.setLogTargetPoseCallback((pose) -> {
-        //     // Do whatever you want with the pose here
-        //     // pathplannerTargetPoseNT.set(pose);
-        // });
-
-        // // Logging callback for the active path, this is sent as a list of poses
-        // PathPlannerLogging.setLogActivePathCallback((poses) -> {
-        //     // Do whatever you want with the poses here
-        //     // pathplannerCurrentTrajectory.set(poses.toArray(trajTypeArray));
-        // });
     }
 
-    /* Accept the swerve drive state and telemeterize it to smartdashboard */
-    public void telemeterize(SwerveDriveState state) {
-        /* Telemeterize the pose */
+    /* Accept the swerve drive state and post it to networktables */
+    public void telemetryConsumer(SwerveDriveState state) {
         Pose2d pose = state.Pose;
         fieldTypePub.set("Field2d");
         fieldPub.set(new double[] {
@@ -214,21 +208,9 @@ public class Telemetry extends SubsystemBase {
             pose.getRotation().getDegrees()
         });
 
-        /* Telemeterize the robot's general speeds */
-        // double currentTime = Utils.getCurrentTimeSeconds();
-        // double diffTime = currentTime - lastTime;
-        // lastTime = currentTime;
-        // Translation2d distanceDiff = pose.minus(m_lastPose).getTranslation();
-        // m_lastPose = pose;
-
-        // Translation2d velocities = distanceDiff.div(diffTime);
-
-        // speed.set(velocities.getNorm());
-        // velocityX.set(velocities.getX());
-        // velocityY.set(velocities.getY());
         odomFreq.set(1.0 / state.OdometryPeriod);
 
-        /* Telemeterize the module's states */
+        /* Debug a module's states */
         // for (int i = 0; i < 4; ++i) {
         //     m_moduleSpeeds[i].setAngle(state.ModuleStates[i].angle);
         //     m_moduleDirections[i].setAngle(state.ModuleStates[i].angle);
@@ -243,8 +225,23 @@ public class Telemetry extends SubsystemBase {
         driveSetpoint.set(state.ModuleTargets[0].speedMetersPerSecond);
         angleSetpoint.set(state.ModuleTargets[0].angle.getDegrees());
 
-        //SignalLogger.writeDoubleArray("odometry", new double[] {pose.getX(), pose.getY(), pose.getRotation().getDegrees()});
-        //SignalLogger.writeDouble("odom period", state.OdometryPeriod, "seconds");
+        double FPGATimestamp = WafflesUtilities.currentTimeToFPGA(state.Timestamp);
+        poseHistoryBuffer.addSample(FPGATimestamp, pose);
+        yawVelocityHistoryBuffer.addSample(FPGATimestamp, state.Speeds.omegaRadiansPerSecond);
+    }
+
+    /**
+     * Gets the robot pose at the given timestamp (FPGA timebase) 
+     */
+    public Optional<Pose2d> getPoseAtTimestamp(double timestamp) {
+        return poseHistoryBuffer.getSample(timestamp);
+    }
+
+    /**
+     * Gets the robot yaw velocity at the given timestamp (FPGA timebase) 
+     */
+    public Optional<Double> getYawVelocityAtTimestamp(double timestamp) {
+        return yawVelocityHistoryBuffer.getSample(timestamp);
     }
 
     /**
@@ -323,17 +320,18 @@ public class Telemetry extends SubsystemBase {
     }
 
     /**
-     * Indicate that there is a CAN fault
+     * Indicate that there is a Vision fault
      */
     public void setVisionFault(boolean value) {
         visionFaultDetected.set(value);
         if (value) {
             ArrayList<String> details = new ArrayList<>();
-            if (!RobotContainer.driveSubsystem.leftLimelight.isAlive()) {
-                details.add(RobotContainer.driveSubsystem.leftLimelight.getName());
+            var vision = RobotContainer.driveSubsystem.vision;
+            if (!vision.leftLimelight.isAlive()) {
+                details.add(vision.leftLimelight.getName());
             }
-            if (!RobotContainer.driveSubsystem.rightLimelight.isAlive()) {
-                details.add(RobotContainer.driveSubsystem.rightLimelight.getName());
+            if (!vision.rightLimelight.isAlive()) {
+                details.add(vision.rightLimelight.getName());
             }
 
             visionFaultDetected.setText("Vision fault detected [" + String.join(", ", details) + "]");
