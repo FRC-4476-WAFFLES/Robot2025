@@ -54,7 +54,7 @@ public class PickupAlgae extends SequentialCommandGroup {
   public static Command pickupAlgaeWithPath(Command driveCommand, SuperstructureState scoringLevel, Command pathAwayCommand, Pose2d pickupPose) {
     return new PickupAlgae(driveCommand, scoringLevel, pathAwayCommand, pickupPose).finallyDo((interruped) -> {
       RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.ZERO);
-      RobotContainer.superstructure.pivot.applySetpoint(ManipulatorConstants.PIVOT_CLEARANCE_POSITION);
+      RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.ALGAE_REST);
     });
   }
 }

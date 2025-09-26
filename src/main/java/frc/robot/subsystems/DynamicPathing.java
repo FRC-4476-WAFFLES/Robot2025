@@ -100,7 +100,7 @@ public class DynamicPathing extends SubsystemBase {
     public static final double PROCESSOR_SCORING_DISTANCE_Y = 0.35; // Distance from processor Y in meters to score from 
 
     /* Net physical parameters */
-    public static final double NET_LINE_X_BLUE = 7.7; // Meters
+    public static final double NET_LINE_X_BLUE = 7.72; // Meters
 
     /* Path following parameters */
     public static final double MAX_SPEED = 2.5f;

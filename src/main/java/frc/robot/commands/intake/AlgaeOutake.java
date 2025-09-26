@@ -4,6 +4,7 @@
 
 package frc.robot.commands.intake;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Controls;
@@ -28,7 +29,7 @@ public class AlgaeOutake extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (Controls.algaeOut.getAsBoolean()) {
+    if (Controls.algaeOut.getAsBoolean() || DriverStation.isAutonomous()) {
       RobotContainer.intakeSubsystem.setIntakeSpeed(5.0);
     }
     

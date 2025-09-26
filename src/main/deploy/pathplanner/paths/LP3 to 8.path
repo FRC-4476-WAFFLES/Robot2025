@@ -12,7 +12,7 @@
         "y": 5.856855867346939
       },
       "isLocked": false,
-      "linkedName": "LP3"
+      "linkedName": null
     },
     {
       "anchor": {
@@ -48,7 +48,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 1.3612646139764177
   },
   "useDefaultConstraints": true
 }

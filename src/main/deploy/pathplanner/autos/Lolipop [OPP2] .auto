@@ -67,7 +67,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "LP0 to 3"
+                  "pathName": "LP0 to 5"
                 }
               },
               {
@@ -92,7 +92,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "3 to CS4"
+                  "pathName": "5 to LP1"
                 }
               },
               {
@@ -117,7 +117,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "CS4 to 4"
+                  "pathName": "LP1 to 6"
                 }
               },
               {
@@ -142,7 +142,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "4 to CS4"
+                  "pathName": "6 to LP3"
                 }
               },
               {
@@ -167,7 +167,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "CS4 to 5"
+                  "pathName": "LP3 to 8"
                 }
               },
               {
@@ -182,7 +182,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Autoscore L4 Right"
+            "name": "Autoscore L4 Left"
           }
         }
       ]

@@ -472,13 +472,7 @@ public class RobotContainer {
     );
 
     NamedCommands.registerCommand("Net Shot Prep", Commands.parallel(
-      Commands.sequence(
-        Commands.runOnce(() -> superstructure.elevator.applySetpoint(SuperstructureState.ALGAE_L2)),
-        Commands.waitSeconds(0.6), // Goofy wait
-        Commands.runOnce(() -> superstructure.elevator.applySetpoint(SuperstructureState.NET_FRONT))
-          .onlyIf(() -> ScoringConstants.USE_RISKY_NET_AUTO)
-      ),
-      Commands.runOnce(() -> superstructure.elevator.applySetpoint(SuperstructureState.ALGAE_L2))
+      Commands.runOnce(() -> superstructure.elevator.applySetpoint(SuperstructureState.NET_PREP))
     ));
   }
 

@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "LP3"
+      "linkedName": null
     }
   ],
   "rotationTargets": [
@@ -37,7 +37,7 @@
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.704697986577183,
+      "minWaypointRelativePos": 0.7659069325735975,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 1.0,
@@ -61,7 +61,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 0.15273525814844763
   },
   "reversed": false,
   "folder": null,

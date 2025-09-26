@@ -36,9 +36,40 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Auto Algae Intake"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Net Shot Prep"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "11 To Net"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Net Shot"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "11 BACKUP"
+            "pathName": "Net 1 Off"
           }
         }
       ]

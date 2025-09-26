@@ -51,7 +51,7 @@ public class CoralOutake extends Command {
     wheelspeedMetersPerSecond *= FUDGE_FACTOR;
 
     double wheelCircumference = 2 * Math.PI * PhysicalConstants.manipulatorWheelRadius.in(Meters);
-    RobotContainer.intakeSubsystem.setIntakeSpeed(wheelspeedMetersPerSecond / wheelCircumference);
+    RobotContainer.intakeSubsystem.setIntakeSpeed(.5);
   }
 
   // Called once the command ends or is interrupted.

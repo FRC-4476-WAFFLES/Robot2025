@@ -12,7 +12,7 @@
         "y": 6.0583227040816325
       },
       "isLocked": false,
-      "linkedName": "Post 8"
+      "linkedName": null
     },
     {
       "anchor": {
@@ -61,7 +61,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 48.09405805891712
+    "rotation": 52.63826395771445
   },
   "reversed": false,
   "folder": null,
