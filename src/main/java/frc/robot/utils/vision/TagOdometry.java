@@ -6,6 +6,8 @@ package frc.robot.utils.vision;
 
 import java.util.Optional;
 
+import com.ctre.phoenix6.Utils;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -78,7 +80,7 @@ public class TagOdometry {
             validPoseNT.set(estimate.pose);
             RobotContainer.driveSubsystem.addVisionMeasurement(
                 estimate.pose, 
-                estimate.timestampSeconds,
+                Utils.fpgaToCurrentTime(estimate.timestampSeconds),
                 estimate.standardDeviation
             );
         }
