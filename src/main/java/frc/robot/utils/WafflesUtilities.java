@@ -4,6 +4,7 @@
 
 package frc.robot.utils;
 
+import com.ctre.phoenix6.Utils;
 import com.pathplanner.lib.util.FlippingUtil;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -11,6 +12,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Timer;
 
 public class WafflesUtilities {
     /**
@@ -36,6 +38,17 @@ public class WafflesUtilities {
 
     public static double translationDotProduct(Translation2d a, Translation2d b) {
         return a.getX() * b.getX() + a.getY() * b.getY();
+    }
+
+    /**
+     * Converts an timestamp in the timebase of {@link #getCurrentTimeSeconds()}
+     * to the timebase reported by the FPGA
+     *
+     * @param timestampCurrentTime The current timestamp in seconds
+     * @return The equivalent Timer.getFPGATimestamp() timestamp in seconds
+     */
+    public static double currentTimeToFPGA(double timestampCurrentTime) {
+        return (Timer.getFPGATimestamp() - Utils.getCurrentTimeSeconds()) + timestampCurrentTime;
     }
 
     /**

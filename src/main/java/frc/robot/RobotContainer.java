@@ -56,7 +56,7 @@ import frc.robot.subsystems.Telemetry;
 import frc.robot.subsystems.groundsuperstructure.GroundIntakeSuperstructure;
 import frc.robot.subsystems.superstructure.Superstructure;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
-import frc.robot.utils.LimelightHelpers;
+import frc.robot.utils.vision.LimelightHelpers;
 
 
 /**
@@ -107,7 +107,7 @@ public class RobotContainer {
     configureBindings();
 
     // Swerve telemetry from odometry thread
-    driveSubsystem.registerTelemetry(telemetry::telemeterize);
+    driveSubsystem.registerTelemetry(telemetry::telemetryConsumer);
     driveSubsystem.setDefaultCommand(new DriveTeleop(
       Controls::getDriveY,
       Controls::getDriveX,

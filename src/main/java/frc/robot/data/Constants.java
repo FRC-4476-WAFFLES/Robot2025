@@ -6,6 +6,8 @@ package frc.robot.data;
 
 import static edu.wpi.first.units.Units.Inches;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -85,6 +87,7 @@ public final class Constants {
   /* Code */
   public static class CodeConstants {
     public static final double PERIODIC_LOOP_TIME = 0.02;
+    public static final double TELEMETRY_LOOKBACK_TIME = 1; // s
 
     public static final int SUBSYSTEM_NT_UPDATE_RATE = 20; // How many times a second subsystems will publish to NT. Reduce if performance is suffering.
 
@@ -99,29 +102,37 @@ public final class Constants {
 
   /* Vision */
   public static class VisionConstants {
-    public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(2, 2, 1);
-    public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
+    // Used in place of Double.maxValue to stay far away from under/overflows when performing arithematic
+    public static final double LARGE_VARIANCE = 1e7;
 
-    public static final Matrix<N3, N1> kSingleTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 4);
-    public static final Matrix<N3, N1> kMultiTagStdDevsMT1 = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 3);
+    public static final Matrix<N3, N1> defaultkSingleTagStdDevsMT1 = VecBuilder.fill(0.04, 0.04, 4);
+    public static final Matrix<N3, N1> defaultMultiTagStdDevsMT1 = VecBuilder.fill(0.02, 0.02, 3);
 
-    public static final Matrix<N3, N1> kStdDevsMT2ReefTargeting = VecBuilder.fill(0.01,0.01, Double.MAX_VALUE);
-    public static final Matrix<N3, N1> kStdDevsMT2 = VecBuilder.fill(0.25,0.25, Double.MAX_VALUE);
+    public static final Matrix<N3, N1> defaultStdDevsFusedGyroEstimate = VecBuilder.fill(0.03,0.03, LARGE_VARIANCE);
 
-    // Reject mt1 poses if further than this from current estimate, removes ambiguity noise
-    // Only to be used when not seeding position
-    public static final double MT1_REJECT_DISTANCE = 2; // meters
+    public static final Matrix<N3, N1> defaultStdDevsMT2 = VecBuilder.fill(0.01,0.01, LARGE_VARIANCE);
+
+    // Number of frames to skip processing while disabled to prevent overheating
+    public static final int LIMELIGHT_DISABLED_THROTTLE = 80;
+
+    // Use standard deviations reported by the limelight as opposed to hand calculating them
+    public static final boolean USE_AUTOMATIC_STANDARD_DEVIATIONS = true; 
 
     public static final int SEDING_LL_IMU_MODE = 1; // Enables seeding
     public static final int MOVING_LL_IMU_MODE = 2; // Uses internal IMU
 
+    public static final AprilTagFieldLayout APRIL_TAG_FIELD_LAYOUT =
+        AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
+
     // Vision validation thresholds
     public static final double AMBIGUITY_THRESHOLD = 0.7; // Max ambiguity for single tag (0-1, lower is better), 0.19 is what 254 used
-    public static final double MIN_TAG_AREA = 0.8; // Minimum tag area (% of image, 0-100 scale) for single tag
+    public static final double MIN_TAG_AREA_SINGLE_TAG = 1.0; // Minimum tag area (% of image, 0-100 scale) for single tag
     public static final double MIN_TAG_AREA_FOR_YAW_CHECK = 1.6; // Tag area threshold (% of image) for yaw validation
     public static final double MAX_Z_ERROR = 0.2; // Maximum acceptable Z-axis error in meters (robot should be on ground)
     public static final double MAX_YAW_DIFFERENCE_DEG = 5.0; // Max degrees difference between vision and odometry yaw for single tag
     public static final double MIN_POSE_DISTANCE_FROM_ORIGIN = 1.0; // Minimum distance from field origin (0,0) in meters
+    public static final double MEGATAG1_MAX_DISTANCE_THRESHOLD = 1; // Max distance at which MT1 estimates are used raw from cameras
+    public static final double MAX_YAW_RATE_RADS = 5.0;
 
     // Names of limelights
     public static final String LIMELIGHT_NAME_L = "limelight-right";
@@ -141,6 +152,11 @@ public final class Constants {
 
     // Limelights are considered disconnected if their heartbeat value is older than this many seconds
     public static final double LL_HEARTBEAT_MIN_FREQ = 0.5;
+
+    // Used to read from the raw stddevs array returned by a limelight
+    public static final int kMegatag1XStdDevIndex = 0;
+    public static final int kMegatag1YStdDevIndex = 1;
+    public static final int kMegatag1YawStdDevIndex = 5;
   }
 
   /* Field */
