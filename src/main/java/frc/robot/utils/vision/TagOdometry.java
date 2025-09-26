@@ -76,13 +76,15 @@ public class TagOdometry {
         // Prevents excessively weighting vision over odometry
         if (chosenEstimate.isPresent()) {
             var estimate = chosenEstimate.get();
-            
-            validPoseNT.set(estimate.pose);
-            RobotContainer.driveSubsystem.addVisionMeasurement(
-                estimate.pose, 
-                Utils.fpgaToCurrentTime(estimate.timestampSeconds),
-                estimate.standardDeviation
-            );
+
+            if (VisionHelpers.isValidPose(estimate.pose)) {
+                validPoseNT.set(estimate.pose);
+                RobotContainer.driveSubsystem.addVisionMeasurement(
+                    estimate.pose, 
+                    Utils.fpgaToCurrentTime(estimate.timestampSeconds),
+                    estimate.standardDeviation
+                );
+            }
         }
 
         // Provide vision fault warning

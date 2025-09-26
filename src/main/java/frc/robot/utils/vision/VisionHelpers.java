@@ -82,4 +82,26 @@ public class VisionHelpers {
     public static double getMegatagEstimateQuality(PoseEstimate limelightPoseEstimate) {
         return 1 / (1 - limelightPoseEstimate.rawFiducials[0].ambiguity);
     }
+
+    /**
+     * Validates that a pose estimate contains valid values and is reasonable
+     * @param pose The pose to validate
+     * @return true if the pose is valid, false otherwise
+     */
+    public static boolean isValidPose(Pose2d pose) {
+        if (pose == null) {
+            return false;
+        }
+        
+        // Check for NaN/infinite values
+        if (Double.isNaN(pose.getX()) || Double.isNaN(pose.getY()) ||
+            Double.isNaN(pose.getRotation().getDegrees()) ||
+            !Double.isFinite(pose.getX()) || !Double.isFinite(pose.getY()) ||
+            !Double.isFinite(pose.getRotation().getDegrees())) {
+            return false;
+        }
+        
+        // Check if pose is too close to field origin (common vision failure)
+        return pose.getTranslation().getNorm() >= VisionConstants.MIN_POSE_DISTANCE_FROM_ORIGIN;
+    }
 }

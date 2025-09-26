@@ -21,6 +21,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.VisionConstants;
@@ -102,7 +103,7 @@ public class LimelightContainer {
         if (megatag1Result != null && megatag1Result.tagCount > 0) {
             // Skip duplicates
             if (megatag1Result.timestampSeconds > lastMT1Timestamp) {
-                if (isValidPose(megatag1Result.pose)) {
+                if (VisionHelpers.isValidPose(megatag1Result.pose)) {
                     // Validate Z-axis
                     Pose3d pose3d = LimelightHelpers.getBotPose3d_wpiBlue(limelightName);
                     if (Math.abs(pose3d.getZ()) <= VisionConstants.MAX_Z_ERROR) {
@@ -143,14 +144,18 @@ public class LimelightContainer {
                 return Optional.empty();
             }
 
-            if (megatagResult.avgTagArea < VisionConstants.MIN_TAG_AREA_SINGLE_TAG) {
-                return Optional.empty();
-            }
-            
-            // For small tags, also check yaw difference
-            if (megatagResult.avgTagArea < VisionConstants.MIN_TAG_AREA_FOR_YAW_CHECK) {
-                if (!isYawDifferenceAcceptable(megatagResult)) {
-                    return Optional.empty();   
+            // Don't check min tag area when disabled and seeding 
+            // ie. angle does not yet match
+            if (DriverStation.isEnabled() || isYawDifferenceAcceptable(megatagResult)) {
+                if (megatagResult.avgTagArea < VisionConstants.MIN_TAG_AREA_SINGLE_TAG) {
+                    return Optional.empty();
+                }
+                
+                // For small tags, also check yaw difference
+                if (megatagResult.avgTagArea < VisionConstants.MIN_TAG_AREA_FOR_YAW_CHECK) {
+                    if (!isYawDifferenceAcceptable(megatagResult)) {
+                        return Optional.empty();   
+                    }
                 }
             }
         }
@@ -295,28 +300,6 @@ public class LimelightContainer {
      */
     public String getName() {
         return limelightName;
-    }
-    
-    /**
-     * Validates that a pose estimate contains valid values and is reasonable
-     * @param pose The pose to validate
-     * @return true if the pose is valid, false otherwise
-     */
-    private boolean isValidPose(Pose2d pose) {
-        if (pose == null) {
-            return false;
-        }
-        
-        // Check for NaN/infinite values
-        if (Double.isNaN(pose.getX()) || Double.isNaN(pose.getY()) ||
-            Double.isNaN(pose.getRotation().getDegrees()) ||
-            !Double.isFinite(pose.getX()) || !Double.isFinite(pose.getY()) ||
-            !Double.isFinite(pose.getRotation().getDegrees())) {
-            return false;
-        }
-        
-        // Check if pose is too close to field origin (common vision failure)
-        return pose.getTranslation().getNorm() >= VisionConstants.MIN_POSE_DISTANCE_FROM_ORIGIN;
     }
 
     /**
