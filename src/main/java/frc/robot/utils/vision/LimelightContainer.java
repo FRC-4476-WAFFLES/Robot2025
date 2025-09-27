@@ -123,9 +123,13 @@ public class LimelightContainer {
                         
                         if (megatagEstimate.isPresent()) {
                             chosenTypeNT.set("MEGATAG");
+                            lastMT1Timestamp = megatag1Result.timestampSeconds;
+                            
                             return megatagEstimate;
                         } else if (gyroEstimate.isPresent()) {
                             chosenTypeNT.set("GYRO");
+                            lastMT1Timestamp = megatag1Result.timestampSeconds;
+                            
                             return gyroEstimate;
                         }
                         chosenTypeNT.set("NONE");
