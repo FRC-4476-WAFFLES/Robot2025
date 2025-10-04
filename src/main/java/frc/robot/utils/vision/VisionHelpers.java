@@ -104,4 +104,16 @@ public class VisionHelpers {
         // Check if pose is too close to field origin (common vision failure)
         return pose.getTranslation().getNorm() >= VisionConstants.MIN_POSE_DISTANCE_FROM_ORIGIN;
     }
+
+    public static boolean isValidStdevs(Matrix<N3, N1> standardDeviation) {
+        return 
+            isValidNumber(standardDeviation.get(0, 0)) &&
+            isValidNumber(standardDeviation.get(1, 0)) && 
+            isValidNumber(standardDeviation.get(2, 0));
+        
+    }
+
+    public static boolean isValidNumber(double num) {
+        return !Double.isNaN(num) && Double.isFinite(num);
+    }
 }

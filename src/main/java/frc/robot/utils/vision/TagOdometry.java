@@ -77,7 +77,7 @@ public class TagOdometry {
         if (chosenEstimate.isPresent()) {
             var estimate = chosenEstimate.get();
 
-            if (VisionHelpers.isValidPose(estimate.pose)) {
+            if (VisionHelpers.isValidPose(estimate.pose) && VisionHelpers.isValidStdevs(estimate.standardDeviation)) {
                 validPoseNT.set(estimate.pose);
                 RobotContainer.driveSubsystem.addVisionMeasurement(
                     estimate.pose, 
