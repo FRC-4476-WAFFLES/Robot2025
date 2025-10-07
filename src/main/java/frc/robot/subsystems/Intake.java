@@ -47,6 +47,7 @@ public class Intake extends SimpleWafflesMechanism {
     private Trigger algaeDetectionTrigger;
     private Trigger coralDetectionTrigger;
     private Trigger coralReleaseTrigger;
+    private Trigger algaeDroppedWhileHoldingTrigger;
 
     private enum LoadType {
         ALGEA,
@@ -86,6 +87,11 @@ public class Intake extends SimpleWafflesMechanism {
         coralReleaseTrigger = new Trigger(
             () -> isOuttakingCoral()
         ).debounce(ManipulatorConstants.CORAL_RELEASE_DEBOUNCE_TIME);
+
+        algaeDroppedWhileHoldingTrigger = new Trigger(
+            () -> isAlgaeLoaded()
+            && intake.signals().statorCurrent().getValueAsDouble() < ManipulatorConstants.ALGAE_HOLD_CURRENT_THRESHOLD
+        ).debounce(ManipulatorConstants.ALGAE_HOLD_CHECK_DEBOUNCE_TIME);
     }
 
     /**
@@ -198,8 +204,10 @@ public class Intake extends SimpleWafflesMechanism {
         if (loadType == LoadType.ALGEA) {
             if (algaeDetectionTrigger.getAsBoolean()) {
                 manipulatorLoaded = true;
-    
+
             } else if (isOuttakingAlgae()) {
+                manipulatorLoaded = false;
+            } else if (algaeDroppedWhileHoldingTrigger.getAsBoolean()) {
                 manipulatorLoaded = false;
             }
         } else {

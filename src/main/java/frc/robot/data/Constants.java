@@ -247,10 +247,12 @@ public final class Constants {
     // Detection thresholds
     public static final double ALGAE_CURRENT_THRESHOLD = 25.0; // amps
     public static final double CORAL_CURRENT_THRESHOLD = 30;
-    
-    public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.3; 
+    public static final double ALGAE_HOLD_CURRENT_THRESHOLD = 15.0; // amps - Minimum current while holding algae
+
+    public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.3;
     public static final double CORAL_DETECTION_DEBOUNCE_TIME = 0.1;
     public static final double CORAL_RELEASE_DEBOUNCE_TIME = 0.1;
+    public static final double ALGAE_HOLD_CHECK_DEBOUNCE_TIME = 0.4; // Time before checking if algae dropped while holding
     
     public static final double ZERO_DEBOUNCE_TIME = 0.2;
 
