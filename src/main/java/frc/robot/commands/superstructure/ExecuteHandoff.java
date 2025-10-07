@@ -50,9 +50,27 @@ public class ExecuteHandoff extends Command {
             
             case EXECUTING:
                 RobotContainer.superstructure.applySuperstructureState(SuperstructureState.HANDOFF_EXECUTE);
+
+                // Start timer when entering EXECUTING state
+                if (!timer.hasElapsed(0)) {
+                    timer.restart();
+                }
+
+                // Timeout if not at setpoint within 1.5 seconds, and retry pickup if coral still ready
+                if (timer.get() > 1.5) {
+                    if (RobotContainer.groundSuperstructure.isHandoffReady() &&
+                        !RobotContainer.intakeSubsystem.isAlgaeLoaded() &&
+                        !RobotContainer.intakeSubsystem.isCoralLoaded()) {
+                        state = HandoffState.STARTED;
+                    } else {
+                        state = HandoffState.FINISHED;
+                    }
+                    break;
+                }
+
                 if (RobotContainer.superstructure.atSetpoint()) {
                     state = HandoffState.CLEARING;
-                    
+
                     timer.stop();
                     timer.reset();
                     timer.start();
@@ -62,12 +80,18 @@ public class ExecuteHandoff extends Command {
             case CLEARING:
                 RobotContainer.groundSuperstructure.triggerHandoff();
                 RobotContainer.superstructure.applySuperstructureState(SuperstructureState.HANDOFF_CLEAR);
-                
-                if (timer.get() > 0.3) {
+
+                // Start timer when coral is detected
+                if (RobotContainer.intakeSubsystem.isCoralLoaded() && !timer.hasElapsed(0)) {
+                    timer.restart();
+                }
+
+                // Stop intake 0.15s after coral detection
+                if (timer.get() > 0.15) {
                     RobotContainer.intakeSubsystem.setIntakeSpeed(0);
                 }
 
-                if (RobotContainer.superstructure.atSetpoint()) {
+                if (RobotContainer.superstructure.atSetpoint() && timer.get() > 0.15) {
                     // Ensure we are at a controlled ending point for the handoff
                     state = HandoffState.FINISHED;
                 }
