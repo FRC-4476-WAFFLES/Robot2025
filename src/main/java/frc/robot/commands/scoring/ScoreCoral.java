@@ -30,6 +30,7 @@ import frc.robot.commands.AlignToPose;
 import frc.robot.commands.DriveTeleop;
 import frc.robot.commands.intake.CoralOutake;
 import frc.robot.commands.superstructure.ApplySuperstructureState;
+import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.ScoringConstants;
 import frc.robot.data.Constants.ScoringConstants.CoralScoringParameters;
 import frc.robot.subsystems.DynamicPathing;
@@ -179,8 +180,17 @@ public class ScoreCoral extends SequentialCommandGroup {
    * @return The command to score coral
    */
   public static Command scoreCoralWithPath(Command driveCommand, Pose2d finalAlignPose, double maxSpeed) {
-    return new ScoreCoral(driveCommand, finalAlignPose, maxSpeed).finallyDo(() ->{
+    return new ScoreCoral(driveCommand, finalAlignPose, maxSpeed).finallyDo((interrupted) ->{
       RobotContainer.dynamicPathingSubsystem.lockCoralScoringSide(false);
+
+      // If interrupted, briefly run intake to secure coral
+      if (interrupted) {
+        new SequentialCommandGroup(
+          new InstantCommand(() -> RobotContainer.intakeSubsystem.setIntakeSpeed(ManipulatorConstants.CORAL_INTAKE_SPEED)),
+          Commands.waitSeconds(0.75),
+          new InstantCommand(() -> RobotContainer.intakeSubsystem.setIntakeSpeed(0))
+        ).schedule();
+      }
     });
   }
 
