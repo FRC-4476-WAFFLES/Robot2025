@@ -286,7 +286,7 @@ public final class Constants {
     public static final double PIVOT_CURRENT_THRESHOLD =  27.0; // amps - Current threshold for zeroing
 
     // PID Values
-    public static final double PIVOT_kP = 170.0;
+    public static final double PIVOT_kP = 90.0;
     public static final double PIVOT_kI = 0.0;
     public static final double PIVOT_kD = 0.0;
     public static final double PIVOT_kS = 0.25;
@@ -380,6 +380,7 @@ public final class Constants {
       STOWED(0.0),
       HANDOFF(23.0),
       DEPLOYED(205.0),
+      DEPLOYED_OFFGROUND(204.0),
       L1(110),
       L1_INTAKE(205),
       ZEROING_CLEARANCE(140);

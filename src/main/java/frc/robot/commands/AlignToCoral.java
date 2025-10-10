@@ -12,6 +12,11 @@ import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.networktables.BooleanPublisher;
+import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -21,8 +26,6 @@ import frc.robot.Controls;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.data.Constants.VisionConstants;
-import frc.robot.subsystems.DynamicPathing;
-import frc.robot.utils.WafflesUtilities;
 import frc.robot.utils.vision.LimelightHelpers;
 
 public class AlignToCoral extends Command {
@@ -39,6 +42,11 @@ public class AlignToCoral extends Command {
 
   private double latestTx;
   private boolean hasTarget = false;
+
+  private final NetworkTable softwareTable = NetworkTableInstance.getDefault().getTable("SoftwareInfo");
+  private final BooleanPublisher hasTargetNT = softwareTable.getBooleanTopic("Has Target").publish();
+  private final DoublePublisher tXNT = softwareTable.getDoubleTopic("Tx").publish();
+    
 
   private Trigger targetLost = new Trigger(() -> !LimelightHelpers.getTV(LIMELIGHT_KEY))
     .debounce(0.1);
@@ -77,7 +85,7 @@ public class AlignToCoral extends Command {
       RobotContainer.driveSubsystem.setControl(
         driveRobotRelative(
           -approachSpeed, 
-          MathUtil.clamp(latestTx / 30, -MAX_SPEED, MAX_SPEED), 
+          MathUtil.clamp(latestTx / 22, -MAX_SPEED, MAX_SPEED), 
           Controls.getDriveRotation().getRadians()
         )
       );
@@ -105,7 +113,9 @@ public class AlignToCoral extends Command {
         hasTarget = false;
       }
     }
-    SmartDashboard.putBoolean("HasTarget Smoothed", hasTarget);
+
+    tXNT.set(latestTx);
+    hasTargetNT.set(hasTarget);
   }
 
   private RobotCentric driveRobotRelative(double velocityX, double velocityY, double thetaVelocity)  {

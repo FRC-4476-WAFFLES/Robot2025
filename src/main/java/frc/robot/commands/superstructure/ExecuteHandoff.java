@@ -32,7 +32,8 @@ public class ExecuteHandoff extends Command {
     @Override
     public void initialize() {
         state = HandoffState.STARTED;
-
+        timer.stop();
+        timer.reset();
     }
 
     // Called every time the scheduler runs while the command is scheduled.
@@ -45,16 +46,12 @@ public class ExecuteHandoff extends Command {
                 if (RobotContainer.superstructure.atSetpoint()) {
                     // Ensure we are at a controlled starting point for the handoff
                     state = HandoffState.EXECUTING;
+                    timer.restart();
                 }
                 break;
             
             case EXECUTING:
                 RobotContainer.superstructure.applySuperstructureState(SuperstructureState.HANDOFF_EXECUTE);
-
-                // Start timer when entering EXECUTING state
-                if (!timer.hasElapsed(0)) {
-                    timer.restart();
-                }
 
                 // Timeout if not at setpoint within 1.5 seconds, and retry pickup if coral still ready
                 if (timer.get() > 1.5) {
@@ -107,7 +104,10 @@ public class ExecuteHandoff extends Command {
 
     // Called once the command ends or is interrupted.
     @Override
-    public void end(boolean interrupted) {}
+    public void end(boolean interrupted) {
+        timer.stop();
+        timer.reset();
+    }
 
     // Returns true when the command should end.
     @Override
