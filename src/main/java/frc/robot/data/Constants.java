@@ -263,7 +263,7 @@ public final class Constants {
     public static final double ZEROING_SPEED = -0.095; // Slow inwards speed
 
     // Pivot constants
-    public static final double PIVOT_ANGLE_DEADBAND = 1.4;
+    public static final double PIVOT_ANGLE_DEADBAND = 2;
 
     public static final double PIVOT_MIN_ANGLE = 0.0; // degrees 
     public static final double PIVOT_MAX_ANGLE = 270.0; // degrees
@@ -286,7 +286,7 @@ public final class Constants {
     public static final double PIVOT_CURRENT_THRESHOLD =  27.0; // amps - Current threshold for zeroing
 
     // PID Values
-    public static final double PIVOT_kP = 90.0;
+    public static final double PIVOT_kP = 150.0;
     public static final double PIVOT_kI = 0.0;
     public static final double PIVOT_kD = 0.0;
     public static final double PIVOT_kS = 0.25;

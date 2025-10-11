@@ -41,11 +41,13 @@ public class AlignToCoral extends Command {
   private final Supplier<Rotation2d> thetaVelocitySupplier;
 
   private double latestTx;
+  private double latestTy;
   private boolean hasTarget = false;
 
   private final NetworkTable softwareTable = NetworkTableInstance.getDefault().getTable("SoftwareInfo");
   private final BooleanPublisher hasTargetNT = softwareTable.getBooleanTopic("Has Target").publish();
   private final DoublePublisher tXNT = softwareTable.getDoubleTopic("Tx").publish();
+  private final DoublePublisher tYNT = softwareTable.getDoubleTopic("Ty").publish();
     
 
   private Trigger targetLost = new Trigger(() -> !LimelightHelpers.getTV(LIMELIGHT_KEY))
@@ -64,6 +66,7 @@ public class AlignToCoral extends Command {
   @Override
   public void initialize() {
     latestTx = 0;
+    latestTy = 100;
     hasTarget = false;
   }
 
@@ -85,7 +88,7 @@ public class AlignToCoral extends Command {
       RobotContainer.driveSubsystem.setControl(
         driveRobotRelative(
           -approachSpeed, 
-          MathUtil.clamp(latestTx / 22, -MAX_SPEED, MAX_SPEED), 
+          MathUtil.clamp(latestTx / 20, -MAX_SPEED, MAX_SPEED), 
           Controls.getDriveRotation().getRadians()
         )
       );
@@ -105,7 +108,20 @@ public class AlignToCoral extends Command {
   private void updateCamera() {
     if (LimelightHelpers.getTV(LIMELIGHT_KEY)) {
       if (LimelightHelpers.getTA(LIMELIGHT_KEY) > 0.3) {
+        // Reject new targets when our last target was so close it's partly covered by the ground intake
+        // [Rejects random flickering to background objects as coral enters intake] 
+        if (Math.abs(latestTx) < 15 && Math.abs(latestTy) < 6 && hasTarget) {
+          return;
+        }
+        // Reject switching to radically different targets
+        // [If multiple are in frame, pick just one]
+        if (Math.abs(LimelightHelpers.getTX(LIMELIGHT_KEY) - latestTx) > 7 && hasTarget) {
+          return;
+        }
+
+
         latestTx = LimelightHelpers.getTX(LIMELIGHT_KEY);
+        latestTy = LimelightHelpers.getTY(LIMELIGHT_KEY);
         hasTarget = true;
       }
     } else {
@@ -115,6 +131,7 @@ public class AlignToCoral extends Command {
     }
 
     tXNT.set(latestTx);
+    tYNT.set(latestTy);
     hasTargetNT.set(hasTarget);
   }
 

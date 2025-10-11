@@ -84,7 +84,7 @@ public class ExecuteHandoff extends Command {
                 }
 
                 // Stop intake 0.15s after coral detection
-                if (timer.get() > 0.15) {
+                if (timer.get() > 0.4) {
                     RobotContainer.intakeSubsystem.setIntakeSpeed(0);
                 }
 
