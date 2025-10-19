@@ -137,9 +137,9 @@ public class GroundIntake extends SimpleWafflesMechanism {
      * Configures the laserCAN
      */
     private void configureLaserCAN() {
-        rightLaserCan = new LaserCANIO("Right Ground Intake LaserCAN");
-        midLaserCan = new LaserCANIO("Middle Ground Intake LaserCAN");
-        leftLaserCan = new LaserCANIO("Left Ground Intake LaserCAN");
+        rightLaserCan = new LaserCANIO("Right Ground Intake LaserCAN", Constants.CANIds.groundIntakeLaserCanRight);
+        midLaserCan = new LaserCANIO("Middle Ground Intake LaserCAN", Constants.CANIds.groundIntakeLaserCanMid);
+        leftLaserCan = new LaserCANIO("Left Ground Intake LaserCAN", Constants.CANIds.groundIntakeLaserCanLeft);
 
         leftCoralSensor = new Trigger(
             () -> leftLaserDistance <= GroundIntakeConstants.CORAL_LEFT_DISTANCE_THRESHOLD

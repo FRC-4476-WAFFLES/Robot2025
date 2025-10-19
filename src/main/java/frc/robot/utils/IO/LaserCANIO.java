@@ -14,17 +14,17 @@ public class LaserCANIO {
 
     private double distance = 999999;
 
-    public LaserCANIO(String name) {
-        this(name, 999999);
+    public LaserCANIO(String name, int canID) {
+        this(name, canID, LaserCan.RangingMode.SHORT, 1000);
     }
 
-    public LaserCANIO(String name, double defaultDistance) {
+    public LaserCANIO(String name, int canID, LaserCan.RangingMode rangingMode, double defaultDistance) {
         distance = defaultDistance;
 
         // Initialize LaserCan with error handling
         try {
-            laserCAN = new LaserCan(Constants.CANIds.groundIntakeLaserCanLeft);
-            laserCAN.setRangingMode(LaserCan.RangingMode.SHORT);
+            laserCAN = new LaserCan(canID);
+            laserCAN.setRangingMode(rangingMode);
             laserCAN.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_20MS);  
         } catch (Exception e) {
             // throw new RuntimeException("Failed to initialize LaserCan: " + e.getMessage());
@@ -42,6 +42,9 @@ public class LaserCANIO {
                     if (measurement != null) {
                         if (measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
                             return (double)measurement.distance_mm;
+                        }
+                        if (measurement.status == LaserCan.LASERCAN_STATUS_OUT_OF_BOUNDS) {
+                            return 1000.0;
                         }
                     }
                 }

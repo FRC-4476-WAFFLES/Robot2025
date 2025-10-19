@@ -73,7 +73,7 @@ public class Intake extends SimpleWafflesMechanism {
 
     public Intake() {
         intake = new TalonFXIO(Constants.CANIds.manipulatorIntake);
-        distanceSensor = new LaserCANIO("Intake LaserCAN");
+        distanceSensor = new LaserCANIO("Intake LaserCAN", Constants.CANIds.manipulatorLaserCan, LaserCan.RangingMode.LONG, 1000);
 
         // Configure hardware
         configureIntakeMotor();
