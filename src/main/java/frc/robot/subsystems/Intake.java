@@ -66,7 +66,8 @@ public class Intake extends SimpleWafflesMechanism {
     private final DoublePublisher intakeSetpointNT = networkTable.getDoubleTopic("Intake Setpoint").publish();
     private final DoublePublisher intakeCurrentDrawNT = networkTable.getDoubleTopic("Intake Current Draw").publish();
 
-    private final BooleanPublisher isOutakingAlgaeNT = networkTable.getBooleanTopic("IsOutaking").publish();
+    private final BooleanPublisher isOutakingAlgaeNT = networkTable.getBooleanTopic("Is Outaking").publish();
+    private final DoublePublisher sensorDistanceNT = networkTable.getDoubleTopic("Sensor Distance").publish();
 
     // Deferred Refreshers
 
@@ -150,6 +151,7 @@ public class Intake extends SimpleWafflesMechanism {
     @Override
     public void periodicImpl() {
         currentDistance = distanceSensor.update();
+        sensorDistanceNT.set(currentDistance);
 
         // Determine intake state
         if (!manipulatorLoaded) {
