@@ -381,12 +381,12 @@ public class RobotContainer {
     // Name is legacy that isn't worth changing in pathplanner at this point
     NamedCommands.registerCommand("Set Position L2", 
       // Commands.deadline(
-      //   SuperstructureControl.L4ScorePrepCommand()
+        SuperstructureControl.L4ScorePrepCommand()
       // )
-      Commands.runOnce(() -> {
-        RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.HANDOFF_CLEAR);
-        RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.HANDOFF_CLEAR);
-      })
+      // Commands.runOnce(() -> {
+      //   RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.HANDOFF_CLEAR);
+      //   RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.HANDOFF_CLEAR);
+      // })
     );
 
     // Direct position commands for both elevator and pivot

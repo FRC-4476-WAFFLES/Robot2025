@@ -200,7 +200,7 @@ public final class Constants {
     // Makes the elevator go up more in net autos, we can tip over but it *is* faster! :)
     public static final boolean USE_RISKY_NET_AUTO = true;
     public static final boolean USE_CORAL_SCORE_PATH_PLANNING = false; // Too slow / inconsistently latent on rio2
-    public static final double AUTO_SCORE_WAIT_TIME = 0.3; // Wait before driving away to allow arm to swing out
+    public static final double AUTO_SCORE_WAIT_TIME = 0.1; // Wait before driving away to allow arm to swing out
 
     /** A collection of scoring parameters */
     public record CoralScoringParameters(

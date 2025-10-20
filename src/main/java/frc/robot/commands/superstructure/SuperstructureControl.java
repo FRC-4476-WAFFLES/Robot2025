@@ -109,7 +109,7 @@ public class SuperstructureControl {
                 if (interrupted) {
                     return;
                 }
-                RobotContainer.superstructure.applySuperstructureState(SuperstructureState.L4);
+                RobotContainer.superstructure.applySuperstructureState(SuperstructureState.L4_FAST);
             },
             () -> DynamicPathing.isElevatorL4Ready(), 
             RobotContainer.superstructure.elevator
