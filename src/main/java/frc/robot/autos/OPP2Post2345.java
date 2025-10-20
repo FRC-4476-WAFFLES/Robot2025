@@ -7,26 +7,26 @@ package frc.robot.autos;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.commands.AlignToPose;
+import frc.robot.commands.AutoAlignToPose;
 import frc.robot.data.AutoCoordinates;
+import frc.robot.utils.auto.WafflesAuto;
 
-public class OPP2Post2345 extends SequentialCommandGroup {
+public class OPP2Post2345 extends WafflesAuto {
   public OPP2Post2345() {
     addCommands(
       NamedCommands.getCommand("Set Coral Loaded"),
       Commands.parallel(
-        new AlignToPose(AutoCoordinates.Post2),
+        new AutoAlignToPose(AutoCoordinates.Post2),
         NamedCommands.getCommand("Set Position L2")
       ),
       NamedCommands.getCommand("Autoscore L4 Right"),
       Commands.parallel(
-        new AlignToPose(AutoCoordinates.CS2),
+        new AutoAlignToPose(AutoCoordinates.CS2),
         NamedCommands.getCommand("Set Position L2")
       ),
       NamedCommands.getCommand("Auto Coral Intake"),
       Commands.parallel(
-        new AlignToPose(AutoCoordinates.Post3),
+        new AutoAlignToPose(AutoCoordinates.Post3),
         NamedCommands.getCommand("Set Position L2")
       ),
       NamedCommands.getCommand("Autoscore L4 Right")

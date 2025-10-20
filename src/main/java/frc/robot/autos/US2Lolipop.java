@@ -7,46 +7,46 @@ package frc.robot.autos;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.commands.AlignToPose;
+import frc.robot.commands.AutoAlignToPose;
 import frc.robot.data.AutoCoordinates;
+import frc.robot.utils.auto.WafflesAuto;
 
-public class US2Lolipop extends SequentialCommandGroup {
+public class US2Lolipop extends WafflesAuto {
   public US2Lolipop() {
     addCommands(
       NamedCommands.getCommand("Set Coral Loaded"),
       Commands.parallel(
-        new AlignToPose(AutoCoordinates.Post9),
+        new AutoAlignToPose(AutoCoordinates.Post9),
         NamedCommands.getCommand("Set Position L2")
       ),
       NamedCommands.getCommand("Autoscore L4 Left"),
       Commands.parallel(
-        new AlignToPose(AutoCoordinates.LP3),
+        new AutoAlignToPose(AutoCoordinates.LP3),
         NamedCommands.getCommand("Set Position Intake")
       ),
       NamedCommands.getCommand("Lolipop Intake"),
       Commands.parallel(
-        new AlignToPose(AutoCoordinates.Post8),
+        new AutoAlignToPose(AutoCoordinates.Post8),
         NamedCommands.getCommand("Set Position L2")
       ),
       NamedCommands.getCommand("Autoscore L4 Left"),
       Commands.parallel(
-        new AlignToPose(AutoCoordinates.LP2),
+        new AutoAlignToPose(AutoCoordinates.LP2),
         NamedCommands.getCommand("Set Position Intake")
       ),
       NamedCommands.getCommand("Lolipop Intake"),
       Commands.parallel(
-        new AlignToPose(AutoCoordinates.Post6),
+        new AutoAlignToPose(AutoCoordinates.Post6),
         NamedCommands.getCommand("Set Position L2")
       ),
       NamedCommands.getCommand("Autoscore L4 Right"),
       Commands.parallel(
-        new AlignToPose(AutoCoordinates.CS1),
+        new AutoAlignToPose(AutoCoordinates.CS1),
         NamedCommands.getCommand("Set Position Intake")
       ),
       NamedCommands.getCommand("Auto Coral Intake"),
       Commands.parallel(
-        new AlignToPose(AutoCoordinates.Post10),
+        new AutoAlignToPose(AutoCoordinates.Post10),
         NamedCommands.getCommand("Set Position L2")
       ),
       NamedCommands.getCommand("Autoscore L4 Right")      

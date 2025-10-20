@@ -19,10 +19,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
-import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -41,9 +38,7 @@ import frc.robot.commands.superstructure.ZeroMechanisms;
 import frc.robot.commands.test.TestDriveAuto;
 import frc.robot.commands.test.TestElevatorAuto;
 import frc.robot.commands.test.WheelRadiusCharacterization;
-import frc.robot.commands.AlignToCoral;
-import frc.robot.data.Constants;
-import frc.robot.data.Constants.ManipulatorConstants;
+import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.ScoringConstants;
 import frc.robot.data.Constants.VisionConstants;
 import frc.robot.data.TunerConstants;
@@ -56,6 +51,7 @@ import frc.robot.subsystems.Telemetry;
 import frc.robot.subsystems.groundsuperstructure.GroundIntakeSuperstructure;
 import frc.robot.subsystems.superstructure.Superstructure;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
+import frc.robot.utils.auto.WafflesAutoBuilder;
 import frc.robot.utils.vision.LimelightHelpers;
 
 
@@ -70,7 +66,7 @@ public class RobotContainer {
 
   /* Global Robot State */
   private SendableChooser<Command> autoChooser;
-  private  SendableChooser<Command> testChooser;
+  private SendableChooser<Command> testChooser;
   public static boolean isOperatorOverride = false;
   public static boolean isRunningL1Intake = false;
   public static boolean isGroundIntakingAlgae = false;
@@ -125,7 +121,12 @@ public class RobotContainer {
     registerNamedCommands();
 
     // Build an auto chooser. This will use Commands.none() as the default option.
-    autoChooser = AutoBuilder.buildAutoChooser();
+    if (CodeConstants.USE_PATHPLANNER_AUTOS) {
+      autoChooser = AutoBuilder.buildAutoChooser();
+    } else {
+      autoChooser = WafflesAutoBuilder.getAutoChooser();
+    }
+    
     SmartDashboard.putData("Auto Chooser", autoChooser);
 
     testChooser = buildTestChooser(); 
