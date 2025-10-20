@@ -7,50 +7,40 @@ package frc.robot.autos;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.commands.AutoAlignToPose;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.data.AutoCoordinates;
-import frc.robot.utils.auto.WafflesAuto;
+import frc.robot.commands.drive.AutoAlignToPose;
 
-public class US2Post98710 extends WafflesAuto {
+public class US2Post98710 extends SequentialCommandGroup {
   public US2Post98710() {
     addCommands(
       NamedCommands.getCommand("Set Coral"),
-      Commands.parallel(
-        new AutoAlignToPose(AutoCoordinates.Post9),
-        NamedCommands.getCommand("Set Position L2")
-      ),
-      NamedCommands.getCommand("Autoscore L4 Left"),
-      Commands.parallel(
-        new AutoAlignToPose(AutoCoordinates.CS1),
-        NamedCommands.getCommand("Set Position Intake")
-      ),
-      NamedCommands.getCommand("Auto Coral Intake"),
-      Commands.parallel(
-        new AutoAlignToPose(AutoCoordinates.Post8),
-        NamedCommands.getCommand("Set Position L2")
-      ),
-      NamedCommands.getCommand("Autoscore L4 Left"),
-      Commands.parallel(
-        new AutoAlignToPose(AutoCoordinates.CS1),
-        NamedCommands.getCommand("Set Position Intake")
-      ),
-      NamedCommands.getCommand("Auto Coral Intake"),
-      Commands.parallel(
-        new AutoAlignToPose(AutoCoordinates.Post7),
-        NamedCommands.getCommand("Set Position L2")
-      ),
-      NamedCommands.getCommand("Autoscore L4 Right"),
-      Commands.parallel(
-        new AutoAlignToPose(AutoCoordinates.CS1),
-        NamedCommands.getCommand("Set Position Intake")
-      ),
-      NamedCommands.getCommand("Auto Coral Intake"),
-      Commands.parallel(
-        new AutoAlignToPose(AutoCoordinates.Post10),
-        NamedCommands.getCommand("Set Position L2")
-      ),
-      NamedCommands.getCommand("Autoscore L4 Right")
+      
+      AutoUtils.prepareAndScore(AutoCoordinates.Post9, false),
 
+      Commands.parallel(
+        AutoUtils.driveAwayFromPost(AutoCoordinates.Post9, AutoCoordinates.CS1),
+        NamedCommands.getCommand("Set Position Intake")
+      ),
+      NamedCommands.getCommand("Auto Coral Intake"),
+
+      AutoUtils.prepareAndScore(AutoCoordinates.Post8, false),
+
+      Commands.parallel(
+        AutoUtils.driveAwayFromPost(AutoCoordinates.Post8, AutoCoordinates.CS1),
+        NamedCommands.getCommand("Set Position Intake")
+      ),
+      NamedCommands.getCommand("Auto Coral Intake"),
+
+      AutoUtils.prepareAndScore(AutoCoordinates.Post7, false),
+
+      Commands.parallel(
+        AutoUtils.driveAwayFromPost(AutoCoordinates.Post7, AutoCoordinates.CS1),
+        NamedCommands.getCommand("Set Position Intake")
+      ),
+      NamedCommands.getCommand("Auto Coral Intake"),
+
+      AutoUtils.prepareAndScore(AutoCoordinates.Post10, false)
     );
   }
 }

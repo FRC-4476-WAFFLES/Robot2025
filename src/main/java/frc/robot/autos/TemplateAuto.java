@@ -4,11 +4,11 @@
 
 package frc.robot.autos;
 
-import frc.robot.commands.AutoAlignToPose;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.commands.drive.AutoAlignToPose;
 import frc.robot.data.AutoCoordinates;
-import frc.robot.utils.auto.WafflesAuto;
 
-public class TemplateAuto extends WafflesAuto {
+public class TemplateAuto extends SequentialCommandGroup {
   public TemplateAuto() {
     addCommands(
       new AutoAlignToPose(AutoCoordinates.Post12)

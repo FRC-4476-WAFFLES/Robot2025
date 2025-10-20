@@ -28,8 +28,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
-import frc.robot.commands.AlignToCoral;
-import frc.robot.commands.AlignToPose;
+import frc.robot.commands.drive.AlignToCoral;
+import frc.robot.commands.drive.AlignToPose;
 import frc.robot.commands.intake.AlgaeOutake;
 import frc.robot.commands.scoring.PickupAlgae;
 import frc.robot.commands.scoring.ScoreCoral;
@@ -917,7 +917,7 @@ public class DynamicPathing extends SubsystemBase {
 
         // If too close or overridden just use PID
         if (!ScoringConstants.USE_CORAL_SCORE_PATH_PLANNING || startingPose.getTranslation().getDistance(targetCoralPose.getTranslation()) < 0.6) {
-            return ScoreCoral.scoreCoralWithPathAndAlgae(new InstantCommand(), targetCoralPose, Double.MAX_VALUE);
+            return ScoreCoral.scoreCoralWithPathAndAlgae(new InstantCommand(), targetCoralPose);
         }
 
         // Calculate offset pose to generate pathing command to 
@@ -936,10 +936,10 @@ public class DynamicPathing extends SubsystemBase {
         Pose2d offsetCoralPose = new Pose2d(offsetTranslation, targetCoralPose.getRotation());
 
         
-        var path = DynamicPathing.generateComplexPath(startingPose, null, offsetCoralPose, CORAL_PATH_END_SPEED);
+        var path = DynamicPathing.generateComplexPath(startingPose, null, offsetCoralPose);
         if (path.isPresent()){ // If path isn't present, aka we're too close to the target to reasonably path, just give up
             var pathingCommand = AutoBuilder.followPath(path.get());
-            return ScoreCoral.scoreCoralWithPathAndAlgae(pathingCommand, targetCoralPose, CORAL_PATH_END_SPEED);
+            return ScoreCoral.scoreCoralWithPathAndAlgae(pathingCommand, targetCoralPose);
         }
         
         // Return null if cannot path

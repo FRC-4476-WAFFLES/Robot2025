@@ -23,8 +23,12 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.DriveTeleop;
+import frc.robot.autos.OPP2Lolipop;
+import frc.robot.autos.OPP2Post2345;
+import frc.robot.autos.US2Lolipop;
+import frc.robot.autos.US2Post98710;
 import frc.robot.commands.ResetGyroHeading;
+import frc.robot.commands.drive.DriveTeleop;
 import frc.robot.commands.intake.AlgaeOutake;
 import frc.robot.commands.intake.AxisIntakeControl;
 import frc.robot.commands.intake.CoralOutake;
@@ -51,7 +55,6 @@ import frc.robot.subsystems.Telemetry;
 import frc.robot.subsystems.groundsuperstructure.GroundIntakeSuperstructure;
 import frc.robot.subsystems.superstructure.Superstructure;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
-import frc.robot.utils.auto.WafflesAutoBuilder;
 import frc.robot.utils.vision.LimelightHelpers;
 
 
@@ -124,7 +127,11 @@ public class RobotContainer {
     if (CodeConstants.USE_PATHPLANNER_AUTOS) {
       autoChooser = AutoBuilder.buildAutoChooser();
     } else {
-      autoChooser = WafflesAutoBuilder.getAutoChooser();
+      autoChooser = new SendableChooser<>();
+      autoChooser.addOption("OPP2 Lolipop", new OPP2Lolipop());
+      autoChooser.addOption("OPP2 2,3,4,5", new OPP2Post2345());
+      autoChooser.addOption("US2 Lolipop", new US2Lolipop());
+      autoChooser.addOption("US2 9,8,7,10", new US2Post98710());
     }
     
     SmartDashboard.putData("Auto Chooser", autoChooser);
@@ -373,9 +380,13 @@ public class RobotContainer {
     // Sends the elevator up in stages in preparation for L4 score
     // Name is legacy that isn't worth changing in pathplanner at this point
     NamedCommands.registerCommand("Set Position L2", 
-      Commands.deadline(
-        SuperstructureControl.L4ScorePrepCommand()
-      )
+      // Commands.deadline(
+      //   SuperstructureControl.L4ScorePrepCommand()
+      // )
+      Commands.runOnce(() -> {
+        RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.HANDOFF_CLEAR);
+        RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.HANDOFF_CLEAR);
+      })
     );
 
     // Direct position commands for both elevator and pivot
