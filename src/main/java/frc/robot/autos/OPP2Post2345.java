@@ -41,5 +41,6 @@ public class OPP2Post2345 extends SequentialCommandGroup {
 
       AutoUtils.prepareAndScore(AutoCoordinates.Post5, false)
     );
+    AutoUtils.resetOdometry(AutoCoordinates.OPP2);
   }
 }

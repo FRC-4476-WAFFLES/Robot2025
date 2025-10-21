@@ -42,5 +42,6 @@ public class US2Post98710 extends SequentialCommandGroup {
 
       AutoUtils.prepareAndScore(AutoCoordinates.Post10, false)
     );
+    AutoUtils.resetOdometry(AutoCoordinates.OPP2);
   }
 }

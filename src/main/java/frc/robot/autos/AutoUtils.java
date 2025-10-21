@@ -4,6 +4,7 @@
 
 package frc.robot.autos;
 
+import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.MathUtil;
@@ -12,12 +13,13 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.RobotContainer;
 import frc.robot.commands.drive.AutoAlignToPose;
 import frc.robot.data.AutoCoordinates;
 import frc.robot.subsystems.DynamicPathing;
 import frc.robot.utils.WafflesUtilities;
-
+import frc.robot.RobotContainer;
 public class AutoUtils {
     public static final double maxApproachOffsetDistance = 1.5;
     public static Pose2d evaluateCoralApproachGoal(Pose2d target) {
@@ -66,5 +68,19 @@ public class AutoUtils {
 
     public static Command driveAwayFromPost(Pose2d post, Pose2d target) {
         return new AutoAlignToPose(() -> evaluateCoralBackoffGoal(post, target));
+    }
+
+    public static Command resetOdometry(Pose2d instantPose){
+        return new InstantCommand(
+            ()->{
+                RobotContainer.driveSubsystem.resetTranslation(
+                WafflesUtilities.FlipIfRedAlliance(instantPose).getTranslation()
+                );
+                RobotContainer.driveSubsystem.resetRotation(
+                WafflesUtilities.FlipIfRedAlliance(instantPose).getRotation()
+                );
+            });
+
+         
     }
 }

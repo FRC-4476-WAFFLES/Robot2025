@@ -42,5 +42,6 @@ public class OPP2Lolipop extends SequentialCommandGroup {
 
       AutoUtils.prepareAndScore(AutoCoordinates.Post8, false)
     );
+    AutoUtils.resetOdometry(AutoCoordinates.OPP2);
   }
 }
