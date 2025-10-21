@@ -113,6 +113,6 @@ public class SuperstructureControl {
             },
             () -> DynamicPathing.isElevatorL4Ready(), 
             RobotContainer.superstructure.elevator
-        ).withTimeout(2);
+        ).withTimeout(5);
     }
 }

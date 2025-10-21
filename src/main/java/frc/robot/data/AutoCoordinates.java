@@ -16,8 +16,8 @@ public class AutoCoordinates {
     public static final Pose2d LP3 = new Pose2d(1.209, 5.857, Rotation2d.fromDegrees(-49.196));
     
     //Coral stations
-    public static final Pose2d CS1 = new Pose2d(2.239, 6.655, Rotation2d.fromDegrees(-53.427));
-    public static final Pose2d CS2 = new Pose2d(2.074, 1.357, Rotation2d.fromDegrees(53.427));
+    public static final Pose2d CS1 = new Pose2d(2.239, 6.655, Rotation2d.fromDegrees(-40));
+    public static final Pose2d CS2 = new Pose2d(2.074, 1.357, Rotation2d.fromDegrees(40));
 
     //Coral posts
     public static final Pose2d Post1 = new Pose2d(5.352, 2.862, Rotation2d.fromDegrees(120));

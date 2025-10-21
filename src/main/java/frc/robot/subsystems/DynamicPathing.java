@@ -308,11 +308,8 @@ public class DynamicPathing extends SubsystemBase {
                 break;
             
             case HUNT_CORAL: {
-                    cmd = new AlignToCoral(
-                        Controls::getDriveY, 
-                        Controls::getDriveX, 
-                        Controls::getDriveRotation
-                    ).onlyWhile(() -> RobotContainer.groundSuperstructure.isIntakingHandoff());
+                    cmd = new AlignToCoral()
+                        .onlyWhile(() -> RobotContainer.groundSuperstructure.isIntakingHandoff());
                 }
                 break;
 

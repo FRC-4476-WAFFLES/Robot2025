@@ -6,6 +6,8 @@ package frc.robot.subsystems.groundsuperstructure;
 
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.StringPublisher;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.GroundPivotConstants.GroundPivotPosition;
@@ -36,6 +38,8 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
     private StringPublisher statePublisher = networkTable.getStringTopic("Current State").publish();
     private BooleanPublisher intakingHandoff = networkTable.getBooleanTopic("Intaking Handoff").publish();
     
+
+    private Timer simTimer = new Timer();
 
     @Override
     protected void periodicImpl() {
@@ -115,6 +119,18 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
                 } else {
                     intake.setGroundIntakeSetpoint(GroundIntakeState.PREPARE_HANDOFF);
                     pivot.applySetpoint(GroundPivotPosition.DEPLOYED);
+                }
+
+                // Pretend intake happened in sim after 3 seconds
+                if (RobotBase.isSimulation()) {
+                    if (!simTimer.isRunning()) {
+                        simTimer.start();
+                    }
+                    if (simTimer.get() > 3) {
+                        currentState = GroundIntakeSuperstructureState.READY_HANDOFF_STATE;
+                        simTimer.reset();
+                        simTimer.stop();
+                    }
                 }
             break;
 
@@ -217,6 +233,12 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
             currentState = GroundIntakeSuperstructureState.INTAKE_HANDOFF_STATE;
         } else if (currentState == GroundIntakeSuperstructureState.INTAKE_HANDOFF_STATE) {
             currentState = GroundIntakeSuperstructureState.SPIT_OUT_STATE; // Spit out if interrupted mid intake
+        }
+    }
+
+    public void startHandoffIntake() {
+        if (currentState == GroundIntakeSuperstructureState.STOWED) {
+            currentState = GroundIntakeSuperstructureState.INTAKE_HANDOFF_STATE;
         }
     }
 

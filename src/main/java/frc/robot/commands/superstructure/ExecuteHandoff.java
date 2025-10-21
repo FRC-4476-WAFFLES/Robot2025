@@ -1,5 +1,6 @@
 package frc.robot.commands.superstructure;
 
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
@@ -94,8 +95,6 @@ public class ExecuteHandoff extends Command {
                 }
                 break;
             case FINISHED:
-                RobotContainer.intakeSubsystem.setIntakeSpeed(0);
-                timer.stop();
                 break;
         }
 
@@ -107,6 +106,12 @@ public class ExecuteHandoff extends Command {
     public void end(boolean interrupted) {
         timer.stop();
         timer.reset();
+
+        RobotContainer.intakeSubsystem.setIntakeSpeed(0);
+
+        if (RobotBase.isSimulation()) {
+            RobotContainer.telemetry.manipulatorCoralSimLoaded = true;
+        }
     }
 
     // Returns true when the command should end.

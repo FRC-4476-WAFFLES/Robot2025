@@ -66,6 +66,7 @@ public class AlignToPose extends Command {
   private double endingDebounce = 0;
   private boolean lockWheelsOnceFinished = true;
   private boolean allianceFlipping = false;
+  private boolean goalPoseChanged = true;
 
   private double lastMaxAcceleration = maxAccelerationElevatorDown; // Cache acceleration to reduce allocations
 
@@ -237,14 +238,18 @@ public class AlignToPose extends Command {
     );
     Translation2d velocityTowardsTarget = getVelocityTowardsTarget(currentSpeeds, angleToTarget); // This is in target space
 
-    // Approach velocity is negative since we PID towards zero
-    if (distanceToTarget > 0.3 && Math.abs(velocityTowardsTarget.getY()) > 0.5) {
+    if (
+      (distanceToTarget > 0.3 && Math.abs(velocityTowardsTarget.getY()) > 0.5) || 
+      goalPoseChanged
+    ) {
+      // Approach velocity is negative since we PID towards zero
       approachPidController.reset(distanceToTarget, 
         Math.min(
           0.0,
           -velocityTowardsTarget.getX()
       ));
     }
+    
     // Drive to pose with PID
 
     // Blend between feedforward and feedback control
@@ -344,7 +349,8 @@ public class AlignToPose extends Command {
 
   private void updateGoalPose() {
     var rawPose = goalPoseSupplier.get();
-    if (lastGoalPoseRaw.equals(rawPose)) {
+    if (lastGoalPoseRaw.relativeTo(rawPose).getTranslation().getNorm() < 0.01) {
+      goalPoseChanged = false;
       return;
     }
 
@@ -354,6 +360,7 @@ public class AlignToPose extends Command {
       goalPose = rawPose;
     }
 
+    goalPoseChanged = true;
     lastGoalPoseRaw = rawPose;
   }
 

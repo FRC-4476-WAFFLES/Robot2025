@@ -31,7 +31,7 @@ public class Superstructure extends SimpleWafflesMechanism {
     ALGAE_REST(218, 0.0),
     ALGAE_GROUND_PICKUP(83,0.0),
 
-    L4(200,1),
+    L4(180,1),
     L3(200,0.4),
     L2(173,0.0),
 

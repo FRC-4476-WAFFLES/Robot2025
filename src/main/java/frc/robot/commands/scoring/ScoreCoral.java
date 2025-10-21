@@ -120,6 +120,8 @@ public class ScoreCoral extends SequentialCommandGroup {
         )
       ),
 
+      Commands.waitSeconds(ScoringConstants.SCORE_WAIT_TIME),
+
       // Rip off coral
       new ParallelDeadlineGroup(
         // Constrained backoff
@@ -256,9 +258,6 @@ public class ScoreCoral extends SequentialCommandGroup {
     Pose2d targetCoralPose = RobotContainer.dynamicPathingSubsystem.getNearestCoralScoringLocation();
     Command scoreCommand = scoreCoralWithPath(new InstantCommand(), targetCoralPose);
 
-    return Commands.sequence(
-      scoreCommand,
-      Commands.waitSeconds(ScoringConstants.AUTO_SCORE_WAIT_TIME)
-    );
+    return scoreCommand;
   }
 }

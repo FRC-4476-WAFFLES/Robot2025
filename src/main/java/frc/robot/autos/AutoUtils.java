@@ -15,9 +15,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.RobotContainer;
+import frc.robot.commands.drive.AlignToCoral;
 import frc.robot.commands.drive.AutoAlignToPose;
-import frc.robot.data.AutoCoordinates;
+import frc.robot.commands.intake.CoralOutake;
+import frc.robot.commands.superstructure.ExecuteHandoff;
+import frc.robot.commands.superstructure.SuperstructureControl;
 import frc.robot.subsystems.DynamicPathing;
+import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
+import frc.robot.subsystems.telemetry.Telemetry;
 import frc.robot.utils.WafflesUtilities;
 import frc.robot.RobotContainer;
 public class AutoUtils {
@@ -55,7 +60,10 @@ public class AutoUtils {
         return Commands.sequence( 
             Commands.parallel(
                 new AutoAlignToPose(() -> evaluateCoralApproachGoal(post)),
-                NamedCommands.getCommand("Set Position L2") // Legacy name
+                Commands.sequence(
+                    new ExecuteHandoff().onlyIf(() -> RobotContainer.triggerHandoff.getAsBoolean()), // Handoff coral while driving to score
+                    SuperstructureControl.L4ScorePrepCommand()
+                )
             ),
 
             Commands.either(
@@ -66,21 +74,62 @@ public class AutoUtils {
         );
     }
 
+    private static boolean shouldSwitchToHunting() {
+        return DynamicPathing.getDistanceToReef() > 2 + DynamicPathing.REEF_INRADIUS && RobotContainer.telemetry.coralTracking.hasTarget();
+    }
+
+    private static boolean coralTargetLost() {
+        return !RobotContainer.telemetry.coralTracking.hasTarget();
+    }
+
+    public static Command huntCoral() {
+        return new AlignToCoral()
+        .onlyWhile(() -> !RobotContainer.groundSuperstructure.isHandoffHappening());
+    }
+
     public static Command driveAwayFromPost(Pose2d post, Pose2d target) {
         return new AutoAlignToPose(() -> evaluateCoralBackoffGoal(post, target));
     }
 
     public static Command resetOdometry(Pose2d instantPose){
-        return new InstantCommand(
-            ()->{
-                RobotContainer.driveSubsystem.resetTranslation(
+        return new InstantCommand(() -> {
+            RobotContainer.driveSubsystem.resetTranslation(
                 WafflesUtilities.FlipIfRedAlliance(instantPose).getTranslation()
-                );
-                RobotContainer.driveSubsystem.resetRotation(
+            );
+            RobotContainer.driveSubsystem.resetRotation(
                 WafflesUtilities.FlipIfRedAlliance(instantPose).getRotation()
-                );
-            });
+            );
+        });
+    }
 
          
+    private static Command placeAndAwaitIntake() {
+        return Commands.sequence(
+            new CoralOutake(),
+            Commands.runOnce(() -> RobotContainer.groundSuperstructure.startHandoffIntake()),
+            Commands.waitUntil(() -> DynamicPathing.isElevatorRetractionSafe()),      
+            Commands.runOnce(() -> RobotContainer.superstructure.applySuperstructureState(SuperstructureState.HANDOFF_READY)),
+            Commands.waitUntil(() -> RobotContainer.triggerHandoff.getAsBoolean())
+            // Handoff gets executed when score command starts
+        );
+    }
+
+    public static Command intakeSequence(Pose2d post, Pose2d target) {
+        return Commands.deadline(
+            placeAndAwaitIntake(),
+            Commands.sequence( 
+                driveAwayFromPost(post, target).until(AutoUtils::shouldSwitchToHunting),
+                huntCoral().until(AutoUtils::coralTargetLost)
+            ).repeatedly()
+        );
+    }
+
+    public static Command lolipopIntakeSequence(Pose2d post, Pose2d target) {
+        return Commands.deadline(
+            placeAndAwaitIntake(),
+            Commands.sequence( 
+                driveAwayFromPost(post, target)
+            )
+        );
     }
 }

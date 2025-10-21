@@ -14,32 +14,18 @@ public class OPP2Post2345 extends SequentialCommandGroup {
   public OPP2Post2345() {
     addCommands(
       NamedCommands.getCommand("Set Coral Loaded"),
-      
-      AutoUtils.prepareAndScore(AutoCoordinates.Post2, false),
 
-      Commands.parallel(
-        AutoUtils.driveAwayFromPost(AutoCoordinates.Post2, AutoCoordinates.CS2),
-        NamedCommands.getCommand("Set Position Intake")
-      ),
-      NamedCommands.getCommand("Auto Coral Intake"),
+      AutoUtils.prepareAndScore(AutoCoordinates.Post2, false),
+      AutoUtils.intakeSequence(AutoCoordinates.Post2, AutoCoordinates.CS2),
 
       AutoUtils.prepareAndScore(AutoCoordinates.Post3, false),
+      AutoUtils.intakeSequence(AutoCoordinates.Post3, AutoCoordinates.CS2),
 
-      Commands.parallel(
-        AutoUtils.driveAwayFromPost(AutoCoordinates.Post3, AutoCoordinates.CS2),
-        NamedCommands.getCommand("Set Position Intake")
-      ),
-      NamedCommands.getCommand("Auto Coral Intake"),
+      AutoUtils.prepareAndScore(AutoCoordinates.Post4, true),
+      AutoUtils.intakeSequence(AutoCoordinates.Post4, AutoCoordinates.CS2),
 
-      AutoUtils.prepareAndScore(AutoCoordinates.Post4, false),
-
-      Commands.parallel(
-        AutoUtils.driveAwayFromPost(AutoCoordinates.Post4, AutoCoordinates.CS2),
-        NamedCommands.getCommand("Set Position Intake")
-      ),
-      NamedCommands.getCommand("Auto Coral Intake"),
-
-      AutoUtils.prepareAndScore(AutoCoordinates.Post5, false)
+      AutoUtils.prepareAndScore(AutoCoordinates.Post5, false),
+      AutoUtils.intakeSequence(AutoCoordinates.Post5, AutoCoordinates.CS2)
     );
     AutoUtils.resetOdometry(AutoCoordinates.OPP2);
   }

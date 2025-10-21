@@ -8,7 +8,6 @@ import java.util.function.Supplier;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import frc.robot.utils.WafflesUtilities;
 
 /** Aligns to a pose with automatic alliance flipping & custom deadzones. For use in auto. */
 public class AutoAlignToPose extends AlignToPose {

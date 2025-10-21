@@ -16,31 +16,17 @@ public class US2Lolipop extends SequentialCommandGroup {
     addCommands(
       NamedCommands.getCommand("Set Coral Loaded"),
 
-      AutoUtils.prepareAndScore(AutoCoordinates.Post9, false),
+      AutoUtils.prepareAndScore(AutoCoordinates.Post9, true),
+      AutoUtils.lolipopIntakeSequence(AutoCoordinates.Post9, AutoCoordinates.LP3),
 
-      Commands.parallel(
-        AutoUtils.driveAwayFromPost(AutoCoordinates.Post9, AutoCoordinates.LP3),
-        NamedCommands.getCommand("Set Position Intake")
-      ),
-      NamedCommands.getCommand("Lolipop Intake"),
+      AutoUtils.prepareAndScore(AutoCoordinates.Post8, true),
+      AutoUtils.lolipopIntakeSequence(AutoCoordinates.Post8, AutoCoordinates.LP2),
 
-      AutoUtils.prepareAndScore(AutoCoordinates.Post8, false),
+      AutoUtils.prepareAndScore(AutoCoordinates.Post6, true),
+      AutoUtils.intakeSequence(AutoCoordinates.Post6, AutoCoordinates.CS1),
 
-      Commands.parallel(
-        AutoUtils.driveAwayFromPost(AutoCoordinates.Post8, AutoCoordinates.LP2),
-        NamedCommands.getCommand("Set Position Intake")
-      ),
-      NamedCommands.getCommand("Lolipop Intake"),
-
-      AutoUtils.prepareAndScore(AutoCoordinates.Post6, false),
-
-      Commands.parallel(
-        AutoUtils.driveAwayFromPost(AutoCoordinates.Post6, AutoCoordinates.CS1),
-        NamedCommands.getCommand("Set Position Intake")
-      ),
-      NamedCommands.getCommand("Auto Coral Intake"),
-
-      AutoUtils.prepareAndScore(AutoCoordinates.Post8, false)   
+      AutoUtils.prepareAndScore(AutoCoordinates.Post10, false),
+      AutoUtils.intakeSequence(AutoCoordinates.Post10, AutoCoordinates.CS1)
     );
     AutoUtils.resetOdometry(AutoCoordinates.OPP2);
   }

@@ -51,10 +51,10 @@ import frc.robot.subsystems.DynamicPathing;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Lights;
 import frc.robot.subsystems.MechanismPoses;
-import frc.robot.subsystems.Telemetry;
 import frc.robot.subsystems.groundsuperstructure.GroundIntakeSuperstructure;
 import frc.robot.subsystems.superstructure.Superstructure;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
+import frc.robot.subsystems.telemetry.Telemetry;
 import frc.robot.utils.vision.LimelightHelpers;
 
 
@@ -74,6 +74,7 @@ public class RobotContainer {
   public static boolean isRunningL1Intake = false;
   public static boolean isGroundIntakingAlgae = false;
   public static Trigger isHeadingLockedToL1;
+  public static Trigger triggerHandoff;
 
   /* Hardware Subsystems */
   public static final DriveSubsystem driveSubsystem = TunerConstants.createDrivetrain();
@@ -98,7 +99,6 @@ public class RobotContainer {
     Controls.operatorController::getLeftTriggerAxis
   );
 
-  Trigger triggerHandoff;
 
   /** The static entry point for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -448,7 +448,7 @@ public class RobotContainer {
       Commands.sequence(
         Commands.parallel(
           new CoralOutake(),
-          Commands.runOnce(() -> groundSuperstructure.handoffIntakeToggle())
+          Commands.runOnce(() -> groundSuperstructure.startHandoffIntake())
         ).withTimeout(0.5),
         new WaitUntilCommand(() -> DynamicPathing.isElevatorRetractionSafe()),      
         Commands.runOnce(() -> superstructure.applySuperstructureState(SuperstructureState.HANDOFF_READY)),
