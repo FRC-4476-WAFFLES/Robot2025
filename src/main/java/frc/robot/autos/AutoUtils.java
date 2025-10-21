@@ -20,6 +20,7 @@ import frc.robot.commands.drive.AutoAlignToPose;
 import frc.robot.commands.intake.CoralOutake;
 import frc.robot.commands.superstructure.ExecuteHandoff;
 import frc.robot.commands.superstructure.SuperstructureControl;
+import frc.robot.data.Constants.CodeConstants;
 import frc.robot.subsystems.DynamicPathing;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 import frc.robot.subsystems.telemetry.Telemetry;
@@ -92,6 +93,9 @@ public class AutoUtils {
     }
 
     public static Command resetOdometry(Pose2d instantPose){
+        if (!CodeConstants.RESET_ODOMETRY_AUTO_START) {
+            return new InstantCommand();
+        }
         return new InstantCommand(() -> {
             RobotContainer.driveSubsystem.resetTranslation(
                 WafflesUtilities.FlipIfRedAlliance(instantPose).getTranslation()

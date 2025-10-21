@@ -100,6 +100,7 @@ public final class Constants {
     public static final double LOW_IMPORTANCE_CAN_FREQUENCY = 20;
   
     public static final boolean USE_PATHPLANNER_AUTOS = false;
+    public static final boolean RESET_ODOMETRY_AUTO_START = true;
   }
 
   /* Vision */

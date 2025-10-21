@@ -14,6 +14,7 @@ import frc.robot.data.AutoCoordinates;
 public class OPP2Lolipop extends SequentialCommandGroup {
   public OPP2Lolipop() {
     addCommands(
+      AutoUtils.resetOdometry(AutoCoordinates.OPP2),
       NamedCommands.getCommand("Set Coral Loaded"),
 
       AutoUtils.prepareAndScore(AutoCoordinates.Post2, false),
@@ -28,6 +29,5 @@ public class OPP2Lolipop extends SequentialCommandGroup {
       AutoUtils.prepareAndScore(AutoCoordinates.Post1, true),
       AutoUtils.intakeSequence(AutoCoordinates.Post1, AutoCoordinates.CS2)
     );
-    AutoUtils.resetOdometry(AutoCoordinates.OPP2);
   }
 }

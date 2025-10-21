@@ -48,7 +48,7 @@
   "folder": "US2 to Reef",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -131.34800000000004
+    "rotation": -135.0
   },
   "useDefaultConstraints": true
 }

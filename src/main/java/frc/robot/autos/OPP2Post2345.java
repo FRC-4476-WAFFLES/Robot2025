@@ -13,6 +13,7 @@ import frc.robot.data.AutoCoordinates;
 public class OPP2Post2345 extends SequentialCommandGroup {
   public OPP2Post2345() {
     addCommands(
+      AutoUtils.resetOdometry(AutoCoordinates.OPP2),
       NamedCommands.getCommand("Set Coral Loaded"),
 
       AutoUtils.prepareAndScore(AutoCoordinates.Post2, false),
@@ -27,6 +28,5 @@ public class OPP2Post2345 extends SequentialCommandGroup {
       AutoUtils.prepareAndScore(AutoCoordinates.Post5, false),
       AutoUtils.intakeSequence(AutoCoordinates.Post5, AutoCoordinates.CS2)
     );
-    AutoUtils.resetOdometry(AutoCoordinates.OPP2);
   }
 }

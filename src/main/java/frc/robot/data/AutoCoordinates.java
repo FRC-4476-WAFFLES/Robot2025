@@ -6,8 +6,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 public class AutoCoordinates {
     //Starting positions
     public static final Pose2d OPP1 = new Pose2d(7.176, 2.992, Rotation2d.fromDegrees(180.000));
-    public static final Pose2d OPP2 = new Pose2d(7, 1.909, Rotation2d.fromDegrees(120));
-    public static final Pose2d US = new Pose2d(6.981, 6.199, Rotation2d.fromDegrees(-131.348));
+    public static final Pose2d OPP2 = new Pose2d(7.000, 1.909, Rotation2d.fromDegrees(135.000));
+    public static final Pose2d US2 = new Pose2d(6.981, 6.199, Rotation2d.fromDegrees(-135.0));
     public static final Pose2d Middle = new Pose2d(7.156, 4.021, Rotation2d.fromDegrees(180));
 
     //Lollypops yummy
