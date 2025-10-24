@@ -356,6 +356,10 @@ public class Pivot extends WafflesMechanism {
             RobotContainer.superstructure.elevator.getSetpoint() <= ElevatorConstants.PIVOT_BUMPER_CLEAR_HEIGHT;
     }
 
+    public boolean pastReefHitAngle() {
+        return getPivotPosition() > ManipulatorConstants.PIVOT_REEF_CLEAR_ANGLE;
+    }
+
     /*             */
     /*   Network   */
     /*             */

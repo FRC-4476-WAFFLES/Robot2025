@@ -4,7 +4,6 @@
 
 package frc.robot.autos;
 
-import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.MathUtil;
@@ -23,19 +22,28 @@ import frc.robot.commands.superstructure.SuperstructureControl;
 import frc.robot.data.Constants.CodeConstants;
 import frc.robot.subsystems.DynamicPathing;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
-import frc.robot.subsystems.telemetry.Telemetry;
 import frc.robot.utils.WafflesUtilities;
-import frc.robot.RobotContainer;
+
 public class AutoUtils {
     public static final double maxApproachOffsetDistance = 1.5;
     public static Pose2d evaluateCoralApproachGoal(Pose2d target) {
         Pose2d offset = WafflesUtilities.FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose()).relativeTo(target);
-        
+        double goalBackshift = Math.abs(offset.getY()) / 3;
+
+        if (goingToHitReef()) {
+            goalBackshift = Math.max(goalBackshift, 0.13);
+        }
+
         return target.transformBy(new Transform2d(
-            -maxApproachOffsetDistance * (Math.abs(offset.getY()) / 3),
+            -maxApproachOffsetDistance * goalBackshift,
             0,
             Rotation2d.kZero
         ));
+    }
+
+    private static boolean goingToHitReef() {
+        return !RobotContainer.intakeSubsystem.isCoralLoaded() || 
+        (!RobotContainer.superstructure.pivot.pastReefHitAngle() && RobotContainer.superstructure.elevator.getElevatorPositionMeters() < 0.9);
     }
 
     public static Pose2d evaluateCoralBackoffGoal(Pose2d postPose, Pose2d target) {

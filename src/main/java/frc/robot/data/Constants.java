@@ -275,6 +275,8 @@ public final class Constants {
     public static final double PIVOT_MIN_ANGLE = 0.0; // degrees 
     public static final double PIVOT_MAX_ANGLE = 270.0; // degrees
 
+    public static final double PIVOT_REEF_CLEAR_ANGLE = 165.0; // degrees
+
     // Constraints
     public static final double PIVOT_FRAME_LOWER_CLEARANCE_ANGLE = 15;
     public static final double PIVOT_FRAME_UPPER_CLEARANCE_ANGLE = 90;
