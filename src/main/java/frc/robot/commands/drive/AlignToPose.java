@@ -35,7 +35,7 @@ public class AlignToPose extends Command {
   /* Approach Constants */
   public static final double maxAccelerationElevatorUp = 10.0;
   public static final double maxAccelerationElevatorDown = 10.0;
-  public static final double maxVelocity = 4;
+  public static final double defaultMaxVelocity = 4.0;
 
   public static final double maxThetaAcceleration = 20;
   public static final double maxThetaVelocity = 6;
@@ -50,12 +50,15 @@ public class AlignToPose extends Command {
   public static final double approachFeedforwardBlendInner = 0.02; // Distance at which velocity feedforward loses all influence
 
   /* Controllers */
-  private ProfiledPIDController approachPidController = new ProfiledPIDController(2.4, 0, 0.05, new Constraints(maxVelocity, maxAccelerationElevatorDown));
+  private ProfiledPIDController approachPidController = new ProfiledPIDController(2.4, 0, 0.05, new Constraints(defaultMaxVelocity, maxAccelerationElevatorDown));
   private ProfiledPIDController thetaPidController = new ProfiledPIDController(7.0, 0, 0.1, new Constraints(maxThetaVelocity, maxThetaAcceleration));
 
   /* Tolerances */
   private double PosMaxError = 0.01; // Meters
-  private Rotation2d RotMaxError = Rotation2d.fromDegrees(0.5);
+  private Rotation2d RotMaxError = Rotation2d.fromDegrees(0.8);
+
+  private double maxVelocity = 4;
+  private double maxAcceleration = maxAccelerationElevatorDown;
 
   /* Data */
   private final Supplier<Pose2d> goalPoseSupplier;
@@ -74,19 +77,20 @@ public class AlignToPose extends Command {
   
   /* Telemetry Variables */
   private final Timer alignmentTimer = new Timer();
-  private static final NetworkTable scoringTable = NetworkTableInstance.getDefault().getTable("AlignmentMetrics");
-  private static final DoublePublisher alignmentTimePublisher = scoringTable.getDoubleTopic("Align Duration").publish();
-  private static final BooleanPublisher isAligningPublisher = scoringTable.getBooleanTopic("Align Active").publish();
-  private static final DoublePublisher thetaOutputPublisher = scoringTable.getDoubleTopic("Theta Output").publish();
-  private static final DoublePublisher approachOutputPublisher = scoringTable.getDoubleTopic("Approach Output").publish();
-  private static final DoublePublisher strafeVelocityPublisher = scoringTable.getDoubleTopic("Strafe Velocity").publish();
-  private static final DoublePublisher approachVelocityPublisher = scoringTable.getDoubleTopic("Approach Velocity").publish();
-  private static final DoublePublisher approachSetpointPositionPublisher = scoringTable.getDoubleTopic("Approach Setpoint Position").publish();
-  private static final DoublePublisher approachSetpointVelocityPublisher = scoringTable.getDoubleTopic("Approach Setpoint Velocity").publish();
-  private static final DoublePublisher distancePublisher = scoringTable.getDoubleTopic("Approach Distance").publish();
-  private static final DoublePublisher feedforwardBlendPublisher = scoringTable.getDoubleTopic("Approach FF Blend").publish();
-  private static final DoublePublisher maxAccelerationPublisher = scoringTable.getDoubleTopic("Max Acceleration").publish();
-  private static final StructPublisher<Pose2d> goalPosePublisher = scoringTable.getStructTopic("Goal Pose", Pose2d.struct).publish();
+  private static final NetworkTable alignTable = NetworkTableInstance.getDefault().getTable("AlignmentMetrics");
+  private static final DoublePublisher alignmentTimePublisher = alignTable.getDoubleTopic("PID Align Duration").publish();
+  private static final BooleanPublisher isAligningPublisher = alignTable.getBooleanTopic("Performing PID Align").publish();
+  private static final DoublePublisher thetaOutputPublisher = alignTable.getDoubleTopic("Theta Output").publish();
+  private static final DoublePublisher approachOutputPublisher = alignTable.getDoubleTopic("Approach Output").publish();
+  private static final BooleanPublisher isAligningVelocityPublisher = alignTable.getBooleanTopic("In Velocity Align").publish();
+  private static final DoublePublisher strafeVelocityPublisher = alignTable.getDoubleTopic("Strafe Velocity").publish();
+  private static final DoublePublisher approachVelocityPublisher = alignTable.getDoubleTopic("Approach Velocity").publish();
+  private static final DoublePublisher approachSetpointPositionPublisher = alignTable.getDoubleTopic("Approach Setpoint Position").publish();
+  private static final DoublePublisher approachSetpointVelocityPublisher = alignTable.getDoubleTopic("Approach Setpoint Velocity").publish();
+  private static final DoublePublisher distancePublisher = alignTable.getDoubleTopic("Approach Distance").publish();
+  private static final DoublePublisher feedforwardBlendPublisher = alignTable.getDoubleTopic("Approach FF Blend").publish();
+  private static final DoublePublisher maxAccelerationPublisher = alignTable.getDoubleTopic("Max Acceleration").publish();
+  private static final StructPublisher<Pose2d> goalPosePublisher = alignTable.getStructTopic("Goal Pose", Pose2d.struct).publish();
 
 
   /** 
@@ -143,6 +147,13 @@ public class AlignToPose extends Command {
 
     endTrigger = new Trigger(() -> isAtGoal())
     .debounce(endingDebounce);
+
+    return this;
+  }
+
+  public AlignToPose withMaxVelocity(double maxVelocity) {
+    this.maxVelocity = maxVelocity;
+    updateConstraints(true);
 
     return this;
   }
@@ -216,6 +227,8 @@ public class AlignToPose extends Command {
   public void execute() {
     // Update goal pose once from supplier
     updateGoalPose();
+
+    updateConstraints(false);
 
     // Update max acceleration based on elevator height (optimized to reduce allocations)
     double maxAcceleration = MathUtil.interpolate(maxAccelerationElevatorDown, maxAccelerationElevatorUp, RobotContainer.superstructure.elevator.getElevatorExtendedPercent());
@@ -323,6 +336,19 @@ public class AlignToPose extends Command {
   public boolean isAtGoal() {
     // Use controller's built-in atGoal() which considers both position AND velocity
     return approachPidController.atGoal() && thetaPidController.atGoal();
+  }
+
+  private void updateConstraints(boolean forceRefresh) {
+    // Update max acceleration based on elevator height (optimized to reduce allocations)
+    maxAcceleration = MathUtil.interpolate(maxAccelerationElevatorDown, maxAccelerationElevatorUp, RobotContainer.superstructure.elevator.getElevatorExtendedPercent());
+
+    // Only update constraints if acceleration changed significantly (reduces allocations)
+    if (Math.abs(maxAcceleration - lastMaxAcceleration) > 0.1 || forceRefresh) { // 0.1 m/s² threshold
+      approachPidController.setConstraints(new Constraints(maxVelocity, maxAcceleration));
+      lastMaxAcceleration = maxAcceleration;
+    }
+    
+    maxAccelerationPublisher.set(maxAcceleration);
   }
 
   /**

@@ -32,8 +32,6 @@ public class CoralOutake extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    // Make sure the intake doesn't detect us as having loaded algae in this motion
-    RobotContainer.intakeSubsystem.setNoAlgaeFlag(true);
     outtakeEndPosition = intakeSubsystem.getCurrentPosition() - OUTTAKE_POSITION_CHANGE;
 
     // Sim
@@ -58,7 +56,6 @@ public class CoralOutake extends Command {
   @Override
   public void end(boolean interrupted) {
     RobotContainer.intakeSubsystem.setIntakeSpeed(0);
-    RobotContainer.intakeSubsystem.setNoAlgaeFlag(false);
     
     // Get timing information from NetworkTables
     double alignmentTime = NetworkTableInstance.getDefault()

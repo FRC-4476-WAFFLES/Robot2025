@@ -9,6 +9,7 @@ import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import au.grapplerobotics.LaserCan;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.StringPublisher;
@@ -21,6 +22,7 @@ import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.subsystems.DynamicPathing.DynamicPathingSituation;
 import frc.robot.utils.PhoenixHelpers;
+import frc.robot.utils.IO.LaserCANIO;
 import frc.robot.utils.IO.TalonFXIO;
 import frc.robot.utils.lib.SimpleWafflesMechanism;
 
@@ -32,6 +34,8 @@ import frc.robot.utils.lib.SimpleWafflesMechanism;
 public class Intake extends SimpleWafflesMechanism {
     // Hardware Components
     private final TalonFXIO intake;
+    private final LaserCANIO distanceSensor;
+    private double currentDistance = 99999;
 
     // Control Objects
     private final MotionMagicVelocityVoltage intakeControlRequest = new MotionMagicVelocityVoltage(0);
@@ -41,7 +45,6 @@ public class Intake extends SimpleWafflesMechanism {
     private double intakeSpeed = 0;
     private boolean manipulatorLoaded = false;
 
-    private boolean noAlgaeFlag = false;
     private double dutyCycle = 0;
 
     private Trigger algaeDetectionTrigger;
@@ -63,11 +66,14 @@ public class Intake extends SimpleWafflesMechanism {
     private final DoublePublisher intakeSetpointNT = networkTable.getDoubleTopic("Intake Setpoint").publish();
     private final DoublePublisher intakeCurrentDrawNT = networkTable.getDoubleTopic("Intake Current Draw").publish();
 
-    private final BooleanPublisher isIntakingAlgaeNT = networkTable.getBooleanTopic("IsIntaking").publish();
-    private final BooleanPublisher isOutakingAlgaeNT = networkTable.getBooleanTopic("IsOutaking").publish();
+    private final BooleanPublisher isOutakingAlgaeNT = networkTable.getBooleanTopic("Is Outaking").publish();
+    private final DoublePublisher sensorDistanceNT = networkTable.getDoubleTopic("Sensor Distance").publish();
+
+    // Deferred Refreshers
 
     public Intake() {
         intake = new TalonFXIO(Constants.CANIds.manipulatorIntake);
+        distanceSensor = new LaserCANIO("Intake LaserCAN", Constants.CANIds.manipulatorLaserCan, LaserCan.RangingMode.LONG, 1000);
 
         // Configure hardware
         configureIntakeMotor();
@@ -76,20 +82,24 @@ public class Intake extends SimpleWafflesMechanism {
             () -> intake.signals().statorCurrent().getValueAsDouble() > ManipulatorConstants.ALGAE_CURRENT_THRESHOLD 
             && loadType == LoadType.ALGEA
             && !isAlgaeLoaded()
+            && intakeSensorRaw()
         ).debounce(ManipulatorConstants.ALGAE_DETECTION_DEBOUNCE_TIME);
 
         coralDetectionTrigger = new Trigger(
             () -> intake.signals().statorCurrent().getValueAsDouble() > ManipulatorConstants.CORAL_CURRENT_THRESHOLD 
             && loadType == LoadType.CORAL
             && !isCoralLoaded()
+            && intakeSensorRaw()
         ).debounce(ManipulatorConstants.CORAL_DETECTION_DEBOUNCE_TIME);
 
         coralReleaseTrigger = new Trigger(
             () -> isOuttakingCoral()
+            && !intakeSensorRaw()
         ).debounce(ManipulatorConstants.CORAL_RELEASE_DEBOUNCE_TIME);
 
         algaeDroppedWhileHoldingTrigger = new Trigger(
             () -> isAlgaeLoaded()
+            && !intakeSensorRaw()
             && intake.signals().statorCurrent().getValueAsDouble() < ManipulatorConstants.ALGAE_HOLD_CURRENT_THRESHOLD
         ).debounce(ManipulatorConstants.ALGAE_HOLD_CHECK_DEBOUNCE_TIME);
     }
@@ -140,6 +150,9 @@ public class Intake extends SimpleWafflesMechanism {
     
     @Override
     public void periodicImpl() {
+        currentDistance = distanceSensor.update();
+        sensorDistanceNT.set(currentDistance);
+
         // Determine intake state
         if (!manipulatorLoaded) {
             // Only change load type while not loaded
@@ -183,14 +196,6 @@ public class Intake extends SimpleWafflesMechanism {
      */
     public void setIntakeSpeed(double speed) {
         this.intakeSpeed = speed;
-    }
-
-    /**
-     * Temporarily prevents the intake from registering coral loads
-     * @param val the value to set the flag to
-     */
-    public void setNoAlgaeFlag(boolean val) {
-        noAlgaeFlag = val;
     }
 
     /**
@@ -285,6 +290,10 @@ public class Intake extends SimpleWafflesMechanism {
 
     public boolean isIntakeStopped() {
         return Math.abs(intake.signals().velocity().getValueAsDouble()) < 0.1;
+    }
+
+    private boolean intakeSensorRaw() {
+        return currentDistance < ManipulatorConstants.SENSOR_DISTANCE;
     }
 
     /**

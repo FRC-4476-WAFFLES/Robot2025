@@ -21,6 +21,7 @@ import frc.robot.data.Constants.GroundIntakeConstants;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.utils.PhoenixHelpers;
 import frc.robot.utils.IO.DeferredRefresher;
+import frc.robot.utils.IO.LaserCANIO;
 import frc.robot.utils.IO.TalonFXIO;
 import frc.robot.utils.lib.SimpleWafflesMechanism;
 
@@ -36,9 +37,6 @@ public class GroundIntake extends SimpleWafflesMechanism {
     private final TalonFXIO intakeMid;
 
     private CANrange handoffCANRange;
-    private LaserCan leftLaserCan;
-    private LaserCan midLaserCan;
-    private LaserCan rightLaserCan;
     
     // Sensor boilerplate
     private double leftLaserDistance = 9999;
@@ -52,52 +50,9 @@ public class GroundIntake extends SimpleWafflesMechanism {
     private Trigger handoffCoralSensor;
 
     // Deferred Refreshers
-    private DeferredRefresher<Double> leftLaserCanRefresher = new DeferredRefresher<Double>(
-        "Left Ground Intake LaserCAN", 
-        0.02, // 50hz
-        () -> {
-            if (leftLaserCan != null) {
-                var measurement = leftLaserCan.getMeasurement();
-                if (measurement != null) {
-                    if (measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
-                        return (double)measurement.distance_mm;
-                    }
-                }
-            }
-            return null;
-        }
-    );
-
-    private DeferredRefresher<Double> midLaserCanRefresher = new DeferredRefresher<Double>(
-        "Mid Ground Intake LaserCAN", 
-        0.02, 
-        () -> {
-            if (midLaserCan != null) {
-                var measurement = midLaserCan.getMeasurement();
-                if (measurement != null) {
-                    if (measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
-                        return (double)measurement.distance_mm;
-                    }
-                }
-            } 
-            return null;
-        }
-    );
-    private DeferredRefresher<Double> rightLaserCanRefresher = new DeferredRefresher<Double>(
-        "Right Ground Intake LaserCAN", 
-        0.02, 
-        () -> {
-            if (rightLaserCan != null) {
-                var measurement = rightLaserCan.getMeasurement();
-                if (measurement != null) {
-                    if (measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
-                        return (double)measurement.distance_mm;
-                    }
-                }
-            } 
-            return null;
-        }
-    );
+    private LaserCANIO rightLaserCan;
+    private LaserCANIO midLaserCan;
+    private LaserCANIO leftLaserCan;
     
     // Control Objects
     private final MotionMagicVelocityVoltage intakeRightControlRequest = new MotionMagicVelocityVoltage(0);
@@ -182,27 +137,9 @@ public class GroundIntake extends SimpleWafflesMechanism {
      * Configures the laserCAN
      */
     private void configureLaserCAN() {
-        // Initialize LaserCan with error handling
-        try {
-            leftLaserCan = new LaserCan(Constants.CANIds.groundIntakeLaserCanLeft);
-            leftLaserCan.setRangingMode(LaserCan.RangingMode.SHORT);
-            leftLaserCan.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_20MS);
-            
-            midLaserCan = new LaserCan(Constants.CANIds.groundIntakeLaserCanMid);
-            midLaserCan.setRangingMode(LaserCan.RangingMode.SHORT);
-            midLaserCan.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_20MS);
-
-            rightLaserCan = new LaserCan(Constants.CANIds.groundIntakeLaserCanRight);
-            rightLaserCan.setRangingMode(LaserCan.RangingMode.SHORT);
-            rightLaserCan.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_20MS);
-            
-        } catch (Exception e) {
-            // throw new RuntimeException("Failed to initialize LaserCan: " + e.getMessage());
-            System.out.println("Failed to initialize LaserCan: " + e.getMessage());
-            leftLaserCan = null;
-            midLaserCan = null;
-            rightLaserCan = null;
-        }
+        rightLaserCan = new LaserCANIO("Right Ground Intake LaserCAN", Constants.CANIds.groundIntakeLaserCanRight);
+        midLaserCan = new LaserCANIO("Middle Ground Intake LaserCAN", Constants.CANIds.groundIntakeLaserCanMid);
+        leftLaserCan = new LaserCANIO("Left Ground Intake LaserCAN", Constants.CANIds.groundIntakeLaserCanLeft);
 
         leftCoralSensor = new Trigger(
             () -> leftLaserDistance <= GroundIntakeConstants.CORAL_LEFT_DISTANCE_THRESHOLD
@@ -332,19 +269,9 @@ public class GroundIntake extends SimpleWafflesMechanism {
             return;
         }
 
-        var leftSensorResult = leftLaserCanRefresher.getLatestValue();
-        if (leftSensorResult.isPresent()) {
-            leftLaserDistance = leftSensorResult.get();
-        }
-        
-        var midSensorResult = midLaserCanRefresher.getLatestValue();
-        if (midSensorResult.isPresent()) {
-            midLaserDistance = midSensorResult.get();
-        }
-        var rightSensorResult = rightLaserCanRefresher.getLatestValue();
-        if (rightSensorResult.isPresent()) {
-            rightLaserDistance = rightSensorResult.get();
-        }
+        leftLaserDistance = leftLaserCan.update();
+        midLaserDistance = midLaserCan.update();
+        rightLaserDistance = rightLaserCan.update();
 
         handoffCoralPresent = handoffCANRange.getIsDetected().getValue();
     }

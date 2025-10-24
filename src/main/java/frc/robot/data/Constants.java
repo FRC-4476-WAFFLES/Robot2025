@@ -65,6 +65,8 @@ public final class Constants {
     public static final int groundIntakeLaserCanRight = 42;
     public static final int groundIntakeLaserCanMid = 40;
     public static final int groundIntakeLaserCanLeft = 41;
+
+    public static final int manipulatorLaserCan = 44;
     
     public static final int groundIntakeCanRange = 17;
     public static final int CANdle = 22;
@@ -249,13 +251,15 @@ public final class Constants {
   public static class ManipulatorConstants {
     // Detection thresholds
     public static final double ALGAE_CURRENT_THRESHOLD = 25.0; // amps
-    public static final double CORAL_CURRENT_THRESHOLD = 30;
-    public static final double ALGAE_HOLD_CURRENT_THRESHOLD = 15.0; // amps - Minimum current while holding algae
+    public static final double CORAL_CURRENT_THRESHOLD = 20;
+    public static final double ALGAE_HOLD_CURRENT_THRESHOLD = 10.0; // amps - Minimum current while holding algae
 
-    public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.3;
+    public static final double SENSOR_DISTANCE = 95;
+
+    public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.15;
     public static final double CORAL_DETECTION_DEBOUNCE_TIME = 0.1;
     public static final double CORAL_RELEASE_DEBOUNCE_TIME = 0.1;
-    public static final double ALGAE_HOLD_CHECK_DEBOUNCE_TIME = 0.4; // Time before checking if algae dropped while holding
+    public static final double ALGAE_HOLD_CHECK_DEBOUNCE_TIME = 0.3; // Time before checking if algae dropped while holding
     
     public static final double ZERO_DEBOUNCE_TIME = 0.2;
 
