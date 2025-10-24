@@ -6,9 +6,7 @@ package frc.robot.autos;
 
 import com.pathplanner.lib.auto.NamedCommands;
 
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.commands.drive.AutoAlignToPose;
 import frc.robot.data.AutoCoordinates;
 
 public class OPP2Lolipop extends SequentialCommandGroup {
@@ -21,7 +19,7 @@ public class OPP2Lolipop extends SequentialCommandGroup {
       AutoUtils.lolipopIntakeSequence(AutoCoordinates.Post2, AutoCoordinates.LP1),
 
       AutoUtils.prepareAndScore(AutoCoordinates.Post3, false),
-      AutoUtils.lolipopIntakeSequence(AutoCoordinates.Post3, AutoCoordinates.LP2),
+      AutoUtils.lolipopIntakeSequence(AutoCoordinates.Post3, AutoCoordinates.LP2_RIGHT),
 
       AutoUtils.prepareAndScore(AutoCoordinates.Post5, false),
       AutoUtils.intakeSequence(AutoCoordinates.Post5, AutoCoordinates.CS2),

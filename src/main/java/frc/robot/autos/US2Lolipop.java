@@ -21,7 +21,7 @@ public class US2Lolipop extends SequentialCommandGroup {
       AutoUtils.lolipopIntakeSequence(AutoCoordinates.Post9, AutoCoordinates.LP3),
 
       AutoUtils.prepareAndScore(AutoCoordinates.Post8, true),
-      AutoUtils.lolipopIntakeSequence(AutoCoordinates.Post8, AutoCoordinates.LP2),
+      AutoUtils.lolipopIntakeSequence(AutoCoordinates.Post8, AutoCoordinates.LP2_LEFT),
 
       AutoUtils.prepareAndScore(AutoCoordinates.Post6, true),
       AutoUtils.intakeSequence(AutoCoordinates.Post6, AutoCoordinates.CS1),

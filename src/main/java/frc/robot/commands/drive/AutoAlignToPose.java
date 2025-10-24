@@ -17,6 +17,7 @@ public class AutoAlignToPose extends AlignToPose {
         withPositionTolerance(0.04);
         withThetaTolerance(Rotation2d.fromDegrees(1));
         withAllianceFlipping(true);
+        withMaxVelocity(2);
     }
 
     public AutoAlignToPose(Pose2d targetPose) {

@@ -12,8 +12,11 @@ public class AutoCoordinates {
 
     //Lollypops yummy
     public static final Pose2d LP1 = new Pose2d(1.276, 2.201, Rotation2d.fromDegrees(0));
-    public static final Pose2d LP2 = new Pose2d(1.216, 4.059, Rotation2d.fromDegrees(0.547));
-    public static final Pose2d LP3 = new Pose2d(1.209, 5.857, Rotation2d.fromDegrees(-49.196));
+    public static final Pose2d LP2 = new Pose2d(1.216, 4.059, Rotation2d.fromDegrees(0));
+    public static final Pose2d LP3 = new Pose2d(1.209, 5.857, Rotation2d.fromDegrees(0));
+
+    public static final Pose2d LP2_RIGHT = new Pose2d(LP2.getTranslation(), Rotation2d.fromDegrees(-32));
+    public static final Pose2d LP2_LEFT = new Pose2d(LP2.getTranslation(), Rotation2d.fromDegrees(32));
     
     //Coral stations
     public static final Pose2d CS1 = new Pose2d(2.239, 6.655, Rotation2d.fromDegrees(-40));

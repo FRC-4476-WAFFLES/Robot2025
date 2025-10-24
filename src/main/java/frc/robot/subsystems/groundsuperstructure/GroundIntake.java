@@ -10,7 +10,6 @@ import com.ctre.phoenix6.hardware.CANrange;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import au.grapplerobotics.LaserCan;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -20,7 +19,6 @@ import frc.robot.data.Constants;
 import frc.robot.data.Constants.GroundIntakeConstants;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.utils.PhoenixHelpers;
-import frc.robot.utils.IO.DeferredRefresher;
 import frc.robot.utils.IO.LaserCANIO;
 import frc.robot.utils.IO.TalonFXIO;
 import frc.robot.utils.lib.SimpleWafflesMechanism;
