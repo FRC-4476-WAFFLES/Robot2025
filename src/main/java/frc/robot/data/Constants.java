@@ -100,6 +100,8 @@ public final class Constants {
     public static final double FD_CAN_FREQUENCY = 100;
     public static final double BASE_CAN_FREQUENCY = 50;
     public static final double LOW_IMPORTANCE_CAN_FREQUENCY = 20;
+
+    public static final double AUTO_MAX_SPEED = 2;
   
     public static final boolean USE_PATHPLANNER_AUTOS = false;
     public static final boolean RESET_ODOMETRY_AUTO_START = true;

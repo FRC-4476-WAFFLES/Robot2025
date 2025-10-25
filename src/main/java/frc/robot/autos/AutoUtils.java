@@ -31,7 +31,6 @@ public class AutoUtils {
         double goalBackshift = Math.abs(offset.getY()) / 3;
 
         if (goingToHitReef()) {
-            System.out.println("GUGHUHUH");
             goalBackshift = Math.max(goalBackshift, 0.13);
         }
 
@@ -105,6 +104,22 @@ public class AutoUtils {
     public static Command driveAwayFromPost(Pose2d post, Pose2d target) {
         return new AutoAlignToPose(() -> evaluateCoralBackoffGoal(post, target));
     }
+    
+    public static Command driveAwayFromPostLolipop(Pose2d post, Pose2d target) {
+        AutoAlignToPose cmd = new AutoAlignToPose(() -> evaluateCoralBackoffGoal(post, target));
+        return Commands.deadline(
+            cmd,
+            Commands.run(() -> {
+                cmd.withMaxVelocity(calculateMaxSpeedLolipop(target));
+            })
+        ); 
+    }
+
+    private static double calculateMaxSpeedLolipop(Pose2d target) {
+        Pose2d offset = WafflesUtilities.FlipIfRedAlliance(RobotContainer.driveSubsystem.getRobotPose()).relativeTo(target); 
+        double distance = offset.getTranslation().getNorm();
+        return Math.pow(Math.max(Math.min(distance, 1), 0.4), 2) * CodeConstants.AUTO_MAX_SPEED;   
+    }
 
     public static Command resetOdometry(Pose2d instantPose){
         if (!CodeConstants.RESET_ODOMETRY_AUTO_START) {
@@ -146,7 +161,7 @@ public class AutoUtils {
         return Commands.deadline(
             placeAndAwaitIntake(),
             Commands.sequence( 
-                driveAwayFromPost(post, target)
+                driveAwayFromPostLolipop(post, target)
             )
         );
     }
