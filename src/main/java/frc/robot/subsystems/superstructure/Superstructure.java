@@ -18,7 +18,7 @@ public class Superstructure extends SimpleWafflesMechanism {
     ZERO(80, 0),
     ALGAE_L2(130,0.65),
     ALGAE_L1(130,0.25),
-    PROCESSOR(189,0.135),
+    PROCESSOR(110,0.0),
     SPIT_ALGAE(140,0.2),
     CORAL_INTAKE(2.6,0),
     NET(98,1.3),

@@ -205,7 +205,7 @@ public class Pivot extends WafflesMechanism {
 
         // Real jank but ok
         int slot = 0;
-        if (RobotContainer.intakeSubsystem.isAlgaeLoaded() && !isThrowingAlgae) {
+        if (RobotContainer.intakeSubsystem.isAlgaeLoaded()) {
             // while algae is loaded, use a slower profile
             slot = 1;
         }

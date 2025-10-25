@@ -75,8 +75,8 @@ public class DynamicPathing extends SubsystemBase {
     public static final double REEF_SCORING_POSITION_OFFSET_L1 = PhysicalConstants.withBumperBotHalfWidth + 0.37; 
     public static final double REEF_SCORING_POSITION_OFFSET_L4 = PhysicalConstants.withBumperBotHalfWidth + 0.16; 
     public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE_CLEARANCE = PhysicalConstants.withBumperBotHalfWidth + 0.45; 
-    public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE = PhysicalConstants.withBumperBotHalfWidth + 0.25; 
-    public static final double REEF_ALGAE_SAFETY_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 0.4;
+    public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE = PhysicalConstants.withBumperBotHalfWidth + 0.20; 
+    public static final double REEF_ALGAE_SAFETY_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 0.48;
     public static final double REEF_ELEVATOR_RETRACTION_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 0.24;
     public static final double L4_ELEVATOR_DEPLOY_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 1.5;
     public static final double REEF_L1_HEADING_LOCK_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 1.0;
@@ -296,11 +296,11 @@ public class DynamicPathing extends SubsystemBase {
                     Pose2d processorScoringPose = new Pose2d(targetProcessorX, targetProcessorY, targetProcessorRotation);
 
                     cmd = new ParallelCommandGroup(
-                        new AlignToPose(processorScoringPose),
+                        new AlignToPose(processorScoringPose).withMaxVelocity(2),
                         new ApplySuperstructureState(SuperstructureState.PROCESSOR),
                         new AlgaeOutake()
                     ).finallyDo(() -> {
-                        RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.ZERO);
+                        RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.ALGAE_REST);
                         // RobotContainer.superstructureSubsystem.pivot.setPivotPosition(PivotPosition.CLEARANCE_POSITION);
                     });
                     
