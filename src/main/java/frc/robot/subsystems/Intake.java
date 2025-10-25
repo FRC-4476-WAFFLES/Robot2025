@@ -285,7 +285,7 @@ public class Intake extends SimpleWafflesMechanism {
 
     public boolean isOuttakingCoral() {
         return isCoralLoaded() && 
-        (intake.signals().velocity().getValueAsDouble() > 0.01 && intakeSpeed > 0.01);
+        (intake.signals().velocity().getValueAsDouble() > 0.01 || intakeSpeed > 0.01);
     }
 
     public boolean isIntakeStopped() {

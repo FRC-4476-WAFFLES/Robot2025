@@ -16,7 +16,7 @@ import frc.robot.subsystems.Intake;
 
 
 public class CoralOutake extends Command {
-  public static final double OUTTAKE_POSITION_CHANGE = 6; // rotations
+  public static final double OUTTAKE_POSITION_CHANGE = 3; // rotations
 
   private final Intake intakeSubsystem = RobotContainer.intakeSubsystem;
   private double outtakeEndPosition = 0;
@@ -32,7 +32,7 @@ public class CoralOutake extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    outtakeEndPosition = intakeSubsystem.getCurrentPosition() - OUTTAKE_POSITION_CHANGE;
+    outtakeEndPosition = intakeSubsystem.getCurrentPosition() + OUTTAKE_POSITION_CHANGE;
 
     // Sim
     simTimer.reset();
@@ -80,7 +80,7 @@ public class CoralOutake extends Command {
       return true;
     }
 
-    return intakeSubsystem.getCurrentPosition() <= outtakeEndPosition || 
+    return intakeSubsystem.getCurrentPosition() >= outtakeEndPosition || 
       (!intakeSubsystem.isCoralLoaded());
   } // && RobotBase.isSimulation()
 }

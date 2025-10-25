@@ -78,7 +78,7 @@ public class DynamicPathing extends SubsystemBase {
     public static final double REEF_PICKUP_POSITION_OFFSET_ALGAE = PhysicalConstants.withBumperBotHalfWidth + 0.25; 
     public static final double REEF_ALGAE_SAFETY_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 0.4;
     public static final double REEF_ELEVATOR_RETRACTION_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 0.24;
-    public static final double L4_ELEVATOR_DEPLOY_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 1.1;
+    public static final double L4_ELEVATOR_DEPLOY_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 1.5;
     public static final double REEF_L1_HEADING_LOCK_DISTANCE = PhysicalConstants.withBumperBotHalfWidth + 1.0;
 
     /* Robot to reef center distance */

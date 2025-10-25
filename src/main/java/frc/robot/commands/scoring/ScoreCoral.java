@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
+import frc.robot.autos.AutoUtils;
 import frc.robot.commands.drive.AlignToPose;
 import frc.robot.commands.drive.DriveTeleop;
 import frc.robot.commands.intake.CoralOutake;
@@ -116,7 +117,7 @@ public class ScoreCoral extends SequentialCommandGroup {
         ),
 
         pathingSubsystem.wrapPathingCommand(
-          new AlignToPose(finalAlignPose)
+          new AlignToPose(() -> AutoUtils.evaluateCoralApproachGoalUnflipped(finalAlignPose)).withEndingDebounce(2)
         )
       ),
 

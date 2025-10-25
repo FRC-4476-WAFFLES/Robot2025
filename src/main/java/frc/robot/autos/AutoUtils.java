@@ -31,6 +31,7 @@ public class AutoUtils {
         double goalBackshift = Math.abs(offset.getY()) / 3;
 
         if (goingToHitReef()) {
+            System.out.println("GUGHUHUH");
             goalBackshift = Math.max(goalBackshift, 0.13);
         }
 
@@ -41,9 +42,14 @@ public class AutoUtils {
         ));
     }
 
+    public static Pose2d evaluateCoralApproachGoalUnflipped(Pose2d target) {
+        return WafflesUtilities.FlipIfRedAlliance(evaluateCoralApproachGoal(WafflesUtilities.FlipIfRedAlliance(target)));
+    }
+
     private static boolean goingToHitReef() {
-        return !RobotContainer.intakeSubsystem.isCoralLoaded() || 
-        (!RobotContainer.superstructure.pivot.pastReefHitAngle() && RobotContainer.superstructure.elevator.getElevatorPositionMeters() < 0.9);
+        return (!RobotContainer.intakeSubsystem.isCoralLoaded() || 
+        (!RobotContainer.superstructure.pivot.pastReefHitAngle() || RobotContainer.superstructure.elevator.getElevatorPositionMeters() < 0.9)) 
+        && RobotContainer.dynamicPathingSubsystem.getCoralScoringLevel() == SuperstructureState.L4;
     }
 
     public static Pose2d evaluateCoralBackoffGoal(Pose2d postPose, Pose2d target) {

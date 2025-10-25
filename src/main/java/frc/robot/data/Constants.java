@@ -222,8 +222,8 @@ public final class Constants {
     public static final CoralScoringParameters L4Params = new CoralScoringParameters(
       0.05, 
       Rotation2d.fromDegrees(1), 
-      0.05, 
-      0.05, 
+      0.04, 
+      0.04, 
       Rotation2d.fromDegrees(2),
       SuperstructureState.EXECUTE_L4
     );
@@ -331,7 +331,7 @@ public final class Constants {
     public static final double FIRST_STAGE_START_HEIGHT = ElevatorConstants.MAX_ELEVATOR_HEIGHT / 2.0; 
 
     // Motion Magic configuration
-    public static final double MOTION_CRUISE_VELOCITY = 4; // 4 usually
+    public static final double MOTION_CRUISE_VELOCITY = 6; // 4 usually
     public static final double MOTION_ACCELERATION = 4;
     public static final double MOTION_JERK = 2000;
 
