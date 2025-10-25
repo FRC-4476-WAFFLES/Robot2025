@@ -56,9 +56,7 @@ public class ExecuteHandoff extends Command {
 
                 // Timeout if not at setpoint within 1.5 seconds, and retry pickup if coral still ready
                 if (timer.get() > 1.5) {
-                    if (RobotContainer.groundSuperstructure.isHandoffReady() &&
-                        !RobotContainer.intakeSubsystem.isAlgaeLoaded() &&
-                        !RobotContainer.intakeSubsystem.isCoralLoaded()) {
+                    if (!RobotContainer.intakeSubsystem.isCoralLoaded()) {
                         state = HandoffState.STARTED;
                     } else {
                         state = HandoffState.FINISHED;

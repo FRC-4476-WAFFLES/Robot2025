@@ -38,8 +38,8 @@ public class Superstructure extends SimpleWafflesMechanism {
     L4_FAST(184,1),
 
     EXECUTE_L4(145, 1.02),
-    EXECUTE_L3(130, 0.4),
-    EXECUTE_L2(130, 0.0),
+    EXECUTE_L3(145, 0.4),
+    EXECUTE_L2(145, 0.0),
 
     L1(100,0.33),
 

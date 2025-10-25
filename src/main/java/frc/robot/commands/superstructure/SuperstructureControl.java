@@ -54,7 +54,7 @@ public class SuperstructureControl {
             (interrupted) -> {},
             () -> false, 
             RobotContainer.superstructure.elevator
-        );
+        ).withName("Elevator Default");
     }
 
     /**
@@ -87,7 +87,7 @@ public class SuperstructureControl {
             (interrupted) -> {},
             () -> false, 
             RobotContainer.superstructure.pivot
-        );
+        ).withName("Elevator Default");
     }
 
     public static Command RestPositionCommand() {

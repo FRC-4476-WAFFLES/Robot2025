@@ -57,7 +57,6 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
         switch (currentState) {
             case INTAKE_L1_STATE:
                 if (intake.isCoralLeft() || intake.isCoralRight() || intake.isCoralMid()) {
-                    pivot.applySetpoint(GroundPivotPosition.L1);
                     currentState = GroundIntakeSuperstructureState.INDEXING_L1_STATE;
                 } else {
                     intake.setGroundIntakeSetpoint(GroundIntakeState.INTAKE_TOP);
@@ -67,7 +66,7 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
             
             case INDEXING_L1_STATE:
                 if (intake.isCoralLeft() || intake.isCoralRight() || intake.isCoralMid()) {
-                    pivot.applySetpoint(GroundPivotPosition.L1);
+                    pivot.applySetpoint(GroundPivotPosition.L1_INTAKE);
                     if(!intake.isCoralRight()){
                         intake.setGroundIntakeSetpoint(GroundIntakeState.SHIFT_RIGHT);
                     }else if(!intake.isCoralLeft()){
@@ -85,6 +84,10 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
             case L1_READY:
                 pivot.applySetpoint(GroundPivotPosition.L1);
                 intake.setGroundIntakeSetpoint(GroundIntakeState.INTAKE_TOP_SLOW);
+
+                if(!intake.isCoralLeft() && !intake.isCoralRight() && !intake.isCoralMid()){
+                    currentState = GroundIntakeSuperstructureState.STOWED;
+                }
                 break;
 
             case L1_SCORE_STATE:

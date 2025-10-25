@@ -59,10 +59,10 @@ public class GroundIntake extends SimpleWafflesMechanism {
 
     // State Variables
     public enum GroundIntakeState {
-        SHIFT_LEFT(-6, -6,1),
-        INTAKE_TOP(0, 0,5),
-        INTAKE_TOP_SLOW(0, 0,0.5),
-        SHIFT_RIGHT(6, 6,1),
+        SHIFT_LEFT(-6, -6,4),
+        INTAKE_TOP(0, 0,4.5),
+        INTAKE_TOP_SLOW(0, 0,3),
+        SHIFT_RIGHT(6, 6,4),
         PREPARE_HANDOFF(-8,8,3),
         HANDOFF(3,-3,0),
         REST(0, 0,0),

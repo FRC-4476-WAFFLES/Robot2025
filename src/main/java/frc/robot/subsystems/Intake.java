@@ -93,8 +93,7 @@ public class Intake extends SimpleWafflesMechanism {
         ).debounce(ManipulatorConstants.CORAL_DETECTION_DEBOUNCE_TIME);
 
         coralReleaseTrigger = new Trigger(
-            () -> isOuttakingCoral()
-            && !intakeSensorRaw()
+            () -> !intakeSensorRaw()
         ).debounce(ManipulatorConstants.CORAL_RELEASE_DEBOUNCE_TIME);
 
         algaeDroppedWhileHoldingTrigger = new Trigger(

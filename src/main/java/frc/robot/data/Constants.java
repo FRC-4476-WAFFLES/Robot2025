@@ -256,7 +256,7 @@ public final class Constants {
     public static final double CORAL_CURRENT_THRESHOLD = 20;
     public static final double ALGAE_HOLD_CURRENT_THRESHOLD = 10.0; // amps - Minimum current while holding algae
 
-    public static final double SENSOR_DISTANCE = 95;
+    public static final double SENSOR_DISTANCE = 115;
 
     public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.15;
     public static final double CORAL_DETECTION_DEBOUNCE_TIME = 0.1;
@@ -393,7 +393,7 @@ public final class Constants {
       DEPLOYED(205.0),
       DEPLOYED_OFFGROUND(204.0),
       L1(110),
-      L1_INTAKE(205),
+      L1_INTAKE(206),
       ZEROING_CLEARANCE(140);
 
       private final double degrees;
