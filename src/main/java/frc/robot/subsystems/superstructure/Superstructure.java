@@ -31,6 +31,7 @@ public class Superstructure extends SimpleWafflesMechanism {
     ALGAE_REST(218, 0.0),
     ALGAE_GROUND_PICKUP(83,0.0),
 
+    GROUND_PICKUP_ALGAE(85, 0.0),
     L4(184,1),
     L3(200,0.4),
     L2(173,0.0),
@@ -41,7 +42,7 @@ public class Superstructure extends SimpleWafflesMechanism {
     EXECUTE_L3(145, 0.4),
     EXECUTE_L2(145, 0.0),
 
-    L1(100,0.33),
+    L1(100,0.35),
 
     // Maybe manual mode
     MANUAL_L4(160.0,1.35),

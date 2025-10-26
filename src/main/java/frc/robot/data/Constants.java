@@ -268,6 +268,7 @@ public final class Constants {
     // Intake speeds
     public static final double CORAL_INTAKE_SPEED = -5; // Rps
     public static final double ALGAE_HOLD_SPEED = -0.5; // Speed to hold algae in place
+    public static final double CORAL_HOLD_SPEED = -0.2; // Speed to hold algae in place
     public static final double ALGAE_INTAKE_SPEED = -5;
     public static final double ZEROING_SPEED = -0.095; // Slow inwards speed
 
@@ -289,7 +290,9 @@ public final class Constants {
 
     // Motor configuration
     public static final double PIVOT_MOTION_CRUISE_VELOCITY = 1.5;
-    public static final double PIVOT_MOTION_ACCELERATION = 30.0;
+    public static final double PIVOT_MOTION_CRUISE_VELOCITY_SLOW = 0.9;
+    public static final double PIVOT_MOTION_ACCELERATION = 25.0;
+    public static final double PIVOT_MOTION_ACCELERATION_SLOW = 10.0;
     public static final double PIVOT_MOTION_JERK = 2000.0;
     public static final double STATOR_CURRENT_LIMIT = 50.0; // amps
     public static final double PIVOT_MOTOR_DEADBAND = 0.001;

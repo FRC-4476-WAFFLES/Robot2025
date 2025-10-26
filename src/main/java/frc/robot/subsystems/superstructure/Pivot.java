@@ -20,6 +20,7 @@ import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.CANIds;
@@ -57,6 +58,9 @@ public class Pivot extends WafflesMechanism {
     // State variables
     private boolean isZeroingPivot = false;
     private boolean isThrowingAlgae = false;
+    
+    private MotionMagicConfigs motionMagicSlow;
+    private MotionMagicConfigs motionMagic;
 
     // Network Tables
     private final DoublePublisher pivotAngleNT = networkTable.getDoubleTopic("Current Angle (Degrees)").publish();
@@ -133,11 +137,18 @@ public class Pivot extends WafflesMechanism {
         pivotConfigs.CurrentLimits = pivotCurrentLimit;
 
         // Motion Magic
-        MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs()
+        motionMagic = new MotionMagicConfigs()
             .withMotionMagicCruiseVelocity(ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY)
             .withMotionMagicExpo_kV(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY)
             .withMotionMagicExpo_kA(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_ACCELERATION);
-        pivotConfigs.MotionMagic = motionMagicConfigs;
+        pivotConfigs.MotionMagic = motionMagic;
+
+        // Motion Magic Slow
+        motionMagicSlow = new MotionMagicConfigs()
+            .withMotionMagicCruiseVelocity(ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY_SLOW)
+            .withMotionMagicExpo_kV(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY_SLOW)
+            .withMotionMagicExpo_kA(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_ACCELERATION_SLOW);
+        
 
         // PID
         Slot0Configs slot0Configs = new Slot0Configs();
@@ -153,14 +164,6 @@ public class Pivot extends WafflesMechanism {
         slot1Configs.kD = ManipulatorConstants.PIVOT_kD;
         slot1Configs.kS = ManipulatorConstants.PIVOT_kS;
         pivotConfigs.Slot1 = slot1Configs;
-
-        Slot2Configs slot2Configs = new Slot2Configs();
-        slot2Configs.kI = ManipulatorConstants.PIVOT_kI;
-        slot2Configs.kP = ManipulatorConstants.PIVOT_kP;
-        slot2Configs.kS = ManipulatorConstants.PIVOT_kS;
-        slot2Configs.kD = ManipulatorConstants.PIVOT_kD;
-        
-        pivotConfigs.Slot2 = slot2Configs;
 
         pivotConfigs.MotorOutput.DutyCycleNeutralDeadband = ManipulatorConstants.PIVOT_MOTOR_DEADBAND;
 
@@ -195,6 +198,12 @@ public class Pivot extends WafflesMechanism {
         }
     }
 
+    public void initializeHooks() {
+        // Speed switching
+        RobotContainer.intakeSubsystem.manipulatorLoadedTrigger.onTrue(Commands.runOnce(() -> pivot.getConfigurator().apply(motionMagicSlow)));
+        RobotContainer.intakeSubsystem.manipulatorLoadedTrigger.onFalse(Commands.runOnce(() -> pivot.getConfigurator().apply(motionMagic)));
+    }
+
     @Override
     public void periodicImpl() {
         // Handle zeroing first
@@ -204,11 +213,11 @@ public class Pivot extends WafflesMechanism {
         }
 
         // Real jank but ok
-        int slot = 0;
-        if (RobotContainer.intakeSubsystem.isAlgaeLoaded()) {
-            // while algae is loaded, use a slower profile
-            slot = 1;
-        }
+        // int slot = 0;
+        // if (RobotContainer.intakeSubsystem.isAlgaeLoaded()) {
+        //     // while algae is loaded, use a slower profile
+        //     slot = 1;
+        // }
 
         // Account for zero not being vertical
         double pivotAngleFromVertical = getPivotPosition() - 40;
@@ -217,7 +226,7 @@ public class Pivot extends WafflesMechanism {
         pivot.setControl(motionMagicRequest
             .withPosition(constrainedSetpoint / 360)
             .withFeedForward(gravityFeedforward)
-            .withSlot(slot)
+            .withSlot(0)
         );
     }
 

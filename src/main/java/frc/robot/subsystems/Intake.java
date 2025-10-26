@@ -14,6 +14,7 @@ import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
@@ -52,12 +53,14 @@ public class Intake extends SimpleWafflesMechanism {
     private Trigger coralReleaseTrigger;
     private Trigger algaeDroppedWhileHoldingTrigger;
 
+    public final Trigger manipulatorLoadedTrigger = new Trigger(() -> manipulatorLoaded);
+
     private enum LoadType {
         ALGEA,
         CORAL;
     }
     private LoadType loadType = LoadType.CORAL;
-
+    
     // Network Tables
     private final BooleanPublisher coralLoadedNT = networkTable.getBooleanTopic("Coral Loaded").publish();
     private final BooleanPublisher algaeLoadedNT = networkTable.getBooleanTopic("Algae Loaded").publish();
@@ -133,10 +136,10 @@ public class Intake extends SimpleWafflesMechanism {
         intakeConfigs.Slot1 = slot1Configs;
 
         // Motion Magic
-        MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
-        motionMagicConfigs.MotionMagicAcceleration = 200;
-        motionMagicConfigs.MotionMagicJerk = 0;
-        intakeConfigs.MotionMagic = motionMagicConfigs;
+        MotionMagicConfigs motionMagic = new MotionMagicConfigs();
+        motionMagic.MotionMagicAcceleration = 200;
+        motionMagic.MotionMagicJerk = 0;
+        intakeConfigs.MotionMagic = motionMagic;
 
         intakeConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         
@@ -166,9 +169,9 @@ public class Intake extends SimpleWafflesMechanism {
                 // Quick hack
                 loadType = LoadType.ALGEA;
             } 
-            // else if (RobotContainer.isGroundIntakingAlgae) {
-            //     loadType = LoadType.ALGEA;
-            // }
+            else if (RobotContainer.isGroundIntakingAlgae) {
+                loadType = LoadType.ALGEA;
+            }
         }
 
         // Update gamepeice sensing
@@ -182,7 +185,8 @@ public class Intake extends SimpleWafflesMechanism {
                 // When algae is loaded, run intake slowly inward
                 intake.setControl(intakeControlRequest.withVelocity(Constants.ManipulatorConstants.ALGAE_HOLD_SPEED).withSlot(0));
             } else if (Math.abs(intakeSpeed) < 0.01 && isCoralLoaded()) {
-                intake.setControl(intakePositionRequest.withOutput(0)); // scuffed
+                // intake.setControl(intakePositionRequest.withOutput(0)); // scuffed
+                intake.setControl(intakeControlRequest.withVelocity(Constants.ManipulatorConstants.CORAL_HOLD_SPEED).withSlot(0)); 
             } else {
                 intake.setControl(intakeControlRequest.withVelocity(intakeSpeed).withSlot(0));
             }

@@ -33,8 +33,8 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 public class AlignToPose extends Command {
   /* Approach Constants */
-  public static final double maxAccelerationElevatorUp = 10.0;
-  public static final double maxAccelerationElevatorDown = 10.0;
+  public static final double maxAccelerationElevatorUp = 7.0;
+  public static final double maxAccelerationElevatorDown = 7.0;
   public static final double defaultMaxVelocity = 4.0;
 
   public static final double maxThetaAcceleration = 20;

@@ -467,7 +467,8 @@ public class DynamicPathing extends SubsystemBase {
         }
 
         if (coralScoringLevel == SuperstructureState.L4) {
-            return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), coralScoringRightSide, false, REEF_SCORING_POSITION_OFFSET_L4);
+            return getNearestReefLocationStatic(
+                RobotContainer.driveSubsystem.getRobotPose(), coralScoringRightSide, false, REEF_SCORING_POSITION_OFFSET_L4);
         }
         return getNearestReefLocationStatic(RobotContainer.driveSubsystem.getRobotPose(), coralScoringRightSide, false, REEF_SCORING_POSITION_OFFSET);
     }
