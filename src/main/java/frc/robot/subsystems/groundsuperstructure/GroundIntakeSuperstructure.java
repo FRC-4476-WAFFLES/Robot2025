@@ -130,7 +130,7 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
                         simTimer.start();
                     }
                     if (simTimer.get() > 3) {
-                        currentState = GroundIntakeSuperstructureState.READY_HANDOFF_STATE;
+                        // currentState = GroundIntakeSuperstructureState.READY_HANDOFF_STATE;
                         simTimer.reset();
                         simTimer.stop();
                     }

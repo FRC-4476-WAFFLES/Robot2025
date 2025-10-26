@@ -9,6 +9,7 @@ import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 
 /* Continuously adjusts position of elevator and pivot to desired scoring level */
 public class ExecuteHandoff extends Command {
+    private static final double STOP_INTAKING_TIME = 0.4;
     private enum HandoffState {
         STARTED,
         EXECUTING,
@@ -16,7 +17,8 @@ public class ExecuteHandoff extends Command {
         FINISHED;
     }
     private HandoffState state = HandoffState.STARTED;
-    private Timer timer = new Timer();
+    private Timer stopIntakingTimer = new Timer();
+    private Timer retryHandoffTimer = new Timer();
 
     /** Creates a new ApplyScoringSetpoint. */
     public ExecuteHandoff() {
@@ -33,8 +35,9 @@ public class ExecuteHandoff extends Command {
     @Override
     public void initialize() {
         state = HandoffState.STARTED;
-        timer.stop();
-        timer.reset();
+        stopIntakingTimer.stop();
+        stopIntakingTimer.reset();
+        retryHandoffTimer.reset();
     }
 
     // Called every time the scheduler runs while the command is scheduled.
@@ -47,15 +50,15 @@ public class ExecuteHandoff extends Command {
                 if (RobotContainer.superstructure.atSetpoint()) {
                     // Ensure we are at a controlled starting point for the handoff
                     state = HandoffState.EXECUTING;
-                    timer.restart();
+                    retryHandoffTimer.restart();
                 }
                 break;
             
             case EXECUTING:
                 RobotContainer.superstructure.applySuperstructureState(SuperstructureState.HANDOFF_EXECUTE);
 
-                // Timeout if not at setpoint within 1.5 seconds, and retry pickup if coral still ready
-                if (timer.get() > 1.5) {
+                // Timeout if not at setpoint within some time, and retry pickup if coral still ready
+                if (retryHandoffTimer.get() > 1.0) {
                     if (!RobotContainer.intakeSubsystem.isCoralLoaded()) {
                         state = HandoffState.STARTED;
                     } else {
@@ -67,9 +70,8 @@ public class ExecuteHandoff extends Command {
                 if (RobotContainer.superstructure.atSetpoint()) {
                     state = HandoffState.CLEARING;
 
-                    timer.stop();
-                    timer.reset();
-                    timer.start();
+                    stopIntakingTimer.stop();
+                    stopIntakingTimer.reset();
                 }
                 break;
             
@@ -78,16 +80,22 @@ public class ExecuteHandoff extends Command {
                 RobotContainer.superstructure.applySuperstructureState(SuperstructureState.HANDOFF_CLEAR);
 
                 // Start timer when coral is detected
-                if (RobotContainer.intakeSubsystem.isCoralLoaded() && !timer.hasElapsed(0)) {
-                    timer.restart();
+                if (RobotContainer.intakeSubsystem.isCoralLoaded() && !stopIntakingTimer.isRunning()) {
+                    stopIntakingTimer.restart();
                 }
 
-                // Stop intake 0.15s after coral detection
-                if (timer.get() > 0.4) {
+                // Stop intake some time after coral detection
+                if (stopIntakingTimer.get() > STOP_INTAKING_TIME) {
                     RobotContainer.intakeSubsystem.setIntakeSpeed(0);
                 }
 
-                if (RobotContainer.superstructure.atSetpoint() && timer.get() > 0.15) {
+                if (RobotContainer.superstructure.atSetpoint()) {
+                    // If we failed to load coral and the intake is still loaded try again
+                    if (!RobotContainer.intakeSubsystem.isCoralLoaded() && RobotContainer.groundSuperstructure.intake.isCoralHandoffLoaded()) {
+                        state = HandoffState.STARTED;
+                        break;
+                    }
+
                     // Ensure we are at a controlled ending point for the handoff
                     state = HandoffState.FINISHED;
                 }
@@ -102,13 +110,16 @@ public class ExecuteHandoff extends Command {
     // Called once the command ends or is interrupted.
     @Override
     public void end(boolean interrupted) {
-        timer.stop();
-        timer.reset();
+        stopIntakingTimer.stop();
+        stopIntakingTimer.reset();
+
+        retryHandoffTimer.stop();
+        retryHandoffTimer.reset();
 
         RobotContainer.intakeSubsystem.setIntakeSpeed(0);
 
         if (RobotBase.isSimulation()) {
-            RobotContainer.telemetry.manipulatorCoralSimLoaded = true;
+            // RobotContainer.telemetry.manipulatorCoralSimLoaded = true;
         }
     }
 
