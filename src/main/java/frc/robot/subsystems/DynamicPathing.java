@@ -395,13 +395,20 @@ public class DynamicPathing extends SubsystemBase {
             return;
         }
 
-        // If switching to L1 from something else, or from L1 to something else while pathing, regenerate
-        if (isPathing && currentPathingSituation == DynamicPathingSituation.REEF_CORAL && (level == SuperstructureState.L1 || coralScoringLevel == SuperstructureState.L1)) {
-            regenerateCurrentCoralPath();
-            //System.out.println("Regenerating path to go to L1");
+        if (lockCoralScoringSide) {
+            return;
         }
 
+        // // If switching to L1 from something else, or from L1 to something else while pathing, regenerate
+        // if (isPathing && currentPathingSituation == DynamicPathingSituation.REEF_CORAL && (level == SuperstructureState.L1 || coralScoringLevel == SuperstructureState.L1)) {
+        //     regenerateCurrentCoralPath();
+        //     //System.out.println("Regenerating path to go to L1");
+        // }
         coralScoringLevel = level;
+        if (isRunningAction && currentPathingSituation == DynamicPathingSituation.REEF_CORAL) {
+            regenerateCurrentCoralPath();
+        }
+
         //System.out.println("Setting coral scoring sevel to: " + coralScoringLevel);
     }
 

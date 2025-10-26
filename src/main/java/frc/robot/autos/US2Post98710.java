@@ -14,7 +14,7 @@ public class US2Post98710 extends SequentialCommandGroup {
   public US2Post98710() {
     addCommands(
       AutoUtils.resetOdometry(AutoCoordinates.US2),
-      NamedCommands.getCommand("Set Coral"),
+      NamedCommands.getCommand("Set Coral Loaded"),
       
       AutoUtils.prepareAndScore(AutoCoordinates.Post9, true),
       AutoUtils.intakeSequence(AutoCoordinates.Post9, AutoCoordinates.CS1),

@@ -30,7 +30,7 @@
         }
       ],
       "axisCount": 3,
-      "buttonCount": 1,
+      "buttonCount": 0,
       "buttonKeys": [
         -1,
         -1,
@@ -89,7 +89,7 @@
         90,
         268,
         266,
-        261,
+        82,
         269,
         267
       ],

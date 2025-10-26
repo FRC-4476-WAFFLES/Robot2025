@@ -75,7 +75,7 @@ public class RobotContainer {
   public static boolean isOperatorOverride = false;
   public static boolean isRunningL1Intake = false;
   public static boolean isGroundIntakingAlgae = false;
-  public static boolean runningManualL1 = false;
+  public static boolean isRunningManualL1 = false;
   public static Trigger isHeadingLockedToL1;
   public static Trigger triggerHandoff;
 
@@ -161,6 +161,7 @@ public class RobotContainer {
     Trigger inOverrideMode = new Trigger(() -> isOperatorOverride);
 
     Trigger groundIntakingAlgae = new Trigger(() -> isGroundIntakingAlgae);
+    Trigger placingL1Manual = new Trigger(() -> isRunningManualL1);
 
     Trigger L1Loaded = new Trigger(() -> groundSuperstructure.isL1Ready());
     triggerHandoff = new Trigger(() -> groundSuperstructure.isHandoffReady() && !intakeSubsystem.isAlgaeLoaded() && !intakeSubsystem.isCoralLoaded());
@@ -208,7 +209,7 @@ public class RobotContainer {
     // algaeGroundIntakeActive.whileTrue(new GroundAlgaePickup());
 
     // Operator Algea out
-    dynamicPathingSubsystem.notRunningAction.and(Controls.algaeOut).and(() -> !runningManualL1).whileTrue(
+    dynamicPathingSubsystem.notRunningAction.and(Controls.algaeOut).and(() -> !isRunningManualL1).whileTrue(
       new SequentialCommandGroup(
         new InstantCommand(() -> RobotContainer.superstructure.pivot.setIsThrowingAlgae(true)),
         new ParallelCommandGroup(
@@ -289,6 +290,7 @@ public class RobotContainer {
       )
     );
 
+    // Algae ground intake
     groundIntakingAlgae.whileTrue(
       Commands.deadline(
         Commands.waitUntil(() -> intakeSubsystem.isAlgaeLoaded()),
@@ -301,18 +303,20 @@ public class RobotContainer {
       ).finallyDo(() -> {intakeSubsystem.setIntakeSpeed(0);})
     );
 
-    // Algae ground intake
     Controls.rightJoystick.button(2).onTrue(
       Commands.runOnce(() -> isGroundIntakingAlgae = !isGroundIntakingAlgae)
     );
 
     // L1 Manual
-    Controls.leftJoystick.button(2).whileTrue(
+    placingL1Manual.whileTrue(
       Commands.parallel(
-        Commands.run(() -> runningManualL1 = true),
         new DropCoral(),
         new ApplySuperstructureState(SuperstructureState.L1)
-      ).finallyDo(() -> {intakeSubsystem.setIntakeSpeed(0); runningManualL1 = false;})
+      ).finallyDo(() -> {intakeSubsystem.setIntakeSpeed(0);})
+    );
+
+    Controls.leftJoystick.button(2).whileTrue(
+      Commands.runOnce(() -> isRunningManualL1 = !isRunningManualL1)
     );
 
     // Manual net toss
