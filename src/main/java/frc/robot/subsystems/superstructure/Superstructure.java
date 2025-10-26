@@ -42,7 +42,7 @@ public class Superstructure extends SimpleWafflesMechanism {
     EXECUTE_L3(145, 0.4),
     EXECUTE_L2(145, 0.0),
 
-    L1(120,0.26),
+    L1(120,0.23),
 
     // Maybe manual mode
     MANUAL_L4(160.0,1.35),
