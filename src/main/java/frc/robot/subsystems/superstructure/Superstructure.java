@@ -42,7 +42,7 @@ public class Superstructure extends SimpleWafflesMechanism {
     EXECUTE_L3(145, 0.4),
     EXECUTE_L2(145, 0.0),
 
-    L1(100,0.35),
+    L1(120,0.26),
 
     // Maybe manual mode
     MANUAL_L4(160.0,1.35),
@@ -53,7 +53,7 @@ public class Superstructure extends SimpleWafflesMechanism {
 
     
     HANDOFF_READY(35, 0.36),
-    HANDOFF_EXECUTE(18, 0.17),
+    HANDOFF_EXECUTE(18, 0.15),
     HANDOFF_CLEAR(210, 0.3);
 
     private final double pivotAngle;

@@ -50,7 +50,7 @@ public class AlignToPose extends Command {
   public static final double approachFeedforwardBlendInner = 0.02; // Distance at which velocity feedforward loses all influence
 
   /* Controllers */
-  private ProfiledPIDController approachPidController = new ProfiledPIDController(2.4, 0, 0.05, new Constraints(defaultMaxVelocity, maxAccelerationElevatorDown));
+  private ProfiledPIDController approachPidController = new ProfiledPIDController(2.6, 0, 0.05, new Constraints(defaultMaxVelocity, maxAccelerationElevatorDown));
   private ProfiledPIDController thetaPidController = new ProfiledPIDController(7.0, 0, 0.1, new Constraints(maxThetaVelocity, maxThetaAcceleration));
 
   /* Tolerances */
@@ -175,7 +175,7 @@ public class AlignToPose extends Command {
    */
   public AlignToPose withThetaTolerance(Rotation2d tolerance) {
     RotMaxError = tolerance;
-    thetaPidController.setTolerance(RotMaxError.getRadians(), Math.toRadians(5.0)); // Keep default velocity tolerance
+    thetaPidController.setTolerance(RotMaxError.getRadians(), Math.toRadians(1.0)); // Keep default velocity tolerance
 
     return this;
   }
@@ -200,7 +200,7 @@ public class AlignToPose extends Command {
     );
 
     // Set tolerances (both position AND velocity for proper atGoal() behavior)
-    thetaPidController.setTolerance(RotMaxError.getRadians(), Math.toRadians(5.0)); // 5 deg/s velocity tolerance
+    thetaPidController.setTolerance(RotMaxError.getRadians(), Math.toRadians(1.0)); // 5 deg/s velocity tolerance
     approachPidController.setTolerance(PosMaxError, 0.08); // 8 cm/s velocity tolerance
 
     // Reset theta controller

@@ -222,28 +222,28 @@ public final class Constants {
     
 
     public static final CoralScoringParameters L4Params = new CoralScoringParameters(
-      0.05, 
+      0.03, 
       Rotation2d.fromDegrees(1), 
-      0.04, 
-      0.04, 
-      Rotation2d.fromDegrees(2),
+      0.02, 
+      0.02, 
+      Rotation2d.fromDegrees(1.5),
       SuperstructureState.EXECUTE_L4
     );
 
     public static final CoralScoringParameters L3Params = new CoralScoringParameters(
       0.03, 
       Rotation2d.fromDegrees(1), 
-      0.05, 
-      0.05, 
-      Rotation2d.fromDegrees(2),
+      0.02, 
+      0.02, 
+      Rotation2d.fromDegrees(1.5),
       SuperstructureState.EXECUTE_L3
     );
 
     public static final CoralScoringParameters L2Params = new CoralScoringParameters(
       0.03, 
       Rotation2d.fromDegrees(1), 
-      0.05, 
-      0.05, 
+      0.03, 
+      0.03, 
       Rotation2d.fromDegrees(2),
       SuperstructureState.EXECUTE_L2
     );
@@ -392,7 +392,7 @@ public final class Constants {
     // Predefined positions for the ground pivot (in degrees)
     public enum GroundPivotPosition {
       STOWED(0.0),
-      HANDOFF(23.0),
+      HANDOFF(25.0),
       DEPLOYED(205.0),
       DEPLOYED_OFFGROUND(204.0),
       L1(110),
