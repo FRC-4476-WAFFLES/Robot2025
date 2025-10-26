@@ -300,7 +300,7 @@ public class RobotContainer {
           }
         ),
         new ApplySuperstructureState(SuperstructureState.GROUND_PICKUP_ALGAE)
-      ).finallyDo(() -> {intakeSubsystem.setIntakeSpeed(0);})
+      ).finallyDo(() -> {intakeSubsystem.setIntakeSpeed(0); isGroundIntakingAlgae = false; })
     );
 
     Controls.rightJoystick.button(2).onTrue(
@@ -312,7 +312,7 @@ public class RobotContainer {
       Commands.parallel(
         new DropCoral(),
         new ApplySuperstructureState(SuperstructureState.L1)
-      ).finallyDo(() -> {intakeSubsystem.setIntakeSpeed(0);})
+      ).finallyDo(() -> {intakeSubsystem.setIntakeSpeed(0); isRunningManualL1 = false; })
     );
 
     Controls.leftJoystick.button(2).whileTrue(
