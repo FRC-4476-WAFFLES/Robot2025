@@ -186,13 +186,13 @@ public class ScoreCoral extends SequentialCommandGroup {
       RobotContainer.dynamicPathingSubsystem.lockCoralScoringSide(false);
 
       // If interrupted, briefly run intake to secure coral
-      // if (interrupted) {
-      //   new SequentialCommandGroup(
-      //     new InstantCommand(() -> RobotContainer.intakeSubsystem.setIntakeSpeed(ManipulatorConstants.CORAL_INTAKE_SPEED)),
-      //     Commands.waitSeconds(0.75),
-      //     new InstantCommand(() -> RobotContainer.intakeSubsystem.setIntakeSpeed(0))
-      //   ).schedule();
-      // }
+      if (interrupted) {
+        new SequentialCommandGroup(
+          new InstantCommand(() -> RobotContainer.intakeSubsystem.setIntakeSpeed(ManipulatorConstants.CORAL_INTAKE_SPEED)),
+          Commands.waitSeconds(0.5),
+          new InstantCommand(() -> RobotContainer.intakeSubsystem.setIntakeSpeed(0))
+        ).schedule();
+      }
     });
   }
 
