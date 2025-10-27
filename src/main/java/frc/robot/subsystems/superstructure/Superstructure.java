@@ -53,6 +53,7 @@ public class Superstructure extends SimpleWafflesMechanism {
 
     
     HANDOFF_READY(35, 0.36),
+    HANDOFF_MID_EXECUTE(18,0.36),
     HANDOFF_EXECUTE(18, 0.15),
     HANDOFF_CLEAR(210, 0.3);
 
