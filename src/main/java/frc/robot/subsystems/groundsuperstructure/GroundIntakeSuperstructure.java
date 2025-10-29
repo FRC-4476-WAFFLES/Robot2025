@@ -100,7 +100,7 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
                 break;
 
             case INTAKE_HANDOFF_STATE:
-                if (intake.isCoralLeft() || intake.isCoralRight() || intake.isCoralMid()) {
+                if (intake.isCoralLeft() || intake.isCoralRight() || intake.isCoralMid() || intake.isCoralHandoffLoaded()) {
                     if (intake.isCoralLeft() && intake.isCoralRight() && intake.isCoralMid()) {
                         // We grabbed front on
                         intake.setGroundIntakeSetpoint(GroundIntakeState.SHIFT_LEFT);
