@@ -269,7 +269,7 @@ public final class Constants {
     public static final double CORAL_INTAKE_SPEED = -5; // Rps
     public static final double ALGAE_HOLD_SPEED = -0.8; // Speed to hold algae in place
     public static final double CORAL_HOLD_SPEED = -0.2; // Speed to hold algae in place
-    public static final double ALGAE_INTAKE_SPEED = -5;
+    public static final double ALGAE_INTAKE_SPEED = -6.5;
     public static final double ZEROING_SPEED = -0.095; // Slow inwards speed
 
     // Pivot constants
