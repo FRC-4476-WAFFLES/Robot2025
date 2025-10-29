@@ -141,15 +141,15 @@ public class GroundIntake extends SimpleWafflesMechanism {
 
         leftCoralSensor = new Trigger(
             () -> leftLaserDistance <= GroundIntakeConstants.CORAL_LEFT_DISTANCE_THRESHOLD
-        ).debounce(GroundIntakeConstants.SENSOR_DEBOUNCE_TIME);
+        ).debounce(GroundIntakeConstants.SENSOR_DEBOUNCE_SHORT_TIME);
 
         midCoralSensor = new Trigger(
             () -> midLaserDistance <= GroundIntakeConstants.CORAL_MID_DISTANCE_THRESHOLD
-        ).debounce(GroundIntakeConstants.SENSOR_DEBOUNCE_TIME);
+        ).debounce(GroundIntakeConstants.SENSOR_DEBOUNCE_SHORT_TIME);
 
         rightCoralSensor = new Trigger(
             () -> rightLaserDistance <= GroundIntakeConstants.CORAL_RIGHT_DISTANCE_THRESHOLD
-        ).debounce(GroundIntakeConstants.SENSOR_DEBOUNCE_TIME);
+        ).debounce(GroundIntakeConstants.SENSOR_DEBOUNCE_SHORT_TIME);
 
         handoffCoralSensor = new Trigger(
             () -> handoffCoralPresent

@@ -425,6 +425,7 @@ public final class Constants {
     public static final double CORAL_MID_DISTANCE_THRESHOLD = 30;
     public static final double CORAL_RIGHT_DISTANCE_THRESHOLD = 45;
     
-    public static final double SENSOR_DEBOUNCE_TIME = 0.25;
+    public static final double SENSOR_DEBOUNCE_TIME = 0.35;
+    public static final double SENSOR_DEBOUNCE_SHORT_TIME = 0.2;
   }
 }
