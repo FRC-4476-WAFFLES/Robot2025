@@ -59,7 +59,8 @@ public class Pivot extends WafflesMechanism {
     private boolean isZeroingPivot = false;
     private boolean isThrowingAlgae = false;
     
-    private MotionMagicConfigs motionMagicSlow;
+    private MotionMagicConfigs motionMagicCoral;
+    private MotionMagicConfigs motionMagicAlgae;
     private MotionMagicConfigs motionMagic;
 
     // Network Tables
@@ -144,11 +145,15 @@ public class Pivot extends WafflesMechanism {
         pivotConfigs.MotionMagic = motionMagic;
 
         // Motion Magic Slow
-        motionMagicSlow = new MotionMagicConfigs()
-            .withMotionMagicCruiseVelocity(ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY_SLOW)
-            .withMotionMagicExpo_kV(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY_SLOW)
-            .withMotionMagicExpo_kA(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_ACCELERATION_SLOW);
+        motionMagicCoral = new MotionMagicConfigs()
+            .withMotionMagicCruiseVelocity(ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY_CORAL)
+            .withMotionMagicExpo_kV(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY_CORAL)
+            .withMotionMagicExpo_kA(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_ACCELERATION_CORAL);
         
+         motionMagicAlgae = new MotionMagicConfigs()
+            .withMotionMagicCruiseVelocity(ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY_CORAL)
+            .withMotionMagicExpo_kV(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY_CORAL)
+            .withMotionMagicExpo_kA(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_ACCELERATION_ALGAE);
 
         // PID
         Slot0Configs slot0Configs = new Slot0Configs();
@@ -200,8 +205,16 @@ public class Pivot extends WafflesMechanism {
 
     public void initializeHooks() {
         // Speed switching
-        RobotContainer.intakeSubsystem.manipulatorLoadedTrigger.onTrue(Commands.runOnce(() -> pivot.getConfigurator().apply(motionMagicSlow)));
+        RobotContainer.intakeSubsystem.manipulatorLoadedTrigger.onTrue(Commands.runOnce(() -> {
+            if(RobotContainer.intakeSubsystem.isCoralLoaded()){
+                pivot.getConfigurator().apply(motionMagicCoral);
+            }else if(RobotContainer.intakeSubsystem.isAlgaeLoaded()){
+                pivot.getConfigurator().apply(motionMagicAlgae);
+            }
+        }
+        ));
         RobotContainer.intakeSubsystem.manipulatorLoadedTrigger.onFalse(Commands.runOnce(() -> pivot.getConfigurator().apply(motionMagic)));
+
     }
 
     @Override
@@ -305,8 +318,8 @@ public class Pivot extends WafflesMechanism {
             RobotContainer.groundSuperstructure.pivot.getSetpoint() < 20) {
             // Ground intake is in
             if (constrainedSetpoint < ManipulatorConstants.PIVOT_CLEARANCE_POSITION) {
-                if (RobotContainer.superstructure.elevator.getSetpoint() < SuperstructureState.HANDOFF_EXECUTE.getElevatorHeight() || 
-                    RobotContainer.superstructure.elevator.getElevatorPositionMeters() < SuperstructureState.HANDOFF_EXECUTE.getElevatorHeight()) {
+                if (RobotContainer.superstructure.elevator.getSetpoint() < 0.15 || 
+                    RobotContainer.superstructure.elevator.getElevatorPositionMeters() < 0.15) {
                      return ManipulatorConstants.PIVOT_CLEARANCE_POSITION;
                 }
             }
