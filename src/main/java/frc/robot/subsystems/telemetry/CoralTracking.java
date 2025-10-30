@@ -15,12 +15,14 @@ import frc.robot.utils.vision.LimelightHelpers;
 public class CoralTracking {
     private static final String LIMELIGHT_KEY = VisionConstants.LIMELIGHT_NAME_CORAL;
     
-    private Trigger targetLost = new Trigger(() -> !LimelightHelpers.getTV(LIMELIGHT_KEY))
-    .debounce(0.1);
-    
     private double latestTx;
     private double latestTy;
     private boolean hasTarget = false;
+    
+    private boolean hasActiveTarget = false;
+
+    private Trigger targetLost = new Trigger(() -> !hasActiveTarget)
+    .debounce(0.15);
 
     private final NetworkTable softwareTable = NetworkTableInstance.getDefault().getTable("SoftwareInfo").getSubTable("Coral Tracking");
     private final BooleanPublisher hasTargetNT = softwareTable.getBooleanTopic("Has Target").publish();
@@ -51,8 +53,10 @@ public class CoralTracking {
                 latestTx = LimelightHelpers.getTX(LIMELIGHT_KEY);
                 latestTy = LimelightHelpers.getTY(LIMELIGHT_KEY);
                 hasTarget = true;
+                hasActiveTarget = true;
             }
         } else {
+            hasActiveTarget = false;
             if (targetLost.getAsBoolean()) {
                 hasTarget = false;
             }

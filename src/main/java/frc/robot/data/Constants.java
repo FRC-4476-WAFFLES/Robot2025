@@ -256,10 +256,10 @@ public final class Constants {
     public static final double CORAL_CURRENT_THRESHOLD = 20;
     public static final double ALGAE_HOLD_CURRENT_THRESHOLD = 10.0; // amps - Minimum current while holding algae
 
-    public static final double SENSOR_DISTANCE = 115;
+    public static final double SENSOR_DISTANCE = 125;
 
     public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.15;
-    public static final double CORAL_DETECTION_DEBOUNCE_TIME = 0.1;
+    public static final double CORAL_DETECTION_DEBOUNCE_TIME = 0.25;
     public static final double CORAL_RELEASE_DEBOUNCE_TIME = 0.1;
     public static final double ALGAE_HOLD_CHECK_DEBOUNCE_TIME = 0.3; // Time before checking if algae dropped while holding
     
@@ -290,9 +290,9 @@ public final class Constants {
 
     // Motor configuration
     public static final double PIVOT_MOTION_CRUISE_VELOCITY = 1.5;
-    public static final double PIVOT_MOTION_CRUISE_VELOCITY_SLOW = 1.0;
+    public static final double PIVOT_MOTION_CRUISE_VELOCITY_SLOW = 1.5;
     public static final double PIVOT_MOTION_ACCELERATION = 25.0;
-    public static final double PIVOT_MOTION_ACCELERATION_SLOW = 15.0;
+    public static final double PIVOT_MOTION_ACCELERATION_SLOW = 18.0;
     public static final double PIVOT_MOTION_JERK = 2000.0;
     public static final double STATOR_CURRENT_LIMIT = 50.0; // amps
     public static final double PIVOT_MOTOR_DEADBAND = 0.001;
