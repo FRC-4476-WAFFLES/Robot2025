@@ -305,8 +305,8 @@ public class Pivot extends WafflesMechanism {
             RobotContainer.groundSuperstructure.pivot.getSetpoint() < 20) {
             // Ground intake is in
             if (constrainedSetpoint < ManipulatorConstants.PIVOT_CLEARANCE_POSITION) {
-                if (RobotContainer.superstructure.elevator.getSetpoint() < 0.15 || 
-                    RobotContainer.superstructure.elevator.getElevatorPositionMeters() < 0.15) {
+                if (RobotContainer.superstructure.elevator.getSetpoint() < SuperstructureState.HANDOFF_EXECUTE.getElevatorHeight() || 
+                    RobotContainer.superstructure.elevator.getElevatorPositionMeters() < SuperstructureState.HANDOFF_EXECUTE.getElevatorHeight()) {
                      return ManipulatorConstants.PIVOT_CLEARANCE_POSITION;
                 }
             }
