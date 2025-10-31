@@ -46,7 +46,7 @@ public class ExecuteHandoff extends Command {
         switch (state) {
             case STARTED:
                 RobotContainer.intakeSubsystem.setIntakeSpeed(ManipulatorConstants.CORAL_INTAKE_SPEED);
-                RobotContainer.superstructure.applySuperstructureState(SuperstructureState.HANDOFF_MID_EXECUTE);
+                RobotContainer.superstructure.applySuperstructureState(SuperstructureState.HANDOFF_READY);
                 if (RobotContainer.superstructure.atSetpoint()) {
                     // Ensure we are at a controlled starting point for the handoff
                     state = HandoffState.EXECUTING;

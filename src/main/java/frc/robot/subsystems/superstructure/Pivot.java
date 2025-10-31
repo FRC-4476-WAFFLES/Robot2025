@@ -150,9 +150,9 @@ public class Pivot extends WafflesMechanism {
             .withMotionMagicExpo_kV(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY_CORAL)
             .withMotionMagicExpo_kA(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_ACCELERATION_CORAL);
         
-         motionMagicAlgae = new MotionMagicConfigs()
-            .withMotionMagicCruiseVelocity(ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY_CORAL)
-            .withMotionMagicExpo_kV(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY_CORAL)
+        motionMagicAlgae = new MotionMagicConfigs()
+            .withMotionMagicCruiseVelocity(ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY_ALGAE)
+            .withMotionMagicExpo_kV(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_CRUISE_VELOCITY_ALGAE)
             .withMotionMagicExpo_kA(ManipulatorConstants.PIVOT_SUPPLY_VOLTAGE / ManipulatorConstants.PIVOT_MOTION_ACCELERATION_ALGAE);
 
         // PID
@@ -318,8 +318,8 @@ public class Pivot extends WafflesMechanism {
             RobotContainer.groundSuperstructure.pivot.getSetpoint() < 20) {
             // Ground intake is in
             if (constrainedSetpoint < ManipulatorConstants.PIVOT_CLEARANCE_POSITION) {
-                if (RobotContainer.superstructure.elevator.getSetpoint() < 0.15 || 
-                    RobotContainer.superstructure.elevator.getElevatorPositionMeters() < 0.15) {
+                if (RobotContainer.superstructure.elevator.getSetpoint() < SuperstructureState.HANDOFF_EXECUTE.getElevatorHeight() || 
+                    RobotContainer.superstructure.elevator.getElevatorPositionMeters() < SuperstructureState.HANDOFF_EXECUTE.getElevatorHeight()) {
                      return ManipulatorConstants.PIVOT_CLEARANCE_POSITION;
                 }
             }

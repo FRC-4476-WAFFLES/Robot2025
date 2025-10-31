@@ -117,7 +117,7 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
                             currentState = GroundIntakeSuperstructureState.READY_HANDOFF_STATE;
                         }
                     } else {
-                        pivot.applySetpoint(GroundPivotPosition.DEPLOYED_OFFGROUND);
+                        pivot.applySetpoint(GroundPivotPosition.DEPLOYED);
                     }
                 } else {
                     intake.setGroundIntakeSetpoint(GroundIntakeState.PREPARE_HANDOFF);
