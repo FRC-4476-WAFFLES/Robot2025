@@ -26,8 +26,9 @@ import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Controls;
 import frc.robot.RobotContainer;
-import frc.robot.commands.AlignToPose;
-import frc.robot.commands.DriveTeleop;
+import frc.robot.autos.AutoUtils;
+import frc.robot.commands.drive.AlignToPose;
+import frc.robot.commands.drive.DriveTeleop;
 import frc.robot.commands.intake.CoralOutake;
 import frc.robot.commands.superstructure.ApplySuperstructureState;
 import frc.robot.data.Constants.ManipulatorConstants;
@@ -46,7 +47,7 @@ public class ScoreCoral extends SequentialCommandGroup {
   private static final DoublePublisher totalScoringTimePublisher = scoringTable.getDoubleTopic("Total ScoreCoral Duration").publish();
 
   /** Creates a new ScoreCoral. */
-  private ScoreCoral(Command driveCommand, Pose2d finalAlignPose, double maxSpeed) {
+  private ScoreCoral(Command driveCommand, Pose2d finalAlignPose) {
     var pathingSubsystem = RobotContainer.dynamicPathingSubsystem;
     
     // Command to start timing
@@ -116,9 +117,11 @@ public class ScoreCoral extends SequentialCommandGroup {
         ),
 
         pathingSubsystem.wrapPathingCommand(
-          new AlignToPose(finalAlignPose)
+          new AlignToPose(() -> AutoUtils.evaluateCoralApproachGoalUnflipped(finalAlignPose)).withEndingDebounce(2)
         )
       ),
+
+      Commands.waitSeconds(ScoringConstants.SCORE_WAIT_TIME),
 
       // Rip off coral
       new ParallelDeadlineGroup(
@@ -142,8 +145,8 @@ public class ScoreCoral extends SequentialCommandGroup {
     influence = MathUtil.clamp(influence, 0, 1);
 
     var inputVector = new Translation2d(Controls.getDriveY() , Controls.getDriveX());
-    var closestFaceAngle = WafflesUtilities.FlipAngleIfRedAlliance(RobotContainer.dynamicPathingSubsystem.getClosestFaceAngle());
-    var travelDirection = new Translation2d(1, closestFaceAngle);
+    var closestFaceAngle = RobotContainer.dynamicPathingSubsystem.getClosestFaceAngle();
+    var travelDirection = new Translation2d(1, closestFaceAngle.plus(Rotation2d.k180deg));
     // double scaledInput = Math.max(0, WafflesUtilities.translationDotProduct(travelDirection, inputVector));
     double scaledInput = MathUtil.clamp(inputVector.getNorm(), 0, 1);
 
@@ -157,8 +160,8 @@ public class ScoreCoral extends SequentialCommandGroup {
     influence = MathUtil.clamp(influence, 0, 1);
 
     var inputVector = new Translation2d(Controls.getDriveY() , Controls.getDriveX());
-    var closestFaceAngle = WafflesUtilities.FlipAngleIfRedAlliance(RobotContainer.dynamicPathingSubsystem.getClosestFaceAngle());
-    var travelDirection = new Translation2d(1, closestFaceAngle);
+    var closestFaceAngle = RobotContainer.dynamicPathingSubsystem.getClosestFaceAngle();
+    var travelDirection = new Translation2d(1, closestFaceAngle.plus(Rotation2d.k180deg));
     double scaledInput = MathUtil.clamp(inputVector.getNorm(), 0, 1);
 
     double output = travelDirection.times(scaledInput).getY();
@@ -176,21 +179,20 @@ public class ScoreCoral extends SequentialCommandGroup {
    * Scores coral given a path and a final target pose
    * @param driveCommand the pathing command
    * @param finalAlignPose the final pose (used for a final PID based alignment pass)
-   * @param maxSpeed the maximum speed for the final PID based alignment
    * @return The command to score coral
    */
-  public static Command scoreCoralWithPath(Command driveCommand, Pose2d finalAlignPose, double maxSpeed) {
-    return new ScoreCoral(driveCommand, finalAlignPose, maxSpeed).finallyDo((interrupted) ->{
+  public static Command scoreCoralWithPath(Command driveCommand, Pose2d finalAlignPose) {
+    return new ScoreCoral(driveCommand, finalAlignPose).finallyDo((interrupted) ->{
       RobotContainer.dynamicPathingSubsystem.lockCoralScoringSide(false);
 
       // If interrupted, briefly run intake to secure coral
-      // if (interrupted) {
-      //   new SequentialCommandGroup(
-      //     new InstantCommand(() -> RobotContainer.intakeSubsystem.setIntakeSpeed(ManipulatorConstants.CORAL_INTAKE_SPEED)),
-      //     Commands.waitSeconds(0.75),
-      //     new InstantCommand(() -> RobotContainer.intakeSubsystem.setIntakeSpeed(0))
-      //   ).schedule();
-      // }
+      if (interrupted) {
+        new SequentialCommandGroup(
+          new InstantCommand(() -> RobotContainer.intakeSubsystem.setIntakeSpeed(ManipulatorConstants.CORAL_INTAKE_SPEED)),
+          Commands.waitSeconds(0.5),
+          new InstantCommand(() -> RobotContainer.intakeSubsystem.setIntakeSpeed(0))
+        ).schedule();
+      }
     });
   }
 
@@ -201,8 +203,8 @@ public class ScoreCoral extends SequentialCommandGroup {
    * @param finalAlignPose the final pose (used for a final PID based alignment pass)
    * @return The command to score coral and optionally pick up algae after
    */
-  public static Command scoreCoralWithPathAndAlgae(Command driveCommand, Pose2d finalAlignPose, double maxSpeed) {
-    Command scoreCoralCommand = scoreCoralWithPath(driveCommand, finalAlignPose, maxSpeed);
+  public static Command scoreCoralWithPathAndAlgae(Command driveCommand, Pose2d finalAlignPose) {
+    Command scoreCoralCommand = scoreCoralWithPath(driveCommand, finalAlignPose);
     
     return new SequentialCommandGroup(
       scoreCoralCommand,
@@ -238,7 +240,7 @@ public class ScoreCoral extends SequentialCommandGroup {
    * @return The command to score coral
    */
   public static Command scoreCoralWithPose(Pose2d finalAlignPose) {
-    return scoreCoralWithPath(new InstantCommand(), finalAlignPose, Double.MAX_VALUE);
+    return scoreCoralWithPath(new InstantCommand(), finalAlignPose);
   }
 
   /**
@@ -255,11 +257,8 @@ public class ScoreCoral extends SequentialCommandGroup {
     RobotContainer.dynamicPathingSubsystem.setCoralScoringLevel(level);
     RobotContainer.dynamicPathingSubsystem.setCoralScoringSide(rightSide);
     Pose2d targetCoralPose = RobotContainer.dynamicPathingSubsystem.getNearestCoralScoringLocation();
-    Command scoreCommand = scoreCoralWithPath(new InstantCommand(), targetCoralPose, DynamicPathing.CORAL_PATH_END_SPEED);
+    Command scoreCommand = scoreCoralWithPath(new InstantCommand(), targetCoralPose);
 
-    return Commands.sequence(
-      scoreCommand,
-      Commands.waitSeconds(ScoringConstants.AUTO_SCORE_WAIT_TIME)
-    );
+    return scoreCommand;
   }
 }

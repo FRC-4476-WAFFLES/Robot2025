@@ -54,7 +54,7 @@ public class SuperstructureControl {
             (interrupted) -> {},
             () -> false, 
             RobotContainer.superstructure.elevator
-        );
+        ).withName("Elevator Default");
     }
 
     /**
@@ -87,7 +87,7 @@ public class SuperstructureControl {
             (interrupted) -> {},
             () -> false, 
             RobotContainer.superstructure.pivot
-        );
+        ).withName("Elevator Default");
     }
 
     public static Command RestPositionCommand() {
@@ -109,10 +109,10 @@ public class SuperstructureControl {
                 if (interrupted) {
                     return;
                 }
-                RobotContainer.superstructure.applySuperstructureState(SuperstructureState.L4);
+                RobotContainer.superstructure.applySuperstructureState(SuperstructureState.L4_FAST);
             },
             () -> DynamicPathing.isElevatorL4Ready(), 
             RobotContainer.superstructure.elevator
-        ).withTimeout(2);
+        ).withTimeout(5);
     }
 }

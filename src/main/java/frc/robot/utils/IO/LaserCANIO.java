@@ -46,6 +46,15 @@ public class LaserCANIO {
                         if (measurement.status == LaserCan.LASERCAN_STATUS_OUT_OF_BOUNDS) {
                             return 1000.0;
                         }
+                        if (measurement.status == LaserCan.LASERCAN_STATUS_NOISE_ISSUE) {
+                            return 1000.0;
+                        }
+                        if (measurement.status == LaserCan.LASERCAN_STATUS_WEAK_SIGNAL) {
+                            return 1000.0;
+                        }
+                        if (measurement.status == LaserCan.LASERCAN_STATUS_WRAPAROUND) {
+                            return 1000.0;
+                        }
                     }
                 }
                 return null;

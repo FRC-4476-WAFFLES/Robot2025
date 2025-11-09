@@ -6,6 +6,8 @@ package frc.robot.subsystems.groundsuperstructure;
 
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.StringPublisher;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.RobotContainer;
 import frc.robot.data.Constants.GroundPivotConstants.GroundPivotPosition;
@@ -37,6 +39,8 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
     private BooleanPublisher intakingHandoff = networkTable.getBooleanTopic("Intaking Handoff").publish();
     
 
+    private Timer simTimer = new Timer();
+
     @Override
     protected void periodicImpl() {
         if (RobotContainer.isOperatorOverride) {
@@ -53,7 +57,6 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
         switch (currentState) {
             case INTAKE_L1_STATE:
                 if (intake.isCoralLeft() || intake.isCoralRight() || intake.isCoralMid()) {
-                    pivot.applySetpoint(GroundPivotPosition.L1);
                     currentState = GroundIntakeSuperstructureState.INDEXING_L1_STATE;
                 } else {
                     intake.setGroundIntakeSetpoint(GroundIntakeState.INTAKE_TOP);
@@ -63,7 +66,7 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
             
             case INDEXING_L1_STATE:
                 if (intake.isCoralLeft() || intake.isCoralRight() || intake.isCoralMid()) {
-                    pivot.applySetpoint(GroundPivotPosition.L1);
+                    pivot.applySetpoint(GroundPivotPosition.L1_INTAKE);
                     if(!intake.isCoralRight()){
                         intake.setGroundIntakeSetpoint(GroundIntakeState.SHIFT_RIGHT);
                     }else if(!intake.isCoralLeft()){
@@ -81,6 +84,10 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
             case L1_READY:
                 pivot.applySetpoint(GroundPivotPosition.L1);
                 intake.setGroundIntakeSetpoint(GroundIntakeState.INTAKE_TOP_SLOW);
+
+                if(!intake.isCoralLeft() && !intake.isCoralRight() && !intake.isCoralMid()){
+                    currentState = GroundIntakeSuperstructureState.STOWED;
+                }
                 break;
 
             case L1_SCORE_STATE:
@@ -93,7 +100,7 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
                 break;
 
             case INTAKE_HANDOFF_STATE:
-                if (intake.isCoralLeft() || intake.isCoralRight() || intake.isCoralMid()) {
+                if (intake.isCoralLeft() || intake.isCoralRight() || intake.isCoralMid() || intake.isCoralHandoffLoaded()) {
                     if (intake.isCoralLeft() && intake.isCoralRight() && intake.isCoralMid()) {
                         // We grabbed front on
                         intake.setGroundIntakeSetpoint(GroundIntakeState.SHIFT_LEFT);
@@ -110,17 +117,33 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
                             currentState = GroundIntakeSuperstructureState.READY_HANDOFF_STATE;
                         }
                     } else {
-                        pivot.applySetpoint(GroundPivotPosition.DEPLOYED_OFFGROUND);
+                        pivot.applySetpoint(GroundPivotPosition.DEPLOYED);
                     }
                 } else {
                     intake.setGroundIntakeSetpoint(GroundIntakeState.PREPARE_HANDOFF);
                     pivot.applySetpoint(GroundPivotPosition.DEPLOYED);
+                }
+
+                // Pretend intake happened in sim after 3 seconds
+                if (RobotBase.isSimulation()) {
+                    if (!simTimer.isRunning()) {
+                        simTimer.start();
+                    }
+                    if (simTimer.get() > 3) {
+                        // currentState = GroundIntakeSuperstructureState.READY_HANDOFF_STATE;
+                        simTimer.reset();
+                        simTimer.stop();
+                    }
                 }
             break;
 
             case READY_HANDOFF_STATE:
                 pivot.applySetpoint(GroundPivotPosition.HANDOFF);
                 intake.setGroundIntakeSetpoint(GroundIntakeState.REST);
+
+                if(!intake.isCoralHandoffLoaded() && !intake.isCoralMid()){
+                    currentState = GroundIntakeSuperstructureState.STOWED;
+                }
                 break; 
 
             case EXECUTE_HANDOFF_STATE:
@@ -217,6 +240,12 @@ public class GroundIntakeSuperstructure extends SimpleWafflesMechanism{
             currentState = GroundIntakeSuperstructureState.INTAKE_HANDOFF_STATE;
         } else if (currentState == GroundIntakeSuperstructureState.INTAKE_HANDOFF_STATE) {
             currentState = GroundIntakeSuperstructureState.SPIT_OUT_STATE; // Spit out if interrupted mid intake
+        }
+    }
+
+    public void startHandoffIntake() {
+        if (currentState == GroundIntakeSuperstructureState.STOWED) {
+            currentState = GroundIntakeSuperstructureState.INTAKE_HANDOFF_STATE;
         }
     }
 
