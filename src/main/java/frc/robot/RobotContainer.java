@@ -19,30 +19,30 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
-import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.DriveTeleop;
+import frc.robot.autos.OPP2Lolipop;
+import frc.robot.autos.OPP2Post2345;
+import frc.robot.autos.US2Lolipop;
+import frc.robot.autos.US2Post98710;
 import frc.robot.commands.ResetGyroHeading;
+import frc.robot.commands.drive.DriveTeleop;
 import frc.robot.commands.intake.AlgaeOutake;
 import frc.robot.commands.intake.AxisIntakeControl;
 import frc.robot.commands.intake.CoralOutake;
+import frc.robot.commands.intake.DropCoral;
 import frc.robot.commands.scoring.ScoreCoral;
 import frc.robot.commands.scoring.ScoreNet;
 import frc.robot.commands.superstructure.ApplySuperstructureState;
 import frc.robot.commands.superstructure.ExecuteHandoff;
-import frc.robot.commands.superstructure.GroundAlgaePickup;
 import frc.robot.commands.superstructure.SuperstructureControl;
 import frc.robot.commands.superstructure.ZeroMechanisms;
 import frc.robot.commands.test.TestDriveAuto;
 import frc.robot.commands.test.TestElevatorAuto;
 import frc.robot.commands.test.WheelRadiusCharacterization;
-import frc.robot.commands.AlignToCoral;
-import frc.robot.data.Constants;
+import frc.robot.data.Constants.CodeConstants;
 import frc.robot.data.Constants.ManipulatorConstants;
 import frc.robot.data.Constants.ScoringConstants;
 import frc.robot.data.Constants.VisionConstants;
@@ -52,10 +52,11 @@ import frc.robot.subsystems.DynamicPathing;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Lights;
 import frc.robot.subsystems.MechanismPoses;
-import frc.robot.subsystems.Telemetry;
 import frc.robot.subsystems.groundsuperstructure.GroundIntakeSuperstructure;
+import frc.robot.subsystems.superstructure.Pivot;
 import frc.robot.subsystems.superstructure.Superstructure;
 import frc.robot.subsystems.superstructure.Superstructure.SuperstructureState;
+import frc.robot.subsystems.telemetry.Telemetry;
 import frc.robot.utils.vision.LimelightHelpers;
 
 
@@ -70,11 +71,13 @@ public class RobotContainer {
 
   /* Global Robot State */
   private SendableChooser<Command> autoChooser;
-  private  SendableChooser<Command> testChooser;
+  private SendableChooser<Command> testChooser;
   public static boolean isOperatorOverride = false;
   public static boolean isRunningL1Intake = false;
   public static boolean isGroundIntakingAlgae = false;
+  public static boolean isRunningManualL1 = false;
   public static Trigger isHeadingLockedToL1;
+  public static Trigger triggerHandoff;
 
   /* Hardware Subsystems */
   public static final DriveSubsystem driveSubsystem = TunerConstants.createDrivetrain();
@@ -99,12 +102,14 @@ public class RobotContainer {
     Controls.operatorController::getLeftTriggerAxis
   );
 
-  Trigger triggerHandoff;
 
   /** The static entry point for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure trigger bindings
     configureBindings();
+
+    // Setup inter subsystem bindings
+    superstructure.pivot.initializeHooks();
 
     // Swerve telemetry from odometry thread
     driveSubsystem.registerTelemetry(telemetry::telemetryConsumer);
@@ -125,7 +130,16 @@ public class RobotContainer {
     registerNamedCommands();
 
     // Build an auto chooser. This will use Commands.none() as the default option.
-    autoChooser = AutoBuilder.buildAutoChooser();
+    if (CodeConstants.USE_PATHPLANNER_AUTOS) {
+      autoChooser = AutoBuilder.buildAutoChooser();
+    } else {
+      autoChooser = new SendableChooser<>();
+      autoChooser.addOption("OPP2 Lolipop", new OPP2Lolipop());
+      autoChooser.addOption("OPP2 2,3,4,5", new OPP2Post2345());
+      autoChooser.addOption("US2 Lolipop", new US2Lolipop());
+      autoChooser.addOption("US2 9,8,7,10", new US2Post98710());
+    }
+    
     SmartDashboard.putData("Auto Chooser", autoChooser);
 
     testChooser = buildTestChooser(); 
@@ -146,7 +160,8 @@ public class RobotContainer {
     Trigger inNormalMode = new Trigger(() -> !isOperatorOverride);
     Trigger inOverrideMode = new Trigger(() -> isOperatorOverride);
 
-    Trigger algaeGroundIntakeActive = new Trigger(() -> isGroundIntakingAlgae);
+    Trigger groundIntakingAlgae = new Trigger(() -> isGroundIntakingAlgae);
+    Trigger placingL1Manual = new Trigger(() -> isRunningManualL1);
 
     Trigger L1Loaded = new Trigger(() -> groundSuperstructure.isL1Ready());
     triggerHandoff = new Trigger(() -> groundSuperstructure.isHandoffReady() && !intakeSubsystem.isAlgaeLoaded() && !intakeSubsystem.isCoralLoaded());
@@ -191,10 +206,10 @@ public class RobotContainer {
     //   Commands.runOnce(() -> isGroundIntakingAlgae = !isGroundIntakingAlgae)
     // );
 
-    algaeGroundIntakeActive.whileTrue(new GroundAlgaePickup());
+    // algaeGroundIntakeActive.whileTrue(new GroundAlgaePickup());
 
     // Operator Algea out
-    dynamicPathingSubsystem.notRunningAction.and(Controls.algaeOut).whileTrue(
+    dynamicPathingSubsystem.notRunningAction.and(Controls.algaeOut).and(() -> !isRunningManualL1).whileTrue(
       new SequentialCommandGroup(
         new InstantCommand(() -> RobotContainer.superstructure.pivot.setIsThrowingAlgae(true)),
         new ParallelCommandGroup(
@@ -275,14 +290,34 @@ public class RobotContainer {
       )
     );
 
-    // Controls.operatorController.povUp().whileTrue(
-    //   new ParallelCommandGroup(
-    //     new InstantCommand(
-    //       () -> {intakeSubsystem.setIntakeSpeed(ManipulatorConstants.ALGAE_INTAKE_SPEED);}
-    //     ),
-    //     new ApplySuperstructureState(SuperstructureState.GROUND_PICKUP_ALGAE)
-    //   )
-    // );
+    // Algae ground intake
+    groundIntakingAlgae.whileTrue(
+      Commands.deadline(
+        Commands.waitUntil(() -> intakeSubsystem.isAlgaeLoaded()),
+        new InstantCommand(
+          () -> {
+            intakeSubsystem.setIntakeSpeed(ManipulatorConstants.ALGAE_INTAKE_SPEED); 
+          }
+        ),
+        new ApplySuperstructureState(SuperstructureState.GROUND_PICKUP_ALGAE)
+      ).finallyDo(() -> {intakeSubsystem.setIntakeSpeed(0); isGroundIntakingAlgae = false; })
+    );
+
+    Controls.rightJoystick.button(2).onTrue(
+      Commands.runOnce(() -> isGroundIntakingAlgae = !isGroundIntakingAlgae)
+    );
+
+    // L1 Manual
+    placingL1Manual.whileTrue(
+      Commands.parallel(
+        new DropCoral(),
+        new ApplySuperstructureState(SuperstructureState.L1)
+      ).finallyDo(() -> {intakeSubsystem.setIntakeSpeed(0); isRunningManualL1 = false; })
+    );
+
+    Controls.leftJoystick.button(2).whileTrue(
+      Commands.runOnce(() -> isRunningManualL1 = !isRunningManualL1)
+    );
 
     // Manual net toss
     Controls.operatorController.povDown().whileTrue(Commands.defer(() -> ScoreNet.getScoreNetCommand(0, () -> Rotation2d.kZero, false, true), DynamicPathing.actionCommandRequirements).onlyIf(() -> RobotContainer.intakeSubsystem.isAlgaeLoaded()));
@@ -372,9 +407,13 @@ public class RobotContainer {
     // Sends the elevator up in stages in preparation for L4 score
     // Name is legacy that isn't worth changing in pathplanner at this point
     NamedCommands.registerCommand("Set Position L2", 
-      Commands.deadline(
+      // Commands.deadline(
         SuperstructureControl.L4ScorePrepCommand()
-      )
+      // )
+      // Commands.runOnce(() -> {
+      //   RobotContainer.superstructure.elevator.applySetpoint(SuperstructureState.HANDOFF_CLEAR);
+      //   RobotContainer.superstructure.pivot.applySetpoint(SuperstructureState.HANDOFF_CLEAR);
+      // })
     );
 
     // Direct position commands for both elevator and pivot
@@ -436,7 +475,7 @@ public class RobotContainer {
       Commands.sequence(
         Commands.parallel(
           new CoralOutake(),
-          Commands.runOnce(() -> groundSuperstructure.handoffIntakeToggle())
+          Commands.runOnce(() -> groundSuperstructure.startHandoffIntake())
         ).withTimeout(0.5),
         new WaitUntilCommand(() -> DynamicPathing.isElevatorRetractionSafe()),      
         Commands.runOnce(() -> superstructure.applySuperstructureState(SuperstructureState.HANDOFF_READY)),

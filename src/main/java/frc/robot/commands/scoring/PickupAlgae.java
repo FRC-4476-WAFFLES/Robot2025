@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.RobotContainer;
-import frc.robot.commands.AlignToPose;
+import frc.robot.commands.drive.AlignToPose;
 import frc.robot.commands.intake.AlgaeIntake;
 import frc.robot.commands.superstructure.ApplySuperstructureState;
 import frc.robot.data.Constants.ManipulatorConstants;

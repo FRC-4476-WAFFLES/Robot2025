@@ -10,7 +10,6 @@ import com.ctre.phoenix6.hardware.CANrange;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import au.grapplerobotics.LaserCan;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -20,7 +19,6 @@ import frc.robot.data.Constants;
 import frc.robot.data.Constants.GroundIntakeConstants;
 import frc.robot.data.Constants.PhysicalConstants;
 import frc.robot.utils.PhoenixHelpers;
-import frc.robot.utils.IO.DeferredRefresher;
 import frc.robot.utils.IO.LaserCANIO;
 import frc.robot.utils.IO.TalonFXIO;
 import frc.robot.utils.lib.SimpleWafflesMechanism;
@@ -61,10 +59,10 @@ public class GroundIntake extends SimpleWafflesMechanism {
 
     // State Variables
     public enum GroundIntakeState {
-        SHIFT_LEFT(-6, -6,1),
-        INTAKE_TOP(0, 0,5),
-        INTAKE_TOP_SLOW(0, 0,0.5),
-        SHIFT_RIGHT(6, 6,1),
+        SHIFT_LEFT(-6, -6,4),
+        INTAKE_TOP(0, 0,4.5),
+        INTAKE_TOP_SLOW(0, 0,3),
+        SHIFT_RIGHT(6, 6,4),
         PREPARE_HANDOFF(-8,8,3),
         HANDOFF(3,-3,0),
         REST(0, 0,0),
@@ -143,15 +141,15 @@ public class GroundIntake extends SimpleWafflesMechanism {
 
         leftCoralSensor = new Trigger(
             () -> leftLaserDistance <= GroundIntakeConstants.CORAL_LEFT_DISTANCE_THRESHOLD
-        ).debounce(GroundIntakeConstants.SENSOR_DEBOUNCE_TIME);
+        ).debounce(GroundIntakeConstants.SENSOR_DEBOUNCE_SHORT_TIME);
 
         midCoralSensor = new Trigger(
             () -> midLaserDistance <= GroundIntakeConstants.CORAL_MID_DISTANCE_THRESHOLD
-        ).debounce(GroundIntakeConstants.SENSOR_DEBOUNCE_TIME);
+        ).debounce(GroundIntakeConstants.SENSOR_DEBOUNCE_SHORT_TIME);
 
         rightCoralSensor = new Trigger(
             () -> rightLaserDistance <= GroundIntakeConstants.CORAL_RIGHT_DISTANCE_THRESHOLD
-        ).debounce(GroundIntakeConstants.SENSOR_DEBOUNCE_TIME);
+        ).debounce(GroundIntakeConstants.SENSOR_DEBOUNCE_SHORT_TIME);
 
         handoffCoralSensor = new Trigger(
             () -> handoffCoralPresent

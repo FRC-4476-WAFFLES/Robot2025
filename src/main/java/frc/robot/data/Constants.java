@@ -100,6 +100,11 @@ public final class Constants {
     public static final double FD_CAN_FREQUENCY = 100;
     public static final double BASE_CAN_FREQUENCY = 50;
     public static final double LOW_IMPORTANCE_CAN_FREQUENCY = 20;
+
+    public static final double AUTO_MAX_SPEED = 2;
+  
+    public static final boolean USE_PATHPLANNER_AUTOS = false;
+    public static final boolean RESET_ODOMETRY_AUTO_START = true;
   }
 
   /* Vision */
@@ -200,7 +205,7 @@ public final class Constants {
     // Makes the elevator go up more in net autos, we can tip over but it *is* faster! :)
     public static final boolean USE_RISKY_NET_AUTO = true;
     public static final boolean USE_CORAL_SCORE_PATH_PLANNING = false; // Too slow / inconsistently latent on rio2
-    public static final double AUTO_SCORE_WAIT_TIME = 0.3; // Wait before driving away to allow arm to swing out
+    public static final double SCORE_WAIT_TIME = 0.1; // Wait before driving away to allow arm to swing out
 
     /** A collection of scoring parameters */
     public record CoralScoringParameters(
@@ -217,28 +222,28 @@ public final class Constants {
     
 
     public static final CoralScoringParameters L4Params = new CoralScoringParameters(
-      0.05, 
+      0.03, 
       Rotation2d.fromDegrees(1), 
-      0.05, 
-      0.05, 
-      Rotation2d.fromDegrees(2),
+      0.02, 
+      0.02, 
+      Rotation2d.fromDegrees(1.5),
       SuperstructureState.EXECUTE_L4
     );
 
     public static final CoralScoringParameters L3Params = new CoralScoringParameters(
       0.03, 
       Rotation2d.fromDegrees(1), 
-      0.05, 
-      0.05, 
-      Rotation2d.fromDegrees(2),
+      0.02, 
+      0.02, 
+      Rotation2d.fromDegrees(1.5),
       SuperstructureState.EXECUTE_L3
     );
 
     public static final CoralScoringParameters L2Params = new CoralScoringParameters(
       0.03, 
       Rotation2d.fromDegrees(1), 
-      0.05, 
-      0.05, 
+      0.03, 
+      0.03, 
       Rotation2d.fromDegrees(2),
       SuperstructureState.EXECUTE_L2
     );
@@ -251,10 +256,10 @@ public final class Constants {
     public static final double CORAL_CURRENT_THRESHOLD = 20;
     public static final double ALGAE_HOLD_CURRENT_THRESHOLD = 10.0; // amps - Minimum current while holding algae
 
-    public static final double SENSOR_DISTANCE = 95;
+    public static final double SENSOR_DISTANCE = 125;
 
     public static final double ALGAE_DETECTION_DEBOUNCE_TIME = 0.15;
-    public static final double CORAL_DETECTION_DEBOUNCE_TIME = 0.1;
+    public static final double CORAL_DETECTION_DEBOUNCE_TIME = 0.25;
     public static final double CORAL_RELEASE_DEBOUNCE_TIME = 0.1;
     public static final double ALGAE_HOLD_CHECK_DEBOUNCE_TIME = 0.3; // Time before checking if algae dropped while holding
     
@@ -262,8 +267,9 @@ public final class Constants {
 
     // Intake speeds
     public static final double CORAL_INTAKE_SPEED = -5; // Rps
-    public static final double ALGAE_HOLD_SPEED = -0.5; // Speed to hold algae in place
-    public static final double ALGAE_INTAKE_SPEED = -5;
+    public static final double ALGAE_HOLD_SPEED = -0.8; // Speed to hold algae in place
+    public static final double CORAL_HOLD_SPEED = -0.2; // Speed to hold algae in place
+    public static final double ALGAE_INTAKE_SPEED = -6.5;
     public static final double ZEROING_SPEED = -0.095; // Slow inwards speed
 
     // Pivot constants
@@ -271,6 +277,8 @@ public final class Constants {
 
     public static final double PIVOT_MIN_ANGLE = 0.0; // degrees 
     public static final double PIVOT_MAX_ANGLE = 270.0; // degrees
+
+    public static final double PIVOT_REEF_CLEAR_ANGLE = 165.0; // degrees
 
     // Constraints
     public static final double PIVOT_FRAME_LOWER_CLEARANCE_ANGLE = 15;
@@ -282,7 +290,13 @@ public final class Constants {
 
     // Motor configuration
     public static final double PIVOT_MOTION_CRUISE_VELOCITY = 1.5;
-    public static final double PIVOT_MOTION_ACCELERATION = 30.0;
+    public static final double PIVOT_MOTION_CRUISE_VELOCITY_CORAL = 1.5;
+    public static final double PIVOT_MOTION_CRUISE_VELOCITY_ALGAE = 0.5;
+
+    public static final double PIVOT_MOTION_ACCELERATION = 25.0;
+    public static final double PIVOT_MOTION_ACCELERATION_CORAL = 15.0;
+    public static final double PIVOT_MOTION_ACCELERATION_ALGAE = 5.0;
+
     public static final double PIVOT_MOTION_JERK = 2000.0;
     public static final double STATOR_CURRENT_LIMIT = 50.0; // amps
     public static final double PIVOT_MOTOR_DEADBAND = 0.001;
@@ -319,15 +333,15 @@ public final class Constants {
     public static final double MAX_ELEVATOR_HEIGHT = 1.50;
 
     // Collision zone constants
-    public static final double COLLISION_ZONE_LOWER = 0.36; // meters
+    public static final double COLLISION_ZONE_LOWER = 0.37; // meters
     public static final double COLLISION_ZONE_UPPER = 0.85; // meters
 
     // Height where first stage starts moving
     public static final double FIRST_STAGE_START_HEIGHT = ElevatorConstants.MAX_ELEVATOR_HEIGHT / 2.0; 
 
     // Motion Magic configuration
-    public static final double MOTION_CRUISE_VELOCITY = 4; // 4 usually
-    public static final double MOTION_ACCELERATION = 4;
+    public static final double MOTION_CRUISE_VELOCITY = 6; // 4 usually
+    public static final double MOTION_ACCELERATION = 4.5;
     public static final double MOTION_JERK = 2000;
 
     // PID Values
@@ -369,8 +383,8 @@ public final class Constants {
 
     // Motor configuration
     public static final double STATOR_CURRENT_LIMIT = 40.0; // amps
-    public static final double MOTION_CRUISE_VELOCITY = 5; 
-    public static final double MOTION_ACCELERATION = 10; 
+    public static final double MOTION_CRUISE_VELOCITY = 6; 
+    public static final double MOTION_ACCELERATION = 14; 
     public static final double MOTION_JERK = 2000.0; 
 
     // PID Values
@@ -382,11 +396,10 @@ public final class Constants {
     // Predefined positions for the ground pivot (in degrees)
     public enum GroundPivotPosition {
       STOWED(0.0),
-      HANDOFF(23.0),
+      HANDOFF(25.0),
       DEPLOYED(205.0),
-      DEPLOYED_OFFGROUND(204.0),
       L1(110),
-      L1_INTAKE(205),
+      L1_INTAKE(206),
       ZEROING_CLEARANCE(140);
 
       private final double degrees;
@@ -415,6 +428,7 @@ public final class Constants {
     public static final double CORAL_MID_DISTANCE_THRESHOLD = 30;
     public static final double CORAL_RIGHT_DISTANCE_THRESHOLD = 45;
     
-    public static final double SENSOR_DEBOUNCE_TIME = 0.25;
+    public static final double SENSOR_DEBOUNCE_TIME = 0.35;
+    public static final double SENSOR_DEBOUNCE_SHORT_TIME = 0.2;
   }
 }

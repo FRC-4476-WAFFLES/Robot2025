@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.telemetry;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -107,6 +107,8 @@ public class Telemetry extends SubsystemBase {
 
     private PowerDistribution powerDistributionHub = new PowerDistribution(1, ModuleType.kRev);
 
+    public final CoralTracking coralTracking = new CoralTracking();
+
     // CAN checking variables
     private CANStatus rioCanStatus = new CANStatus();
 
@@ -177,6 +179,8 @@ public class Telemetry extends SubsystemBase {
     public void periodic() {
         // This method will be called once per scheduler run
         publishPDHInfo();
+
+        coralTracking.update();
 
         matchTime.set(Timer.getMatchTime());
 

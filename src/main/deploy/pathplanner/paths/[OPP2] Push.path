@@ -48,7 +48,7 @@
   "folder": "Push",
   "idealStartingState": {
     "velocity": 0.0,
-    "rotation": 119.99999999999999
+    "rotation": 135.0
   },
   "useDefaultConstraints": true
 }

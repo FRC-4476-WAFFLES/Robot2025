@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.data.BuildConstants;
@@ -61,6 +62,8 @@ public class Robot extends TimedRobot {
     // Log metadata about the build
     DataLogManager.log("Robot program starting");
     DataLogManager.log("Build date: " + BuildConstants.BUILD_DATE);
+
+    SmartDashboard.putData("CommandScheduler", CommandScheduler.getInstance());
 
     // Use realtime thread priority. This is dangerous and may have consequences for other threads ie. networktables
     // Threads.setCurrentThreadPriority(true, 10);

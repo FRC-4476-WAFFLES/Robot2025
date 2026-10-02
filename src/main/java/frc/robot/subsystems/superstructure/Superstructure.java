@@ -18,7 +18,7 @@ public class Superstructure extends SimpleWafflesMechanism {
     ZERO(80, 0),
     ALGAE_L2(130,0.65),
     ALGAE_L1(130,0.25),
-    PROCESSOR(189,0.135),
+    PROCESSOR(110,0.0),
     SPIT_ALGAE(140,0.2),
     CORAL_INTAKE(2.6,0),
     NET(98,1.3),
@@ -31,15 +31,18 @@ public class Superstructure extends SimpleWafflesMechanism {
     ALGAE_REST(218, 0.0),
     ALGAE_GROUND_PICKUP(83,0.0),
 
-    L4(200,1),
+    GROUND_PICKUP_ALGAE(85, 0.0),
+    L4(184,1),
     L3(200,0.4),
     L2(173,0.0),
 
-    EXECUTE_L4(145, 1.02),
-    EXECUTE_L3(130, 0.4),
-    EXECUTE_L2(130, 0.0),
+    L4_FAST(184,1),
 
-    L1(100,0.33),
+    EXECUTE_L4(145, 1.02),
+    EXECUTE_L3(145, 0.4),
+    EXECUTE_L2(145, 0.0),
+
+    L1(120,0.23),
 
     // Maybe manual mode
     MANUAL_L4(160.0,1.35),
@@ -50,7 +53,8 @@ public class Superstructure extends SimpleWafflesMechanism {
 
     
     HANDOFF_READY(35, 0.36),
-    HANDOFF_EXECUTE(18, 0.17),
+    HANDOFF_MID_EXECUTE(18,0.36),
+    HANDOFF_EXECUTE(18, 0.14),
     HANDOFF_CLEAR(210, 0.3);
 
     private final double pivotAngle;
